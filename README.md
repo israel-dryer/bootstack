@@ -18,11 +18,13 @@ bootstack gives engineers, data scientists, and hobbyists everything to build a
 polished desktop interface and package it into a standalone executable —
 declarative, reactive, and batteries-included, all in pure Python.
 
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-light.png">
   <img alt="bootstack hero demo" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-light.png">
 </picture>
+</p>
 
 ## Why bootstack?
 
@@ -34,10 +36,10 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **60+ widgets out of the box** — primitives through full composites: tables, trees, calendars, date pickers, gauges, sliders, and more — including a full `CodeEditor` with syntax highlighting, line numbers, bracket matching, smart indent, and search; no external editor dependency required
 - **Reactive signals** — observable state that flows between widgets; bind once, update everywhere
 - **Event and stream pipelines** — compose, filter, debounce, and throttle UI events with a chainable stream API
-- **Built-in icons** — the full Bootstrap Icons catalog, theme-aware and DPI-scaled, bundled with the framework
+- **Built-in icons** — the full Bootstrap Icons catalog, theme-aware and recolorable, bundled with the framework
 - **Built-in localization** — 23 language catalogs, locale-aware number/date/time formatting, runtime language switching
 - **Semantic styling** — `accent="primary"`, `variant="outline"` — no hard-coded colors; looks right across every theme automatically
-- **8 paired light/dark themes** — with a runtime switcher and a custom-theme API
+- **10 paired light/dark themes** — popular dev color schemes plus Bootstrap, with a runtime switcher and a custom-theme API
 - **Forms and validation** — field-level validators, inline error messages, and a `FormDialog` for quick modal forms
 - **DataSource abstraction** — one interface over SQLite, in-memory, and file backends with filtering, sorting, pagination, and CRUD
 - **A real CLI** — scaffold, run, add pages/views/dialogs/themes, and package for distribution
@@ -63,11 +65,13 @@ The widget gallery is a single-window tour of everything bootstack ships — eve
 bootstack gallery
 ```
 
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/gallery-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/gallery-light.png">
   <img alt="bootstack widget gallery" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/gallery-light.png">
 </picture>
+</p>
 
 ## Quick Start
 
@@ -83,11 +87,13 @@ with bs.App(title="Hello", padding=16, gap=16) as app:
 app.run()
 ```
 
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-light.png">
   <img alt="bootstack quick start example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-light.png">
 </picture>
+</p>
 
 For navigation-based apps, use `AppShell` — it gives you stacked toolbars, a sidebar, and a page stack in one call:
 
@@ -96,11 +102,11 @@ import bootstack as bs
 
 shell = bs.AppShell(title="My App", size=(1000, 650))
 
-with shell.add_page("home", text="Home", icon="house"):
-    bs.Label("Welcome!")
-
-with shell.add_page("docs", text="Documents", icon="file-earmark-text"):
-    bs.Label("Your documents.")
+with shell.page_nav() as nav:
+    with nav.add_page("home", text="Home", icon="house"):
+        bs.Label("Welcome!")
+    with nav.add_page("docs", text="Documents", icon="file-earmark-text"):
+        bs.Label("Your documents.")
 
 shell.run()
 ```
@@ -125,11 +131,13 @@ with bs.App(title="Sign In") as app:
 app.run()
 ```
 
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-layout-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-layout-light.png">
   <img alt="bootstack layout containers example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-layout-light.png">
 </picture>
+</p>
 
 ### Semantic styling
 
@@ -141,11 +149,13 @@ bs.Button("Cancel", accent="secondary", variant="outline")
 bs.Label("Heading", font="heading-lg")
 ```
 
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-semantic-styling-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-semantic-styling-light.png">
   <img alt="bootstack semantic styling example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-semantic-styling-light.png">
 </picture>
+</p>
 
 ### Signals (optional)
 
@@ -162,17 +172,17 @@ app.run()
 
 ## Features
 
-- **Application scaffolding** — `App` for blank windows, `AppShell` for command-bar + sidebar + page-stack apps, undecorated windows with custom chrome
+- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, `Workbench` for two-tier workspace apps, undecorated windows with custom chrome
 - **60+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
 - **Dialogs and messages** — `alert()` / `confirm()` / `ask_*()` prompts and `FormDialog` / `FontDialog` / `FilterDialog`, plus non-blocking `toast()`, `Notification`, and `Snackbar` surfaces
 - **Layout containers** — `Column`, `Row`, `Grid`, and `Spacer` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Divider`
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost), consistent across widgets
-- **Built-in themes** — paired light/dark variants (amber, aurora, bootstrap, classic, docs, forest, ocean, rose) with runtime theme switching and a custom-theme API
+- **Built-in themes** — 10 paired light/dark variants (bootstrap, catppuccin, dracula, everforest, gruvbox, nord, one, pydata, solarized, tokyo-night) with runtime theme switching and a custom-theme API
 - **Reactive signals** — observable state with subscribe/set, integrates with widgets via `signal=` / `textsignal=`
 - **Forms & validation** — `Form` with built-in field-level validators and inline error messages
 - **DataSource** — common interface over in-memory, SQLite, and file backends, with pagination, filtering, sorting, CRUD, and CSV/TSV/Excel export
 - **Localization (i18n)** — 23 bundled message catalogs, locale-aware number/date/time formatting via Babel, runtime language switching
-- **Icons & images** — Bootstrap Icons catalog with theme-aware recoloring, DPI scaling, and caching
+- **Icons & images** — Bootstrap Icons catalog with theme-aware recoloring and caching
 - **Platform support** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
 - **CLI (`bootstack`)** — project scaffolding, run, add components, theme/i18n setup, doctor, build/package
 
@@ -180,13 +190,13 @@ app.run()
 
 | Category | Widgets |
 |----------|---------|
-| **Actions** | Button, ButtonGroup, MenuButton, ContextMenu, Toolbar |
+| **Actions** | Button, ButtonGroup, MenuButton, ContextMenu, Toolbar, ThemeToggle |
 | **Inputs** | TextField, PasswordField, PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, TimeField |
 | **Selection** | Checkbox, Switch, ToggleButton, Radio, RadioGroup, ToggleGroup, Select, SelectButton, Calendar |
 | **Data Display** | Label, Badge, ListView, Tree, DataTable, ProgressBar, Gauge |
 | **Media** | Avatar, Picture, Gallery, Carousel |
 | **Layout** | Column, Row, Grid, Spacer, Card, GroupBox, SplitView, ScrollView, Accordion, Divider |
-| **Navigation** | AppShell, StatusBar, Tabs, PageStack |
+| **Navigation** | AppShell, Workbench, Window, StatusBar, Tabs, PageStack |
 | **Dialogs** | `alert()`, `confirm()`, `ask_*()` prompts, FormDialog, FontDialog, FilterDialog |
 | **Overlays** | `toast()`, Notification, Snackbar, Tooltip |
 | **Forms** | Form, with field-level validation |
@@ -198,14 +208,15 @@ bootstack ships with an optional CLI for scaffolding, running, and packaging app
 ```bash
 bootstack gallery                           # Launch the interactive widget gallery
 bootstack icons                             # Browse the built-in icon catalog
+bootstack appicon                           # Design an app icon and export it
 bootstack start MyApp                       # Create a new project (basic template)
 bootstack start MyApp --template appshell   # ...or with sidebar navigation
 bootstack run                               # Run the app defined in the project config
 bootstack add page Dashboard                # Add a new page (appshell)
 bootstack add view Settings                 # Add a new view (basic)
 bootstack add dialog Preferences            # Add a new dialog
-bootstack add i18n --languages en es fr     # Add i18n support
 bootstack doctor                            # Diagnose project & environment
+bootstack promote                           # Make the project packaging-ready
 bootstack build                             # Package for distribution
 ```
 
