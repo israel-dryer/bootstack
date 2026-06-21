@@ -14,6 +14,12 @@ A two-handle track for selecting a low/high value range.
 Usage
 -----
 
+A range slider selects a low and a high value within a
+``min_value``/``max_value`` range, both clamped to the bounds. As with the
+single-handle :doc:`Slider <slider>`, ``on_change`` fires continuously as a
+handle moves and ``on_commit`` fires once on release — reach for ``on_commit``
+when the per-update work is expensive.
+
 Basic
 ~~~~~
 

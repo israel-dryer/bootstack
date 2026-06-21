@@ -12,6 +12,9 @@ validation, and reactive signal binding.
    :class: bs-screenshot-dark
    :alt: TextField demo — dark theme
 
+Usage
+-----
+
 A field keeps three things distinct: the ``label`` beside it, the ``value`` you
 read and write in code, and the display ``text`` the user sees. Read the current
 input with ``field.value``, or bind a :doc:`Signal </reference/signals>` with
@@ -19,9 +22,6 @@ input with ``field.value``, or bind a :doc:`Signal </reference/signals>` with
 two beats — ``on_input`` on every keystroke, ``on_change`` once the value is
 committed (on blur or Enter) — so you choose live feedback or settled value per
 handler.
-
-Usage
------
 
 Basic
 ~~~~~

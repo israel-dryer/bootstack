@@ -11,15 +11,14 @@ Masked text input for password entry with an optional visibility toggle.
    :class: bs-screenshot-dark
    :alt: PasswordField demo — dark theme
 
-A password field is a single-line text input that masks what the user types.
+Usage
+-----
+
 Read or set the secret through ``field.value`` — always the unmasked string — or
 bind it with ``textsignal=``. Users can briefly reveal the input by holding the
 eye toggle, and you can drive masking from code with ``reveal()`` / ``hide()``.
 Validation runs against the typed value, exactly like a plain
 :doc:`text field <textfield>`.
-
-Usage
------
 
 Basic
 ~~~~~

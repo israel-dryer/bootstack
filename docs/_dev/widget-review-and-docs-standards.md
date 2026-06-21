@@ -111,10 +111,28 @@ who gets the model up front can follow everything after it.
 **Where it goes matters.** The page **intro** (the paragraph above the hero) is
 *definitional* — it states plainly *what the widget is* (and does), nothing more.
 The mental model / teaching — the one idea that makes it click, the key gotcha —
-leads the **first usage section**, not the intro. Don't put teaching prose in the
-intro paragraph; that is the usage body's job. (Maintainer feedback,
-2026-06-20: a "the one thing to get right…" lead in the ScrollView *intro* was
-moved down into its first usage section.)
+leads the **Usage** section: a short paragraph between the `Usage` heading and the
+first `~~~` subsection. Don't put teaching prose in the intro paragraph; that is
+the usage body's job.
+
+Both sides of this matter:
+
+- **Don't teach in the intro.** Move "think of it as…", "the one thing to get
+  right…", "reach for X when…" framing out of the intro and into the Usage lead-in.
+- **Don't leave Usage bare.** A page should not jump from the `Usage` heading
+  straight into a `~~~` subsection with no prose. *Every* reviewed widget — even a
+  simple one like Slider — opens Usage with a brief mental-model lead-in (for Slider,
+  the change-vs-commit decision; for a field, the value/text model).
+- **A relocated lead-in is not automatically a good lead-in.** After moving prose
+  from the intro into Usage, re-read it in place: a paragraph written as an intro
+  often *re-introduces* the widget ("A password field is a single-line text input
+  that masks…"), which is redundant with the definitional intro just above. Trim the
+  restatement and lead with the model.
+
+(Maintainer feedback, 2026-06-20: the ScrollView intro's "the one thing to get
+right…" lead was moved into Usage; then a full pass relocated teaching out of 11
+reviewed widgets' intros and added Usage lead-ins to Slider/RangeSlider, which had
+none.)
 
 ### No kitchen-sink
 

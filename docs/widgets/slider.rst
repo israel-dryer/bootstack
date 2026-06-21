@@ -14,6 +14,11 @@ A single-handle track for selecting a numeric value within a range.
 Usage
 -----
 
+A slider holds a numeric ``value`` within a ``min_value``/``max_value`` range,
+always clamped to the bounds. The decision you make is *when* to react:
+``on_change`` fires continuously as the handle moves, while ``on_commit`` fires
+once on release — reach for ``on_commit`` when the work per update is expensive.
+
 Basic
 ~~~~~
 

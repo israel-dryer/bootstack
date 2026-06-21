@@ -4,13 +4,6 @@ ButtonGroup
 A row (or column) of visually-connected buttons sharing a common accent and
 variant. Buttons are added one at a time via ``add()``.
 
-Think of a ButtonGroup as a set of related *actions* with one shared style and
-one shared click handler: each button carries a ``key``, and ``on_click()`` on
-the group reports which key was pressed — so you handle the whole cluster in one
-place instead of wiring each button separately. Reach for :doc:`togglegroup`
-instead when the buttons represent a *selection* to remember rather than actions
-to fire.
-
 .. image:: /_static/examples/buttongroup-hero-light.png
    :class: bs-screenshot-light
    :alt: ButtonGroup — light theme
@@ -21,6 +14,13 @@ to fire.
 
 Usage
 -----
+
+Think of a ButtonGroup as a set of related *actions* with one shared style and
+one shared click handler: each button carries a ``key``, and ``on_click()`` on
+the group reports which key was pressed — so you handle the whole cluster in one
+place instead of wiring each button separately. Reach for :doc:`togglegroup`
+instead when the buttons represent a *selection* to remember rather than actions
+to fire.
 
 Basic usage
 ~~~~~~~~~~~

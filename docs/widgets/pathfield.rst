@@ -13,14 +13,14 @@ updated and a ``change`` event fires.
    :class: bs-screenshot-dark
    :alt: PathField — dark theme
 
-A path field is a text input with a browse button. ``field.value`` is the
-selected path as a string — the user types it or picks it from a native dialog,
-and ``mode`` chooses which dialog opens (open a file, open many, save, or pick a
-directory). ``on_change`` fires after a pick or a manual edit; in
-``'open_multiple'`` mode the raw tuple of paths is on ``field.dialog_result``.
-
 Usage
 -----
+
+``field.value`` is the selected path as a string — the user types it or picks it
+from a native dialog, and ``mode`` chooses which dialog opens (open a file, open
+many, save, or pick a directory). ``on_change`` fires after a pick or a manual
+edit; in ``'open_multiple'`` mode the raw tuple of paths is on
+``field.dialog_result``.
 
 Basic usage
 ~~~~~~~~~~~

@@ -4,12 +4,6 @@ TextArea
 A multi-line text input with optional label, placeholder, scrollbars, and
 undo/redo support.
 
-The content is the ``value`` (read or set it directly, or bind a ``Signal`` with
-``textsignal=``). Listen as the user types with ``on_input``, or once they leave
-the field with ``on_change`` — that input-vs-commit choice is the main decision
-you make. Everything else (validation, undo/redo, dirty tracking) layers on top
-for richer editor-like fields.
-
 .. image:: /_static/examples/textarea-hero-light.png
    :class: bs-screenshot-light
    :alt: TextArea — light theme
@@ -20,6 +14,12 @@ for richer editor-like fields.
 
 Usage
 -----
+
+The content is the ``value`` (read or set it directly, or bind a ``Signal`` with
+``textsignal=``). Listen as the user types with ``on_input``, or once they leave
+the field with ``on_change`` — that input-vs-commit choice is the main decision
+you make. Everything else (validation, undo/redo, dirty tracking) layers on top
+for richer editor-like fields.
 
 Basic usage
 ~~~~~~~~~~~

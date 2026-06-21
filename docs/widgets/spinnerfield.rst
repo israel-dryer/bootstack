@@ -12,16 +12,15 @@ of values or a numeric range.
    :class: bs-screenshot-dark
    :alt: SpinnerField — dark theme
 
-A spinner steps through a fixed set of values with up/down buttons (or the arrow
-keys), in one of two modes: pass ``options=`` to cycle a list of strings, or
-``min_value`` / ``max_value`` / ``step`` for a numeric range — not both.
-``field.value`` is the current string (text mode) or number (numeric mode), and
-``textsignal=`` binds the displayed text. For free numeric entry without a fixed
-step reach for :doc:`NumberField <numberfield>`; for a long list,
-:doc:`Select <select>`.
-
 Usage
 -----
+
+A spinner steps with the up/down buttons or the arrow keys, in one of two modes:
+pass ``options=`` to cycle a list of strings, or ``min_value`` / ``max_value`` /
+``step`` for a numeric range — not both. ``field.value`` is the current string
+(text mode) or number (numeric mode), and ``textsignal=`` binds the displayed
+text. For free numeric entry without a fixed step reach for
+:doc:`NumberField <numberfield>`; for a long list, :doc:`Select <select>`.
 
 Text mode
 ~~~~~~~~~
