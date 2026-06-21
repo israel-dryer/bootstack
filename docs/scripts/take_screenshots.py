@@ -104,7 +104,9 @@ def _patch(cls):
                 ch = target.winfo_height()
                 gy = int(m.group(4)) if m else ry
                 title_h = ry - gy
-                pad = 10  # breathing room outside the dialog window
+                # Capture the dialog window tight (no breathing room) — the docs
+                # float it with a CSS drop shadow, like the app-window shots.
+                pad = 0
                 x, y = rx - pad, gy - pad
                 w, h = cw + pad * 2, ch + title_h + pad * 2
                 inset = 0
