@@ -1,7 +1,7 @@
 """README "Widget Gallery" screenshot, captured from the live demo.
 
 Builds the same shell as ``bootstack demo`` (via the shared
-``build_gallery_shell``) and lands on the Numeric & Date page, so the README
+``build_gallery_shell``) and lands on the Data Tables page, so the README
 gallery shot always matches the live demo — no manual capture.
 
 Regenerate with::
@@ -22,7 +22,7 @@ def gallery():
     with bs.AppShell(title="Widget Gallery", size=(1100, 750)) as shell:
         shell._capture_full_window = True
         build_gallery_shell(shell)
-        shell.navigate("numeric")
+        shell.navigate("tables")
     shell.run()
 
 
