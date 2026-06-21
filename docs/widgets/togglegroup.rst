@@ -14,6 +14,10 @@ A group of toggle buttons — single-select or multi-select.
 Usage
 -----
 
+A toggle group is a row of connected toggle buttons. In single mode (the default)
+one button is active and ``.value`` is its value; in multi mode any combination is
+active and ``.value`` is a ``set``. ``on_change`` fires when the selection changes.
+
 Single select
 ~~~~~~~~~~~~~
 

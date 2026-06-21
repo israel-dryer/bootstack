@@ -14,6 +14,11 @@ A group of mutually exclusive radio buttons.
 Usage
 -----
 
+A radio group is a single-choice control — exactly one option is selected, and
+``.value`` is that option's value (``on_change`` fires when it changes). Options
+can be plain strings, or ``(text, value)`` pairs when the label shown should
+differ from the value stored.
+
 Basic
 ~~~~~
 

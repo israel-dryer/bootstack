@@ -14,6 +14,10 @@ A labelled checkbox for binary on/off input.
 Usage
 -----
 
+A checkbox holds a boolean checked state — read it with ``.value`` or bind a
+:class:`Signal <bootstack.Signal>` with ``signal=``, and ``on_change`` fires each
+time it toggles. Pass ``tristate=True`` for a third, *indeterminate* state.
+
 Basic
 ~~~~~
 

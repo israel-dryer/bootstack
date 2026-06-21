@@ -14,6 +14,11 @@ A sliding track-and-thumb toggle for binary on/off input.
 Usage
 -----
 
+A switch is a boolean toggle with the same ``.value`` / ``signal=`` model as a
+:doc:`checkbox`, drawn as a sliding track. Reach for a switch when the change
+takes effect immediately (a setting); a checkbox when it is one choice in a form
+to submit.
+
 Basic
 ~~~~~
 
