@@ -4,6 +4,11 @@ CodeEditor
 A full-featured code editor with syntax highlighting, line numbers, bracket
 matching, smart indent, and built-in search/replace.
 
+Think of it as a standalone editing *surface*, not a form input: it ships the
+editor behaviors (a gutter, a search bar, undo grouping) built in, and it is
+**not** Field-wrapped — there is no label, validation, or ``disabled`` state.
+Reach for :doc:`textarea` when you want a labeled multi-line field in a form.
+
 .. image:: /_static/examples/codeeditor-hero-light.png
    :class: bs-screenshot-light
    :alt: CodeEditor — light theme
@@ -66,6 +71,10 @@ Read-only state
    bs.CodeEditor(value=code, language="python")                   # editable
    bs.CodeEditor(value=code, language="python", read_only=True)   # read-only
 
+Read-only blocks *typing*, not programmatic edits: ``editor.value = ...``,
+``editor.insert(...)``, and ``editor.clear()`` all still apply, leaving the
+editor read-only afterward.
+
 .. image:: /_static/examples/codeeditor-states-light.png
    :class: bs-screenshot-light
    :alt: CodeEditor states — light theme
@@ -92,8 +101,10 @@ Editor options
 Handling changes
 ~~~~~~~~~~~~~~~~
 
-``on_change()`` fires on every edit. Use ``on_input()`` for keystroke-level
-feedback.
+``on_change()`` fires on every edit, delivering a
+:class:`~bootstack.events.ChangeEvent` whose ``value`` is the editor text. Use
+``on_input()`` for keystroke-level feedback before the change is committed. See
+:doc:`/reference/events` for the full event model.
 
 .. code-block:: python
 
@@ -108,18 +119,43 @@ Cursor position
 ~~~~~~~~~~~~~~~
 
 ``on_cursor_move()`` fires after any key press or mouse click that moves the
-insertion cursor.
+insertion cursor. Read ``cursor_position`` — a 1-indexed ``(line, column)``
+tuple — to drive a status-bar readout.
 
 .. code-block:: python
 
    editor = bs.CodeEditor(language="python")
 
    def show_pos(e):
-       idx = editor._internal._core.text.index("insert")
-       line, col = idx.split(".")
-       status.text = f"Ln {line}, Col {int(col) + 1}"
+       line, col = editor.cursor_position
+       status.text = f"Ln {line}, Col {col}"
 
    editor.on_cursor_move(show_pos)
+
+Text positions
+~~~~~~~~~~~~~~
+
+Methods that take a position — ``insert()`` and ``goto_line()`` — address it
+two ways:
+
+* ``"end"`` — just past the last character.
+* ``"line.column"`` — a line and column, for example ``"1.0"`` for the very
+  start or ``"3.4"`` for line 3 just after its fourth character. **Lines are
+  1-indexed; columns are 0-indexed**, so column ``0`` is the start of a line.
+
+.. code-block:: python
+
+   editor.insert("end", "\n# appended")   # add a trailing line
+   editor.insert("1.0", "#!/usr/bin/env python\n")  # prepend a shebang
+   editor.goto_line(42)                   # jump to line 42 (1-indexed)
+
+.. note::
+
+   ``cursor_position`` reports a **1-indexed** ``(line, column)`` tuple — column
+   ``1`` is the start of a line — because it is meant for a status-bar readout
+   (``Ln 1, Col 1``). That display convention differs from the **0-indexed**
+   column in a ``"line.column"`` address: the cursor at the very start reads
+   ``(1, 1)`` but is inserted at by ``"1.0"``.
 
 Undo and redo
 ~~~~~~~~~~~~~
@@ -159,6 +195,31 @@ Search and replace
    editor.show_search()   # open find bar
    editor.show_replace()  # open find/replace bar
    editor.hide_search()   # close the bar
+
+Keyboard
+~~~~~~~~
+
+The editor uses editor-grade key bindings rather than form-field traversal.
+Undo and redo bind to the platform's native shortcuts (``Ctrl+Z`` / ``Ctrl+Y``
+on Windows and Linux, ``Cmd+Z`` / ``Cmd+Shift+Z`` on macOS).
+
+============================  ============================================================
+Key                           Action
+============================  ============================================================
+``Tab``                       Insert indentation to the next tab stop
+``Return``                    New line, matching the current indent (``auto_indent``)
+Undo / redo                   Native per-platform shortcut (see above)
+``Ctrl+F`` / ``Cmd+F``        Open the find bar
+``Ctrl+H`` / ``Cmd+H``        Open the find/replace bar
+``Escape``                    Close the find/replace bar
+============================  ============================================================
+
+.. note::
+
+   ``Tab`` inserts indentation, so it does not move focus out of the editor —
+   that is deliberate for a code surface, matching desktop editors. Move focus
+   away by clicking another control. When you instead want a labeled multi-line
+   field where ``Tab`` advances focus, use :doc:`textarea`.
 
 Widget sizing
 ~~~~~~~~~~~~~

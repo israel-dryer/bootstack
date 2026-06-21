@@ -216,6 +216,18 @@ class CodeEditor(PublicWidgetBase):
         return self._internal.is_dirty
 
     @property
+    def cursor_position(self) -> tuple[int, int]:
+        """The insertion cursor position as a 1-indexed `(line, column)` tuple.
+
+        Line 1, column 1 is the start of the content. Read it in an
+        `on_cursor_move` handler to drive a status-bar readout. Read-only —
+        use `goto_line()` to move the cursor.
+        """
+        idx = self._internal._core.text.index("insert")
+        line, col = idx.split(".")
+        return int(line), int(col) + 1
+
+    @property
     def language(self) -> str | None:
         """Active syntax highlighting language, or `None` if disabled."""
         return self._internal._language
@@ -248,10 +260,10 @@ class CodeEditor(PublicWidgetBase):
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
-        self._internal._core._read_only = v
-        self._internal._core.text.configure(
-            state=tkinter.DISABLED if v else tkinter.NORMAL
-        )
+        # Route through the core property so the `_read_only` flag and the Tk
+        # widget state stay in lockstep (the value/insert setters consult the
+        # flag to lift the disabled state for programmatic writes).
+        self._internal._core.read_only = v
 
     # ----- Methods -----
 
@@ -265,11 +277,14 @@ class CodeEditor(PublicWidgetBase):
         `index` is a text position: `'end'` for the end of the content, or a
         `'line.column'` string such as `'1.0'` (line 1, column 0).
 
+        Read-only blocks *user* edits, not programmatic ones: this applies even
+        when `read_only=True`, leaving the editor read-only afterward.
+
         Args:
             index: Target text position, e.g. `'end'` or `'1.0'`.
             text: Text to insert.
         """
-        self._internal._core.text.insert(index, text)
+        self._internal._core.insert(index, text)
 
     def select_all(self) -> None:
         """Select all text content."""
