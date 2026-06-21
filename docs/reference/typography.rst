@@ -7,11 +7,49 @@ resolve to named fonts at startup and update automatically when the theme
 changes, so you style text by role rather than by hard-coding families and
 sizes. A small set of functions adjusts those tokens at runtime.
 
+Platform defaults
+-----------------
+
+bootstack picks native UI and monospace families for each platform so an app
+looks at home on every desktop, and tunes the base point size so text appears
+the same visual size everywhere:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 30 30 18
+
+   * - Platform
+     - UI family
+     - Monospace family
+     - Base size
+   * - Windows
+     - Segoe UI
+     - Cascadia Mono
+     - 11 pt
+   * - macOS
+     - SF Pro Text
+     - Menlo
+     - 13 pt
+   * - Linux / other
+     - DejaVu Sans
+     - DejaVu Sans Mono
+     - 11 pt
+
+The macOS base is two points larger because Tk converts points to pixels
+against a 72 DPI baseline there — versus roughly 96 DPI on Windows and Linux —
+which would otherwise render the same point size noticeably smaller. The bump
+keeps text at visual parity across platforms and aligns with the macOS
+control-text size.
+
+Override the family with :func:`~bootstack.style.set_font_family` (see
+`Setting the application font family`_); if a requested family is not installed,
+bootstack keeps the current fonts rather than falling back silently.
+
 Font tokens
 -----------
 
-All sizes shown are relative to the base size (11 pt on Windows, 13 pt on
-macOS). The actual pixel size varies with DPI scaling.
+All sizes shown are relative to the base size for the platform (see
+`Platform defaults`_). The actual pixel size also varies with DPI scaling.
 
 .. list-table::
    :header-rows: 1
