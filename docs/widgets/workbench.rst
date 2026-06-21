@@ -7,6 +7,14 @@ optional toolbar stack and status band. Use it when an app has several distinct
 sections — Mail, Calendar, Contacts — each with its own navigation. For a single
 sidebar with no rail, use :class:`AppShell <bootstack.AppShell>` instead.
 
+.. image:: /_static/examples/workbench-hero-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: Workbench demo — light theme
+
+.. image:: /_static/examples/workbench-hero-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: Workbench demo — dark theme
+
 Usage
 -----
 
