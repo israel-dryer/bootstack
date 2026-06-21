@@ -4,11 +4,6 @@ Button
 A clickable action trigger. Accepts the button text as the first positional
 argument.
 
-A button does one thing: it runs an action when activated. Wire that action with
-``on_click=`` and shape the rest with two independent knobs — ``accent=`` for
-*intent* (the semantic color) and ``variant=`` for *weight* (how much it stands
-out). Everything else on the page is a refinement of those three ideas.
-
 .. image:: /_static/examples/button-hero-light.png
    :class: bs-screenshot-light
    :alt: Button — light theme
@@ -19,6 +14,11 @@ out). Everything else on the page is a refinement of those three ideas.
 
 Usage
 -----
+
+A button does one thing: it runs an action when activated. Wire that action with
+``on_click=`` and shape the rest with two independent knobs — ``accent=`` for
+*intent* (the semantic color) and ``variant=`` for *weight* (how much it stands
+out). Everything else here is a refinement of those three ideas.
 
 Accent colors
 ~~~~~~~~~~~~~

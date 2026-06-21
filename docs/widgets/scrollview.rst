@@ -16,13 +16,14 @@ Mouse-wheel scrolling is automatically enabled for all descendants.
 Usage
 -----
 
+A ScrollView only scrolls once its size is **bounded** — otherwise it grows to
+fit its content and never has overflow to scroll. Give it ``grow=True`` to fill
+a sized parent, or a fixed ``height=``.
+
 Basic vertical scroll
 ~~~~~~~~~~~~~~~~~~~~~
 
-A ScrollView only scrolls once its size is **bounded** — otherwise it grows to
-fit its content and never has overflow to scroll. Give it ``grow=True`` to fill
-a sized parent, or a fixed ``height=``. Children are packed top-to-bottom inside
-the scrollable area.
+Children are packed top-to-bottom inside the scrollable area.
 
 .. code-block:: python
 

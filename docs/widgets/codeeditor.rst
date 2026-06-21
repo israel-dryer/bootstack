@@ -4,11 +4,6 @@ CodeEditor
 A full-featured code editor with syntax highlighting, line numbers, bracket
 matching, smart indent, and built-in search/replace.
 
-Think of it as a standalone editing *surface*, not a form input: it ships the
-editor behaviors (a gutter, a search bar, undo grouping) built in, and it is
-**not** Field-wrapped — there is no label, validation, or ``disabled`` state.
-Reach for :doc:`textarea` when you want a labeled multi-line field in a form.
-
 .. image:: /_static/examples/codeeditor-hero-light.png
    :class: bs-screenshot-light
    :alt: CodeEditor — light theme
@@ -19,6 +14,11 @@ Reach for :doc:`textarea` when you want a labeled multi-line field in a form.
 
 Usage
 -----
+
+Think of it as a standalone editing *surface*, not a form input: it ships the
+editor behaviors (a gutter, a search bar, undo grouping) built in, and it is
+**not** Field-wrapped — there is no label, validation, or ``disabled`` state.
+Reach for :doc:`textarea` when you want a labeled multi-line field in a form.
 
 Basic usage
 ~~~~~~~~~~~

@@ -12,15 +12,15 @@ calendar picker button. Supports single-date and date-range selection modes.
    :class: bs-screenshot-dark
    :alt: DateField — dark theme
 
+Usage
+-----
+
 A date field reads and writes a real ``date`` through
 ``field.value`` — ``None`` when empty, or a ``(start, end)`` tuple in range mode —
 never a string. Users type a date or pick one from the calendar button;
 ``value_format`` controls only how it is displayed. Restrict what the picker
 offers with ``min_date`` / ``max_date`` / ``disabled_dates``, and validate the
 chosen date with rules.
-
-Usage
------
 
 Basic usage
 ~~~~~~~~~~~

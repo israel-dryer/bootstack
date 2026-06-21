@@ -12,15 +12,15 @@ mouse-wheel stepping.
    :class: bs-screenshot-dark
    :alt: NumberField demo — dark theme
 
+Usage
+-----
+
 A number field reads and writes a real ``int`` or ``float`` through
 ``field.value`` — or ``None`` when empty — never a string. Bind a
 :doc:`Signal </reference/signals>` with ``signal=`` to keep a typed variable in
 lockstep. Type into it, press the ±steppers, or step with the arrow keys and
 mouse wheel; ``min_value``/``max_value`` clamp the result, while ``value_format``
 changes only how the number is displayed.
-
-Usage
------
 
 Basic
 ~~~~~

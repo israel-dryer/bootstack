@@ -12,14 +12,14 @@ can type a custom time or select from the dropdown.
    :class: bs-screenshot-dark
    :alt: TimeField — dark theme
 
+Usage
+-----
+
 A time field reads and writes a real ``time`` through ``field.value`` — or
 ``None`` when empty. The user types a time (``'14:30'`` or ``'2:30 PM'``) or picks
 one from the dropdown; ``value_format`` controls only how it is displayed, and
 ``min_time`` / ``max_time`` limit which times the dropdown offers. The field
 starts empty — pass ``value=`` to seed a starting time.
-
-Usage
------
 
 Basic usage
 ~~~~~~~~~~~
