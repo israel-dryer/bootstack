@@ -162,7 +162,14 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
 
     @text.setter
     def text(self, value: str) -> None:
-        self._internal.configure(text=value)
+        # When a textsignal/textvariable owns the text, ttk ignores the `text`
+        # option — write through the variable instead (which also keeps the
+        # bound signal in sync). Falls back to the option when unbound.
+        textvar = getattr(self._internal, "_textvariable", None)
+        if textvar is not None:
+            textvar.set(value)
+        else:
+            self._internal.configure(text=value)
 
     # ----- Events -----
 
