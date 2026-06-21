@@ -19,9 +19,10 @@ Usage
 Basic vertical scroll
 ~~~~~~~~~~~~~~~~~~~~~
 
-Children are packed top-to-bottom inside the scrollable area. Add
-``grow=True`` to let the ScrollView fill its parent and
-provide a height boundary for scrolling to begin.
+A ScrollView only scrolls once its size is **bounded** — otherwise it grows to
+fit its content and never has overflow to scroll. Give it ``grow=True`` to fill
+a sized parent, or a fixed ``height=``. Children are packed top-to-bottom inside
+the scrollable area.
 
 .. code-block:: python
 
@@ -173,9 +174,10 @@ descendants. To toggle it programmatically:
    sv.disable_scrolling()    # pause scrolling
    sv.enable_scrolling()     # resume
 
-After adding a large batch of widgets dynamically (outside the context
-block), call ``refresh_bindings()`` to ensure all new descendants are
-wired up:
+Descendants added later — including a second pass through the context block —
+are wired for wheel scrolling automatically as they lay out, so you normally
+do not need to do anything. ``refresh_bindings()`` is a safety net for the rare
+case where some new descendants miss scrolling after a large dynamic batch:
 
 .. code-block:: python
 
@@ -183,11 +185,12 @@ wired up:
    with sv:
        bs.Label("Static row")
 
-   # Later, add more rows dynamically
+   # Later, add more rows dynamically — wheel scrolling just works on them
    with sv:
        for i in range(100):
            bs.Label(f"Dynamic row {i}")
-   sv.refresh_bindings()
+
+   sv.refresh_bindings()   # only if some rows missed scrolling
 
 Widget sizing
 ~~~~~~~~~~~~~

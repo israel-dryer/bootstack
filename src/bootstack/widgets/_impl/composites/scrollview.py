@@ -583,12 +583,11 @@ class ScrollView(Frame):
         self.vertical_scrollbar.lift()
         self.horizontal_scrollbar.lift()
 
-        # Bind configure event to update scroll region
+        # Bind configure event to update scroll region. (bind() auto-adds here,
+        # so this must run exactly once — a second identical bind double-fires
+        # _on_frame_configure on every resize, doubling the recursive subtree walk.)
         widget.bind('<Configure>', self._on_frame_configure)
         self._update_scrollbar_visibility()
-
-        # Bind configure event to update scroll region
-        widget.bind('<Configure>', self._on_frame_configure)
 
         # Enable scrolling based on mode
         if self._scrollbar_visibility in ('always', 'never', 'scroll'):
