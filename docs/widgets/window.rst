@@ -17,6 +17,10 @@ top-to-bottom in its content area.
 Usage
 -----
 
+Reach for a ``Window`` when you need a *non-modal* secondary surface that coexists
+with the main window — a settings panel, a tool palette, a live preview. For a
+*modal* prompt that blocks until answered, use a :doc:`dialog <dialog>` instead.
+
 Opening a window
 ~~~~~~~~~~~~~~~~
 

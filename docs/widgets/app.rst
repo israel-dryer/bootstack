@@ -17,6 +17,10 @@ to show it and start the event loop.
 Usage
 -----
 
+Beyond hosting the UI, the ``App`` is your configuration home — set the theme,
+locale, size, and window-state persistence as constructor kwargs, then read or
+change them live through ``app.*`` properties (``app.theme``, ``app.title``, …).
+
 Building the window
 ~~~~~~~~~~~~~~~~~~~~
 

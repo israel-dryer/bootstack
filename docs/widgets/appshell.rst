@@ -18,6 +18,11 @@ instead.
 Usage
 -----
 
+An ``AppShell`` wires up the application chrome — toolbars, a sidebar, a content
+area that swaps as you navigate, and a status band — so you fill each piece
+(``shell.add_toolbar()``, the sidebar provider, ``shell.statusbar``) rather than
+assembling the layout yourself.
+
 Sidebars at a glance
 ~~~~~~~~~~~~~~~~~~~~~~
 

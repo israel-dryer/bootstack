@@ -19,6 +19,12 @@ definitions. Fields are placed on a grid; :class:`GroupItem
 Usage
 -----
 
+A ``Form`` turns a dict (or a list of field definitions) into a laid-out,
+validating data-entry surface — fields map to the right widget by value type,
+``form.values`` reads them all back, and ``form.valid`` tracks validity
+reactively. Embed it in a page, or use a :doc:`FormDialog <formdialog>` for a
+modal.
+
 Auto-generated fields
 ~~~~~~~~~~~~~~~~~~~~~
 

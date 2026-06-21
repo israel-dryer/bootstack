@@ -15,6 +15,11 @@ right-click, left-click, or a programmatic `show()` call.
 Usage
 -----
 
+A context menu is a right-click (or programmatic) popup bound to a target widget
+— the on-demand counterpart to a :doc:`MenuButton <menubutton>`, which shows its
+menu from a visible button. You populate both the same way, with ``add_item()``
+and friends.
+
 Basic
 ~~~~~
 

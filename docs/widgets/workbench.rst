@@ -10,6 +10,10 @@ sidebar with no rail, use :class:`AppShell <bootstack.AppShell>` instead.
 Usage
 -----
 
+Think of a Workbench as several :doc:`AppShell <appshell>` sidebars behind one
+rail: you add each section as a *workspace* with its own navigation and content,
+and the rail switches between them.
+
 Workspaces
 ~~~~~~~~~~
 
