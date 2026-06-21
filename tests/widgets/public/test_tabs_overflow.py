@@ -14,28 +14,31 @@ import pytest
 
 import bootstack as bs
 
-pytestmark = pytest.mark.gui
+# Overflow is geometry-driven and sensitive to the shared root's size left by
+# prior modules; run in a dedicated process for a deterministic viewport.
+pytestmark = [pytest.mark.gui, pytest.mark.isolated]
 
 
-@pytest.fixture(scope="module")
-def shown_app():
-    app = bs.App()
-    app.__enter__()
-    root = app._tk_root
-    root.geometry("380x260")
-    root.deiconify()
-    root.update_idletasks()
+@pytest.fixture(autouse=True)
+def _sized(shown_app):
+    """Constrain the shared root so a dozen tabs actually overflow.
+
+    Overflow is geometry-driven (content width vs viewport), so the window must
+    be small and fixed. Restores the prior geometry afterward.
+    """
+    root = shown_app._tk_root
+    prev = root.geometry()
     try:
-        yield app
-    finally:
-        try:
-            app.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
+        root.state("normal")  # a prior test may have left it maximized
+    except Exception:
+        pass
+    root.geometry("380x260")
+    root.update()  # full update so the WM applies the size before tabs measure
+    yield
+    try:
+        root.geometry(prev)
+    except Exception:
+        pass
 
 
 def _pump(app):

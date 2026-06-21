@@ -13,26 +13,6 @@ from bootstack.widgets._impl.composites.toast import Toast as _InternalToast
 from bootstack.widgets._impl.composites.toast_stack import get_toast_manager
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App(size=(520, 400))
-    a.__enter__()
-    root = a._tk_root
-    root.deiconify()
-    root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 @pytest.fixture(autouse=True)
 def _clear(app):
     """Reset the process-wide toast manager around each test."""

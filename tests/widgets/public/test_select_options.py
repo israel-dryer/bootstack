@@ -14,27 +14,6 @@ from bootstack.widgets._core.options import (
 )
 
 
-@pytest.fixture(scope="module")
-def app():
-    """A single shown App so child widgets get mapped and styles build."""
-    a = bs.App()
-    a.__enter__()
-    root = a._tk_root
-    root.deiconify()
-    root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 # --------------------------------------------------------------------------
 # The normalizer
 # --------------------------------------------------------------------------

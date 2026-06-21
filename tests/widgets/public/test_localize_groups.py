@@ -10,31 +10,21 @@ import bootstack as bs
 from bootstack.i18n import add_translations
 
 
-@pytest.fixture(scope="module")
-def app():
-    """A single shown App in the Spanish locale with a small catalog."""
-    a = bs.App(locale="es")
-    a.__enter__()
-    root = a._tk_root
-    root.deiconify()
-    root.update_idletasks()
-    add_translations("es", {"Save": "Guardar", "Cancel": "Cancelar", "Choices": "Opciones"})
-    a.locale = "es"  # re-activate so the freshly-registered catalog is current
-    root.update()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 pytestmark = pytest.mark.gui
+
+
+@pytest.fixture(autouse=True)
+def _es_locale(app):
+    """Put the shared App in the Spanish locale with a small catalog.
+
+    Widgets auto-translate registered keys at creation, so the locale must be
+    active before each test builds its widgets. The shared `app` fixture
+    restores the locale and scene afterward.
+    """
+    add_translations("es", {"Save": "Guardar", "Cancel": "Cancelar", "Choices": "Opciones"})
+    app.locale = "es"  # re-activate so the freshly-registered catalog is current
+    app._tk_root.update_idletasks()
+    yield
 
 
 # --------------------------------------------------------------------------

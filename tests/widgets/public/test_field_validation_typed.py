@@ -17,25 +17,6 @@ import bootstack as bs
 from bootstack.validation import ValidationRule
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_string_rule_is_crash_safe_on_typed_value():
     # Fields reject text rules on typed values at attach time (see the
     # rejection test below), but the rule itself must still never crash if

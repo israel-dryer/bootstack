@@ -18,25 +18,6 @@ import pytest
 import bootstack as bs
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 # ----- Label: the dead-setter bug (#242) -----
 
 def test_label_text_round_trip_unbound(app):

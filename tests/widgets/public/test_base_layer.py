@@ -167,54 +167,46 @@ def test_event_enum_values_are_strings():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.gui
-def test_button_inside_row_placement():
-    from bootstack.widgets import App, Row, Button
+def test_button_inside_row_placement(app):
+    from bootstack.widgets import Row, Button
 
-    with App(title="Test") as app:
-        with Row(gap=8) as row:
-            b1 = Button("A")
-            b2 = Button("B")
+    with Row(gap=8) as row:
+        b1 = Button("A")
+        b2 = Button("B")
 
     assert b1._internal.master is row._internal
     assert b2._internal.master is row._internal
     assert row._internal.master is app._content_frame
-    app._tk_root.destroy()
 
 
 @pytest.mark.gui
-def test_explicit_parent_overrides_context_stack():
-    from bootstack.widgets import App, Row, Column, Button
+def test_explicit_parent_overrides_context_stack(app):
+    from bootstack.widgets import Row, Column, Button
 
-    with App() as app:
-        with Column() as outer:
-            with Row():
-                btn = Button("hi", parent=outer)
+    with Column() as outer:
+        with Row():
+            btn = Button("hi", parent=outer)
 
     assert btn._internal.master is outer._internal
-    app._tk_root.destroy()
 
 
 @pytest.mark.gui
-def test_button_tk_property_returns_internal():
-    from bootstack.widgets import App, Column, Button
+def test_button_tk_property_returns_internal(app):
+    from bootstack.widgets import Column, Button
     import tkinter.ttk as ttk
 
-    with App() as app:
-        with Column():
-            btn = Button("X")
+    with Column():
+        btn = Button("X")
 
     assert isinstance(btn.tk, ttk.Button)
-    app._tk_root.destroy()
 
 
 @pytest.mark.gui
-def test_button_on_unknown_event_raises():
-    from bootstack.widgets import App, Column, Button
+def test_button_on_unknown_event_raises(app):
+    from bootstack.widgets import Column, Button
 
-    with App() as app:
-        with Column():
-            btn = Button("X")
+    with Column():
+        btn = Button("X")
 
     with pytest.raises(UnknownEventError):
         btn.on("nonsense", lambda e: None)
-    app._tk_root.destroy()

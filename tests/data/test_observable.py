@@ -154,6 +154,22 @@ def _drain(root, ms=80):
         time.sleep(0.005)
 
 
+def _drain_until(root, predicate, ms=2000):
+    """Pump the event loop until `predicate()` is true or the timeout elapses.
+
+    Deterministic alternative to a fixed-duration drain for marshaled work:
+    waits for the actual condition instead of guessing a timing window.
+    """
+    deadline = time.time() + ms / 1000.0
+    while not predicate() and time.time() < deadline:
+        root.update()
+        root.update_idletasks()
+        time.sleep(0.005)
+    # one more flush so any same-tick follow-on work settles
+    root.update()
+    root.update_idletasks()
+
+
 @pytest.mark.gui
 def test_coalesces_burst_into_one_notification(tmp_tk_root):
     ds = MemoryDataSource().load([])
@@ -197,13 +213,17 @@ def test_observe_ignores_selection_changes(tmp_tk_root):
     ds = MemoryDataSource().load([{"name": "A"}, {"name": "B"}])
     results = []
     ds.observe().listen(lambda rows: results.append(rows))
-    assert len(results) == 1  # initial
+
+    # Settle any pending load/initial flush, then baseline so the assertion
+    # depends only on the select() that follows (not on flush timing).
+    _drain(tmp_tk_root)
+    results.clear()
 
     ids = [r["id"] for r in ds.page_slice(0, ds.count)]
     ds.select(ids[0])
     _drain(tmp_tk_root)
     # Selection is not a row-set change — observe does not re-emit.
-    assert len(results) == 1
+    assert results == []
 
 
 @pytest.mark.gui
@@ -218,7 +238,7 @@ def test_background_thread_mutation_marshals_to_main(tmp_tk_root):
     t = threading.Thread(target=worker)
     t.start()
     t.join()
-    _drain(tmp_tk_root)
+    _drain_until(tmp_tk_root, lambda: len(threads_seen) >= 1)
 
     assert len(threads_seen) == 1
     # The handler ran on the main thread, not the worker thread.

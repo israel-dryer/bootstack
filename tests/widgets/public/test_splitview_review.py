@@ -19,25 +19,6 @@ import pytest
 import bootstack as bs
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def _sv(app, *keys):
     sv = bs.SplitView(width=600, height=300)
     for k in keys:

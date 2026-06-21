@@ -15,25 +15,6 @@ import bootstack as bs
 from bootstack._runtime.utility import _ScalingState, scale_padding_floor
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.withdraw()
-    try:
-        yield a
-    finally:
-        _ScalingState.set_scale_factor(1.0)
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_scale_padding_floor_never_below_base():
     # Below the baseline (low DPI) it must hold the tuned base, not shrink — a
     # smaller gap clips the rounded corners.
