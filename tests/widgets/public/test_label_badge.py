@@ -102,7 +102,13 @@ def test_label_text_signal(app_ctx):
     from bootstack.widgets import Label
     from bootstack.signals import Signal
     sig = Signal("initial")
-    lbl = Label(text_signal=sig)
+    lbl = Label(textsignal=sig)
     assert lbl.text == "initial"
     sig.set("updated")
     assert lbl.text == "updated"
+
+    # Setting .text writes through the bound variable and keeps the signal in
+    # sync (#242 — the setter no-op'd while a textsignal owned the text).
+    lbl.text = "Changed"
+    assert lbl.text == "Changed"
+    assert sig() == "Changed"
