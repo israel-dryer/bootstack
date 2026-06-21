@@ -102,6 +102,7 @@ class ToolTip:
         self._auto_flip = auto_flip
 
         self._toplevel = None
+        self._label = None
         self._id = None
 
         # Set keyword arguments (create copy to avoid mutating caller's dict)
@@ -112,11 +113,19 @@ class ToolTip:
         if "alpha" not in self.toplevel_kwargs:
             self.toplevel_kwargs["alpha"] = 0.95
 
-        # event binding
-        self._widget.bind("<Enter>", self._on_enter)
-        self._widget.bind("<Leave>", self._on_leave)
-        self._widget.bind("<Motion>", self._move_tip)
-        self._widget.bind("<ButtonPress>", self._on_button_press)
+        # Event binding. add="+" so we never replace a handler the target
+        # already has; keep the bind ids so destroy() removes only our own.
+        self._bind_ids = {
+            "<Enter>": self._widget.bind("<Enter>", self._on_enter, add="+"),
+            "<Leave>": self._widget.bind("<Leave>", self._on_leave, add="+"),
+            "<Motion>": self._widget.bind("<Motion>", self._move_tip, add="+"),
+            "<ButtonPress>": self._widget.bind("<ButtonPress>", self._on_button_press, add="+"),
+        }
+        # Self-release when the target is destroyed, so a pending timer or a
+        # visible popup can't outlive it (and a later destroy() can't crash on a
+        # dead widget). <Destroy> propagates up from descendants that carry the
+        # target's bindtag, so the handler guards on the target itself.
+        self._destroy_id = self._widget.bind("<Destroy>", self._on_target_destroy, add="+")
 
         # Tk events don't bubble, so hovering a child of a container target
         # would otherwise never reach these bindings. Extend them across the
@@ -133,10 +142,39 @@ class ToolTip:
         """
         self._unschedule()
         self._hide_tip()
-        self._widget.unbind("<Enter>")
-        self._widget.unbind("<Leave>")
-        self._widget.unbind("<Motion>")
-        self._widget.unbind("<ButtonPress>")
+        # The target may already be gone (e.g. destroyed before destroy() is
+        # called); unbinding a dead widget path raises a TclError, so guard it.
+        try:
+            if self._widget.winfo_exists():
+                for sequence, bind_id in self._bind_ids.items():
+                    self._widget.unbind(sequence, bind_id)
+                if self._destroy_id:
+                    self._widget.unbind("<Destroy>", self._destroy_id)
+        except tk.TclError:
+            pass
+        self._bind_ids = {}
+        self._destroy_id = None
+
+    @property
+    def text(self) -> str:
+        """The tooltip text. Assigning updates a visible popup live."""
+        return self._text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self._text = value
+        if self._toplevel is not None and self._label is not None:
+            try:
+                self._label.configure(text=value)
+            except tk.TclError:
+                pass
+
+    def _on_target_destroy(self, event: Any) -> None:
+        """Release the timer and popup when the target widget is destroyed."""
+        if event.widget is not self._widget:
+            return  # a descendant was destroyed, not the target itself
+        self._unschedule()
+        self._hide_tip()
 
     def _on_enter(self, _) -> None:
         """Handle mouse enter event by scheduling tooltip display."""
@@ -220,6 +258,7 @@ class ToolTip:
             wraplength=self._wraplength,
         )
         lbl.pack(fill=BOTH, expand=YES)
+        self._label = lbl
 
         # Wait until size is known, then position
         self._toplevel.update_idletasks()
@@ -251,6 +290,7 @@ class ToolTip:
         if self._toplevel:
             self._toplevel.destroy()
             self._toplevel = None
+            self._label = None
 
     def _get_mouse_position(self) -> tuple[int, int]:
         """Get tooltip position offset from the current mouse pointer.
