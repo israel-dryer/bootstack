@@ -64,9 +64,23 @@ def test_read_only_toggle_round_trip(app):
 
 def test_insert_applies_when_read_only(app):
     ta = bs.TextArea(value="abc", read_only=True)
-    ta.insert("end", "XYZ")
+    ta.append("XYZ")
     assert ta.value == "abcXYZ"
     assert ta.read_only is True  # still read-only after the programmatic insert
+
+
+def test_insert_at_cursor(app):
+    # TextArea is a form field: insert is positionless (at the cursor only).
+    ta = bs.TextArea(value="abc")
+    ta._internal._core.text.mark_set("insert", "1.1")  # between a and b
+    ta.insert("Z")
+    assert ta.value == "aZbc"
+
+
+def test_append(app):
+    ta = bs.TextArea(value="abc")
+    ta.append("\nmore")
+    assert ta.value == "abc\nmore"
 
 
 def test_placeholder_does_not_make_read_only_editable(app):
