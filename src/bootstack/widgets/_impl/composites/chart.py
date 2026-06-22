@@ -73,14 +73,39 @@ def _resolve_font_family(name: str) -> str | None:
     return resolved
 
 
-def _theme_palette() -> dict[str, str]:
-    """The chart's chrome colors from the active theme (best-effort)."""
+def _border_color(surface: str) -> str:
+    """The themed border color appropriate for `surface`.
+
+    Uses the style builder's ``border()`` (a soft stroke derived from the surface
+    by blending toward its on-color), so the chart's axis lines adapt to whatever
+    surface it sits on — slightly stronger on a tinted `card` than on `content`,
+    matching how every other widget borders itself.
+    """
+    base = _color(surface, _color("background", "#ffffff"))
+    try:
+        from bootstack.style.style import get_theme_provider
+        from bootstack.style.style_builder_ttk import StyleBuilderTtk
+
+        builder = StyleBuilderTtk(theme_provider=get_theme_provider(), style_instance=None)
+        return builder.border(base)
+    except Exception:
+        return _color("stroke", base)
+
+
+def _theme_palette(surface: str = "content") -> dict[str, str]:
+    """The chart's chrome colors from the active theme (best-effort).
+
+    `surface` is the chart's inherited surface token, so the figure background
+    matches whatever the chart sits on (e.g. a `card`) instead of a fixed token —
+    no seam between the chart and its container.
+    """
     fg = _color("foreground", "#212529")
-    bg = _color("background", "#ffffff")
+    bg = _color(surface, _color("background", "#ffffff"))
     return {
         "figure_bg": bg,
-        "axes_bg": _color("content", bg),
+        "axes_bg": bg,
         "fg": fg,
+        "stroke": _border_color(surface),
         "grid": _color("stroke_subtle", fg),
     }
 
@@ -124,7 +149,7 @@ def _seed_seaborn(cycle: list[str], desat: float = _SEABORN_DESAT) -> None:
         pass
 
 
-def _theme_rc(with_cycle: bool = True) -> dict[str, Any]:
+def _theme_rc(surface: str = "content", with_cycle: bool = True) -> dict[str, Any]:
     """Translate the active theme into a matplotlib rcParams dict.
 
     Governs artists created within a ``matplotlib.rc_context(rc)`` block: figure
@@ -132,25 +157,31 @@ def _theme_rc(with_cycle: bool = True) -> dict[str, Any]:
     font, and — when `with_cycle` is true — a semantic accent ``prop_cycle`` for
     series. The chrome keys are always present; only the series color cycle is
     optional, so ``themed=False`` keeps the chart fitting the app while leaving
-    data colors to the caller.
+    data colors to the caller. `surface` is the chart's inherited surface token,
+    so the figure background matches its container.
     """
-    pal = _theme_palette()
+    pal = _theme_palette(surface)
     fg = pal["fg"]
+    stroke = pal["stroke"]
     rc: dict[str, Any] = {
         "figure.facecolor": pal["figure_bg"],
         "savefig.facecolor": pal["figure_bg"],
         "axes.facecolor": pal["axes_bg"],
-        "axes.edgecolor": fg,
+        # Drop the heavy box: hide the top/right spines and soften the rest to the
+        # theme's border color instead of the near-black foreground.
+        "axes.edgecolor": stroke,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
         "axes.labelcolor": fg,
         "axes.titlecolor": fg,
         "text.color": fg,
-        "xtick.color": fg,
-        "ytick.color": fg,
-        "xtick.labelcolor": fg,
+        "xtick.color": stroke,        # tick marks soft
+        "ytick.color": stroke,
+        "xtick.labelcolor": fg,       # tick labels stay readable
         "ytick.labelcolor": fg,
         "grid.color": pal["grid"],
         "legend.facecolor": pal["axes_bg"],
-        "legend.edgecolor": fg,
+        "legend.edgecolor": stroke,
     }
 
     cycle = _accent_cycle() if with_cycle else []
@@ -274,6 +305,12 @@ class Chart(Frame):
         self._msg_label: Any = None
 
         self._figure = figure if figure is not None else Figure()
+        # When the chart owns the figure (managed render / imperative drawing),
+        # use matplotlib's constrained layout so the axes fill the figure instead
+        # of leaving matplotlib's wide default subplot margins. A caller-supplied
+        # figure owns its own layout — leave it untouched.
+        self._owns_figure = figure is None
+        self._apply_owned_layout()
         self._build_canvas()
 
         # Bind a data source before the first render so its rows are available.
@@ -290,15 +327,35 @@ class Chart(Frame):
             self._style_figure()
             self._canvas.draw_idle()
 
+        self._first_paint_done = False
         self._enable_theme_repaint(self._on_theme_changed)
         self._bind_signals()
-        # Visibility gating for animations: pause when the chart is hidden
-        # (Map/Unmap — tabs, pages, minimized; reliable cross-platform) or fully
-        # covered by another window (Visibility — best-effort, mainly X11).
-        self.bind("<Map>", self._on_anim_visibility, add="+")
+        # First-paint + visibility gating. A chart is usually built while its
+        # window is hidden (inside the `with App()/Workbench()` block), so the
+        # initial draw lands on an unmapped, default-sized canvas. If the realized
+        # size matches what was laid out while hidden, no <Configure> fires on
+        # show and matplotlib never repaints — the chart looks stale or wrong-
+        # sized until a manual resize or theme change forces one. Repaint once on
+        # first <Map> at the realized size to close that gap. <Map>/<Unmap> also
+        # gate animations (paused while hidden); <Visibility> catches a full cover
+        # (best-effort, mainly X11).
+        self.bind("<Map>", self._on_map, add="+")
         self.bind("<Unmap>", self._on_anim_visibility, add="+")
         self.bind("<Visibility>", self._on_anim_obscured, add="+")
         self.bind("<Destroy>", self._on_destroy, add="+")
+
+    def _surface_token(self) -> str:
+        """The chart's inherited surface token (drives the figure background)."""
+        return getattr(self, "_surface", None) or "content"
+
+    def _apply_owned_layout(self) -> None:
+        """Use constrained layout on a figure we own, so the axes fill it."""
+        if not self._owns_figure:
+            return
+        try:
+            self._figure.set_layout_engine("constrained")
+        except Exception:
+            pass
 
     # ----- canvas + navigation toolbar --------------------------------------
 
@@ -524,7 +581,7 @@ class Chart(Frame):
             return
         import matplotlib
 
-        rc = _theme_rc(with_cycle=self._themed)
+        rc = _theme_rc(self._surface_token(), with_cycle=self._themed)
         fig = self._figure
         fig.clear()
         fig.set_facecolor(rc["figure.facecolor"])
@@ -545,7 +602,7 @@ class Chart(Frame):
         chrome always tracks the theme (independent of ``themed=``, which only
         governs whether the managed path imposes the accent series colors).
         """
-        pal = _theme_palette()
+        pal = _theme_palette(self._surface_token())
         fig = self._figure
         try:
             fig.set_facecolor(pal["figure_bg"])
@@ -559,8 +616,8 @@ class Chart(Frame):
         """Recolor one axes' chrome (faces, spines, ticks, labels) to the theme."""
         ax.set_facecolor(pal["axes_bg"])
         for spine in ax.spines.values():
-            spine.set_color(pal["fg"])
-        ax.tick_params(colors=pal["fg"], which="both")
+            spine.set_color(pal["stroke"])
+        ax.tick_params(color=pal["stroke"], labelcolor=pal["fg"], which="both")
         ax.xaxis.label.set_color(pal["fg"])
         ax.yaxis.label.set_color(pal["fg"])
         ax.title.set_color(pal["fg"])
@@ -590,7 +647,7 @@ class Chart(Frame):
             # stale background over the new colors — clearing the cache forces a
             # fresh grab on the next frame. Animated artists keep their setup
             # colors. (Falls back to a plain draw if matplotlib internals shift.)
-            pal = _theme_palette()
+            pal = _theme_palette(self._surface_token())
             try:
                 self._figure.set_facecolor(pal["figure_bg"])
                 for ax in self._figure.axes:
@@ -619,10 +676,13 @@ class Chart(Frame):
         """Replace the embedded figure, tearing down the old canvas widget."""
         from matplotlib.figure import Figure
 
+        owns = figure is None
         if figure is None:
             figure = Figure()
         self._teardown_canvas()
         self._figure = figure
+        self._owns_figure = owns
+        self._apply_owned_layout()
         self._build_canvas()
         if self._render is not None:
             self._render_managed()
@@ -672,7 +732,7 @@ class Chart(Frame):
         timed = frames is None
         start = {"t": None}
 
-        rc = _theme_rc(with_cycle=self._themed)
+        rc = _theme_rc(self._surface_token(), with_cycle=self._themed)
         fig = self._figure
         fig.clear()
         fig.set_facecolor(rc["figure.facecolor"])
@@ -755,6 +815,19 @@ class Chart(Frame):
     def _set_anim_wanted(self, wanted: bool) -> None:
         self._anim_wanted = bool(wanted)
         self._apply_anim_state()
+
+    def _on_map(self, event: Any = None) -> None:
+        if event is not None and getattr(event, "widget", None) is not self:
+            return
+        # On first show, repaint at the realized size — the construction-time
+        # draw happened while hidden and may not have reached the screen.
+        if not self._first_paint_done:
+            self._first_paint_done = True
+            try:
+                self.draw()
+            except Exception:
+                pass
+        self._on_anim_visibility(event)
 
     def _on_anim_visibility(self, event: Any = None) -> None:
         if event is not None and getattr(event, "widget", None) is not self:

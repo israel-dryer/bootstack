@@ -84,6 +84,53 @@ def test_chart_without_matplotlib_raises(monkeypatch, app):
         bs.Chart()
 
 
+def test_chart_repaints_on_first_map(shown_app):
+    """A chart built while hidden repaints once it is shown (not left stale).
+
+    The construction-time draw lands on an unmapped canvas; without a repaint on
+    first <Map>, the chart can look stale or wrong-sized until a manual resize or
+    theme change. The composite forces one repaint when it first becomes visible.
+    """
+    calls = {"n": 0}
+
+    def render(ax):
+        calls["n"] += 1
+        ax.plot([0, 1, 2], [2, 1, 3])
+
+    chart = bs.Chart(render=render)
+    shown_app._tk_root.update()
+
+    assert chart._internal._first_paint_done is True
+    assert calls["n"] >= 2  # construction render + the first-map repaint
+
+
+def test_chart_inherits_container_surface(shown_app):
+    """The figure background follows the chart's inherited surface (no seam)."""
+    def render(ax):
+        ax.plot([1, 2, 3])
+
+    with bs.Card(surface="card", padding=10):
+        chart = bs.Chart(render=render)
+    shown_app._tk_root.update_idletasks()
+
+    assert to_hex(chart.figure.get_facecolor()).lower() == get_theme_color("card").lower()
+
+
+def test_managed_chart_uses_constrained_layout(app):
+    """A chart that owns its figure fills it (constrained layout, tight margins)."""
+    from matplotlib.layout_engine import ConstrainedLayoutEngine
+
+    chart = bs.Chart(render=lambda ax: ax.plot([1, 2, 3]))
+    assert isinstance(chart.figure.get_layout_engine(), ConstrainedLayoutEngine)
+
+
+def test_figure_host_layout_untouched(app):
+    """A caller-supplied figure owns its layout — the chart leaves it alone."""
+    fig = Figure()
+    chart = bs.Chart(fig)
+    assert chart.figure.get_layout_engine() is None
+
+
 # ----- Phase 2: managed render + reactive signals -----------------------------
 
 
