@@ -154,6 +154,25 @@ below the field. Listen with ``on_valid`` / ``on_invalid``.
    ta.on_invalid(lambda e: print("invalid:", e))
    ta.validate()
 
+For reactive binding — for example, disabling a submit button until the field is
+valid — read the ``valid`` and ``error`` Signals. They update automatically after
+every validation run (on blur or an explicit ``validate()`` call).
+
+.. code-block:: python
+
+   ta = bs.TextArea(required=True)
+   btn = bs.Button("Submit", accent="primary")
+   err_label = bs.Label("")
+
+   def on_validity_change(ok):
+       btn.disabled = not ok
+
+   def on_error_change(msg):
+       err_label.text = msg
+
+   ta.valid.subscribe(on_validity_change)
+   ta.error.subscribe(on_error_change)
+
 See :doc:`/reference/validation` for the full rule set and the typed-value model.
 
 Undo and redo
