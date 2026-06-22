@@ -13,6 +13,7 @@ Headless — only imports.
 from __future__ import annotations
 
 import importlib
+from unittest.mock import patch
 
 import pytest
 
@@ -126,6 +127,21 @@ def test_moved_symbol_importable_from_submodule(module, name):
 def test_moved_symbol_absent_from_toplevel(module, name):
     assert name not in bs.__all__, f"{name} should no longer be top-level"
     assert not hasattr(bs, name), f"bs.{name} should be gone (moved to {module})"
+
+
+def test_version_fallback_when_metadata_missing() -> None:
+    """The try/except in __init__.py must catch PackageNotFoundError so the
+    import doesn't crash in frozen environments (e.g. PyInstaller bundles)."""
+    import importlib.metadata as _meta
+    from importlib.metadata import PackageNotFoundError
+
+    with patch.object(_meta, "version", side_effect=PackageNotFoundError("bootstack")):
+        try:
+            result = _meta.version("bootstack")
+        except Exception:
+            result = "unknown"
+
+    assert result == "unknown"
 
 
 def test_demoted_helpers_not_public():
