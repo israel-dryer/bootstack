@@ -8,8 +8,9 @@ from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent
+from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent, ValidationEvent
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.types import AccentToken, Event
 
 if TYPE_CHECKING:
@@ -18,6 +19,9 @@ if TYPE_CHECKING:
 _CODEEDITOR_EVENTS: dict[str, str] = {
     "change":      "<<BsChange>>",
     "input":       "<<BsInput>>",
+    "valid":       "<<Valid>>",
+    "invalid":     "<<Invalid>>",
+    "validate":    "<<Validate>>",
     "modified":    "<<TextModified>>",
     "undo":        "<<TextUndo>>",
     "redo":        "<<TextRedo>>",
@@ -211,6 +215,24 @@ class CodeEditor(PublicWidgetBase):
         return getattr(self._internal._core, "signal", None)
 
     @property
+    def valid(self) -> "Signal[bool]":
+        """Reactive `Signal[bool]` — `True` when all validation rules pass.
+
+        Starts `True`. Updates after every validation run (blur or manual
+        `validate()` call). Subscribe to react immediately when validity changes:
+        `editor.valid.subscribe(lambda ok: btn.disabled = not ok)`.
+        """
+        return self._internal._valid_signal
+
+    @property
+    def error(self) -> "Signal[str]":
+        """Reactive `Signal[str]` — current validation error message.
+
+        Empty string when the editor is valid. Updates in lockstep with `valid`.
+        """
+        return self._internal._error_signal
+
+    @property
     def is_dirty(self) -> bool:
         """True if content has changed since the last `mark_saved()` call."""
         return self._internal.is_dirty
@@ -266,6 +288,24 @@ class CodeEditor(PublicWidgetBase):
         self._internal._core.read_only = v
 
     # ----- Methods -----
+
+    def validate(self) -> bool:
+        """Run validation rules against the current content.
+
+        Returns:
+            `True` if all rules pass, `False` otherwise.
+        """
+        return self._internal.validate()
+
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
+        """Attach a validation rule to this editor.
+
+        Args:
+            rule_type: The kind of validation rule to apply.
+            **kwargs: Rule options such as `message=`, `min=`, `max=`,
+                `trigger=`.
+        """
+        self._internal.add_validation_rule(rule_type, **kwargs)
 
     def clear(self) -> None:
         """Clear all text content."""
@@ -426,6 +466,57 @@ class CodeEditor(PublicWidgetBase):
             is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
+
+    @overload
+    def on_valid(self) -> Stream: ...
+    @overload
+    def on_valid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation passes.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("valid", handler)
+
+    @overload
+    def on_invalid(self) -> Stream: ...
+    @overload
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation fails.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("invalid", handler)
+
+    @overload
+    def on_validate(self) -> Stream: ...
+    @overload
+    def on_validate(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired after any validation run.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("validate", handler)
 
     @overload
     def on_modified(self) -> Stream: ...

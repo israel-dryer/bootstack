@@ -179,6 +179,24 @@ class TextArea(PublicWidgetBase):
         return getattr(self._internal, "signal", None)
 
     @property
+    def valid(self) -> "Signal[bool]":
+        """Reactive `Signal[bool]` — `True` when all validation rules pass.
+
+        Starts `True`. Updates after every validation run (blur or manual
+        `validate()` call). Subscribe to react immediately when validity changes:
+        `area.valid.subscribe(lambda ok: btn.disabled = not ok)`.
+        """
+        return self._internal._valid_signal
+
+    @property
+    def error(self) -> "Signal[str]":
+        """Reactive `Signal[str]` — current validation error message.
+
+        Empty string when the field is valid. Updates in lockstep with `valid`.
+        """
+        return self._internal._error_signal
+
+    @property
     def read_only(self) -> bool:
         """Whether the text area is visible but not editable."""
         return self._internal._core.read_only

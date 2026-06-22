@@ -12,9 +12,10 @@ from bootstack.widgets._impl.composites.textarea.core import _MultilineCore, Scr
 from bootstack.widgets.types import Master, AccentToken
 from bootstack._runtime.utility import scale_padding_floor
 
+from bootstack.signals import Signal
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from bootstack.signals import Signal
     from bootstack.validation.validation_rules import ValidationRule
 
 
@@ -110,6 +111,8 @@ class TextArea(GridFrame):
         self._original_message = message or ""
         self._rules: list[ValidationRule] = []
         self._message_showing = False
+        self._valid_signal: Signal = Signal(True)
+        self._error_signal: Signal = Signal("")
 
         # ── label (row 0) ─────────────────────────────────────────────────
         if label:
@@ -307,13 +310,18 @@ class TextArea(GridFrame):
         """
         return self._run_validation(trigger="manual")
 
+    def _set_validity(self, is_valid: bool, message: str) -> None:
+        self._error_signal.set("" if is_valid else message)
+        self._valid_signal.set(is_valid)
+
     def _run_validation(self, trigger: str = "blur") -> bool:
         value = self.value
         for rule in self._rules:
-            if rule.trigger not in ("always", trigger):
+            if trigger != "manual" and rule.trigger not in ("always", trigger):
                 continue
             result = rule.validate(value)
             if not result.is_valid:
+                self._set_validity(False, result.message)
                 self._show_error(result.message)
                 data = ValidationEvent(
                     value=value, is_valid=False, message=result.message,
@@ -321,6 +329,7 @@ class TextArea(GridFrame):
                 self.event_generate("<<Invalid>>", data=data, when="tail")
                 self.event_generate("<<Validate>>", data=data, when="tail")
                 return False
+        self._set_validity(True, "")
         self._clear_error()
         data = ValidationEvent(value=value, is_valid=True, message="")
         self.event_generate("<<Valid>>", data=data, when="tail")

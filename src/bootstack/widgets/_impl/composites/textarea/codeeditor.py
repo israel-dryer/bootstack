@@ -14,9 +14,10 @@ from bootstack.widgets._impl.composites.textarea.extensions.indent_guides import
 from bootstack.widgets._impl.composites.textarea.search_overlay import SearchOverlay
 from bootstack.widgets.types import Master
 
+from bootstack.events import ValidationEvent
+from bootstack.signals import Signal
+
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from bootstack.signals import Signal
 
 
 class CodeEditor(Frame):
@@ -107,6 +108,9 @@ class CodeEditor(Frame):
         self._dark_theme = dark_theme
         self._show_line_numbers = show_line_numbers
         self._highlighter = None
+        self._rules: list = []
+        self._valid_signal: Signal = Signal(True)
+        self._error_signal: Signal = Signal("")
 
         # ── core ──────────────────────────────────────────────────────────
         self._core = _MultilineCore(
@@ -188,6 +192,9 @@ class CodeEditor(Frame):
             self._core.text.bind("<<CursorMove>>", on_cursor_move, add="+")
             self._core.text.bind("<KeyRelease>", on_cursor_move, add="+")
             self._core.text.bind("<ButtonRelease-1>", on_cursor_move, add="+")
+
+        # ── validation: auto-run on blur ──────────────────────────────────
+        self._core.text.bind("<FocusOut>", self._on_focus_out_validate, add="+")
 
     # ── public API ────────────────────────────────────────────────────────
 
@@ -366,6 +373,58 @@ class CodeEditor(Frame):
         """Hide the find/replace bar and clear search highlights."""
         self._search.hide()
 
+
+    # ── validation ────────────────────────────────────────────────────────
+
+    def add_validation_rule(
+        self,
+        rule_type: str,
+        message: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Add a validation rule to this editor.
+
+        Args:
+            rule_type: Rule name — `"required"`, `"pattern"`, `"stringLength"`, etc.
+            message: Custom error message. If None, the rule's default is used.
+            **kwargs: Rule-specific parameters (e.g. `minLength=`, `func=`).
+        """
+        from bootstack.validation.validation_rules import ValidationRule
+        self._rules.append(ValidationRule(rule_type, message=message, **kwargs))
+
+    def validate(self) -> bool:
+        """Run all validation rules immediately and return True if valid.
+
+        Triggers `<<Valid>>` / `<<Invalid>>` / `<<Validate>>` events and
+        updates the `_valid_signal` and `_error_signal`.
+        """
+        return self._run_validation(trigger="manual")
+
+    def _set_validity(self, is_valid: bool, message: str) -> None:
+        self._error_signal.set("" if is_valid else message)
+        self._valid_signal.set(is_valid)
+
+    def _run_validation(self, trigger: str = "blur") -> bool:
+        value = self.value
+        for rule in self._rules:
+            if trigger != "manual" and rule.trigger not in ("always", trigger):
+                continue
+            result = rule.validate(value)
+            if not result.is_valid:
+                self._set_validity(False, result.message)
+                data = ValidationEvent(value=value, is_valid=False, message=result.message)
+                self.event_generate("<<Invalid>>", data=data, when="tail")
+                self.event_generate("<<Validate>>", data=data, when="tail")
+                return False
+        self._set_validity(True, "")
+        data = ValidationEvent(value=value, is_valid=True, message="")
+        self.event_generate("<<Valid>>", data=data, when="tail")
+        self.event_generate("<<Validate>>", data=data, when="tail")
+        return True
+
+    def _on_focus_out_validate(self, _event: tk.Event) -> None:
+        if self._rules:
+            self._run_validation(trigger="blur")
 
     # ── internal ─────────────────────────────────────────────────────────
 

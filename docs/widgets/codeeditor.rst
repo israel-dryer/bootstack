@@ -17,7 +17,7 @@ Usage
 
 Think of it as a standalone editing *surface*, not a form input: it ships the
 editor behaviors (a gutter, a search bar, undo grouping) built in, and it is
-**not** Field-wrapped — there is no label, validation, or ``disabled`` state.
+**not** Field-wrapped — there is no label or ``disabled`` state.
 Reach for :doc:`textarea` when you want a labeled multi-line field in a form.
 
 Basic usage
@@ -166,6 +166,30 @@ so map the stream — not the property — and read the position inside the map:
            .map(lambda e: "Ln {}, Col {}".format(*editor.cursor_position))
            .listen(status.set)
    )
+
+Validation
+~~~~~~~~~~
+
+Attach rules with ``add_validation_rule()``; ``validate()`` runs them
+immediately. Validation also runs automatically on blur. Listen for results with
+``on_valid`` / ``on_invalid``, or read the reactive ``valid`` and ``error``
+signals for binding.
+
+.. code-block:: python
+
+   editor = bs.CodeEditor(language="python")
+   editor.add_validation_rule("required", message="Content is required.")
+   editor.add_validation_rule("stringLength", min=10)
+
+   btn = bs.Button("Run", accent="primary")
+
+   def on_validity_change(ok):
+       btn.disabled = not ok
+
+   editor.valid.subscribe(on_validity_change)
+   editor.on_invalid(lambda e: print("invalid:", e.message))
+
+See :doc:`/reference/validation` for the full rule set.
 
 Undo and redo
 ~~~~~~~~~~~~~
