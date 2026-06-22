@@ -221,3 +221,69 @@ def test_selection_multi_mode_is_a_list(shown_app):
     table.select_rows([10, 30])
     _pump(shown_app)
     assert sorted(r["id"] for r in table.selection) == [10, 30]
+
+
+# --------------------------------------------------------------------------- per-view isolation
+
+
+@pytest.mark.gui
+def test_two_tables_share_source_independent_search(shown_app):
+    """Two DataTables on one MemoryDataSource must filter independently.
+
+    Searching in table_a must not affect the rows visible in table_b, and
+    the source's own where/order state must be unchanged after both tables
+    have rendered.
+    """
+    src = MemoryDataSource()
+    src.load([dict(r) for r in ROWS])
+
+    table_a = bs.DataTable(
+        data_source=src, columns=["name", "role"],
+        enable_search=True, page_size=10,
+    )
+    table_b = bs.DataTable(
+        data_source=src, columns=["name", "role"],
+        enable_search=True, page_size=10,
+    )
+    _pump(shown_app)
+
+    # Both tables start with all rows.
+    assert len(table_a.to_rows("page")) == 3
+    assert len(table_b.to_rows("page")) == 3
+
+    # Apply a search to table_a only.
+    table_a._internal.set_search("Ada")
+    _pump(shown_app)
+
+    rows_a = table_a.to_rows("page")
+    rows_b = table_b.to_rows("page")
+
+    assert [r["name"] for r in rows_a] == ["Ada"], "table_a should be filtered"
+    assert len(rows_b) == 3, "table_b must not be affected by table_a's search"
+
+    # Source's own filter must be untouched.
+    assert src._filter is None, "source where() must not be mutated"
+
+
+@pytest.mark.gui
+def test_two_tables_share_source_independent_sort(shown_app):
+    """Sorting in one table must not change the sort order seen by the other."""
+    src = MemoryDataSource()
+    src.load([dict(r) for r in ROWS])
+
+    table_a = bs.DataTable(data_source=src, columns=["name", "role"], page_size=10)
+    table_b = bs.DataTable(data_source=src, columns=["name", "role"], page_size=10)
+    _pump(shown_app)
+
+    # Sort table_a descending by name.
+    table_a._internal.set_sorting("name", ascending=False)
+    _pump(shown_app)
+
+    names_a = [r["name"] for r in table_a.to_rows("page")]
+    names_b = [r["name"] for r in table_b.to_rows("page")]
+
+    assert names_a == sorted(names_a, reverse=True), "table_a should be sorted desc"
+    assert names_b == ["Ada", "Boole", "Church"], "table_b must keep insertion order"
+
+    # Source's own sort must be untouched.
+    assert src._sort == [], "source order() must not be mutated"

@@ -256,6 +256,7 @@ class TableView(Frame):
             enable_header_filtering: bool = True,
             enable_row_filtering: bool = True,
             enable_search: bool = True,
+            broadcast_search: bool = False,
             search_mode: Literal['standard', 'advanced'] = 'standard',
             search_trigger: Literal['enter', 'input'] = 'enter',
             # Paging & scrolling
@@ -399,6 +400,10 @@ class TableView(Frame):
         self._marker_icons: dict = {}
 
         self._search_mode_map: dict[str, str] = {}
+        self._broadcast_search: bool = broadcast_search
+        # Suppress the table's own _on_source_change re-load while a broadcast
+        # search is being applied (the load is done directly in _apply_where).
+        self._suppressing_search_broadcast: bool = False
         self._sorting = sorting_mode
         self._show_table_status = show_table_status
         self._show_column_chooser = show_column_chooser
@@ -500,8 +505,58 @@ class TableView(Frame):
             return silence()
         return contextlib.nullcontext()
 
+    @contextlib.contextmanager
+    def _apply_view_to_source(self):
+        """Temporarily apply this table's local filter/sort to the source (silenced).
+
+        Saves the source's current where/order state, applies the table's own
+        search + column-filter condition and sort order for the duration of the
+        block, then restores the source to its original state. This lets each
+        DataTable maintain independent view state over a shared source without
+        permanently mutating it.
+        """
+        ds = self._datasource
+        old_filter = getattr(ds, '_filter', None)
+        old_sort = list(getattr(ds, '_sort', []))
+        # Combine the source's own filter with this table's local search/column
+        # filters so source-level constraints (e.g. ds.where(...) called from
+        # app code) are respected alongside the table's per-view state.
+        # When broadcast_search is on the table already wrote its search condition
+        # to the source, so old_filter IS the combined condition — don't add local
+        # conditions again or they'd be applied twice.
+        if self._broadcast_search:
+            combined = old_filter
+        else:
+            combined = all_of(
+                old_filter,
+                self._build_search_condition(),
+                self._build_column_filter_condition(),
+            )
+        # Use the table's local sort when set; fall back to the source's sort
+        # so a source-level order() is respected when no column header is clicked.
+        sort_args = [k if asc else f"-{k}" for k, asc in self._sort_state.items()]
+        effective_sort = sort_args if sort_args else old_sort
+        with self._silence_source():
+            ds.where(combined)
+            ds.order(*effective_sort)
+        try:
+            yield
+        finally:
+            with self._silence_source():
+                try:
+                    ds.where(old_filter)
+                finally:
+                    ds.order(*old_sort)
+
     def _on_source_change(self, event=None) -> None:
         """Reload the current page after an external data-source change."""
+        if self._suppressing_search_broadcast:
+            # Consume the suppression — this is the hub flush that the broadcast
+            # write in _apply_where() triggered. The table already loaded page 0
+            # directly, so skip the redundant reload but allow future changes
+            # through by clearing the flag.
+            self._suppressing_search_broadcast = False
+            return
         try:
             self._clear_cache()
             self._load_page(self._current_page)
@@ -818,11 +873,6 @@ class TableView(Frame):
         return dict(self._sort_state)
 
     def set_sorting(self, key: str, ascending: bool = True) -> None:
-        try:
-            with self._silence_source():
-                self._datasource.order(key if ascending else f"-{key}")
-        except Exception:
-            return
         self._sort_state = {key: ascending}
         self._clear_cache()
         self._update_heading_icons()
@@ -843,11 +893,6 @@ class TableView(Frame):
             return
         self._group_by_key = key
         self._group_parents.clear()
-        try:
-            with self._silence_source():
-                self._datasource.order(key)
-        except Exception:
-            pass
         self._sort_state = {key: True}
         self._clear_cache()
         self._update_heading_icons()
@@ -1345,9 +1390,9 @@ class TableView(Frame):
 
     def _total_pages(self) -> int:
         try:
-            # Use cached count to avoid expensive COUNT(*) queries on every navigation
             if self._cached_total_count is None:
-                self._cached_total_count = self._datasource.count
+                with self._apply_view_to_source():
+                    self._cached_total_count = self._datasource.count
             total = self._cached_total_count
             size = getattr(self._datasource, "page_size", self._paging['page_size']) or 1
             return max(1, (total + size - 1) // size)
@@ -1359,10 +1404,13 @@ class TableView(Frame):
         if not append and page in self._page_cache:
             records = self._page_cache[page]
         else:
-            try:
-                records = self._datasource.page(page)
-            except Exception:
-                records = []
+            with self._apply_view_to_source():
+                try:
+                    records = self._datasource.page(page)
+                    if self._cached_total_count is None:
+                        self._cached_total_count = self._datasource.count
+                except Exception:
+                    records = []
             if not append:
                 self._remember_page(page, records)
         self._current_page = max(0, page)
@@ -1455,16 +1503,27 @@ class TableView(Frame):
         return any_of(*(make(c) for c in self._column_keys))
 
     def _apply_where(self) -> None:
-        """Compose the search term and column filters into a single where() clause."""
-        condition = all_of(
-            self._build_search_condition(),
-            self._build_column_filter_condition(),
-        )
-        try:
-            with self._silence_source():
+        """Recompute and apply the table's local filter state.
+
+        When `broadcast_search` is enabled, the combined condition is written to
+        the source un-silenced so that all other views (charts, etc.) re-render.
+        The table suppresses its own `_on_source_change` callback for this write
+        to avoid a double page-load.
+        """
+        if self._broadcast_search:
+            condition = all_of(
+                self._build_search_condition(),
+                self._build_column_filter_condition(),
+            )
+            try:
+                # Set the flag BEFORE the write; clear it in _on_source_change
+                # (not here in finally) so it is still True when the hub's
+                # after_idle flush fires, preventing a redundant second reload.
+                self._suppressing_search_broadcast = True
                 self._datasource.where(condition)
-        except Exception:
-            logger.exception("Failed to apply filters")
+            except Exception:
+                logger.exception("Failed to broadcast search filter")
+                self._suppressing_search_broadcast = False  # clear on error
         self._clear_cache()
         self._load_page(0)
         self._update_status_labels()
@@ -1487,11 +1546,6 @@ class TableView(Frame):
         asc = not self._sort_state.get(key, True)
         # Clear other sort states to keep single-column sort
         self._sort_state = {key: asc}
-        try:
-            with self._silence_source():
-                self._datasource.order(key if asc else f"-{key}")
-        except Exception:
-            pass
         self._clear_cache()
         self._update_heading_icons()
         self._load_page(0)
@@ -1559,9 +1613,11 @@ class TableView(Frame):
         # Sort
         sort_txt = ""
         try:
-            order = getattr(self._datasource, "_order_by", "")
-            if order:
-                sort_txt = MessageCatalog.translate("table.sort_status", order)
+            if self._sort_state and not self._group_by_key:
+                key, ascending = next(iter(self._sort_state.items()))
+                heading = self._column_heading(key)
+                direction = "↑" if ascending else "↓"
+                sort_txt = MessageCatalog.translate("table.sort_status", f"{heading} {direction}")
         except Exception:
             pass
         group_txt = ""
@@ -1846,11 +1902,6 @@ class TableView(Frame):
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
         self._sort_state = {key: ascending}
-        try:
-            with self._silence_source():
-                self._datasource.order(key if ascending else f"-{key}")
-        except Exception:
-            pass
         self._clear_cache()
         self._update_heading_icons()
         self._load_page(0)
@@ -2034,7 +2085,8 @@ class TableView(Frame):
             total_pages = self._total_pages()
             for page_idx in range(total_pages):
                 try:
-                    rows = self._datasource.page(page_idx)
+                    with self._apply_view_to_source():
+                        rows = self._datasource.page(page_idx)
                 except Exception:
                     break
                 if any(str(self._record_id(rec)) == rid for rec in rows):
@@ -2341,11 +2393,12 @@ class TableView(Frame):
         """Number of rows the given scope would export."""
         if scope == "selection":
             return len(self._tree.selection())
-        if scope == "page":
-            psize = self._ds_page_size()
-            start = self._current_page * psize
-            return len(self._datasource.page_slice(start, psize))
-        return self._datasource.count
+        with self._apply_view_to_source():
+            if scope == "page":
+                psize = self._ds_page_size()
+                start = self._current_page * psize
+                return len(self._datasource.page_slice(start, psize))
+            return self._datasource.count
 
     def _iter_raw_chunks(self, scope: str, chunk_size: int):
         """Yield lists of raw records for `scope`, paging through large 'all' scopes."""
@@ -2354,22 +2407,23 @@ class TableView(Frame):
             if rows:
                 yield rows
             return
-        if scope == "page":
-            psize = self._ds_page_size()
-            start = self._current_page * psize
-            rows = self._datasource.page_slice(start, psize)
-            if rows:
-                yield rows
-            return
-        # 'all' (the filtered/sorted set) — page through so memory stays flat.
-        total = self._datasource.count
-        offset = 0
-        while offset < total:
-            chunk = self._datasource.page_slice(offset, chunk_size)
-            if not chunk:
-                break
-            yield chunk
-            offset += len(chunk)
+        with self._apply_view_to_source():
+            if scope == "page":
+                psize = self._ds_page_size()
+                start = self._current_page * psize
+                rows = self._datasource.page_slice(start, psize)
+                if rows:
+                    yield rows
+                return
+            # 'all' (the filtered/sorted set) — page through so memory stays flat.
+            total = self._datasource.count
+            offset = 0
+            while offset < total:
+                chunk = self._datasource.page_slice(offset, chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+                offset += len(chunk)
 
     def _to_delimited(self, rows: list, delimiter: str) -> str:
         """Serialize `rows` (raw records) as delimited text over the displayed columns."""
@@ -3125,16 +3179,9 @@ class TableView(Frame):
         key = self._column_keys[col]
         self._group_by_key = key
         self._group_parents.clear()
-        # Sort entire datasource by the grouping column so grouping reflects full dataset order
-        try:
-            with self._silence_source():
-                self._datasource.order(key)
-        except Exception:
-            pass
         self._sort_state = {key: True}
         self._clear_cache()
         self._update_heading_icons()
-        # Restart at first page to reflect new ordering
         self._load_page(0)
         self._update_status_labels()
 
@@ -3309,8 +3356,6 @@ class TableView(Frame):
 
     def _clear_sort(self) -> None:
         self._sort_state.clear()
-        with self._silence_source():
-            self._datasource.order()
         self._clear_cache()
         self._update_heading_icons()
         self._load_page(0)
