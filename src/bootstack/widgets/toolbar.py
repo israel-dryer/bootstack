@@ -242,7 +242,7 @@ class Toolbar(PublicWidgetBase):
         if "density" in params:
             kwargs.setdefault("density", self._internal.density)
         if "surface" in params:
-            kwargs.setdefault("surface", self._internal._surface)
+            kwargs.setdefault("surface", self._internal.surface)
 
     # ----- Container protocol (so `parent=toolbar` works) -----
 

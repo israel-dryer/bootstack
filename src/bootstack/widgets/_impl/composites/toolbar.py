@@ -569,6 +569,11 @@ class Toolbar(Frame):
         """Get the toolbar's button density."""
         return self._density
 
+    @property
+    def surface(self) -> str:
+        """The surface token applied to this toolbar."""
+        return getattr(self, "_surface", "chrome")
+
     # --- Window Control Access ---
 
     @property

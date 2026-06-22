@@ -58,7 +58,10 @@ with bs.App(title="Checkbox Demo", padding=20, gap=16) as app:
             unchecked_value="light",
         )
         theme_lbl = bs.Label("Theme: light", accent="secondary", font="caption")
-        theme_sig.subscribe(lambda v: setattr(theme_lbl, 'text', f"Theme: {v}"))
+        def _update_theme(v):
+            theme_lbl.text = f"Theme: {v}"
+
+        theme_sig.subscribe(_update_theme)
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")

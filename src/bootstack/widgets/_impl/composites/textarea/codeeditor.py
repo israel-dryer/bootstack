@@ -361,6 +361,32 @@ class CodeEditor(Frame):
         """The internal `_MultilineCore` — for advanced extension use."""
         return self._core
 
+    @property
+    def language(self) -> str | None:
+        """Active syntax highlighting language, or `None` if disabled."""
+        return self._language
+
+    @property
+    def theme(self) -> str:
+        """Active Pygments color scheme, or `'auto'` if tracking the bootstack theme."""
+        return self._pygments_style
+
+    def set_theme(self, v: str) -> None:
+        """Change the active Pygments color scheme.
+
+        Args:
+            v: Pygments style name, or `'auto'` to track the bootstack theme.
+        """
+        self._pygments_style = v
+        if self._highlighter is not None:
+            self._highlighter._auto = (v == "auto")
+            if v != "auto":
+                self._highlighter._load_style(v)
+                for sname, color in self._highlighter._style_colors.items():
+                    self._core.define_style(sname, foreground=color)
+            self._highlighter._apply_widget_colors(self._core)
+            self._highlighter._schedule()
+
     def show_search(self) -> None:
         """Show the find bar and focus the search input."""
         self._search.show(replace=False)

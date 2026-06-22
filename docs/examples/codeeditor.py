@@ -82,9 +82,8 @@ with bs.App(title="CodeEditor Demo", size=(800, 700)) as app:
             ed3 = bs.CodeEditor(value=SAMPLE_PY, language="python", height=6)
 
             def _update_pos(e):
-                idx = ed3._internal._core.text.index("insert")
-                line, col = idx.split(".")
-                pos_sig.set(f"line {line}, col {int(col) + 1}")
+                line, col = ed3.cursor_position
+                pos_sig.set(f"line {line}, col {col}")
 
             ed3.on_cursor_move(_update_pos)
             bs.Label(textsignal=pos_sig, accent="secondary")

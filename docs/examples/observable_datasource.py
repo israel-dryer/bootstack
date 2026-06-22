@@ -65,15 +65,17 @@ with bs.App(title="Observable data source", size=(560, 560), padding=16, gap=12)
     bs.Label("Bound ListView (auto-refreshing):", font="caption")
     bs.ListView(data_source=ds, grow=True, horizontal="stretch")
 
+    def _update_total(n):
+        total.text = f"{n} rows"
+
+    def _update_active(rows):
+        active_gauge.value = len(rows)
+
     # Badge tracks total row count via the coarse change stream.
-    total_sub = ds.on_change().map(lambda e: ds.count).listen(
-        lambda n: setattr(total, "text", f"{n} rows")
-    )
+    total_sub = ds.on_change().map(lambda e: ds.count).listen(_update_total)
 
     # Gauge tracks the active-row count via an observed query.
-    active_sub = ds.observe(col("status") == "active").listen(
-        lambda rows: setattr(active_gauge, "value", len(rows))
-    )
+    active_sub = ds.observe(col("status") == "active").listen(_update_active)
 
 worker = threading.Thread(target=feed, daemon=True)
 worker.start()
