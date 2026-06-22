@@ -51,3 +51,6 @@ SCENES = {
     "ticks":    ticks,
     "disabled": disabled,
 }
+
+if __name__ == '__main__':
+    ticks()

@@ -223,10 +223,11 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             self._handle_lo_item = self._canvas.create_image(self._track_center, 0, anchor="center")
             self._handle_hi_item = self._canvas.create_image(self._track_center, 0, anchor="center")
 
-        # Keyboard focus halo — drawn around the active handle, above both handles
-        # (its center is transparent, so the handle still shows through). Hidden
-        # until the widget takes keyboard focus.
-        self._focus_ring_diam = self._handle_size + 2 * HALO_PAD
+        # Keyboard focus ring — drawn ON the active handle (a ring just inside its
+        # edge, transparent center), above both handles. Within the handle
+        # footprint (no overhang) so the track runs edge-to-edge. Hidden until the
+        # widget takes keyboard focus.
+        self._focus_ring_diam = self._handle_size - 2
         self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, self._colors['focus'])
         self._focus_ring_item = self._canvas.create_image(
             0, 0, anchor="center", image=self._focus_ring_photo, state="hidden")
@@ -335,9 +336,9 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         return max(font.measure(t) for t in candidates) + 4
 
     def _track_range(self) -> tuple[int, int]:
-        # Inset by the handle half-width PLUS the focus-ring overhang so the halo
-        # stays inside the canvas even with a handle at the extreme min/max.
-        edge = self._handle_size // 2 + HALO_PAD
+        # Inset by the handle half-width only — the handle edge sits flush with the
+        # canvas edge at the extremes, and the in-handle focus ring needs no overhang.
+        edge = self._handle_size // 2
         if self._orient == "horizontal":
             w = self._cw if self._cw > 0 else max(1, self._canvas.winfo_width())
             return edge, max(edge + 1, w - edge - 1)
@@ -354,6 +355,16 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         if self._orient == "vertical":
             ratio = 1.0 - ratio
         return start + int(ratio * (end - start))
+
+    def _track_extent(self) -> int:
+        """Length of the full-width track (handle's min edge to max edge).
+
+        The track spans `[0, extent]` so it meets the container edges; each handle
+        still travels `[r, extent - r]` (its center), so ticks placed at the handle
+        centers sit `r` inside each end and the handle covers that lead-in/out.
+        """
+        _, end = self._track_range()
+        return end + self._handle_size // 2
 
     def _pos_to_value(self, pos: int) -> float:
         start, end = self._track_range()
@@ -433,19 +444,17 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         hi_val = self._hi_var.get()
         lo_pos = self._value_to_pos(lo_val)
         hi_pos = self._value_to_pos(hi_val)
-        start, end = self._track_range()
-        track_len = end - start
+        # Full-width track (0 .. extent); the active fill spans between the handles.
+        extent = self._track_extent()
 
         fill_c = self._colors['fill_disabled'] if self._state == "disabled" else self._colors['fill']
 
         if self._orient == "horizontal":
-            fill_start = lo_pos - start
-            fill_end = hi_pos - start
-            photo = _make_track(track_len, self._track_h, fill_start, fill_end,
+            photo = _make_track(extent, self._track_h, lo_pos, hi_pos,
                                 self._colors['trough'], fill_c)
             if photo:
                 self._track_photo = photo
-                self._canvas.coords(self._track_item, start, self._track_center)
+                self._canvas.coords(self._track_item, 0, self._track_center)
                 self._canvas.itemconfig(self._track_item, image=self._track_photo)
             self._canvas.coords(self._handle_lo_item, lo_pos, self._track_center)
             self._canvas.coords(self._handle_hi_item, hi_pos, self._track_center)
@@ -453,20 +462,17 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
                 self._update_badges_h(lo_pos, hi_pos, lo_val, hi_val)
         else:
             # Vertical: top = max (small canvas y), bottom = min (large canvas y).
-            # lo_pos >= hi_pos in canvas coords (lower value → lower y-pos → larger canvas y).
-            # PIL rotate(90) is CCW: LEFT of horizontal → BOTTOM of vertical,
-            #                        RIGHT of horizontal → TOP of vertical.
-            # So to fill from canvas y=hi_pos (top) to canvas y=lo_pos (bottom):
-            #   fill_start = end - lo_pos  (maps to bottom of fill region)
-            #   fill_end   = end - hi_pos  (maps to top of fill region)
-            fill_start = max(0, end - lo_pos)
-            fill_end = min(track_len, end - hi_pos)
-            photo = _make_track(track_len, self._track_h, fill_start, fill_end,
+            # lo_pos >= hi_pos. PIL rotate(90) is CCW (LEFT → BOTTOM), so to fill
+            # from canvas y=hi_pos (top) to y=lo_pos (bottom) on the full-height
+            # track: fill_start = extent - lo_pos, fill_end = extent - hi_pos.
+            fill_start = max(0, extent - lo_pos)
+            fill_end = min(extent, extent - hi_pos)
+            photo = _make_track(extent, self._track_h, fill_start, fill_end,
                                 self._colors['trough'], fill_c,
                                 vertical=True)
             if photo:
                 self._track_photo = photo
-                self._canvas.coords(self._track_item, self._track_center, start)
+                self._canvas.coords(self._track_item, self._track_center, 0)
                 self._canvas.itemconfig(self._track_item, image=self._track_photo)
             self._canvas.coords(self._handle_lo_item, self._track_center, lo_pos)
             self._canvas.coords(self._handle_hi_item, self._track_center, hi_pos)
