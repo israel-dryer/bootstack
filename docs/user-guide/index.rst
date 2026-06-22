@@ -67,6 +67,12 @@ How-to guides
 
       Labels, lists, tables, trees, and the data sources behind them.
 
+   .. grid-item-card:: :octicon:`graph;1.5em;sd-mr-1` Visualizing Data
+      :link: /tasks/visualizing-data/index
+      :link-type: doc
+
+      Embed themed matplotlib/seaborn charts that update from a signal or source.
+
    .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Composing Fields
       :link: /tasks/composing-fields
       :link-type: doc
@@ -198,6 +204,7 @@ Topics
    /tasks/handling-actions
    /tasks/clipboard
    /tasks/displaying-data
+   /tasks/visualizing-data/index
    /tasks/composing-fields
    /tasks/building-forms
    /tasks/dialogs

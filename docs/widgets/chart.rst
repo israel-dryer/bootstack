@@ -244,6 +244,17 @@ under timer jitter. The animation pauses automatically when the chart is hidden 
 switched-away tab, a minimized window) and resumes when shown, and stops when the
 widget is destroyed.
 
+.. raw:: html
+
+   <video class="bs-video-light" autoplay loop muted playsinline controls
+          aria-label="An animated chart — flowing waves drawn by blitting">
+     <source src="../_static/examples/chart-animation-video-light.mp4" type="video/mp4">
+   </video>
+   <video class="bs-video-dark" autoplay loop muted playsinline controls
+          aria-label="An animated chart — flowing waves drawn by blitting">
+     <source src="../_static/examples/chart-animation-video-dark.mp4" type="video/mp4">
+   </video>
+
 Widget sizing
 ~~~~~~~~~~~~~
 
