@@ -351,8 +351,10 @@ class Carousel(Frame):
         self._stage.tag_lower(next_id)
         if cur_id is not None:
             self._stage.tag_lower(cur_id)
-        steps = 12
-        dx = -d * w / steps
+        steps = 8
+
+        def _ease(t: float) -> float:
+            return 2 * t * t if t < 0.5 else 1 - (-2 * t + 2) ** 2 / 2
 
         def step(i: int) -> None:
             if i >= steps:
@@ -366,9 +368,10 @@ class Carousel(Frame):
                 self._transitioning = False
                 self._after_change()
                 return
-            self._stage.move(next_id, dx, 0)
+            t = _ease(i / steps)
+            self._stage.coords(next_id, round(d * w * (1 - t)), 0)
             if cur_id is not None:
-                self._stage.move(cur_id, dx, 0)
+                self._stage.coords(cur_id, round(-d * w * t), 0)
             self._schedule.delay(_FRAME_MS, lambda: step(i + 1))
 
         step(1)
@@ -381,19 +384,21 @@ class Carousel(Frame):
             return
         self._transitioning = True
         steps = 10
+        # Pre-compute all frames up front so PhotoImage allocation doesn't happen
+        # inside the after() loop where it blocks the canvas refresh.
+        frames = [PhotoImage(PILImage.blend(cur, next_pil, i / steps)) for i in range(1, steps + 1)]
 
         def step(i: int) -> None:
-            if i > steps:
+            if i >= len(frames):
                 self._set_current(next_pil)
                 self._transitioning = False
                 self._after_change()
                 return
-            blended = PILImage.blend(cur, next_pil, i / steps)
-            self._fade_photo = PhotoImage(blended)
+            self._fade_photo = frames[i]
             self._stage.itemconfigure(self._img_id, image=self._fade_photo)
             self._schedule.delay(_FRAME_MS + 6, lambda: step(i + 1))
 
-        step(1)
+        step(0)
 
     def _after_change(self) -> None:
         bw, bh = self._box
