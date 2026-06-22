@@ -1,13 +1,42 @@
 # Visualization widget (`bs.Chart`) — design brief
 
-Status: **design locked, Phase 1 building** on branch `worktree-chart-widget`
-(→ PR as `feat/chart-widget`). Optional dependency — core installs never import
-matplotlib. Supersedes the placeholder note in memory `project_seaborn_viz_plugin`.
-Tracked: GitHub #277.
+Status: **Phase 1 shipped** (PR #279, `feat/chart-widget`). **Phase 2 +
+animation** built on `feat/chart-reactive` (combined PR). Optional dependency —
+core installs never import matplotlib. Supersedes the placeholder note in memory
+`project_seaborn_viz_plugin`. Tracked: GitHub #277.
 
 Decisions locked with the maintainer (2026-06-21): widget name is **`Chart`**;
-first cut is **Phase 1 MVP only** (figure host + theme bridge); seaborn is an
-additive extra, not a separate integration.
+seaborn is an additive extra, not a separate integration.
+
+**Phase 2 — shipped (reactive + animation).** Two update paths landed on top of
+the figure host:
+
+- **Managed render** (`render=` + `signal=`) — the chart owns the figure and
+  redraw loop, applying the theme as rcParams (incl. a semantic accent
+  `prop_cycle`) before each `render(ax, data)`. Re-renders on theme change and
+  on signal change; rapid changes **coalesce to one render per idle frame** so a
+  fast source can't starve the loop.
+- **Blitting animation** (`chart.animate(setup, update, interval=)`) — the fast
+  path for continuous animation. A full `clear()`+rebuild is ~31 ms/frame
+  (~32 fps ceiling); blitting (update artists in place + redraw only them over a
+  cached background) is ~0.2 ms/frame. Decisions made during build:
+  - **Time-based motion** — the callback receives elapsed *seconds* (not a frame
+    index) for the default continuous animation, so apparent velocity stays
+    constant under Tk timer jitter. Explicit `frames=` still steps fixed data.
+  - **Visibility gating** — runs only when *actually visible*: paused on
+    `<Map>`/`<Unmap>` (tabs/pages/minimize — reliable cross-platform) and on
+    `<Visibility>` full-cover (best-effort, mainly X11). Off-screen charts on a
+    dashboard cost nothing. A theme change that arrives while hidden is applied
+    on the next `<Map>` (deferred via the `Frame` theme-repaint hook).
+  - **Theme on blit** — clearing FuncAnimation's `_blit_cache` on theme change
+    forces a background re-grab (the cache otherwise only refreshes on a view
+    change). Animated *series* keep their `setup` colors; chart *chrome* tracks
+    the theme.
+  - Returns a `ChartAnimation` handle (`stop`/`start`/`running`); auto-stops on
+    destroy. What you draw with stays pure matplotlib.
+
+Remaining: **Phase 3** (`data_source=` ingestion) and **Phase 4** (seaborn extra
++ themed nav toolbar + docs page).
 
 ## Goal
 
