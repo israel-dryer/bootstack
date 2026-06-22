@@ -17,17 +17,20 @@ one, a ``bool`` makes a boolean one:
 
    import bootstack as bs
 
+   name = bs.Signal("World")     # text signal — fine at module level
+   count = bs.Signal(0)          # integer signal
+   enabled = bs.Signal(True)     # boolean signal
+
    with bs.App() as app:
-       name = bs.Signal("World")     # text signal
-       count = bs.Signal(0)          # integer signal
-       enabled = bs.Signal(True)     # boolean signal
+       bs.TextField(textsignal=name)
    app.run()
 
 .. note::
 
-   A signal must be created **inside** a running ``App``. Creating one at module
-   level — before ``bs.App()`` exists — raises an error, because a signal is
-   backed by the application's variable system.
+   Signals can be created at module level, before ``bs.App()`` exists. The
+   backing Tk variable is created lazily on the first widget binding and is
+   transparent to callers — ``signal()``, ``set()``, ``subscribe()``, and
+   ``map()`` all work before any ``App`` is running.
 
 Reading and writing
 --------------------
@@ -53,12 +56,11 @@ Pass a signal to a widget to create a two-way binding. Text-bearing widgets use
 
 .. code-block:: python
 
-   with bs.App(gap=8) as app:
-       name = bs.Signal("World")
+   name = bs.Signal("World")   # defined at module level
 
+   with bs.App(gap=8) as app:
        bs.TextField(textsignal=name)
        bs.Label(textsignal=name)         # mirrors the field as you type
-
        bs.Button("Greet", on_click=lambda: print(f"Hello, {name()}!"))
    app.run()
 
@@ -89,9 +91,9 @@ signal back gives you a ``date``:
 
    from datetime import date, timedelta
 
-   with bs.App(gap=8) as app:
-       due = bs.Signal(date(2026, 1, 15))
+   due = bs.Signal(date(2026, 1, 15))   # defined at module level
 
+   with bs.App(gap=8) as app:
        bs.DateField(signal=due)
        bs.Button("Next day", on_click=lambda: due.set(due() + timedelta(days=1)))
    app.run()

@@ -2,9 +2,12 @@
 
 Covers reading via call syntax, writing with `set()` (including int->float
 widening), `subscribe(immediate=)` error propagation, and the duck-typed
-`is_signal` detection that widget binding relies on. A signal is backed by the
-App's variable system, so these need a running App; the module shares one
-(creating multiple Apps in one process crashes the Tk runtime).
+`is_signal` detection that widget binding relies on.
+
+Pre-App tests (no `app` fixture) exercise lazy realization — Signal.__call__,
+set(), subscribe(), and map() must all work before bs.App() exists. Tests that
+need a running App (widget binding, .var/.tk access) are marked @pytest.mark.gui
+and share a single module-scoped App fixture.
 """
 from __future__ import annotations
 
@@ -33,6 +36,70 @@ def app():
         except Exception:
             pass
 
+
+# ---------------------------------------------------------------------------
+# Pre-App (no Tk interpreter required)
+# ---------------------------------------------------------------------------
+
+def test_signal_constructs_at_module_level_without_app():
+    s = Signal("hello")
+    assert s() == "hello"
+
+
+def test_signal_set_before_app():
+    s = Signal(0)
+    s.set(1)
+    assert s() == 1
+
+
+def test_signal_subscribe_before_app():
+    s = Signal("a")
+    seen = []
+    s.subscribe(seen.append)
+    s.set("b")
+    s.set("c")
+    assert seen == ["b", "c"]
+
+
+def test_signal_subscribe_cancel_before_app():
+    s = Signal(0)
+    seen = []
+    handle = s.subscribe(seen.append)
+    s.set(1)
+    handle.cancel()
+    s.set(2)
+    assert seen == [1]
+
+
+def test_signal_map_before_app():
+    s = Signal("world")
+    upper = s.map(str.upper)
+    assert upper() == "WORLD"
+    s.set("hello")
+    assert upper() == "HELLO"
+
+
+def test_signal_no_var_before_app():
+    s = Signal(42)
+    assert s._var is None
+
+
+def test_signal_type_rejection_before_app():
+    s = Signal(0)
+    with pytest.raises(TypeError):
+        s.set("nope")
+
+
+def test_signal_immediate_subscribe_before_app():
+    s = Signal(7)
+    seen = []
+    s.subscribe(seen.append, immediate=True)
+    assert seen == [7]
+
+
+# ---------------------------------------------------------------------------
+# Post-App (Tk interpreter required)
+# ---------------------------------------------------------------------------
 
 @pytest.mark.gui
 def test_call_reads_and_set_writes(app):

@@ -1038,7 +1038,7 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   (→ locale code). Persistence: `bs.App.from_store(store)` (tolerant of version
   skew — filters to known kwargs) + `store.update(theme=...)` write-back. Shared
   impl in `widgets/_core/app_config.py` (`AppConfigMixin`, `APP_CONFIG_KWARGS`).
-- **`bs.Signal()` crashes at module level** — must be inside `with bs.App():`.
+- **`bs.Signal()` is safe at module level** — the backing Tk var is created lazily on first widget binding.
 - **`textsignal=`** — standard kwarg for text-bearing widgets. `signal=` for non-text
   (Slider, Checkbox, etc.). Never expose `textvariable=` / `variable=` publicly.
 - **`TTKWrapperBase.__init__` overwrites `self._accent`** — store accent before `super().__init__()`,

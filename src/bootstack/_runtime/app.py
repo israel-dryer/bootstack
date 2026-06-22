@@ -694,10 +694,12 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
                 from bootstack.style.typography import Typography
                 from bootstack._core.images import _ImageService
                 from bootstack._runtime.visual_focus import reset_visual_focus_root
+                from bootstack.signals.signal import reset_realized_signals
                 reset_style()
                 Typography.reset()
                 _ImageService.clear_cache()
                 reset_visual_focus_root()
+                reset_realized_signals()
                 gc.collect()
             except Exception:
                 pass

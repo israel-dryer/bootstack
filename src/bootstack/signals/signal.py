@@ -10,32 +10,36 @@ from bootstack.streams import Handle
 T = TypeVar("T")
 U = TypeVar("U")
 
+# Weak registry of all realized signals. Cleared on App.destroy() (when no
+# other App is live) so module-level signals can be re-realized against the
+# next App's interpreter without dangling against a dead one.
+_realized: "weakref.WeakSet[Signal]" = weakref.WeakSet()
+
+# Global subscriber ID counter — unique across all Signal instances so that
+# Handle cancellation never accidentally removes the wrong entry.
+_sub_counter = count(1)
+
+
+def reset_realized_signals() -> None:
+    """Drop the Tk var from every realized signal.
+
+    Called on App.destroy() when no other App is live. Module-level signals
+    return to pending (unrealized) state and re-realize transparently the next
+    time a widget inside a new App binds them via .var / .name / .tk.
+    """
+    for sig in list(_realized):
+        try:
+            sig._drop_var()
+        except Exception:
+            pass
+
 
 class _SignalTrace:
-    """
-    Internal helper to manage Tcl variable traces using tkinter's Variable API.
-    This class encapsulates low-level `trace_add` and `trace_remove` logic.
-    """
+    """Manages the single bridge Tk trace on a realized Signal."""
 
     def __init__(self, tk_var: tk.Variable):
-        """
-        Initialize a trace manager for a tkinter variable.
-
-        Args:
-            tk_var: A tkinter.Variable instance (e.g., StringVar, IntVar).
-        """
         self._var = tk_var
-        # Map trace id -> (operation, callback)
         self._traces: dict[str, tuple[TraceOperation, Callable[..., Any]]] = {}
-
-    def callbacks(self) -> tuple[str, ...]:
-        """
-        Return all currently active trace IDs.
-
-        Returns:
-            A tuple of trace ID strings.
-        """
-        return tuple(self._traces.keys())
 
     def add(
             self,
@@ -43,10 +47,6 @@ class _SignalTrace:
             callback: Callable[[T], Any],
             get_value: Callable[[], T],
     ) -> str:
-        """
-        Add a new trace that calls a callback when the variable is written.
-        """
-
         def traced_callback(name: str, index: str, mode: str) -> None:
             callback(get_value())
 
@@ -58,9 +58,6 @@ class _SignalTrace:
         return fid
 
     def remove(self, fid: str) -> None:
-        """
-        Remove a trace by ID. Safe if already removed or variable destroyed.
-        """
         op_cb = self._traces.pop(fid, None)
         if op_cb is None:
             return
@@ -68,7 +65,6 @@ class _SignalTrace:
         try:
             self._var.trace_remove(operation, fid)
         except tk.TclError:
-            # Variable may be unset/destroyed; ignore
             pass
 
 
@@ -82,6 +78,11 @@ class Signal(Generic[T]):
 
     Bind a signal to a widget by passing it as `textsignal=` for text-bearing
     widgets, or `signal=` for boolean and numeric widgets.
+
+    Signals may be constructed at module level (before `bs.App()` exists). The
+    backing Tk variable is created lazily on the first widget binding and torn
+    down when the App is destroyed, so the same signal can be reused across
+    successive App lifecycles.
     """
 
     _cnt = count(1)
@@ -90,29 +91,22 @@ class Signal(Generic[T]):
         self._name = name or f"SIG{next(self._cnt)}"
         self._type: Type[T] = type(value)
         self._master: tk.Misc | None = master
-        # An object-typed signal (e.g. a date/time, or any custom object) has no
-        # native Tk variable that round-trips it — a StringVar would hand back the
-        # string form. In that case the cached Python value is the source of truth
-        # and the backing variable serves only as the write-trace notification bus.
         self._object_mode = not self._is_tk_native(value)
-        self._var = self._create_variable(value)
-        self._trace = _SignalTrace(self._var)
-        # Map fid -> callback to allow multiple subscriptions of same function
-        self._subscribers: dict[str, Callable[[T], Any]] = {}
-        # Reverse index: callback -> set of fids
-        self._callback_index: dict[Callable[[T], Any], set[str]] = {}
-        # Cache last known value for robustness when Tcl variable is torn down
+        # _last is always the authoritative Python value — before realization it
+        # is the only store; after realization it stays in sync via the bridge.
         self._last: T = value
+        # Tk var and bridge trace — None until the first widget binding.
+        self._var: tk.Variable | None = None
+        self._trace: _SignalTrace | None = None
+        self._bridge_fid: str | None = None
+        # Python-owned subscriber list (int id → callback). The bridge trace fans
+        # these out when a widget writes the Tk var; set() notifies them directly
+        # while unrealized. Replaces the old one-Tk-trace-per-subscriber model.
+        self._subscribers: dict[int, Callable[[T], Any]] = {}
 
     @staticmethod
     def _is_tk_native(value: Any) -> bool:
-        """Whether a value maps to a Tk variable that round-trips it losslessly.
-
-        Booleans, ints, floats, strings, and sets each have a backing Tk
-        variable that returns the same Python type on read. Any other value
-        (a `date`, `time`, or arbitrary object) does not, so it is held as a
-        Python object instead.
-        """
+        """Whether a value maps to a Tk variable that round-trips it losslessly."""
         return isinstance(value, (bool, int, float, str, set))
 
     def _create_variable(self, value: T) -> tk.Variable:
@@ -127,23 +121,44 @@ class Signal(Generic[T]):
         else:
             return tk.StringVar(master=self._master, name=self._name, value=value)
 
-    def __call__(self) -> T:
-        """
-        Get the current value of the signal.
+    def _realize(self) -> None:
+        """Create the backing Tk variable and wire the single bridge trace.
 
-        Returns:
-            The current typed value.
+        Idempotent — safe to call multiple times. Only runs inside an App
+        context (widget bindings are always inside one), so a live interpreter
+        is guaranteed.
         """
-        if self._object_mode:
-            # The Python object is authoritative; the backing var only holds a
-            # string rendering used to drive write traces.
+        if self._var is not None:
+            return
+        self._var = self._create_variable(self._last)
+        self._trace = _SignalTrace(self._var)
+
+        def _bridge(value: T) -> None:
+            if not self._object_mode:
+                self._last = value
+            for cb in list(self._subscribers.values()):
+                cb(self._last)
+
+        self._bridge_fid = self._trace.add("write", _bridge, self)
+        _realized.add(self)
+
+    def _drop_var(self) -> None:
+        """Release the Tk var and bridge trace (called by reset_realized_signals)."""
+        if self._trace is not None and self._bridge_fid is not None:
+            self._trace.remove(self._bridge_fid)
+        self._var = None
+        self._trace = None
+        self._bridge_fid = None
+
+    def __call__(self) -> T:
+        """Get the current value of the signal."""
+        if self._var is None or self._object_mode:
             return self._last
         try:
             value = self._var.get()
-            self._last = value  # cache last good value
+            self._last = value
             return value
         except tk.TclError:
-            # Return last known value when underlying var is destroyed/unset
             return self._last
 
     @classmethod
@@ -166,7 +181,6 @@ class Signal(Generic[T]):
         Returns:
             A Signal bound to the provided tk_var.
         """
-        # Infer Python type from the tk variable if not explicitly provided
         if coerce is None:
             if isinstance(tk_var, tk.BooleanVar):
                 py_type: Type[Any] = bool
@@ -181,23 +195,15 @@ class Signal(Generic[T]):
         else:
             py_type = coerce
 
-        # Construct without creating a new tk.Variable
-        self = cls.__new__(cls)  # bypass __init__
+        self = cls.__new__(cls)
         self._name = name or getattr(tk_var, "_name", str(tk_var))
         self._type = py_type  # type: ignore[assignment]
-        # Wrapping an existing Tk variable: it always round-trips its own native
-        # type, so object mode never applies here.
         self._object_mode = False
-        self._var = tk_var
-        self._trace = _SignalTrace(self._var)
-        self._subscribers = {}
-        self._callback_index = {}
-        # Best-effort capture of master/interpreter for reference
         self._master = getattr(tk_var, "_master", None)
+        self._subscribers = {}
         try:
             current = tk_var.get()  # type: ignore[assignment]
         except tk.TclError:
-            # Fallback default per inferred type
             if py_type is float:  # type: ignore[comparison-overlap]
                 current = 0.0
             elif py_type is int:  # type: ignore[comparison-overlap]
@@ -209,6 +215,18 @@ class Signal(Generic[T]):
             else:
                 current = ""
         self._last = current  # type: ignore[assignment]
+
+        # from_variable is immediately realized — the var already exists.
+        self._var = tk_var
+        self._trace = _SignalTrace(self._var)
+
+        def _bridge(value: T) -> None:
+            self._last = value
+            for cb in list(self._subscribers.values()):
+                cb(self._last)
+
+        self._bridge_fid = self._trace.add("write", _bridge, self)
+        _realized.add(self)
         return self
 
     def set(self, value: T) -> None:
@@ -223,9 +241,6 @@ class Signal(Generic[T]):
             TypeError: If the value type does not match the signal's type (and is
                 not an `int` widened to a `float`).
         """
-        # Enforce the type to avoid surprises (e.g. a bool accepted for an int),
-        # but widen an int into a float-typed signal — a Slider seeded at 0 and
-        # later set to 0.5 is the common case. `type(value) is int` excludes bool.
         if type(value) is not self._type:
             if self._type is float and type(value) is int:
                 value = float(value)  # type: ignore[assignment]
@@ -233,10 +248,17 @@ class Signal(Generic[T]):
                 raise TypeError(
                     f"Expected {self._type.__name__}, got {type(value).__name__}"
                 )
+
+        if self._var is None:
+            # Unrealized — notify Python subscribers directly.
+            if self._last == value:
+                return
+            self._last = value
+            for cb in list(self._subscribers.values()):
+                cb(self._last)
+            return
+
         if self._object_mode:
-            # Reduce redundant updates by comparing the Python objects, not the
-            # var's string form. Writing the string form fires write traces, so
-            # subscribers are notified with the real object via `__call__`.
             if self._last == value:
                 return
             self._last = value
@@ -244,14 +266,14 @@ class Signal(Generic[T]):
                 self._var.set(str(value))
             except tk.TclError:
                 pass
+            # Bridge trace fires from var.set() → notifies subscribers.
             return
-        # Reduce redundant updates if value unchanged
+
+        # Native-type, realized — let the Tk var fire the bridge trace.
         try:
-            current = self._var.get()
-            if current == value:
+            if self._var.get() == value:
                 return
         except tk.TclError:
-            # If var is gone, proceed to set and let Tcl recreate path if possible
             pass
         self._var.set(value)
         self._last = value
@@ -271,14 +293,11 @@ class Signal(Generic[T]):
             A new read-only signal that stays updated with the transformed value.
         """
         derived = Signal(transform(self()))
-
-        # Use weakref to avoid keeping derived alive solely via subscription
         weak_derived = weakref.ref(derived)
 
         def update(value: T) -> None:
             d = weak_derived()
             if d is None:
-                # Auto-detach if derived is GC'd
                 return
             d.set(transform(value))
 
@@ -298,45 +317,34 @@ class Signal(Generic[T]):
             A cancellable `Handle` — call `.cancel()` to stop listening, or use
             it as a context manager to unsubscribe on exit.
         """
-        fid = self._trace.add("write", callback, self)
+        fid = next(_sub_counter)
         self._subscribers[fid] = callback
-        self._callback_index.setdefault(callback, set()).add(fid)
         if immediate:
-            # Call synchronously at subscription time; let any error surface to
-            # the caller rather than swallowing a real bug in the callback.
             callback(self())
-        return Handle(lambda: self._unsubscribe(fid))
-
-    def _unsubscribe(self, funcid: str) -> None:
-        """Remove a previously registered subscriber by its trace id."""
-        self._subscribers.pop(funcid, None)
-        self._trace.remove(funcid)
+        return Handle(lambda: self._subscribers.pop(fid, None))
 
     @property
     def name(self) -> str:
-        """
-        The internal name of the signal, used when binding it to a widget.
-        """
+        """The internal Tcl variable name. Accessing this realizes the signal."""
+        self._realize()
         return self._name
 
     @property
     def type(self) -> Type[T]:
-        """
-        The original type of the signal value.
-
-        Returns:
-            A Python type (e.g., int, str).
-        """
+        """The original type of the signal value."""
         return self._type
 
     @property
     def var(self) -> tk.Variable:
-        return self._var
+        """The backing `tk.Variable`. Accessing this realizes the signal."""
+        self._realize()
+        return self._var  # type: ignore[return-value]
 
     @property
     def tk(self) -> tk.Variable:
         """Underlying `tk.Variable`. UNSUPPORTED — escape-hatch use only."""
-        return self._var
+        self._realize()
+        return self._var  # type: ignore[return-value]
 
     def __str__(self) -> str:
         return self._name
