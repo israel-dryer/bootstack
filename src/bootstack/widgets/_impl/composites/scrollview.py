@@ -126,6 +126,17 @@ class ScrollView(Frame):
         # Initial scrollbar visibility
         self._update_scrollbar_visibility()
 
+        # Finalize content sizing on first show. A ScrollView is usually built
+        # inside a hidden window (the `with App()/Workbench()` block), so the
+        # canvas <Configure> that pins the content width to the viewport may fire
+        # at a transient size — or never at the final size — leaving the content
+        # at its natural width (inflated by wide children, e.g. a chart's default
+        # request). It then overflows until a user resize or theme change triggers
+        # a fresh <Configure>. Re-pin the width and recompute the scroll region
+        # once we are actually mapped.
+        self._first_map_done = False
+        self.bind('<Map>', self._on_first_map, add='+')
+
     @configure_delegate('scroll_direction')
     def _delegate_scroll_direction(self, value=None):
         """Get or set the scroll direction."""
@@ -369,6 +380,32 @@ class ScrollView(Frame):
         if self._window_id and self._direction in ('vertical', 'both'):
             self.canvas.itemconfig(self._window_id, width=event.width)
         self._update_scrollbar_visibility()
+
+    def _on_first_map(self, event=None):
+        """On the first show, finalize content sizing (see __init__)."""
+        if event is not None and event.widget is not self:
+            return
+        if self._first_map_done:
+            return
+        self._first_map_done = True
+        # Defer to idle so the geometry manager has assigned the canvas its real
+        # viewport size before we read it.
+        self.after_idle(self._finalize_layout)
+
+    def _finalize_layout(self):
+        """Pin the content width to the realized viewport and recompute scroll."""
+        try:
+            if not self.winfo_exists():
+                return
+            self.canvas.update_idletasks()
+            width = self.canvas.winfo_width()
+            if (self._window_id and width > 1
+                    and self._direction in ('vertical', 'both')):
+                self.canvas.itemconfig(self._window_id, width=width)
+            self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+            self._update_scrollbar_visibility()
+        except Exception:
+            pass
 
     def _on_canvas_scroll_y(self, first, last):
         """Update vertical scrollbar position."""

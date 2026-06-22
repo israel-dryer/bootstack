@@ -80,6 +80,29 @@ class Chart(PublicWidgetBase):
             mutually exclusive with ``signal``.
         debounce: Milliseconds to coalesce rapid signal changes before
             re-rendering. ``0`` (default) re-renders on every change.
+        toolbar: Show a themed navigation toolbar above the chart. ``True``
+            includes all standard tools — ``home``, ``back``, ``forward``,
+            ``pan``, ``zoom``, ``save``; pass a list to choose a subset in order
+            (for example ``["pan", "zoom", "save"]``), or ``[]`` for an empty bar
+            you fill yourself. Defaults to ``False`` (no toolbar). The toolbar
+            drives matplotlib's own navigation, so pan and zoom work on any
+            embedded figure; save routes through bootstack's file dialog. Add
+            your own buttons through the :attr:`toolbar` property.
+        themed: Whether bootstack colors your data series. ``True`` (default)
+            applies the semantic accent color cycle (and seaborn palette) so
+            multiple series are on-brand. Pass ``False`` to keep your own series
+            colors — the chart's *chrome* (background, axes, text, ticks, grid)
+            still tracks the theme so it fits the app, but the accent cycle and
+            seaborn seeding are not imposed, leaving data colors to you (or to
+            your own matplotlib style). Per-series colors you set explicitly
+            always win regardless of this flag.
+        seaborn_desat: How much to soften the accent colors when seeding
+            seaborn's palette, in ``[0, 1]`` (seaborn's own ``desat``). Defaults
+            to ``0.75`` — seaborn plots are usually area-filled, where the full
+            accent saturation reads heavy, so the seeded palette is muted to suit
+            its aesthetic while staying on-brand. ``1.0`` keeps the accents fully
+            saturated. Only affects seaborn (the matplotlib line cycle stays
+            vivid) and only when ``themed=True``.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
         **kwargs: Layout placement options applied by the parent container
@@ -97,6 +120,9 @@ class Chart(PublicWidgetBase):
         signal: Any = None,
         data_source: Any = None,
         debounce: int = 0,
+        toolbar: bool | list[str] = False,
+        themed: bool = True,
+        seaborn_desat: float = 0.75,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -125,9 +151,13 @@ class Chart(PublicWidgetBase):
             "signals": signals,
             "data_source": data_source,
             "debounce": debounce,
+            "toolbar": toolbar,
+            "themed": themed,
+            "seaborn_desat": seaborn_desat,
         }
         internal_kwargs.update(kwargs)
         self._internal = self._internal_class(tk_master, **internal_kwargs)
+        self._toolbar_wrapper: Any = None
         self._attach_to_parent(layout_kw)
 
     # ----- Properties -----
@@ -144,6 +174,40 @@ class Chart(PublicWidgetBase):
     @figure.setter
     def figure(self, value: Any) -> None:
         self._internal.set_figure(value)
+
+    @property
+    def toolbar(self) -> Any:
+        """The navigation toolbar, for adding your own buttons.
+
+        Available only when the chart was created with ``toolbar=True``. Returns a
+        `bootstack.Toolbar` whose built-in navigation buttons (home, back,
+        forward, pan, zoom, save) sit on the left and the coordinate readout on
+        the right; anything you add lands beside the built-in tools::
+
+            chart = bs.Chart(render=render, signal=sig, toolbar=True)
+            chart.toolbar.add_divider()
+            chart.toolbar.add_button(icon="arrow-clockwise", on_click=refresh)
+            chart.toolbar.add_widget(bs.ThemeToggle)
+
+        It is the full `Toolbar` surface — ``add_button``, ``add_divider``,
+        ``add_widget``, and the rest all work.
+
+        Raises:
+            BootstackError: if the chart was created without ``toolbar=True``.
+        """
+        navbar = self._internal._navbar
+        if navbar is None:
+            raise BootstackError(
+                "Chart.toolbar requires toolbar=True; this chart has no toolbar."
+            )
+        # Re-wrap if a figure swap rebuilt the underlying bar.
+        wrapper = self._toolbar_wrapper
+        if wrapper is None or wrapper._internal is not navbar:
+            from bootstack.widgets.toolbar import Toolbar
+
+            wrapper = Toolbar(_toolbar=navbar)
+            self._toolbar_wrapper = wrapper
+        return wrapper
 
     @property
     def ax(self) -> Any:

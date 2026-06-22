@@ -50,6 +50,12 @@ below, or jump straight to a widget from the sidebar.
 
       :doc:`picture` · :doc:`gallery` · :doc:`carousel` · :doc:`avatar`
 
+   .. grid-item-card:: :octicon:`graph;1.5em;sd-mr-1` Visualization
+
+      Embed a matplotlib chart that themes itself and updates from your data.
+
+      :doc:`chart`
+
    .. grid-item-card:: :octicon:`columns;1.5em;sd-mr-1` Layout
 
       Arrange and group widgets — stacks, grids, cards, and resizable panes.
@@ -157,6 +163,12 @@ below, or jump straight to a widget from the sidebar.
    gallery
    carousel
    avatar
+
+.. toctree::
+   :caption: Visualization
+   :hidden:
+
+   chart
 
 .. toctree::
    :caption: Layout
