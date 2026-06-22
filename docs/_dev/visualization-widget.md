@@ -35,8 +35,19 @@ the figure host:
   - Returns a `ChartAnimation` handle (`stop`/`start`/`running`); auto-stops on
     destroy. What you draw with stays pure matplotlib.
 
-Remaining: **Phase 3** (`data_source=` ingestion) and **Phase 4** (seaborn extra
-+ themed nav toolbar + docs page).
+**Phase 3 — shipped (`data_source=` ingestion).** `Chart(render=fn,
+data_source=ds)` passes the source's records to `render(ax, rows)` and
+re-renders on any source change (via `on_change` + a re-read through
+`page_slice`, reusing the render coalescing). It reads the source's current
+**filtered/sorted view** (`where`/`order` propagate — `where()` emits a `filter`
+event), so filtering the source updates the chart. Requires `render`; mutually
+exclusive with `signal`. Demo: a Chart + DataTable on one source
+(`chart_data_source.py`). **Surfaced a DataTable design issue (#282):** the table
+writes its search/filter/sort to the *shared* source's `where`/`order` (search
+silenced), so a single source isn't safe across multiple interactive views — the
+demo disables the table's local search and filters the source directly.
+
+Remaining: **Phase 4** (seaborn extra + themed nav toolbar + docs page).
 
 ## Goal
 

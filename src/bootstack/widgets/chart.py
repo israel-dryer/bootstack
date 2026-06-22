@@ -46,17 +46,21 @@ class Chart(PublicWidgetBase):
     - **Figure host** — pass a ``figure`` you built. The chart embeds it and
       recolors its chrome to the theme. You own the figure; theming the data
       series is up to you.
-    - **Managed render** — pass a ``render`` callback and (optionally) one or
-      more ``signal`` objects. The chart owns the figure and redraws for you:
-      each redraw clears the axes, applies the theme as matplotlib settings —
-      including a semantic accent color cycle so multiple series are on-brand —
-      then calls your ``render``. It re-renders when the theme changes or a bound
-      signal updates::
+    - **Managed render** — pass a ``render`` callback and a reactive source: one
+      or more ``signal`` objects, or a ``data_source``. The chart owns the figure
+      and redraws for you: each redraw clears the axes, applies the theme as
+      matplotlib settings — including a semantic accent color cycle so multiple
+      series are on-brand — then calls your ``render``. It re-renders when the
+      theme changes or the bound signal / data source updates::
 
           count = bs.Signal(20)
           def render(ax, n):
               ax.plot(range(n), [i * i for i in range(n)])
           bs.Chart(render=render, signal=count)   # redraws when `count` changes
+
+      With ``data_source=``, ``render`` receives the source's records (a list of
+      dicts) and the chart re-renders whenever the source changes — so a chart
+      and a `DataTable` can share one source and stay in sync.
 
     Args:
         figure: The matplotlib `Figure` to display (figure-host mode). Omit to
@@ -66,7 +70,14 @@ class Chart(PublicWidgetBase):
             chart clears and re-themes the axes before each call, so just draw.
         signal: A `bootstack.Signal` (or a list of them) whose value is passed to
             ``render`` as `data`; the chart re-renders when it changes. Requires
-            ``render``.
+            ``render``. Mutually exclusive with ``data_source``.
+        data_source: A data source (any `bootstack.data` source) to plot. Its
+            records are passed to ``render`` as `data` (a list of dicts), and the
+            chart re-renders whenever the source changes — so a chart and a
+            `DataTable` can share one source and stay in sync. Reads all rows
+            matching the source's current ``where``/``order``, so filter or sort
+            the source to scope or shape what is plotted. Requires ``render``;
+            mutually exclusive with ``signal``.
         debounce: Milliseconds to coalesce rapid signal changes before
             re-rendering. ``0`` (default) re-renders on every change.
         parent: Explicit parent widget. If omitted, the current context-stack
@@ -84,6 +95,7 @@ class Chart(PublicWidgetBase):
         *,
         render: Callable | None = None,
         signal: Any = None,
+        data_source: Any = None,
         debounce: int = 0,
         parent: Any = None,
         **kwargs: Any,
@@ -98,6 +110,10 @@ class Chart(PublicWidgetBase):
             signals = [signal]
         if signals and render is None:
             raise BootstackError("Chart(signal=...) requires render= to draw the signal value.")
+        if data_source is not None and render is None:
+            raise BootstackError("Chart(data_source=...) requires render= to plot the rows.")
+        if data_source is not None and signals:
+            raise BootstackError("Chart accepts either data_source= or signal=, not both.")
 
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
@@ -107,6 +123,7 @@ class Chart(PublicWidgetBase):
             "figure": figure,
             "render": render,
             "signals": signals,
+            "data_source": data_source,
             "debounce": debounce,
         }
         internal_kwargs.update(kwargs)
