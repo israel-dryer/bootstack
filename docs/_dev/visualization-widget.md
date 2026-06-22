@@ -47,7 +47,57 @@ writes its search/filter/sort to the *shared* source's `where`/`order` (search
 silenced), so a single source isn't safe across multiple interactive views — the
 demo disables the table's local search and filters the source directly.
 
-Remaining: **Phase 4** (seaborn extra + themed nav toolbar + docs page).
+**Phase 4 — built (`feat/chart-phase4`).** seaborn extra + palette seeding,
+themed nav toolbar (replacing the raw-Tk `NavigationToolbar2Tk`), and the docs
+page/screenshots. Details + decisions:
+
+- **Seaborn palette seeding** — `_seed_seaborn(cycle, desat)` calls
+  `sns.set_palette(sns.color_palette(cycle, desat=…))` inside the render
+  `rc_context`, but **only when seaborn is already imported**
+  (`sys.modules.get("seaborn")`) — the composite never imports it (stays in
+  `viz-seaborn`, off the import path). So a `sns.barplot(..., ax=ax)` in a
+  `render` callback picks up the theme accents. No separate integration — seaborn
+  just draws on the axes. **Decision: seaborn colors are softened** (seaborn is
+  fill-heavy — bars/violins/KDE — where full-saturation accents read heavy);
+  default **`seaborn_desat=0.75`** (compared 1.0/0.75/0.6 with the maintainer,
+  0.75 chosen), **exposed as a ctor kwarg** so authors can tune muting (1.0 =
+  vivid) while the matplotlib *line* cycle stays full-saturation. (matplotlib 3.11
+  + seaborn 0.13 installed in the main env for test/screenshot.)
+- **`themed=` opt-out** — `themed=False` does NOT mean fully un-themed. **Decision
+  (corrected with the maintainer): chrome ALWAYS tracks the theme** (background,
+  axes, text, ticks, grid) so the chart never floats as a mismatched white panel;
+  `themed=False` only drops the **series-color identity** (the accent `prop_cycle`
+  + seaborn seeding), leaving data colors to the author / their own matplotlib
+  style. Implemented via `_theme_rc(with_cycle=)` — chrome keys always present,
+  prop_cycle gated; `_on_theme_changed` / `_style_figure` run regardless of
+  `themed`. Per-series explicit colors win either way.
+- **Themed nav toolbar (`toolbar=`)** — `NavigationToolbar2Tk(canvas, self,
+  pack_toolbar=False)` gives the logic + canvas rubber-band with its tk frame
+  never mapped; a compact bootstack `Toolbar` drives `home/back/forward` +
+  `pan/zoom` (toggle state reflected by `configure(variant/accent)`) + a
+  `save_figure` routed through `ask_save_file` + `figure.savefig`. The coordinate
+  readout (`nav.set_message` override) feeds a right-anchored `Label`. **Styling
+  decided with the maintainer (variant B):** the bar **matches the chart surface**
+  (no chrome tint) with a **soft `border_strength=0.90` hairline divider** below
+  it (the AppShell chrome→content convention, #206), at **compact** density —
+  keeps it subordinate to the chart. (A/C — chrome-tinted band / default density —
+  were rejected on review.)
+- **Selectable tools + author buttons** — `toolbar=True` renders all six standard
+  tools; `toolbar=[...]` selects a subset in order (group dividers auto-inserted
+  via `_TOOL_GROUP`); `toolbar=[]` is an empty author-only bar; unknown names
+  raise `BootstackError`. `chart.toolbar` returns a public `bs.Toolbar` (adopts
+  the internal bar via `_toolbar=`; re-wraps after a figure swap) so authors add
+  their own buttons with the normal `add_button`/`add_divider`/`add_widget`
+  surface — they land left, beside the built-in tools (coord label is
+  right-anchored, never collides).
+- **Docs** — `docs/widgets/chart.rst` (mental-model lead: figure-host vs managed
+  render; theming/accent-cycle; toolbar; seaborn; animation), `docs/examples/
+  chart.py` (reactive slider + toolbar), `docs/screenshots/chart.py`
+  (hero/toolbar/seaborn), registered in `api-reference/widgets.rst` (new
+  Visualization section) + `widgets/index.rst`. matplotlib added to
+  `intersphinx_mapping` so `Figure`/`Axes` refs link. Clean `-W` build.
+
+Tests: `tests/widgets/public/test_chart.py` (Phase-4 toolbar + seaborn sections).
 
 ## Goal
 

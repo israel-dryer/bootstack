@@ -99,6 +99,19 @@ badge showing a picture or initials.
    Gallery
    Picture
 
+Visualization
+-------------
+
+Data visualization. ``Chart`` embeds a matplotlib figure as a themed widget —
+recoloring with light/dark, live-updating from a `Signal` or a data source, and
+optionally seeding seaborn's palette from the theme accents. Requires the
+optional ``viz`` (or ``viz-seaborn``) extra.
+
+.. autosummary::
+   :nosignatures:
+
+   Chart
+
 Layout
 ------
 
@@ -204,6 +217,7 @@ groups, and tabbed sections.
       Calendar
       Card
       Carousel
+      Chart
       Checkbox
       CodeEditor
       Column

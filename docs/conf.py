@@ -174,6 +174,9 @@ if not getattr(_TypeAliasForwardRef, "_bs_patched", False):
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    # matplotlib is the engine behind the optional Chart widget; link its public
+    # types (Figure, Axes) referenced from the Chart docs.
+    "matplotlib": ("https://matplotlib.org/stable", None),
 }
 
 # ---------------------------------------------------------------------------
