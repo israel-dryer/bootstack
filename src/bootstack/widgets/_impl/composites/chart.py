@@ -157,6 +157,7 @@ class Chart(Frame):
         figure: Any = None,
         render: Callable | None = None,
         signals: Sequence[Any] | None = None,
+        data_source: Any = None,
         debounce: int = 0,
         **kwargs: Any,
     ) -> None:
@@ -170,6 +171,9 @@ class Chart(Frame):
         self._render = render
         self._render_arity = _positional_arity(render) if render else 0
         self._signals = list(signals) if signals else []
+        self._data_source = data_source
+        self._rows: list[Any] = []
+        self._source_handle: Any = None
         self._debounce = max(0, int(debounce))
         self._debounce_job: Any = None
         self._render_pending = False
@@ -187,6 +191,14 @@ class Chart(Frame):
         self._widget = self._canvas.get_tk_widget()
         self._widget.configure(highlightthickness=0, bd=0)
         self._widget.pack(fill="both", expand=True)
+
+        # Bind a data source before the first render so its rows are available.
+        if self._data_source is not None:
+            self._rows = self._read_rows()
+            try:
+                self._source_handle = self._data_source.on_change(self._on_source_change)
+            except Exception:
+                self._source_handle = None
 
         if self._render is not None:
             self._render_managed()
@@ -242,13 +254,34 @@ class Chart(Frame):
         self._render_managed()
 
     def _current_data(self) -> Any:
-        """The data passed to a managed render — a signal value, a tuple of
-        values for multiple signals, or None when no signal is bound.
+        """The data passed to a managed render.
+
+        The bound data source's rows when one is set; otherwise a signal value
+        (or a tuple of values for multiple signals); or None.
         """
+        if self._data_source is not None:
+            return self._rows
         if not self._signals:
             return None
         values = [sig() for sig in self._signals]
         return values[0] if len(values) == 1 else tuple(values)
+
+    # ----- data source ------------------------------------------------------
+
+    def _read_rows(self) -> list[Any]:
+        """Read all current records from the source (respecting its filter/sort)."""
+        ds = self._data_source
+        if ds is None:
+            return []
+        try:
+            n = ds.count
+            return list(ds.page_slice(0, n)) if n else []
+        except Exception:
+            return []
+
+    def _on_source_change(self, _event: Any = None) -> None:
+        self._rows = self._read_rows()
+        self._request_render()
 
     # ----- managed render ---------------------------------------------------
 
@@ -529,6 +562,12 @@ class Chart(Frame):
             except Exception:
                 pass
         self._signal_handles = []
+        if self._source_handle is not None:
+            try:
+                self._source_handle.cancel()
+            except Exception:
+                pass
+            self._source_handle = None
         if self._debounce_job is not None:
             try:
                 self._debounce_job.cancel()

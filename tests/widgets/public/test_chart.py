@@ -287,3 +287,109 @@ def test_theme_change_while_hidden_applies_on_return(shown_app):
     shown_app._tk_root.update()
 
     assert to_hex(chart.figure.get_facecolor()).lower() == get_theme_color("background").lower()
+
+
+# ----- data source ingestion --------------------------------------------------
+
+
+def _pump(root, n=5):
+    for _ in range(n):
+        root.update()
+
+
+def test_data_source_passes_rows_to_render(app):
+    from bootstack.data import MemoryDataSource
+
+    ds = MemoryDataSource()
+    ds.load([{"x": 1, "y": 10}, {"x": 2, "y": 20}, {"x": 3, "y": 30}])
+    seen = {"rows": None}
+
+    def render(ax, rows):
+        seen["rows"] = rows
+        ax.plot([r["x"] for r in rows], [r["y"] for r in rows])
+
+    bs.Chart(render=render, data_source=ds)
+    app._tk_root.update_idletasks()
+
+    assert seen["rows"] is not None
+    assert [r["x"] for r in seen["rows"]] == [1, 2, 3]
+
+
+def test_data_source_rerenders_on_change(app):
+    from bootstack.data import MemoryDataSource
+
+    ds = MemoryDataSource()
+    ds.load([{"x": 1, "y": 1}, {"x": 2, "y": 2}])
+    seen = {"n": 0}
+
+    def render(ax, rows):
+        seen["n"] = len(rows)
+        ax.plot([r["x"] for r in rows], [r["y"] for r in rows])
+
+    bs.Chart(render=render, data_source=ds)
+    app._tk_root.update_idletasks()
+    assert seen["n"] == 2
+
+    ds.insert({"x": 3, "y": 3})       # external mutation
+    _pump(app._tk_root)               # let on_change marshal + render coalesce
+    assert seen["n"] == 3
+
+
+def test_data_source_respects_source_filter(app):
+    from bootstack.data import MemoryDataSource, col
+
+    ds = MemoryDataSource()
+    ds.load([{"x": i, "y": i} for i in range(1, 6)])
+    ds.where(col("x") > 3)            # scope the source -> chart sees filtered rows
+    seen = {"xs": None}
+
+    def render(ax, rows):
+        seen["xs"] = [r["x"] for r in rows]
+        ax.plot(seen["xs"])
+
+    bs.Chart(render=render, data_source=ds)
+    app._tk_root.update_idletasks()
+    assert seen["xs"] == [4, 5]
+
+
+def test_data_source_rerenders_on_runtime_filter(app):
+    """Filtering the source at runtime (where()) re-renders the chart."""
+    from bootstack.data import MemoryDataSource, col
+
+    ds = MemoryDataSource()
+    ds.load([{"x": i} for i in range(1, 6)])
+    seen = {"xs": None}
+
+    def render(ax, rows):
+        seen["xs"] = [r["x"] for r in rows]
+        ax.plot(seen["xs"] or [0])
+
+    bs.Chart(render=render, data_source=ds)
+    app._tk_root.update_idletasks()
+    assert seen["xs"] == [1, 2, 3, 4, 5]
+
+    ds.where(col("x") > 3)            # runtime filter on the source
+    _pump(app._tk_root)
+    assert seen["xs"] == [4, 5]
+
+    ds.where(None)                     # clear -> back to all rows
+    _pump(app._tk_root)
+    assert seen["xs"] == [1, 2, 3, 4, 5]
+
+
+def test_data_source_without_render_raises(app):
+    from bootstack.data import MemoryDataSource
+
+    ds = MemoryDataSource()
+    ds.load([{"x": 1}])
+    with pytest.raises(BootstackError, match="render="):
+        bs.Chart(data_source=ds)
+
+
+def test_data_source_and_signal_conflict_raises(app):
+    from bootstack.data import MemoryDataSource
+
+    ds = MemoryDataSource()
+    ds.load([{"x": 1}])
+    with pytest.raises(BootstackError, match="not both"):
+        bs.Chart(render=lambda ax, d: None, data_source=ds, signal=bs.Signal(1))
