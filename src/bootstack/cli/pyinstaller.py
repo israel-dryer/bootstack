@@ -128,11 +128,12 @@ if config.build and config.build.datas.include:
 # Collect package data (themes, fonts, icon glyphmaps, locales, etc.)
 # =============================================================================
 
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
 for _pkg in ("bootstack",):
     try:
         datas += collect_data_files(_pkg)
+        datas += copy_metadata(_pkg)
     except Exception as _e:  # pragma: no cover
         print(f"Warning: Could not collect data files from {{_pkg}}: {{_e}}")
 

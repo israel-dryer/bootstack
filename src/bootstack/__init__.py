@@ -27,9 +27,11 @@ submodules — for example::
 
 See the "API overview" in the documentation for the full map.
 """
-from importlib.metadata import version as _pkg_version
-
-__version__ = _pkg_version("bootstack")
+try:
+    from importlib.metadata import version as _pkg_version
+    __version__ = _pkg_version("bootstack")
+except Exception:
+    __version__ = "unknown"
 
 # ── Runtime patches — must run before widgets are created ─────────────────────
 from bootstack._runtime.tk_patch import install_tk_autostyle as _install_autostyle

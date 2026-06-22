@@ -247,3 +247,15 @@ def test_generate_spec_writes_parseable_file(tmp_path: Path) -> None:
     generate_spec(cfg, target, spec_path)
     assert spec_path.is_file()
     ast.parse(spec_path.read_text(encoding="utf-8"))
+
+
+def test_spec_template_includes_copy_metadata() -> None:
+    """The spec must call copy_metadata('bootstack') so that
+    importlib.metadata.version() resolves inside the frozen bundle.
+    Without it, bootstack/__init__.py raises PackageNotFoundError on launch."""
+    rendered = SPEC_TEMPLATE.format(app_name="Demo")
+    assert "copy_metadata" in rendered, (
+        "spec template no longer calls copy_metadata — the dist-info directory "
+        "won't be bundled and importlib.metadata.version('bootstack') will raise "
+        "PackageNotFoundError in the frozen app"
+    )
