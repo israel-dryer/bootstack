@@ -81,6 +81,7 @@ from bootstack.widgets.pagestack import PageStack, StackPage
 from bootstack.widgets.pathfield import PathField
 from bootstack.widgets.avatar import Avatar
 from bootstack.widgets.carousel import Carousel
+from bootstack.widgets.chart import Chart
 from bootstack.widgets.gallery import Gallery
 from bootstack.widgets.passwordfield import PasswordField
 from bootstack.widgets.picture import Picture
@@ -143,7 +144,7 @@ __all__ = [
     # Data display
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable", "Tree", "TreeNode",
     # Media
-    "Picture", "Gallery", "Carousel", "Avatar",
+    "Picture", "Gallery", "Carousel", "Avatar", "Chart",
     # Navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     # Overlays

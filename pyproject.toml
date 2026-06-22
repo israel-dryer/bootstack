@@ -73,6 +73,15 @@ hdf5 = [
     "pandas>=2",
     "tables>=3.8",
 ]
+# Visualization — embed matplotlib figures in a Chart widget.
+viz = [
+    "matplotlib>=3.8",
+]
+# Visualization with seaborn convenience layer on top of matplotlib.
+viz-seaborn = [
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+]
 docs = [
     "sphinx>=7.2",
     "pydata-sphinx-theme",

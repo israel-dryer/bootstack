@@ -39,6 +39,7 @@ _EXPORTS: dict[str, str] = {
     "Label": "label", "Badge": "label", "Picture": "picture", "Gallery": "gallery",
     "Carousel": "carousel", "Avatar": "avatar", "ProgressBar": "progressbar",
     "Gauge": "gauge", "ListView": "listview", "DataTable": "datatable", "Tree": "tree",
+    "Chart": "chart",
     # Navigation
     "PageStack": "pagestack", "StackPage": "pagestack",
     "Tabs": "tabs", "TabPage": "tabs",
