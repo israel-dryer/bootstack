@@ -72,18 +72,21 @@ older Tk; if you hit rendering glitches, switch to the python.org build.
 Optional features
 -----------------
 
-A few data-format integrations are optional extras — install them only if you
-need them, by adding the extra in brackets:
+A few integrations are optional extras — install them only if you need them, by
+adding the extra in brackets:
 
 .. code-block:: bash
 
-   python -m pip install --pre "bootstack[excel]"      # .xlsx export from DataTable
-   python -m pip install --pre "bootstack[parquet]"    # read and write Parquet and Feather
-   python -m pip install --pre "bootstack[hdf5]"       # read and write HDF5
+   python -m pip install --pre "bootstack[excel]"        # .xlsx export from DataTable
+   python -m pip install --pre "bootstack[parquet]"      # read and write Parquet and Feather
+   python -m pip install --pre "bootstack[hdf5]"         # read and write HDF5
+   python -m pip install --pre "bootstack[viz]"          # Chart — embed matplotlib figures
+   python -m pip install --pre "bootstack[viz-seaborn]"  # Chart, with seaborn added
 
-Combine extras in one install — for example ``bootstack[excel,parquet]``. These
-power the file reader/writer registry behind data sources and ``DataTable``
-export; the core CSV/TSV/JSON formats need no extra. See
+Combine extras in one install — for example ``bootstack[excel,parquet]``. The
+data-format extras power the file reader/writer registry behind data sources and
+``DataTable`` export (the core CSV/TSV/JSON formats need no extra); ``viz`` /
+``viz-seaborn`` enable the :doc:`Chart </widgets/chart>` widget. See
 :doc:`/reference/data-sources`.
 
 Verify

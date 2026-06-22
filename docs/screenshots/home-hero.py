@@ -1,120 +1,177 @@
-"""Hero screenshot for the home page — a rich, static dashboard layout.
+"""Hero screenshot for the home page — a modern analytics dashboard.
 
-A labeled workspace rail (sidebar hidden) reclaims width; a 4-column grid holds
-three KPI cards and a searchable, paged table, with a tall "This month" panel in
-the last column. Layout only: real widgets, no reactive behavior and no charts.
-Captures wider than the in-page shots (the home page has no doc sidebar).
+A labeled workspace rail (sidebar hidden) reclaims width; a header with period
+controls, a row of KPI cards with trend badges, a multi-series sales **chart**
+beside a "Today's Performance" list, and a recent-transactions table. Real
+widgets, static data. Captures wider than the in-page shots (the home page has
+no doc sidebar).
 
 Regenerate with::
 
     py -3.12 docs/scripts/take_screenshots.py home-hero
 """
+import math
+from pathlib import Path
+
 import bootstack as bs
 
+_AVATAR = Path(__file__).parent.parent / "_static" / "examples" / "avatar-profile.jpg"
+
+# (icon, label, value, change, trend-accent)
 KPIS = [
-    ("Revenue", "$48.2k", "+12% vs last month", "primary"),
-    ("Orders", "1,204", "Target +4%", "success"),
-    ("Visitors", "18.9k", "Last 30 days", "info"),
+    ("coin", "Total Revenue", "$24,580", "+12.5%", "success"),
+    ("receipt", "Transactions", "542", "+8.2%", "success"),
+    ("bag", "Avg Order Value", "$45.32", "+5.1%", "success"),
+    ("people", "Active Users", "2,482", "-2.4%", "danger"),
 ]
 
-_NAMES = [
-    "Dana Reyes", "Sam Okonkwo", "Priya Nair", "Liam Walsh", "Grace Hopper",
-    "Noah Kim", "Ava Martinez", "Mateo Rossi", "Yuki Tanaka", "Owen Clarke",
-    "Zara Ahmed", "Hugo Bernard", "Ines Costa", "Felix Wagner",
-]
-_STATUS = ["Paid", "Paid", "Pending", "Paid", "Refunded", "Pending", "Paid"]
-ORDERS = [
-    {
-        "id": f"#{1042 - i}",
-        "customer": _NAMES[i % len(_NAMES)],
-        "amount": f"${(1280 + i * 137) % 4000 + 320:,}",
-        "status": _STATUS[i % len(_STATUS)],
-    }
-    for i in range(28)
+_HOURS = ["10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm"]
+
+
+def sales_chart(ax):
+    """Layered area chart — translucent accent fills under smooth lines."""
+    from matplotlib.ticker import FuncFormatter
+
+    n = len(_HOURS)
+
+    def s1(x):
+        return 11 + 4 * math.sin(0.9 * x + 0.3) + 2 * math.cos(1.6 * x)
+
+    def s2(x):  # kept lower so the two areas layer cleanly
+        return 7.5 + 3.2 * math.sin(0.75 * x + 1.8) + 1.3 * math.cos(1.2 * x + 0.5)
+
+    x = [i / 12 for i in range(12 * (n - 1) + 1)]
+    y1, y2 = [s1(t) for t in x], [s2(t) for t in x]
+    c1, = ax.plot(x, y1, linewidth=2, label="Sales")
+    ax.fill_between(x, y1, color=c1.get_color(), alpha=0.22)
+    c2, = ax.plot(x, y2, linewidth=2, label="Transactions")
+    ax.fill_between(x, y2, color=c2.get_color(), alpha=0.22)
+
+    ax.set_xticks(list(range(n)))
+    ax.set_xticklabels(_HOURS)
+    ax.set_ylim(0, 20)
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{int(v)}k" if v else "0"))
+    ax.grid(True, axis="y", alpha=0.25)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=2, frameon=False)
+    ax.margins(x=0.02)
+
+
+TXNS = [
+    {"id": "TXN-001", "time": "2:47pm", "amount": "$128.50", "items": "5 items",
+     "payment": "Card", "cashier": "John", "status": "Completed"},
+    {"id": "TXN-002", "time": "2:44pm", "amount": "$54.20", "items": "2 items",
+     "payment": "Cash", "cashier": "Priya", "status": "Completed"},
+    {"id": "TXN-003", "time": "2:41pm", "amount": "$312.00", "items": "9 items",
+     "payment": "Card", "cashier": "Sam", "status": "Pending"},
+    {"id": "TXN-004", "time": "2:38pm", "amount": "$76.40", "items": "3 items",
+     "payment": "Card", "cashier": "Dana", "status": "Completed"},
+    {"id": "TXN-005", "time": "2:35pm", "amount": "$219.90", "items": "7 items",
+     "payment": "Mobile", "cashier": "John", "status": "Completed"},
+    {"id": "TXN-006", "time": "2:33pm", "amount": "$18.75", "items": "1 item",
+     "payment": "Cash", "cashier": "Priya", "status": "Refunded"},
+    {"id": "TXN-007", "time": "2:29pm", "amount": "$143.20", "items": "6 items",
+     "payment": "Card", "cashier": "Sam", "status": "Completed"},
+    {"id": "TXN-008", "time": "2:25pm", "amount": "$402.10", "items": "12 items",
+     "payment": "Card", "cashier": "Dana", "status": "Completed"},
+    {"id": "TXN-009", "time": "2:22pm", "amount": "$67.00", "items": "2 items",
+     "payment": "Mobile", "cashier": "John", "status": "Pending"},
+    {"id": "TXN-010", "time": "2:19pm", "amount": "$95.30", "items": "4 items",
+     "payment": "Cash", "cashier": "Priya", "status": "Completed"},
 ]
 
 
-def _stat(label, pct, accent):
-    with bs.Column(horizontal="stretch", gap=3):
-        with bs.Row(horizontal="stretch"):
+def _kpi(icon, label, value, change, accent):
+    with bs.Card(grow=True, horizontal="stretch", horizontal_items="left", padding=8):
+        with bs.Row(gap=8, vertical_items="center"):
+            bs.Label(icon=icon, accent=accent)
             bs.Label(label, font="caption", accent="secondary")
-            bs.Label(f"{pct}%", font="caption", grow=True, horizontal="right")
-        bs.ProgressBar(value=pct, accent=accent, horizontal="stretch")
+        bs.Divider(horizontal="stretch", margin_y=4)
+        with bs.Row(vertical_items="center", margin_y=(8, 0)):
+            bs.Label(value, font="heading-xl")
+            bs.Badge(change, accent=f"{accent}[subtle]")
+        bs.Label("vs last period", font="caption", accent="secondary")
 
 
-with bs.Workbench(title="Acme Analytics", minsize=(890, 500),
-                  rail_labels=True, show_sidebar=False, show_statusbar=True) as shell:
+with bs.AppShell(title="Acme POS", size=(890, 720), show_statusbar=True,
+                 sidebar_mode="compact") as shell:
     shell._capture_full_window = True
     shell._capture_max_width = 940
-    with shell.add_toolbar() as bar:
-        with bar.add_menu("File") as file:
-            file.add_action("New report", shortcut="Mod+N", on_click=lambda: None)
-            file.add_action("Export…", shortcut="Mod+E", on_click=lambda: None)
-            file.add_divider()
-            file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-        with bar.add_menu("View") as view:
-            view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
+    with shell.add_toolbar(padding=(10, 3)) as bar:
+        bar.add_label("POS Dashboard", icon="boxes", font="heading-sm")
         bar.add_spacer()
-        bar.add_button("Export", icon="download")
+        bar.add_button(icon="bell")
         bar.add_theme_toggle()
+        bar.add_widget(bs.Avatar, image=_AVATAR, size=24)
 
     shell.statusbar.add_text("Connected", icon="wifi")
     shell.statusbar.add_text("Synced 2 minutes ago", icon="arrow-repeat")
     shell.statusbar.add_text("v1.0.0", side="right")
-    shell.statusbar.add_text("UTC-05:00", icon="clock", side="right")
-    shell.statusbar.add_text("1,204 records", icon="database", side="right")
+    shell.statusbar.add_text("2,482 active users", icon="people", side="right")
 
-    with shell.add_workspace("dashboard", text="Dashboard", icon="speedometer2") as ws:
-        with ws.content:
-            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=18):
-                with bs.Grid(columns=4, rows=[0, 1], gap=14, grow=True, horizontal="stretch"):
-                    for i, (label, value, delta, accent) in enumerate(KPIS):
-                        with bs.Card(accent=accent, padding=8, gap=0, row=0, column=i):
-                            bs.Label(label)
-                            bs.Label(value, font="display-lg")
-                            bs.Label(delta, font="caption", accent="secondary")
+    with shell.page_nav() as nav:
+        with nav.add_page("dashboard", text="Dashboard", icon="speedometer2", padding=0):
+            with bs.ScrollView(grow=True, horizontal="stretch"):
+                with bs.Column(horizontal="stretch", gap=12, padding=18):
+                    # Header — title, subtitle, period controls.
+                    with bs.Row(horizontal="stretch", vertical_items="center"):
+                        with bs.Column(gap=0, horizontal_items="left"):
+                            bs.Label("Overview", font="heading-lg")
+                            bs.Label("Real-time sales and performance metrics",
+                                     font="caption", accent="secondary")
+                        bs.Spacer()
+                        bs.SelectButton(["Last 24 hours"], value="Last 24 hours", icon="calendar3", variant="outline", density="compact")
+                        bs.Button("Expert", icon="stars", accent="primary", density="compact")
 
-                    with bs.Column(row=1, column=0, columnspan=3, gap=6):
+                    # KPI cards.
+                    with bs.Grid(horizontal="stretch", columns=4, gap=12):
+                        for icon, label, value, change, accent in KPIS:
+                            _kpi(icon, label, value, change, accent)
+
+                    # Main — the sales chart beside the performance list.
+                    with bs.Grid(horizontal="stretch", vertical_items="stretch", gap=14, columns=4):
+                        with bs.Card(grow=True, horizontal="stretch", horizontal_items="left", columnspan=3):
+                            bs.Label("Sales and Transactions", font="heading-sm")
+                            bs.Label("Hourly sales and transaction volume", font="caption", accent="secondary")
+                            with bs.Column(height=150, horizontal="stretch", grow=True, margin_y=(8, 0)):
+                                bs.Chart(render=sales_chart, grow=True, horizontal="stretch")
+
+                        with bs.Card(padding=16, gap=8, horizontal="stretch", grow=1):
+                            bs.Label("Options", font="heading-sm", horizontal="left")
+                            with bs.Column(horizontal="stretch", horizontal_items="stretch", gap=12):
+
+                                bs.Switch("Email alerts", horizontal="left")
+                                bs.Switch("Auto-refresh", value=True, horizontal="left")
+                                bs.Slider(value=75, horizontal="stretch", show_minmax=True, tick_step=25)
+                                bs.Button("Apply", density="compact", icon="sliders")
+
+
+                    # Recent transactions.
+                    with bs.Card(padding=16, gap=8, horizontal="stretch"):
+                        bs.Label("Recent Transactions", font="heading-sm", horizontal="left")
                         bs.DataTable(
                             columns=[
-                                {"key": "id", "text": "Order", "width": 75},
-                                {"key": "customer", "text": "Customer", "width": 170},
-                                {"key": "amount", "text": "Amount", "width": 100, "anchor": "e"},
-                                {"key": "status", "text": "Status", "width": 105},
+                                {"key": "id", "text": "Transaction ID", "width": 140},
+                                {"key": "time", "text": "Time", "width": 80},
+                                {"key": "amount", "text": "Amount", "width": 95, "anchor": "e"},
+                                {"key": "items", "text": "Items", "width": 85},
+                                {"key": "payment", "text": "Payment", "width": 100},
+                                {"key": "cashier", "text": "Cashier", "width": 100},
+                                {"key": "status", "text": "Status", "width": 110},
                             ],
-                            rows=ORDERS,
+                            rows=TXNS,
                             density="compact",
-                            page_size=15,
-                            grow=True, horizontal="stretch",
+                            searchable=False,
+                            paginated=False,
+                            horizontal="stretch",
                         )
 
-                    with bs.Card(row=0, column=3, rowspan=2, padding=16, gap=10):
-                        bs.Label("This month", font="heading-sm")
-                        _stat("Monthly goal", 72, "primary")
-                        _stat("New customers", 48, "info")
-                        _stat("Churn", 12, "danger")
-                        with bs.Column(horizontal="stretch", horizontal_items="center", margin_y=4):
-                            bs.Gauge(value=86, size=150, thickness=14, variant="semi",
-                                     segment_width=4, value_suffix="%",
-                                     subtitle="Satisfaction", surface="card",
-                                     accent="success", margin_y=(24, 0))
-                        bs.Divider(horizontal="stretch")
-                        bs.Label("Refresh rate", font="caption", accent="secondary")
-                        bs.Slider(value=60, min_value=0, max_value=100, horizontal="stretch")
-                        bs.Switch("Auto-refresh", value=True)
-                        bs.Switch("Email alerts", value=False)
-                        with bs.Row(horizontal="stretch", gap=8):
-                            bs.Button("Reset", variant="ghost")
-                            bs.Button("Apply", accent="primary", grow=True)
-
-    with shell.add_workspace("orders", text="Orders", icon="receipt") as ws:
-        with ws.content:
-            bs.Label("Orders", font="heading-lg")
-    with shell.add_workspace("reports", text="Reports", icon="file-earmark-text") as ws:
-        with ws.content:
-            bs.Label("Reports", font="heading-lg")
-    with shell.add_workspace("settings", text="Settings", icon="gear", pin_to_footer=True) as ws:
-        with ws.content:
+        with nav.add_page("sales", text="Sales", icon="cart3"):
+            bs.Label("Sales", font="heading-lg")
+        with nav.add_page("analytics", text="Analytics", icon="graph-up-arrow"):
+            bs.Label("Analytics", font="heading-lg")
+        with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
             bs.Label("Settings", font="heading-lg")
+
+    shell.navigate("dashboard")
 
 shell.run()

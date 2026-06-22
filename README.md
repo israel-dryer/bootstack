@@ -42,6 +42,7 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **10 paired light/dark themes** — popular dev color schemes plus Bootstrap, with a runtime switcher and a custom-theme API
 - **Forms and validation** — field-level validators, inline error messages, and a `FormDialog` for quick modal forms
 - **DataSource abstraction** — one interface over SQLite, in-memory, and file backends with filtering, sorting, pagination, and CRUD
+- **Data visualization** — embed `matplotlib` (and `seaborn`) figures with `Chart`; they recolor with the theme and live-update from a `Signal` or `DataSource` (optional `viz` extra)
 - **A real CLI** — scaffold, run, add pages/views/dialogs/themes, and package for distribution
 - **PyInstaller packaging built in** — `bootstack build` produces a standalone executable; no separate toolchain required
 
@@ -181,6 +182,7 @@ app.run()
 - **Reactive signals** — observable state with subscribe/set, integrates with widgets via `signal=` / `textsignal=`
 - **Forms & validation** — `Form` with built-in field-level validators and inline error messages
 - **DataSource** — common interface over in-memory, SQLite, and file backends, with pagination, filtering, sorting, CRUD, and CSV/TSV/Excel export
+- **Data visualization** — `Chart` embeds `matplotlib`/`seaborn` figures that theme themselves and live-update from a `Signal` or `DataSource`; managed render, blitting animation, and a themed navigation toolbar (optional `viz` / `viz-seaborn` extras)
 - **Localization (i18n)** — 23 bundled message catalogs, locale-aware number/date/time formatting via Babel, runtime language switching
 - **Icons & images** — Bootstrap Icons catalog with theme-aware recoloring and caching
 - **Platform support** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
