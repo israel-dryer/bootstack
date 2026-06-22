@@ -206,9 +206,11 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             self._track_item = self._canvas.create_image(self._track_center, 0, anchor="n")
             self._handle_item = self._canvas.create_image(self._track_center, 0, anchor="center")
 
-        # Keyboard focus halo — drawn around the handle (transparent center), above
-        # it in z-order; hidden until the widget takes keyboard focus.
-        self._focus_ring_diam = self._handle_size + 2 * HALO_PAD
+        # Keyboard focus ring — drawn ON the handle (a ring just inside its edge,
+        # transparent center), above it in z-order; hidden until the widget takes
+        # keyboard focus. Kept within the handle footprint (no overhang) so the
+        # track can run edge-to-edge and align with neighboring form fields.
+        self._focus_ring_diam = self._handle_size - 2
         self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, self._colors['focus'])
         self._focus_ring_item = self._canvas.create_image(
             0, 0, anchor="center", image=self._focus_ring_photo, state="hidden")
@@ -325,9 +327,10 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
 
     def _track_range(self) -> tuple[int, int]:
         """Return (start, end) handle travel range in canvas coords (main axis)."""
-        # Inset by the handle half-width PLUS the focus-ring overhang so the halo
-        # stays inside the canvas even with the handle at the extreme min/max.
-        edge = self._handle_size // 2 + HALO_PAD
+        # Inset by the handle half-width only, so at min/max the handle's edge sits
+        # flush with the canvas edge. The focus ring lives inside the handle now, so
+        # no extra overhang has to be reserved.
+        edge = self._handle_size // 2
         if self._orient == "horizontal":
             # _cw is the canvas's exact allocated width (from canvas <Configure>).
             w = self._cw if self._cw > 0 else max(1, self._canvas.winfo_width())
@@ -346,6 +349,17 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         if self._orient == "vertical":
             ratio = 1.0 - ratio  # vertical: top = max, bottom = min
         return start + int(ratio * (end - start))
+
+    def _track_extent(self) -> int:
+        """Length of the full-width track (handle's min edge to max edge).
+
+        The track spans `[0, extent]` so it meets the container edges and aligns
+        with neighboring form fields; the handle still travels `[r, extent - r]`
+        (its center), so ticks/labels — placed at the handle centers — sit `r`
+        inside each end and the handle covers that lead-in/out at the extremes.
+        """
+        _, end = self._track_range()
+        return end + self._handle_size // 2
 
     def _pos_to_value(self, pos: int) -> float:
         """Map a canvas pixel position to a slider value."""
@@ -412,44 +426,44 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
     def _sync(self) -> None:
         val = self._var.get()
         pos = self._value_to_pos(val)
-        start, end = self._track_range()
-        track_len = end - start
+        # Full-width track: spans the handle's edge-to-edge travel (0 .. extent),
+        # so it meets the container edges and the handle covers the rounded ends.
+        extent = self._track_extent()
 
         fill_c = self._colors['fill_disabled'] if self._state == "disabled" else self._colors['fill']
 
         if self._orient == "horizontal":
-            fill_px = pos - start
-            photo = _make_track(track_len, self._track_h, 0, fill_px,
+            photo = _make_track(extent, self._track_h, 0, pos,
                                 self._colors['trough'], fill_c)
             if photo:
                 self._track_photo = photo
-                self._canvas.coords(self._track_item, start, self._track_center)
+                self._canvas.coords(self._track_item, 0, self._track_center)
                 self._canvas.itemconfig(self._track_item, image=self._track_photo)
             self._canvas.coords(self._handle_item, pos, self._track_center)
             if self._show_value:
                 self._update_badge_h(pos, val)
             if self._show_minmax and self._tick_interval is None:
                 label_y = self._track_center + self._handle_size // 2 + TICK_GAP + LABEL_GAP
-                self._canvas.coords(self._minlabel_item, start, label_y)
-                self._canvas.coords(self._maxlabel_item, end, label_y)
+                self._canvas.coords(self._minlabel_item, self._value_to_pos(self._minvalue), label_y)
+                self._canvas.coords(self._maxlabel_item, self._value_to_pos(self._maxvalue), label_y)
         else:
             # Vertical: bottom = min, top = max.  fill_px = pixels from bottom.
-            fill_px = end - pos
-            photo = _make_track(track_len, self._track_h, 0, fill_px,
+            fill_px = extent - pos
+            photo = _make_track(extent, self._track_h, 0, fill_px,
                                 self._colors['trough'], fill_c,
                                 vertical=True)
             if photo:
                 self._track_photo = photo
-                # After rotate(90), image is track_h wide × track_len tall; anchor "n"
-                self._canvas.coords(self._track_item, self._track_center, start)
+                # After rotate(90), image is track_h wide × extent tall; anchor "n"
+                self._canvas.coords(self._track_item, self._track_center, 0)
                 self._canvas.itemconfig(self._track_item, image=self._track_photo)
             self._canvas.coords(self._handle_item, self._track_center, pos)
             if self._show_value:
                 self._update_badge_v(pos, val)
             if self._show_minmax and self._tick_interval is None:
                 label_x = self._track_center + self._handle_size // 2 + TICK_GAP + LABEL_GAP
-                self._canvas.coords(self._minlabel_item, label_x, end)
-                self._canvas.coords(self._maxlabel_item, label_x, start)
+                self._canvas.coords(self._minlabel_item, label_x, self._value_to_pos(self._minvalue))
+                self._canvas.coords(self._maxlabel_item, label_x, self._value_to_pos(self._maxvalue))
 
         self._update_focus_ring()   # keep the halo on the handle
 
