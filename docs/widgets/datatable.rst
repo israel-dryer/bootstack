@@ -494,6 +494,42 @@ selection, and editing round-trip regardless of the backend. See
 :doc:`../reference/data-sources` for the source's filtering and sorting
 (``where()`` / ``order()``) and change broadcasting (``on_change`` / ``observe``).
 
+Multiple tables, one source
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two ``DataTable`` widgets can share one source and stay independent. Search
+terms, column filters, and column sorting are **per-view state** — they do not
+mutate the shared source. Each table applies its own filter and sort transiently
+during reads, then restores the source for the next caller:
+
+.. code-block:: python
+
+   shared = MemoryDataSource()
+   shared.load(people)
+
+   table_active   = bs.DataTable(data_source=shared, columns=cols)
+   table_archived = bs.DataTable(data_source=shared, columns=cols)
+
+   # Searching in one has no effect on the other.
+   table_active.set_search("Smith")
+
+Applying ``where()`` or ``order()`` directly on the source still reaches every
+view — that is the correct way to drive a coordinated cross-view filter (for
+example, from a chart click). For that pattern, ``broadcast_search=True`` makes
+the table's own search box write to the source un-silenced, so a ``Chart`` or a
+second ``DataTable`` with no active search also re-renders:
+
+.. code-block:: python
+
+   # The table's search box now propagates to the chart bound to the same source.
+   table = bs.DataTable(data_source=shared, columns=cols, broadcast_search=True)
+
+.. warning::
+
+   Set ``broadcast_search=True`` on **at most one** ``DataTable`` per source.
+   Two tables with this flag on the same source will overwrite each other's
+   filter on every keystroke.
+
 Density and striping
 ~~~~~~~~~~~~~~~~~~~~~
 

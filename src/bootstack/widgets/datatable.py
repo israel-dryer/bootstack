@@ -44,6 +44,18 @@ class DataTable(PublicWidgetBase):
         selection_mode: Row selection behavior. Default `'single'`.
         sorting_mode: Whether columns can be sorted. Default `'single'`.
         searchable: Show the search bar. Default `True`.
+        broadcast_search: When `True`, the search box and column filters write
+            their combined condition to the shared data source (un-silenced),
+            so all other views bound to the same source — including `Chart`
+            widgets — re-render to match. Defaults to `False` (per-view only).
+
+            .. warning::
+
+                Only enable this on **one** `DataTable` per source. Two tables
+                with ``broadcast_search=True`` on the same source will clobber
+                each other's filters on every keystroke, reproducing the
+                source-mutation coupling that per-view isolation was designed
+                to prevent.
         allow_filter: Enable column filtering. Default `True`.
         paging_mode: `'standard'` paginates the rows; `'virtual'` scrolls them
             in a single virtual view. Default `'standard'`.
@@ -99,6 +111,7 @@ class DataTable(PublicWidgetBase):
         selection_mode: SelectionMode = "single",
         sorting_mode: Literal["single", "none"] = "single",
         searchable: bool = True,
+        broadcast_search: bool = False,
         allow_filter: bool = True,
         paging_mode: Literal["standard", "virtual"] = "standard",
         page_size: int = 25,
@@ -129,6 +142,7 @@ class DataTable(PublicWidgetBase):
             "selection_mode": selection_mode,
             "sorting_mode": sorting_mode,
             "enable_search": searchable,
+            "broadcast_search": broadcast_search,
             "enable_filtering": allow_filter,
             "paging_mode": paging_mode,
             "page_size": page_size,
