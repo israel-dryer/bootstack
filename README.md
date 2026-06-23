@@ -173,7 +173,7 @@ app.run()
 
 ## Features
 
-- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, `Workbench` for two-tier workspace apps, undecorated windows with custom chrome
+- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, `Workbench` for two-tier workspace apps, `Splash` for a startup intro screen, undecorated windows with custom chrome
 - **60+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
 - **Dialogs and messages** — `alert()` / `confirm()` / `ask_*()` prompts and `FormDialog` / `FontDialog` / `FilterDialog`, plus non-blocking `toast()`, `Notification`, and `Snackbar` surfaces
 - **Layout containers** — `Column`, `Row`, `Grid`, and `Spacer` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Divider`
@@ -198,7 +198,7 @@ app.run()
 | **Data Display** | Label, Badge, ListView, Tree, DataTable, ProgressBar, Gauge |
 | **Media** | Avatar, Picture, Gallery, Carousel |
 | **Layout** | Column, Row, Grid, Spacer, Card, GroupBox, SplitView, ScrollView, Accordion, Divider |
-| **Navigation** | AppShell, Workbench, Window, StatusBar, Tabs, PageStack |
+| **Navigation** | AppShell, Workbench, Window, Splash, StatusBar, Tabs, PageStack |
 | **Dialogs** | `alert()`, `confirm()`, `ask_*()` prompts, FormDialog, FontDialog, FilterDialog |
 | **Overlays** | `toast()`, Notification, Snackbar, Tooltip |
 | **Forms** | Form, with field-level validation |

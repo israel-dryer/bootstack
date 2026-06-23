@@ -630,6 +630,10 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         if self._on_close_kwarg is not None:
             self.add_close_handler(self._on_close_kwarg)
 
+        # A registered intro splash (bs.Splash), or None. Set by the splash on
+        # construction; read at reveal time to defer the app's own appearance.
+        self._splash: Any = None
+
     def mainloop(self, n=0) -> None:
         """Start the application event loop
 
@@ -639,7 +643,13 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         """
         if self._center_on_screen:
             self.place_window_center()
-        self.show()
+        splash = getattr(self, "_splash", None)
+        if splash is not None and splash.is_showing:
+            # An intro splash is up — defer the app's reveal until it dismisses,
+            # then reveal via this callback (see Splash._notify_app_ready).
+            splash._notify_app_ready(self.show)
+        else:
+            self.show()
         super().mainloop(n=n)
 
     def _do_close(self) -> None:

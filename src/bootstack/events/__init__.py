@@ -37,6 +37,8 @@ from bootstack.events._payloads import (
     SelectionEvent,
     SliderCommitEvent,
     SliderEvent,
+    SplashDismissEvent,
+    SplashDismissReason,
     TabActivateEvent,
     TabChangeEvent,
     TabCloseEvent,
@@ -103,4 +105,7 @@ __all__ = [
     "SashMoveEvent",
     # Payloads — scroll view
     "ScrollEvent",
+    # Payloads — splash
+    "SplashDismissEvent",
+    "SplashDismissReason",
 ]

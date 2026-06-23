@@ -124,6 +124,30 @@ decodes and displays an image.
    ImageLoadEvent
    ImageErrorEvent
 
+Split and scroll payloads
+-------------------------
+
+The sash-drag payload for :class:`SplitView <bootstack.SplitView>` and the
+viewport-position payload for :class:`ScrollView <bootstack.ScrollView>`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   SashMoveEvent
+   ScrollEvent
+
+Splash payloads
+---------------
+
+Fired by :class:`Splash <bootstack.Splash>` as it begins to dismiss.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   SplashDismissEvent
+
 Supporting types
 ----------------
 
@@ -153,3 +177,7 @@ The string-literal tags carried by the change and data-change payloads.
 
    Why a change event fired — `'user'`, `'api'`, `'hide'`, `'forget'`,
    `'unknown'`.
+
+.. py:type:: SplashDismissReason
+
+   Why a splash dismissed — `'ready'`, `'timer'`, `'manual'`, `'skip'`.

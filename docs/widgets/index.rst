@@ -10,10 +10,10 @@ below, or jump straight to a widget from the sidebar.
 
    .. grid-item-card:: :octicon:`device-desktop;1.5em;sd-mr-1` Application
 
-      The top-level window — a plain window, a navigation shell, or a secondary
-      window.
+      The top-level window — a plain window, a navigation shell, a secondary
+      window, or a startup splash.
 
-      :doc:`app` · :doc:`appshell` · :doc:`workbench` · :doc:`window`
+      :doc:`app` · :doc:`appshell` · :doc:`workbench` · :doc:`window` · :doc:`splash`
 
    .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Actions
 
@@ -105,6 +105,7 @@ below, or jump straight to a widget from the sidebar.
    appshell
    workbench
    window
+   splash
 
 .. toctree::
    :caption: Actions
