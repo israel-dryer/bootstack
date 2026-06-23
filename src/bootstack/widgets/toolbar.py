@@ -113,8 +113,8 @@ class Toolbar(PublicWidgetBase):
         accent: AccentToken | str | None = None,
         variant: ButtonVariant | None = None,
         **kwargs: Any,
-    ) -> None:
-        """Add a button to the toolbar.
+    ) -> Any:
+        """Add a button to the toolbar and return a handle for later control.
 
         When both `label` and `icon` are given, the button shows text and icon
         side by side. When only `icon` is given, the button is icon-only.
@@ -126,6 +126,10 @@ class Toolbar(PublicWidgetBase):
             accent: Color intent override.
             variant: Variant override. When omitted, falls back to the toolbar's
                 `button_variant` (default `'ghost'`).
+
+        Returns:
+            An internal button handle. Use it to reconfigure or disable the
+            button after creation: ``btn.configure(state='disabled')``.
         """
         kw: dict[str, Any] = {}
         if label is not None:
@@ -139,7 +143,7 @@ class Toolbar(PublicWidgetBase):
         if variant is not None:
             kw["variant"] = variant
         kw.update(kwargs)
-        self._internal.add_button(**kw)
+        return self._internal.add_button(**kw)
 
     def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
         """Add a dropdown menu (File / Edit / …) as a toolbar item.
@@ -173,13 +177,17 @@ class Toolbar(PublicWidgetBase):
         icon: str | None = None,
         font: str | None = None,
         **kwargs: Any,
-    ) -> None:
-        """Add a non-interactive label to the toolbar.
+    ) -> Any:
+        """Add a non-interactive label to the toolbar and return a handle.
 
         Args:
             text: Label text.
             icon: Icon name displayed alongside the text.
             font: Font token, e.g. `'heading-md'` or `'caption'`.
+
+        Returns:
+            An internal label handle. Use it to update or hide the label after
+            creation: ``lbl.configure(text='Updated')``.
         """
         kw: dict[str, Any] = {}
         if text is not None:
@@ -189,7 +197,7 @@ class Toolbar(PublicWidgetBase):
         if font is not None:
             kw["font"] = font
         kw.update(kwargs)
-        self._internal.add_label(**kw)
+        return self._internal.add_label(**kw)
 
     def add_divider(self, length: int = 16) -> None:
         """Add a vertical divider.
@@ -239,9 +247,12 @@ class Toolbar(PublicWidgetBase):
             params = inspect.signature(widget_cls).parameters
         except (TypeError, ValueError):
             return
-        if "density" in params:
+        has_var_kw = any(
+            p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values()
+        )
+        if "density" in params or has_var_kw:
             kwargs.setdefault("density", self._internal.density)
-        if "surface" in params:
+        if "surface" in params or has_var_kw:
             kwargs.setdefault("surface", self._internal.surface)
 
     # ----- Container protocol (so `parent=toolbar` works) -----
