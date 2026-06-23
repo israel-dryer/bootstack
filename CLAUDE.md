@@ -21,6 +21,36 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Splash screen — cross-platform `windowtype` + `bs.Splash` (PRs #313, #318 —
+  MERGED; 2026-06-23).** Two-step feature, each its own branch→PR→`main`.
+  **#308 (PR #313):** `Toplevel(windowtype=...)` was honored only on macOS
+  (`MacWindowStyle`) and X11 (`-type`); **win32 never read it**. Added a win32
+  branch (`_runtime/toplevel.py`) translating the chromeless types
+  (`splash`/`tooltip`/`dock`) → `overrideredirect` and `utility` → `-toolwindow` —
+  **one switch, all three platforms** (maintainer chose the auto contract: the
+  caller need NOT also pass `overrideredirect=True`). macOS asymmetry preserved for
+  free (`overrideredirect()` already no-ops on Aqua). **#310 (PR #318):**
+  **`bs.Splash`** — a borderless intro screen (its own `Toplevel`,
+  `windowtype="splash"`) constructed inside the `App` context. **Registration, not
+  suppression:** construction resolves the ambient app and registers on it; the
+  internal `App.mainloop` gained ONE branch — if a splash is up, defer `show()`
+  until it dismisses (`_notify_app_ready`). **Shows at its own `__exit__`** (after
+  content authored, before the synchronous body build it precedes — so it genuinely
+  covers that cost) with `update()` to force paint; the `with` block scopes content
+  only, not lifetime. One dismiss knob `until=` (`'ready'`|`<float>`|`'manual'`) +
+  `skippable`/`dismiss()` on top + `min_duration` floor under all. Best-effort
+  `after()`-driven alpha fade (snaps where unsupported). Lean surface: `is_showing`,
+  `dismiss()`, `on_dismiss`→`SplashDismissEvent(reason)`; guards (no app / second
+  splash → `BootstackError`). Added `SplashDismissEvent`/`SplashDismissReason` to
+  `bootstack.events` + the events API ref; **re-homed the drifted `SashMoveEvent`/
+  `ScrollEvent`** there too. Docs: `widgets/splash.rst` + a `tasks/splash-screens.rst`
+  how-to (cover-startup, timed branding, welcome, **real progress via worker thread
+  + Signal**, and the **event-loop timing rule** — motion only shows while the loop
+  turns, so a `'ready'` splash over a synchronous build is a STILL image by design).
+  Tests `test_splash.py` (14). **Process catches (maintainer caught both):** a stray
+  "Tk" in the how-to broke the no-toolkit-in-docs rule; and `events.rst` had silently
+  drifted from `events.__all__` — fixed + added a coverage guard (PR #319,
+  `test_events_doc_coverage.py`). Memory `project_splash_widget`.
 - **Icon-DPI sizing + Tooltip subtree coverage (PRs #306, #307, #309 — MERGED;
   2026-06-23).** Three small fixes off the 0.1.0 cleanup backlog, each its own
   branch→PR→`main`. **#267 (PR #306):** the public `Image` handle (`get_icon` /
@@ -451,61 +481,31 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session: the SPLASH SCREEN — #308 then #310.** This is a
-> two-step feature; **build #308 first, it is the prerequisite.**
->
-> - **#308 — make `windowtype` cross-platform (FIRST, prerequisite).**
->   `Toplevel(windowtype=...)` is honored only on macOS (Aqua) and Linux (X11);
->   **win32 never reads it**, so `windowtype="splash"` gives a borderless window on
->   Mac/Linux but a **fully decorated window on Windows**. Add a `winsys == "win32"`
->   branch in `src/bootstack/_runtime/toplevel.py` (the only win32 attr handling
->   today is `toolwindow` at ~`:191`; the Aqua map already has
->   `"splash": ("plain","none")` at ~`:114` but **no caller passes it** — it's
->   dormant). Goal: a chromeless, taskbar-suppressed window on all THREE platforms.
->   Own `feat/*` branch → PR.
-> - **#310 — `bs.Splash` app intro-screen widget (SECOND, blocked by #308).** A
->   borderless intro screen shown at startup that **covers main-window construction**
->   and dismisses when ready / on a timer / on skip. Design is LOCKED on the issue —
->   read #310 in full before coding. Key decisions: **own borderless toplevel** (not
->   an in-window swap — gives centered look + window-alpha fade Tk can't do
->   in-window); **pure container** (no `image=`/`title=` sugar — author the logo/text
->   with normal context parenting like the app body); **construction IS registration**
->   (resolves the ambient app from the context stack like a dialog/toast — does NOT
->   attach to the active layout parent; the app's show logic gains one branch: "if a
->   splash is registered, show it and defer my reveal until it dismisses"); **shows on
->   construction** (where you write it in the block determines how much startup it
->   covers — put it first); the `with` block scopes **content authoring only**, it
->   does NOT bound the splash's lifetime (deliberate asymmetry with `App.__exit__`).
->   **API:** `bs.Splash(*, until: float|'ready'|'manual'='ready', skippable=False,
->   min_duration=0.0, fade=True, size=None, surface='card', padding=24, gap=12)`.
->   One coherent dismiss rule: `until=` is a single mutually-exclusive knob
->   (`'ready'` = close when app built · `<float>` = close after N s, ready does NOT
->   auto-close · `'manual'` = only skip/button/`dismiss()`); `skippable=`+`dismiss()`
->   layer on top; `min_duration` is an orthogonal floor (anti-blink). Live prop:
->   `is_showing` (read-only). Method: `dismiss()`. No `status` prop (author a
->   `Label(textsignal=...)`). Follows the standing principles below (live props only
->   for real runtime needs; no toolkit detail in docs).
->
-> **`main` is GREEN.** Last session shipped the **icon-DPI + Tooltip** cluster (all
-> MERGED): **#267** (PR #306 — public `get_icon`/`image=` handle + MenuButton chevron
-> now DPI-scale via new `scale_icon_size()`; the issue's "rail is soft" headline was a
-> MISDIAGNOSIS — the rail already scales via `normalize_icon_spec`); **#305** (PR #309
-> — text+icon Button/MenuButton icon double-scaled at high DPI; `icon_size()` text
-> branch now returns logical so `normalize_icon_spec` is the single scaler — fixed a
-> real ~10px compact-button row-height inflation at 150%); **#260** (PR #307 —
-> `Tooltip.refresh_bindings()` covers container children added after attach, mirroring
-> ScrollView). Memory `reference_icon_dpi_scaling_pipeline`. Residual noted (NOT
-> filed): compact buttons ~3px taller than inputs at high DPI (plain button too —
-> `button_height` vs `field_height` tuning, icon-independent).
->
-> **Also still on the road to 0.1.0 STABLE** (after the splash):
-> - **#149** — final public-surface audit + lock + **CHANGELOG** (the ship gate).
+> ⏭ **START HERE next session: the 0.1.0 STABLE closeout — #149 is the ship
+> gate.** The splash screen (#308/#310) and the icon-DPI cluster shipped; the big
+> breaking changes are long drained. What's left is the stable cut:
+> - **#149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).** Audit
+>   the whole `bootstack.*` surface one more time, lock it, and write the CHANGELOG
+>   for 0.1.0. Do this before tagging stable. Own branch → PR.
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
 >   API implication, low/self-inflicted impact, Win/Linux only; agreed proportional
 >   fix if revisited = a module-level open-menu registry + dismiss-all from
 >   `DataTable._on_header_click`, NOT the risky grab). Analysis on the issue.
+> - **#222** (TextField live `placeholder`/`mask` props) and **#234** (SpinnerField↔
+>   NumberField parity, decision-gated) remain open and additive — see the
+>   field-family follow-ups section below.
+>
+> **`main` is GREEN, and `0.1.0a16` is the latest pre-release** (cut 2026-06-23 —
+> contains the icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
+> `bs.Splash` #318). The splash session also added an **events-doc-coverage guard**
+> (PR #319, `test_events_doc_coverage.py`) after `events.rst` was found drifting from
+> `events.__all__`. Memory `project_splash_widget`. **Watch-out the splash session
+> surfaced:** the event loop must turn for a splash to show motion — a `until="ready"`
+> splash over a *synchronous* build is a STILL image (documented in the how-to); and
+> the maintainer caught a stray "Tk" in docs (no-toolkit rule) + the `events.rst`
+> drift, both now fixed/guarded.
 >
 > **Standing principles** (apply in every review): live properties only for
 > *legitimate runtime needs* (`feedback_live_properties_runtime_need`) — e.g. `surface`
