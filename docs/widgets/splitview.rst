@@ -168,10 +168,10 @@ pixels from the left (horizontal) or top (vertical) edge.
    sv.sash_positions           # [240]  — current positions
    sv.sash_position(0, 300)    # move first sash to 300 px
 
-Sash events
-~~~~~~~~~~~
+Events
+~~~~~~
 
-React when the user finishes dragging a sash:
+``on_sash_moved`` fires when the user releases the mouse after dragging a sash:
 
 .. code-block:: python
 
@@ -183,9 +183,9 @@ React when the user finishes dragging a sash:
    sv.on_sash_moved(_on_sash)        # Subscription
    stream = sv.on_sash_moved()       # Stream
 
-The handler receives a :class:`~bootstack.events.SashMoveEvent` when the user
-releases the mouse after a drag. ``index`` identifies the sash (``0`` for the
-first gap between panes) and ``position`` is its new pixel offset.
+The handler receives a :class:`~bootstack.events.SashMoveEvent`; ``index``
+identifies the sash (``0`` for the first gap between panes) and ``position``
+is its new pixel offset from the leading edge.
 
 Widget sizing
 ~~~~~~~~~~~~~
