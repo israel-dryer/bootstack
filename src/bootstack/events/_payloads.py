@@ -490,6 +490,22 @@ class DataChangeEvent:
 
 
 # ---------------------------------------------------------------------------
+# SplitView
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class SashMoveEvent:
+    """Fires when a `SplitView` sash is released after being dragged."""
+
+    index: int = 0
+    """Zero-based index of the sash that moved."""
+
+    position: int = 0
+    """New pixel position of the sash in pixels from the leading edge."""
+
+
+# ---------------------------------------------------------------------------
 # ScrollView
 # ---------------------------------------------------------------------------
 

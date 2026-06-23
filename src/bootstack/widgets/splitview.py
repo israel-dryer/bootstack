@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import tkinter
-from typing import Any
+from typing import Any, Callable, overload
 
 from bootstack.widgets._impl.primitives.panedwindow import PanedWindow as _InternalPanedWindow
 from bootstack.widgets._impl.primitives.frame import Frame as _InternalFrame
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import (
     GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
     _expand_margin,
 )
 from bootstack.widgets._core.context import push_container, pop_container
+from bootstack.events import SashMoveEvent, Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import (
     AccentToken, SurfaceToken, Padding, LayoutKind, AutoFlow, Orient,
 )
@@ -200,9 +202,11 @@ class SplitView(PublicWidgetBase):
 
         self._panes: dict[str, SplitPane] = {}
         self._pane_counter = 0
+        self._dragging_sash: int | None = None
 
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = _InternalPanedWindow(tk_master, **pw_kwargs)
+        self._setup_sash_bindings()
         self._attach_to_parent(layout_kw)
 
     # ----- Pane management -----
@@ -422,3 +426,57 @@ class SplitView(PublicWidgetBase):
             return self._internal.sashpos(index)
         self._internal.sashpos(index, position)
         return None
+
+    def _setup_sash_bindings(self) -> None:
+        pw = self._internal
+        pw.bind("<Button-1>", self._on_sash_press, add="+")
+        pw.bind("<ButtonRelease-1>", self._on_sash_release, add="+")
+
+    def _on_sash_press(self, event: Any) -> None:
+        result = self._internal.identify(event.x, event.y)
+        if result != "":
+            try:
+                self._dragging_sash = int(result)
+            except (ValueError, TypeError):
+                self._dragging_sash = None
+
+    def _on_sash_release(self, event: Any) -> None:
+        idx = self._dragging_sash
+        self._dragging_sash = None
+        if idx is None:
+            return
+        try:
+            pos = self._internal.sashpos(idx)
+        except Exception:
+            return
+        self._internal.event_generate(
+            "<<BsSashMoved>>", data=SashMoveEvent(index=idx, position=pos)
+        )
+
+    # ----- Events -----
+
+    @overload
+    def on_sash_moved(self) -> Stream: ...
+    @overload
+    def on_sash_moved(self, handler: Callable[[SashMoveEvent], Any]) -> Subscription: ...
+    def on_sash_moved(self, handler: Callable[[SashMoveEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when a sash drag is released.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.SashMoveEvent`
+                carrying `index` (zero-based sash index) and `position` (pixel
+                offset from the leading edge). Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        sequence = "<<BsSashMoved>>"
+        if handler is None:
+            def _source(h):
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
+                return Subscription(self._internal, sequence, bid)
+            return Stream(self._internal, _source=_source)
+        bid = self._internal.bind(sequence, adapt_handler(handler), add="+")
+        return Subscription(self._internal, sequence, bid)
