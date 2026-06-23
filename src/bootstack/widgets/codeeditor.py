@@ -250,6 +250,40 @@ class CodeEditor(PublicWidgetBase):
         return int(line), int(col) + 1
 
     @property
+    def selection(self) -> "tuple[tuple[int, int], tuple[int, int]] | None":
+        """The current text selection as `((start_line, start_col), (end_line, end_col))`.
+
+        Both lines and columns are 1-indexed — the same coordinates `cursor_position`
+        reports and `goto()` / `insert()` accept. Returns `None` when no text is
+        selected. Set to a pair of `(line, col)` tuples to select a range, or
+        set to `None` to clear the selection.
+        """
+        tw = self._internal.core.text
+        ranges = tw.tag_ranges("sel")
+        if not ranges:
+            return None
+        sl, sc = str(ranges[0]).split(".")
+        el, ec = str(ranges[1]).split(".")
+        return (int(sl), int(sc) + 1), (int(el), int(ec) + 1)
+
+    @selection.setter
+    def selection(self, v: "tuple[tuple[int, int], tuple[int, int]] | None") -> None:
+        tw = self._internal.core.text
+        tw.tag_remove("sel", "1.0", "end")
+        if v is not None:
+            (sl, sc), (el, ec) = v
+            tw.tag_add("sel", f"{sl}.{sc - 1}", f"{el}.{ec - 1}")
+
+    @property
+    def selected_text(self) -> str:
+        """The currently selected text, or an empty string when nothing is selected."""
+        sel = self.selection
+        if sel is None:
+            return ""
+        (sl, sc), (el, ec) = sel
+        return self._internal.core.text.get(f"{sl}.{sc - 1}", f"{el}.{ec - 1}")
+
+    @property
     def language(self) -> str | None:
         """Active syntax highlighting language, or `None` if disabled."""
         return self._internal.language
@@ -277,7 +311,7 @@ class CodeEditor(PublicWidgetBase):
         # Route through the core property so the `_read_only` flag and the Tk
         # widget state stay in lockstep (the value/insert setters consult the
         # flag to lift the disabled state for programmatic writes).
-        self._internal._core.read_only = v
+        self._internal.core.read_only = v
 
     # ----- Methods -----
 
