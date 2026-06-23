@@ -140,10 +140,15 @@ class ScrollView(FlexContainer):
 
     @property
     def scroll_position(self) -> tuple[float, float]:
-        """Current scroll position as `(y, x)` fractions in `[0.0, 1.0]`.
+        """Current scroll position as `(y, x)` fractions.
 
-        `(0.0, 0.0)` is the top-left corner; `(1.0, 1.0)` is the bottom-right.
-        Read this inside an `on_scroll` handler to get the new position:
+        Each value is the fraction of the content that lies above (`y`) or to the
+        left (`x`) of the viewport's top-left corner. `(0.0, 0.0)` means scrolled
+        fully to the top-left. As you scroll toward the end the value grows toward
+        `1.0` but does not reach it while content fills the viewport (it tops out
+        at roughly `1.0` minus the visible fraction) — only an axis whose content
+        is shorter than the viewport reads `0.0`. Read this inside an `on_scroll`
+        handler to get the new position:
 
             sv.on_scroll(lambda e: print(e.y, e.x))
         """

@@ -193,6 +193,49 @@ case where some new descendants miss scrolling after a large dynamic batch:
 
    sv.refresh_bindings()   # only if some rows missed scrolling
 
+Scroll events and position
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``on_scroll()`` fires whenever the viewport moves — mouse-wheel, keyboard, or a
+programmatic ``scroll_to_*`` / ``yview_moveto`` call. The handler receives a
+:class:`~bootstack.events.ScrollEvent` with ``y`` and ``x`` fractions. Read
+``scroll_position`` at any time for the same ``(y, x)`` pair.
+
+.. code-block:: python
+
+   sv = bs.ScrollView(grow=True)
+
+   sv.on_scroll(lambda e: print(f"at {e.y:.0%} down, {e.x:.0%} across"))
+
+   y, x = sv.scroll_position   # current position, e.g. (0.0, 0.0) at the top
+
+Each fraction is the proportion of content scrolled past the viewport's top-left
+edge: ``0.0`` at the start, climbing toward ``1.0`` as you near the end (it stops
+short of ``1.0`` while content still fills the viewport). ``on_scroll()`` with no
+handler returns a composable :class:`~bootstack.streams.Stream`, so you can
+debounce a position readout. See :doc:`/reference/events` for the event model.
+
+Keyboard scrolling
+~~~~~~~~~~~~~~~~~~~
+
+Once the canvas has keyboard focus (click inside it), arrow keys and the paging
+keys scroll the viewport.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Key
+     - Action
+   * - ``Up`` / ``Down``
+     - Scroll one line vertically
+   * - ``Left`` / ``Right``
+     - Scroll one unit horizontally
+   * - ``Page Up`` / ``Page Down``
+     - Scroll one page vertically
+   * - ``Home`` / ``End``
+     - Jump to the top / bottom
+
 Widget sizing
 ~~~~~~~~~~~~~
 

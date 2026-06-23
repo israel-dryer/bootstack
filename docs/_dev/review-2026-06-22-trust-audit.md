@@ -101,10 +101,13 @@ mislabel / doc-test gap · 🟢 verified clean.
   Fix direction: the include fragment should not carry section titles that skip a
   level — use `.. rubric::` (or a heading char one level below the include site)
   for Column/Row/Grid. Not yet fixed (out of the 1–3 scope).
-- `_impl/composites/toolbar.py` reads `self._surface` in ~6 places (incl.
-  window-controls build) but never assigns it in `__init__`; the new public
-  `surface` property guards one read with `getattr(..., "chrome")`, but a
-  window-controls toolbar would still `AttributeError`. Separate item.
+- ~~`_impl/composites/toolbar.py` reads `self._surface` but never assigns it in
+  `__init__`, so a window-controls toolbar would `AttributeError`.~~ **Investigated
+  → NOT a bug.** The `Frame`/`TTKWrapperBase` base class always sets `_surface`
+  (defaults to `'content'`), so `Toolbar(show_window_controls=True)` constructs
+  fine even with no `surface` kwarg. Verified empirically. The reviewer
+  over-flagged this one; the `getattr(..., "chrome")` in the `surface` property is
+  merely defensive, not load-bearing. No fix needed.
 
 ## Fix plan
 
