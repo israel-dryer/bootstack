@@ -287,3 +287,37 @@ def test_two_tables_share_source_independent_sort(shown_app):
 
     # Source's own sort must be untouched.
     assert src._sort == [], "source order() must not be mutated"
+
+
+@pytest.mark.gui
+def test_iter_rows_suspended_does_not_clobber_shared_source(shown_app):
+    """A suspended iter_rows() generator must not hold this view's filter/sort
+    on the shared source.
+
+    The view (the table's search/sort) is applied to the shared source only
+    around each read, never across a ``yield`` — otherwise pausing or abandoning
+    iteration mid-stream leaves the source filtered for every other view until
+    the generator is garbage-collected.
+    """
+    src = MemoryDataSource()
+    src.load([dict(r) for r in ROWS])
+
+    table = bs.DataTable(
+        data_source=src, columns=["name", "role"],
+        searchable=True, page_size=10,
+    )
+    _pump(shown_app)
+
+    table.set_search("math")  # matches Boole + Church
+    _pump(shown_app)
+
+    it = table.iter_rows("all")
+    first = next(it)  # advance once; the generator is now suspended
+    assert first["role"] == "math"
+
+    # While the generator is still alive (not closed), the shared source must
+    # already be restored — the view CM must not span the yield.
+    assert src._filter is None, "iter_rows left the source filtered while suspended"
+    assert src._sort == [], "iter_rows left the source sorted while suspended"
+
+    it.close()

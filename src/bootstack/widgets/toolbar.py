@@ -240,19 +240,23 @@ class Toolbar(PublicWidgetBase):
     def _apply_bar_defaults(self, widget_cls: type, kwargs: dict[str, Any]) -> None:
         """Default `density`/`surface` from the bar onto a class being built, but
         only for parameters the widget actually accepts (and not if the caller
-        already passed them)."""
+        already passed them).
+
+        A widget is treated as accepting `density`/`surface` only when it declares
+        that parameter by name. A bare `**kwargs` catch-all does NOT count: in the
+        public layer `**kwargs` is the layout-placement passthrough, and several
+        widgets use it to *reject* unknown keys — injecting into those raises a
+        `TypeError`, and injecting into ones that ignore it is a silent no-op.
+        """
         import inspect
 
         try:
             params = inspect.signature(widget_cls).parameters
         except (TypeError, ValueError):
             return
-        has_var_kw = any(
-            p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values()
-        )
-        if "density" in params or has_var_kw:
+        if "density" in params:
             kwargs.setdefault("density", self._internal.density)
-        if "surface" in params or has_var_kw:
+        if "surface" in params:
             kwargs.setdefault("surface", self._internal.surface)
 
     # ----- Container protocol (so `parent=toolbar` works) -----

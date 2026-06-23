@@ -219,8 +219,10 @@ class CodeEditor(PublicWidgetBase):
         """Reactive `Signal[bool]` — `True` when all validation rules pass.
 
         Starts `True`. Updates after every validation run (blur or manual
-        `validate()` call). Subscribe to react immediately when validity changes:
-        `editor.valid.subscribe(lambda ok: btn.disabled = not ok)`.
+        `validate()` call). Subscribe a named handler to react immediately when
+        validity changes (a `lambda` cannot assign, so define a function):
+        `def on_valid(ok): btn.disabled = not ok` then
+        `editor.valid.subscribe(on_valid)`.
         """
         return self._internal._valid_signal
 
