@@ -481,12 +481,66 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session: the 0.1.0 STABLE closeout — #149 is the ship
-> gate.** The splash screen (#308/#310) and the icon-DPI cluster shipped; the big
-> breaking changes are long drained. What's left is the stable cut:
-> - **#149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).** Audit
->   the whole `bootstack.*` surface one more time, lock it, and write the CHANGELOG
->   for 0.1.0. Do this before tagging stable. Own branch → PR.
+> ⏭ **START HERE next session: finish + merge the HOT RELOAD branch, then the
+> staged builder-pattern work, then #149 (the 0.1.0 ship gate).** This session
+> BUILT dev-mode hot reload on **`feat/hot-reload`** (pushed; NOT merged, no PR
+> yet). Memory `project_hot_reload` updated to BUILT.
+>
+> **Hot reload — BUILT on `feat/hot-reload`** (commits: `08b018aa` feature,
+> `6395bcd3` docs, + a quickstart-tip commit). `bootstack dev <file>` runs an app
+> with live reload: a module-level `with bs.App()`/`bs.AppShell()` reloads IN
+> PLACE on save — the window + module-level signals/datasources + the shell route
+> survive; only the with-body rebuilds. Non-module-level apps (or `--restart`)
+> fall back to `os.execv` process restart. New **`bootstack.dev`** package
+> (**PROVISIONAL — carved OUT of the 0.1.0 freeze**, maintainer's call): public
+> `reloadable` (`@reloadable` = per-page multi-file reload) + `is_dev_mode`.
+> Stdlib mtime-poll watcher (no new dep). Error banner on a bad edit (process
+> survives), grow-only window resize, dev `min_size=(640,480)` floor + geometry
+> persistence. `_resolve_parent` now RAISES when a placed widget has no container
+> (#320's builder-pattern failure mode — the guard, DONE). **Verified Windows +
+> macOS** (native menu rebuilds; macOS shows the frontmost app's menu, so focus
+> the window to see it — expected). Tests: 15 unit + 2 isolated GUI (green). Docs
+> (clean `-W`): `production/hot-reload.rst`, **Builder functions guide
+> `reference/builder-functions.rst` (= #320 PART 1, DONE)**, `api-reference/dev.rst`,
+> quickstart tip.
+>
+> **FINISH hot reload FIRST (do these before the staged work):**
+> 1. **Demo video.** A 23 MB `live-reload.mp4` was recorded; maintainer is
+>    compressing + speeding it (target **<1 MB**, 2-3x, ~900px, H.264 — existing
+>    demo videos are 88K-756K). Drop the compressed file at
+>    **`docs/_static/examples/live-reload.mp4`**. ⚠ **The docs video embed is
+>    UNCOMMITTED, git-STASHED on the original Windows box — it is NOT on the
+>    pushed branch; RE-ADD it:** (a) a `.. raw:: html` `<video class="bs-video"
+>    autoplay loop muted playsinline controls>` block at the TOP of
+>    `production/hot-reload.rst` sourcing `../_static/examples/live-reload.mp4`;
+>    (b) add `.bs-video` to the shared `.bs-video-dark, .bs-video-light` rule in
+>    `docs/_static/custom.css` (single theme-agnostic video, NOT light/dark).
+> 2. **README hero** (maintainer wants hot reload featured there). GitHub will
+>    NOT autoplay a committed raw `.mp4` — use a small **GIF** in `assets/readme/`
+>    OR upload the mp4 to a GH PR/issue comment for the `user-attachments`
+>    autoplay URL.
+> 3. **Open the PR** (`feat/hot-reload` → `main`) + a status comment on **#322**
+>    (the design-of-record issue) marking it built.
+>
+> **THEN the staged builder-pattern work (before tag; maintainer chose "guide +
+> guard now, audit/scaffold staged"):** **#320 PART 2** — audit `docs/examples/*`
+> + the screenshot scenes + the CLI demo to model the cleanest builder pattern
+> (factor inline UI into builders, drop redundant layout nesting, call them
+> "builders" everywhere). **#321** — flip the CLI scaffolds (`add page`/`add
+> view`/templates) from class-based views → builder functions. (#320 part 1 + the
+> guard are already DONE on the branch.)
+>
+> **THEN #149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).**
+> Audit the whole `bootstack.*` surface, lock it, write the CHANGELOG, tag stable.
+> **Fold in these items found this session:** (a) guard `text=<Signal>` →
+> `TypeError` across text-bearing widgets (`Label`/`Button`/…) — a Signal in the
+> positional `text=` slot silently renders its name (e.g. `"SIG2"`) instead of
+> binding; the supported path is `textsignal=`; (b) **`bootstack.__version__`
+> reads `0.1.0a6`** (stale hardcoded) vs pyproject `0.1.0a16` — fix the source of
+> truth; (c) `cli/run.py`'s direct-file branch has the same double-cwd bug already
+> fixed in `cli/dev.py` (pass `entry_point.resolve()` to the subprocess);
+> (d) CHANGELOG should scope the freeze to the compose API and note `bootstack.dev`
+> is provisional/excluded. Own branch → PR.
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
