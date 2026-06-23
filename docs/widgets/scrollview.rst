@@ -193,6 +193,35 @@ case where some new descendants miss scrolling after a large dynamic batch:
 
    sv.refresh_bindings()   # only if some rows missed scrolling
 
+Keyboard scrolling
+~~~~~~~~~~~~~~~~~~
+
+Click anywhere inside the viewport to give it keyboard focus, then use arrow
+keys to scroll by line, Page Up / Page Down to scroll by page, and Home / End
+to jump to the top or bottom.
+
+Scroll position and events
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Read the current scroll position as ``(y, x)`` fractions, or listen for
+viewport changes:
+
+.. code-block:: python
+
+   from bootstack.events import ScrollEvent
+
+   sv.scroll_position             # (y, x) fractions — 0.0 top/left, 1.0 bottom/right
+
+   def _on_scroll(e: ScrollEvent) -> None:
+       print(e.y, e.x)
+
+   sv.on_scroll(_on_scroll)       # Subscription
+   stream = sv.on_scroll()        # Stream
+
+The handler receives a :class:`~bootstack.events.ScrollEvent` with ``y`` and
+``x`` fractions in ``[0.0, 1.0]``. It fires on mouse-wheel scrolls, keyboard
+scrolling, and programmatic ``scroll_to_*`` / ``yview_moveto`` calls.
+
 Widget sizing
 ~~~~~~~~~~~~~
 
