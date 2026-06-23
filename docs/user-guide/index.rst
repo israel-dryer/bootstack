@@ -139,6 +139,12 @@ Topics
 
       Translatable text and locale-aware formatting.
 
+   .. grid-item-card:: :octicon:`stack;1.5em;sd-mr-1` Builder Functions
+      :link: /reference/builder-functions
+      :link-type: doc
+
+      Reusable components from plain functions that build widgets.
+
    .. grid-item-card:: :octicon:`broadcast;1.5em;sd-mr-1` Signals
       :link: /reference/signals
       :link-type: doc
@@ -226,6 +232,7 @@ Topics
    /reference/typography
    /reference/images
    /reference/localization
+   /reference/builder-functions
    /reference/signals
    /reference/events
    /reference/streams

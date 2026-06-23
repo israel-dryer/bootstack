@@ -21,6 +21,12 @@ application settings.
 
       Package a project into a standalone executable with PyInstaller.
 
+   .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Hot Reload
+      :link: hot-reload
+      :link-type: doc
+
+      Edit and save to update the running app in place with `bootstack dev`.
+
    .. grid-item-card:: :octicon:`bug;1.5em;sd-mr-1` Debugging
       :link: debugging
       :link-type: doc
@@ -39,5 +45,6 @@ application settings.
 
    cli
    distribution
+   hot-reload
    debugging
    app-settings

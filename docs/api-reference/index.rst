@@ -163,6 +163,12 @@ Services and reference
 
       Token and keyword types for annotating your own code.
 
+   .. grid-item-card:: Developer Tools
+      :link: dev
+      :link-type: doc
+
+      Hot reload for the development loop (provisional).
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -183,3 +189,4 @@ Services and reference
    clipboard
    errors
    types
+   dev

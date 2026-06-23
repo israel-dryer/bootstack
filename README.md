@@ -44,6 +44,7 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **DataSource abstraction** — one interface over SQLite, in-memory, and file backends with filtering, sorting, pagination, and CRUD
 - **Data visualization** — embed `matplotlib` (and `seaborn`) figures with `Chart`; they recolor with the theme and live-update from a `Signal` or `DataSource` (optional `viz` extra)
 - **A real CLI** — scaffold, run, add pages/views/dialogs/themes, and package for distribution
+- **Hot reload** — `bootstack dev app.py` updates the running app on save and keeps your place; module-level state and the active page survive the reload
 - **PyInstaller packaging built in** — `bootstack build` produces a standalone executable; no separate toolchain required
 
 ## Installation
@@ -214,6 +215,7 @@ bootstack appicon                           # Design an app icon and export it
 bootstack start MyApp                       # Create a new project (basic template)
 bootstack start MyApp --template appshell   # ...or with sidebar navigation
 bootstack run                               # Run the app defined in the project config
+bootstack dev app.py                        # Run with hot reload (live edit-and-save)
 bootstack add page Dashboard                # Add a new page (appshell)
 bootstack add view Settings                 # Add a new view (basic)
 bootstack add dialog Preferences            # Add a new dialog
