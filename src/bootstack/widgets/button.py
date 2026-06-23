@@ -8,7 +8,7 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.icon_image_props import IconProperty, ImageProperty
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant, IconSpec, LocalizeMode
+from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant, IconSpec, LocalizeMode, SurfaceToken
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -41,6 +41,10 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
             buttons uniform width (e.g. `width=10`).
         textsignal: Reactive `Signal[str]` bound to the button text. Updates
             automatically when the signal changes.
+        surface: The background surface the button sits on — `'content'`,
+            `'card'`, `'card_raised'`, `'chrome'`, or `'overlay'`. Affects how a
+            `ghost`/`outline` button blends with its container (e.g. a toolbar
+            sets `'chrome'`). Defaults to the theme's content surface.
         density: Padding density.
         disabled: If `True`, the button is non-interactive and visually dimmed.
         localize: Whether the text is translated through the catalog — `True`,
@@ -66,6 +70,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         image: Any = None,
         width: int | None = None,
         textsignal: "Signal[str] | None" = None,
+        surface: SurfaceToken | str | None = None,
         density: WidgetDensity | None = None,
         disabled: bool = False,
         localize: LocalizeMode | None = None,
@@ -109,6 +114,8 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
             internal_kwargs["width"] = width
         if textsignal is not None:
             internal_kwargs["textsignal"] = textsignal
+        if surface is not None:
+            internal_kwargs["surface"] = surface
         if density is not None:
             internal_kwargs["density"] = density
         if disabled:

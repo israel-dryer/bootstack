@@ -9,6 +9,8 @@ from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, Bu
 
 if TYPE_CHECKING:
     from bootstack.widgets._impl.composites.menu.model import MenuGroup
+    from bootstack.widgets.button import Button
+    from bootstack.widgets.label import Label
 
 
 class Toolbar(PublicWidgetBase):
@@ -113,8 +115,8 @@ class Toolbar(PublicWidgetBase):
         accent: AccentToken | str | None = None,
         variant: ButtonVariant | None = None,
         **kwargs: Any,
-    ) -> Any:
-        """Add a button to the toolbar and return a handle for later control.
+    ) -> "Button":
+        """Add a button to the toolbar and return it for later control.
 
         When both `label` and `icon` are given, the button shows text and icon
         side by side. When only `icon` is given, the button is icon-only.
@@ -128,22 +130,25 @@ class Toolbar(PublicWidgetBase):
                 `button_variant` (default `'ghost'`).
 
         Returns:
-            An internal button handle. Use it to reconfigure or disable the
-            button after creation: ``btn.configure(state='disabled')``.
+            The :class:`~bootstack.Button` — use its live properties to control
+            it later, e.g. ``btn.disabled = True`` or ``btn.text = 'Saving…'``.
         """
-        kw: dict[str, Any] = {}
-        if label is not None:
-            kw["text"] = label
+        from bootstack.widgets.button import Button
+
+        kw: dict[str, Any] = {
+            "text": label or "",
+            "variant": variant or self.button_variant,
+            "density": self.density,
+            "surface": self._internal.surface,
+        }
         if icon is not None:
             kw["icon"] = icon
         if on_click is not None:
-            kw["command"] = on_click
+            kw["on_click"] = on_click
         if accent is not None:
             kw["accent"] = accent
-        if variant is not None:
-            kw["variant"] = variant
-        kw.update(kwargs)
-        return self._internal.add_button(**kw)
+        kw.update(kwargs)  # explicit kwargs (incl. text=) win over the defaults
+        return Button(parent=self, **kw)
 
     def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
         """Add a dropdown menu (File / Edit / …) as a toolbar item.
@@ -177,8 +182,8 @@ class Toolbar(PublicWidgetBase):
         icon: str | None = None,
         font: str | None = None,
         **kwargs: Any,
-    ) -> Any:
-        """Add a non-interactive label to the toolbar and return a handle.
+    ) -> "Label":
+        """Add a non-interactive label to the toolbar and return it.
 
         Args:
             text: Label text.
@@ -186,18 +191,21 @@ class Toolbar(PublicWidgetBase):
             font: Font token, e.g. `'heading-md'` or `'caption'`.
 
         Returns:
-            An internal label handle. Use it to update or hide the label after
-            creation: ``lbl.configure(text='Updated')``.
+            The :class:`~bootstack.Label` — use its live properties to update it
+            later, e.g. ``lbl.text = 'Updated'``.
         """
-        kw: dict[str, Any] = {}
-        if text is not None:
-            kw["text"] = text
+        from bootstack.widgets.label import Label
+
+        kw: dict[str, Any] = {"text": text or "", "surface": self._internal.surface}
         if icon is not None:
             kw["icon"] = icon
         if font is not None:
             kw["font"] = font
         kw.update(kwargs)
-        return self._internal.add_label(**kw)
+        lbl = Label(parent=self, **kw)
+        # On a draggable bar (e.g. a titlebar) the label doubles as a drag handle.
+        self._internal._attach_drag(lbl._internal)
+        return lbl
 
     def add_divider(self, length: int = 16) -> None:
         """Add a vertical divider.

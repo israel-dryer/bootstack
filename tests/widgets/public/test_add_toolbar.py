@@ -52,6 +52,52 @@ def test_add_toolbar_context_manager_scopes_and_returns_handle(app):
     assert len(tb._internal.content.winfo_children()) == 1
 
 
+def test_add_button_returns_public_button_with_live_props(app):
+    import bootstack as bs
+
+    tb = app.add_toolbar()
+    btn = tb.add_button("Save", icon="floppy", on_click=lambda: None)
+    assert isinstance(btn, bs.Button)  # public widget, not an _impl primitive
+    btn.disabled = True
+    assert btn.disabled is True
+    btn.text = "Saving"
+    assert btn.text == "Saving"
+
+
+def test_add_label_returns_public_label_with_live_props(app):
+    import bootstack as bs
+
+    tb = app.add_toolbar()
+    lbl = tb.add_label("Ready")
+    assert isinstance(lbl, bs.Label)
+    lbl.text = "Done"
+    assert lbl.text == "Done"
+
+
+def test_add_button_inherits_bar_density_variant(app):
+    tb = app.add_toolbar(density="compact", button_variant="ghost")
+    btn = tb.add_button("X")
+    # Built on the bar's content frame, carrying the bar's defaults.
+    assert btn._internal.winfo_parent() == str(tb._internal.content)
+
+
+def test_add_button_text_kwarg_still_supported(app):
+    # Backwards-compatible: text= (legacy) works alongside the label positional.
+    tb = app.add_toolbar()
+    btn = tb.add_button(text="Explicit")
+    assert btn.text == "Explicit"
+
+
+def test_titlebar_label_is_draggable_button_is_not(app):
+    # A draggable bar (window controls) makes labels double as drag handles;
+    # buttons stay click targets.
+    tb = app.add_toolbar(show_window_controls=True)
+    lbl = tb.add_label("Title")
+    btn = tb.add_button(icon="x")
+    assert lbl._internal.bind("<B1-Motion>")       # label drags the window
+    assert not btn._internal.bind("<B1-Motion>")   # button does not
+
+
 def test_add_widget_class_inherits_bar_density_skips_unsupported_surface(app):
     import bootstack as bs
 

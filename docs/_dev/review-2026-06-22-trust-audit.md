@@ -66,9 +66,17 @@ mislabel / doc-test gap · 🟢 verified clean.
   selections to whole lines; #297 keyboard indent only works when
   `auto_indent=True`; ScrollView `scroll_position` docstring claims `(1.0,1.0)` is
   reachable (it's the top-left fraction, never 1.0).
-- **Internal leak (#299):** `add_button`/`add_label` return internal `_impl`
-  primitives (annotated `-> Any`); `add_divider`/`add_spacer` still return `None`
-  (half-done #262).
+- **Internal leak (#299): FIXED for button/label.** `add_button`/`add_label` now
+  build and return the public :class:`bootstack.Button` / :class:`bootstack.Label`
+  (live properties; no `_impl` leak), carrying the bar's `density`/`surface`. Added
+  `surface=` to `bs.Button` so a ghost toolbar button still blends into the chrome
+  bar; preserved window-drag bindings on draggable-titlebar labels via an internal
+  `_attach_drag` helper. Item spacing is now a uniform `padx=2` for all added items
+  (was 0 for buttons / 4 for labels) — a small, intentional consistency change.
+  **`add_divider`/`add_spacer` still return `None` (deferred):** returning a public
+  `Divider`/`Spacer` is entangled with the pack-based internal toolbar (a `Spacer`
+  needs `expand=True` packing the generic container protocol doesn't apply), tracked
+  with the unified-toolbars work; the handle's only use is detach/attach.
 
 ## 🟢 Verified clean
 
