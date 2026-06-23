@@ -1,10 +1,13 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Literal
+from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
+from bootstack.widgets._core.base import adapt_handler
 from bootstack.widgets._core.container import FlexContainer
+from bootstack.events import ScrollEvent, Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import Padding, ScrollbarVariant
 
 
@@ -134,3 +137,45 @@ class ScrollView(FlexContainer):
             fraction: 0.0 (left) to 1.0 (right).
         """
         self._internal.xview_moveto(fraction)
+
+    @property
+    def scroll_position(self) -> tuple[float, float]:
+        """Current scroll position as `(y, x)` fractions in `[0.0, 1.0]`.
+
+        `(0.0, 0.0)` is the top-left corner; `(1.0, 1.0)` is the bottom-right.
+        Read this inside an `on_scroll` handler to get the new position:
+
+            sv.on_scroll(lambda e: print(e.y, e.x))
+        """
+        return self._internal.scroll_position
+
+    # ----- Events -----
+
+    @overload
+    def on_scroll(self) -> Stream: ...
+    @overload
+    def on_scroll(self, handler: Callable[[ScrollEvent], Any]) -> Subscription: ...
+    def on_scroll(self, handler: Callable[[ScrollEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired whenever the viewport position changes.
+
+        Fires on mouse-wheel scrolls, programmatic `scroll_to_*` / `yview_moveto`
+        calls, and keyboard scrolling (arrow keys / Page Up / Page Down / Home /
+        End when the canvas has focus from a click).
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ScrollEvent` carrying
+                `y` (vertical fraction, 0.0–1.0) and `x` (horizontal fraction).
+                Omit to get a composable :class:`~bootstack.streams.Stream`.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        sequence = "<<BsScroll>>"
+        if handler is None:
+            def _source(h):
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
+                return Subscription(self._internal, sequence, bid)
+            return Stream(self._internal, _source=_source)
+        bid = self._internal.bind(sequence, adapt_handler(handler), add="+")
+        return Subscription(self._internal, sequence, bid)

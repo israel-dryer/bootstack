@@ -7,6 +7,7 @@ from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets.types import Master
+from bootstack.events import ScrollEvent
 
 
 class ScrollView(Frame):
@@ -88,6 +89,9 @@ class ScrollView(Frame):
             canvas_kw["width"] = canvas_width
         self.canvas = Canvas(self, **canvas_kw)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
+        # Focus canvas on click so keyboard scrolling works.
+        self.canvas.bind("<Button-1>", lambda e: self.canvas.focus_set(), add="+")
+        self._setup_keyboard_bindings()
 
         # Create scrollbars. Thread our own surface through so the scrollbar track
         # matches the container (an auto-hiding bar then leaves no tinted gutter).
@@ -235,6 +239,20 @@ class ScrollView(Frame):
         else:
             self.bind_class(self._scroll_tag, "<MouseWheel>", self._on_mousewheel)
             self.bind_class(self._scroll_tag, "<Shift-MouseWheel>", self._on_shift_mousewheel)
+
+    def _setup_keyboard_bindings(self) -> None:
+        """Bind arrow / page / home / end keys to the canvas for keyboard scroll."""
+        c = self.canvas
+        # Vertical
+        c.bind("<Up>",    lambda e: self.canvas.yview_scroll(-1, "units") or "break", add="+")
+        c.bind("<Down>",  lambda e: self.canvas.yview_scroll( 1, "units") or "break", add="+")
+        c.bind("<Prior>", lambda e: self.canvas.yview_scroll(-1, "pages") or "break", add="+")
+        c.bind("<Next>",  lambda e: self.canvas.yview_scroll( 1, "pages") or "break", add="+")
+        c.bind("<Home>",  lambda e: self.canvas.yview_moveto(0.0) or "break", add="+")
+        c.bind("<End>",   lambda e: self.canvas.yview_moveto(1.0) or "break", add="+")
+        # Horizontal
+        c.bind("<Left>",  lambda e: self.canvas.xview_scroll(-1, "units") or "break", add="+")
+        c.bind("<Right>", lambda e: self.canvas.xview_scroll( 1, "units") or "break", add="+")
 
     def _layout_widgets(self):
         """Layout the canvas and scrollbars.
@@ -411,11 +429,23 @@ class ScrollView(Frame):
         """Update vertical scrollbar position."""
         self.vertical_scrollbar.set(first, last)
         self._update_scrollbar_visibility()
+        self._emit_scroll_event()
 
     def _on_canvas_scroll_x(self, first, last):
         """Update horizontal scrollbar position."""
         self.horizontal_scrollbar.set(first, last)
         self._update_scrollbar_visibility()
+        self._emit_scroll_event()
+
+    def _emit_scroll_event(self) -> None:
+        y = float(self.canvas.yview()[0])
+        x = float(self.canvas.xview()[0])
+        self.event_generate("<<BsScroll>>", data=ScrollEvent(y=y, x=x))
+
+    @property
+    def scroll_position(self) -> tuple[float, float]:
+        """Current scroll position as `(y, x)` fractions in `[0.0, 1.0]`."""
+        return float(self.canvas.yview()[0]), float(self.canvas.xview()[0])
 
     def _update_scrollbar_visibility(self):
         """Update scrollbar visibility based on current mode."""
