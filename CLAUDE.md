@@ -21,6 +21,32 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Icon-DPI sizing + Tooltip subtree coverage (PRs #306, #307, #309 — MERGED;
+  2026-06-23).** Three small fixes off the 0.1.0 cleanup backlog, each its own
+  branch→PR→`main`. **#267 (PR #306):** the public `Image` handle (`get_icon` /
+  `image=`) and the MenuButton chevron rendered glyphs at their literal *logical*
+  size and so read soft at fractional/high DPI. Fix = new **`scale_icon_size(base)`**
+  (`_runtime/utility.py`, logical→physical, floored at base like
+  `scale_padding_floor`) applied in both `Image` render paths (`_load_pil`,
+  `_materialize`; reported `width`/`height` stay logical — public contract unchanged)
+  + the chevron routed through `b.scale()` to match combobox/spinbox. **Adversarial
+  verification overturned the issue's headline:** the Workbench rail was NOT soft (it
+  already scales 28→41 via `normalize_icon_spec`); the soft paths were only the public
+  handle + the chevron. **#305 (PR #309):** text+icon `Button`/`MenuButton` icons
+  *double-scaled* at high DPI — `icon_size()`'s text branch returned the font ascent
+  (already physical), then `normalize_icon_spec` re-scaled it. Fix = that branch now
+  returns logical (`round(ascent / ui_scale)`) so normalize is the single scaler.
+  **Validated row heights** at both densities × DPIs: this fixed a real ~10px
+  inflation of the COMPACT text+icon button at 150% (65→55, matching siblings).
+  **#260 (PR #307):** `Tooltip.refresh_bindings()` (public + internal, mirroring
+  `ScrollView`) re-covers a container target's subtree for children added *after*
+  attach (`propagate_target_bindings` only tags descendants present at attach time).
+  **#207 DEFERRED** (maintainer call): no API implication, low self-inflicted impact,
+  Win/Linux only; the risky grab fix breaks reopen-at-new-spot — agreed proportional
+  fix if revisited is an open-menu registry. Memory
+  `reference_icon_dpi_scaling_pipeline`. Process note: the empirical icon-size probe
+  (`development/probe_icon_sizes.py`, untracked) was decisive — static reading of the
+  4-mechanism scaling pipeline was too tangled to trust.
 - **Trust audit of the 2026-06-22 session + fixes (PRs #301, #302 — MERGED;
   2026-06-22).** A prior agent (on another machine) shipped 14 PRs (#289, #291–#299
   + releases `0.1.0a14`); the maintainer found repeated errors/hallucinations and
@@ -425,36 +451,61 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session.** Last session = the **trust audit of the 2026-06-22
-> 14-PR session** (PRs #301, #302 — MERGED; see the top "Recently completed" entry +
-> `docs/_dev/review-2026-06-22-trust-audit.md`). It fixed a merged-broken toolbar
-> regression (#299), a DataTable `iter_rows` source leak, the broken `-W` docs build,
-> and filled docs/tests for the CodeEditor/ScrollView/toolbar features the prior agent
-> shipped bare. **`main` is green:** full GUI suite passes, `-W` docs build is clean.
+> ⏭ **START HERE next session: the SPLASH SCREEN — #308 then #310.** This is a
+> two-step feature; **build #308 first, it is the prerequisite.**
 >
-> **Housekeeping first:** these issues are **DONE but still open** — close them:
-> **#246, #251, #252, #254, #255, #262, #263** (shipped in the 14-PR session, then
-> completed/verified in the audit). Also already done elsewhere: **#150** (test harness
-> shared-root — `tests/run_gui.py`; memory `project_test_harness_shared_root`), **#258**
-> (SplitView `on_sash_moved` — PR #300).
+> - **#308 — make `windowtype` cross-platform (FIRST, prerequisite).**
+>   `Toplevel(windowtype=...)` is honored only on macOS (Aqua) and Linux (X11);
+>   **win32 never reads it**, so `windowtype="splash"` gives a borderless window on
+>   Mac/Linux but a **fully decorated window on Windows**. Add a `winsys == "win32"`
+>   branch in `src/bootstack/_runtime/toplevel.py` (the only win32 attr handling
+>   today is `toolwindow` at ~`:191`; the Aqua map already has
+>   `"splash": ("plain","none")` at ~`:114` but **no caller passes it** — it's
+>   dormant). Goal: a chromeless, taskbar-suppressed window on all THREE platforms.
+>   Own `feat/*` branch → PR.
+> - **#310 — `bs.Splash` app intro-screen widget (SECOND, blocked by #308).** A
+>   borderless intro screen shown at startup that **covers main-window construction**
+>   and dismisses when ready / on a timer / on skip. Design is LOCKED on the issue —
+>   read #310 in full before coding. Key decisions: **own borderless toplevel** (not
+>   an in-window swap — gives centered look + window-alpha fade Tk can't do
+>   in-window); **pure container** (no `image=`/`title=` sugar — author the logo/text
+>   with normal context parenting like the app body); **construction IS registration**
+>   (resolves the ambient app from the context stack like a dialog/toast — does NOT
+>   attach to the active layout parent; the app's show logic gains one branch: "if a
+>   splash is registered, show it and defer my reveal until it dismisses"); **shows on
+>   construction** (where you write it in the block determines how much startup it
+>   covers — put it first); the `with` block scopes **content authoring only**, it
+>   does NOT bound the splash's lifetime (deliberate asymmetry with `App.__exit__`).
+>   **API:** `bs.Splash(*, until: float|'ready'|'manual'='ready', skippable=False,
+>   min_duration=0.0, fade=True, size=None, surface='card', padding=24, gap=12)`.
+>   One coherent dismiss rule: `until=` is a single mutually-exclusive knob
+>   (`'ready'` = close when app built · `<float>` = close after N s, ready does NOT
+>   auto-close · `'manual'` = only skip/button/`dismiss()`); `skippable=`+`dismiss()`
+>   layer on top; `min_duration` is an orthogonal floor (anti-blink). Live prop:
+>   `is_showing` (read-only). Method: `dismiss()`. No `status` prop (author a
+>   `Label(textsignal=...)`). Follows the standing principles below (live props only
+>   for real runtime needs; no toolkit detail in docs).
 >
-> **NOW: the road to 0.1.0 STABLE.** The genuinely-open backlog (7 issues):
+> **`main` is GREEN.** Last session shipped the **icon-DPI + Tooltip** cluster (all
+> MERGED): **#267** (PR #306 — public `get_icon`/`image=` handle + MenuButton chevron
+> now DPI-scale via new `scale_icon_size()`; the issue's "rail is soft" headline was a
+> MISDIAGNOSIS — the rail already scales via `normalize_icon_spec`); **#305** (PR #309
+> — text+icon Button/MenuButton icon double-scaled at high DPI; `icon_size()` text
+> branch now returns logical so `normalize_icon_spec` is the single scaler — fixed a
+> real ~10px compact-button row-height inflation at 150%); **#260** (PR #307 —
+> `Tooltip.refresh_bindings()` covers container children added after attach, mirroring
+> ScrollView). Memory `reference_icon_dpi_scaling_pipeline`. Residual noted (NOT
+> filed): compact buttons ~3px taller than inputs at high DPI (plain button too —
+> `button_height` vs `field_height` tuning, icon-independent).
 >
-> **Ship gate (the stable cut):**
+> **Also still on the road to 0.1.0 STABLE** (after the splash):
 > - **#149** — final public-surface audit + lock + **CHANGELOG** (the ship gate).
->
-> **Cleanup backlog (group sensibly, one PR each):**
-> - **#275** (MenuButton: `.text` get/set for Button/Label parity — new, from #262).
-> - **#242** (`.text` setter dead when a `textsignal` is bound — text-widget family).
-> - **#250** (Pythonic `(row, column)` position model vs Tk `"line.column"`).
-> - **#260** (Tooltip: children added after attach not covered).
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
-> - **#207** (ContextMenu outside-dismiss vs a `'break'`-returning target — DEFERRED,
->   analysis on the issue).
-> - **#267** (DPI-aware icon sizing — own branch; icons soft at fractional DPI).
->
-> **Pre-ship feature (decision-gated):** **#192** — color-swatch Select control;
-> lock shape/naming with the maintainer before any code.
+> - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
+> - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
+>   API implication, low/self-inflicted impact, Win/Linux only; agreed proportional
+>   fix if revisited = a module-level open-menu registry + dismiss-all from
+>   `DataTable._on_header_click`, NOT the risky grab). Analysis on the issue.
 >
 > **Standing principles** (apply in every review): live properties only for
 > *legitimate runtime needs* (`feedback_live_properties_runtime_need`) — e.g. `surface`
