@@ -62,7 +62,13 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             resizable: Whether the user may resize the window as (x, y).
             transient: Mark this window as transient for the given master.
             overrideredirect: If True, instruct the window manager to ignore this window.
-            windowtype: On X11, request a specific window manager type via `-type`.
+            windowtype: Request a native window type, resolved per platform from a
+                single switch. Values: `'splash'`, `'tooltip'`, `'dock'`, `'utility'`.
+                On X11 it sets `-type`; on macOS it maps to a `MacWindowStyle`; on
+                Windows the chromeless types (`'splash'`/`'tooltip'`/`'dock'`) resolve
+                to override-redirect (borderless, no taskbar button) and `'utility'`
+                resolves to a tool window. The caller does not also need to pass
+                `overrideredirect=True` to get a chromeless window on Windows.
             topmost: If True, keep this window above others (`-topmost`).
             toolwindow: On Windows, request a toolwindow style (`-toolwindow`).
             alpha: On Windows, the window alpha transparency (0.0–1.0) via `-alpha`.
@@ -124,6 +130,20 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
                 except tkinter.TclError:
                     pass
 
+        # Windows has no native window-type attribute, so translate windowtype
+        # to the matching primitive: the chromeless types resolve to
+        # override-redirect (borderless + no taskbar/Alt-Tab button), and
+        # 'utility' resolves to a tool window (minimal chrome). One switch then
+        # yields the right native window on all three platforms. (On Aqua the
+        # overrideredirect call is a no-op — MacWindowStyle handled it above.)
+        _effective_overrideredirect = overrideredirect
+        _effective_toolwindow = toolwindow
+        if windowtype is not None and self.winsys == "win32":
+            if windowtype in ("splash", "tooltip", "dock"):
+                _effective_overrideredirect = True
+            elif windowtype == "utility":
+                _effective_toolwindow = True
+
         # Setup icon (use default bootstack icon if no icon provided)
         self._setup_icon(icon, default_icon_enabled=True)
 
@@ -169,7 +189,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             maxsize=maxsize,
             resizable=resizable,
             transient=_resolved_transient,
-            overrideredirect=overrideredirect,
+            overrideredirect=_effective_overrideredirect,
             alpha=alpha,
             window_style=window_style,
             center_on_parent=_center_parent,
@@ -188,7 +208,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         if topmost:
             self.attributes("-topmost", 1)
 
-        if toolwindow and self.winsys == "win32":
+        if _effective_toolwindow and self.winsys == "win32":
             self.attributes("-toolwindow", 1)
 
         # Register on_close handler
