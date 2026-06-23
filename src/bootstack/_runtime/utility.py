@@ -247,6 +247,27 @@ def scale_padding_floor(base: int) -> int:
     return max(base, round(base * _ScalingState.get_ui_scale()))
 
 
+def scale_icon_size(base: int) -> int:
+    """Scale a logical icon size to physical pixels for the current DPI.
+
+    Icons are authored at logical (96-DPI) sizes. On a higher-DPI display the
+    surrounding fonts and layout scale up via Tk scaling, so an icon rendered at
+    its literal logical size lands too small for its container and gets resampled
+    by the display, reading as soft (#267). Rendering at the physical size makes
+    the glyph land 1:1 in the scaled layout, so it stays crisp.
+
+    Floors at `base` (mirrors `scale_padding_floor`) so an uninitialized scale
+    state or a sub-baseline display never renders an icon smaller than requested.
+
+    Args:
+        base: The logical icon size in pixels at standard (96-DPI) scaling.
+
+    Returns:
+        The DPI-scaled size, at least `base`.
+    """
+    return max(base, round(base * _ScalingState.get_ui_scale()))
+
+
 def scale_size(widget=None, size=None):
     """Scale the size based on the scaling factor of tkinter.
     This is used most frequently to adjust the assets for

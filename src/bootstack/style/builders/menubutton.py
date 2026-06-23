@@ -65,7 +65,9 @@ def _create_chevron_images(
         icon_name: Name of the icon to use (default: 'caret-down-fill')
         density: Button density ('default' or 'compact')
     """
-    size = _chevron_size(density)
+    # Scale to physical pixels for DPI (#267); matches the combobox/spinbox
+    # chevrons (which scale via entry_icon_size) so all chevrons render crisp.
+    size = b.scale(_chevron_size(density))
     normal_chevron = _ImageService.get_icon(icon_name, size, foreground)
     disabled_chevron = _ImageService.get_icon(icon_name, size, disabled)
 

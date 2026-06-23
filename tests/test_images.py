@@ -56,6 +56,33 @@ def test_hex_color_is_static():
     assert get_icon("house", color="#ff8800")._is_theme_following is False
 
 
+def test_get_icon_logical_size_unchanged_at_baseline():
+    # The reported (logical) size is the user's request, regardless of DPI; the
+    # physical render size is a separate, internal concern.
+    assert get_icon("house", size=24).width == 24
+
+
+def test_handle_renders_at_physical_size_for_dpi(monkeypatch):
+    # #267: the public icon handle renders the glyph at the DPI-scaled physical
+    # size so it lands 1:1 in a scaled layout (crisp), while the handle's
+    # reported size stays logical.
+    from bootstack._runtime.utility import _ScalingState
+
+    monkeypatch.setattr(_ScalingState, "get_ui_scale", classmethod(lambda cls: 1.5))
+    icon = get_icon("house", size=24, color="#112233")  # hex → no app needed
+    assert icon.width == 24  # logical, unchanged
+    assert icon._load_pil().size == (36, 36)  # physical: round(24 * 1.5)
+
+
+def test_handle_never_renders_smaller_than_requested(monkeypatch):
+    # A sub-baseline / uninitialized scale must never shrink an icon below its
+    # logical size (the scale_icon_size floor).
+    from bootstack._runtime.utility import _ScalingState
+
+    monkeypatch.setattr(_ScalingState, "get_ui_scale", classmethod(lambda cls: 0.75))
+    assert get_icon("house", size=24, color="#112233")._load_pil().size == (24, 24)
+
+
 @pytest.mark.parametrize("ext", [".ico", ".png", ".icns"])
 def test_appicon_save_exports_each_format(tmp_path, ext):
     out = tmp_path / f"app{ext}"

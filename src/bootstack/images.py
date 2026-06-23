@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from bootstack._core.images import _ImageService
+from bootstack._runtime.utility import scale_icon_size
 
 if TYPE_CHECKING:
     from PIL.Image import Image as _PILImage
@@ -248,7 +249,7 @@ class Image:
             # every scroll doesn't re-render the glyph each time; dropped by
             # _invalidate() on a theme change so token colors re-render.
             if self._icon_pil is None:
-                size = self._icon.size
+                size = scale_icon_size(self._icon.size)
                 size = size if size % 2 == 0 else size + 1
                 self._icon_pil = _ImageService._render_icon(
                     self._icon.name, size, self._resolve_icon_color()
@@ -285,7 +286,7 @@ class Image:
             return self._photo
         if self._icon is not None:
             color = self._resolve_icon_color()
-            photo = _ImageService.get_icon(self._icon.name, self._icon.size, color)
+            photo = _ImageService.get_icon(self._icon.name, scale_icon_size(self._icon.size), color)
         elif self._path is not None:
             photo = _ImageService.open(self._path)
         elif self._data is not None:
