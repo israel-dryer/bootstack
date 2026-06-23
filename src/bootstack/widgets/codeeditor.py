@@ -462,7 +462,8 @@ class CodeEditor(PublicWidgetBase):
 
         With a selection, every selected line is indented by one tab stop (spaces
         or a tab character, depending on the editor's `insert_spaces` setting).
-        The selection is preserved after the operation.
+        The affected lines stay selected afterward (a partial-line selection is
+        re-selected to span the whole lines).
 
         Without a selection, inserts spaces to the next tab stop at the cursor
         (same as pressing Tab with no selection).
@@ -473,8 +474,9 @@ class CodeEditor(PublicWidgetBase):
         """Dedent selected lines (or the current line) by one tab stop.
 
         Removes up to one tab stop of leading whitespace from each line in the
-        selection. With no selection, dedents the line the cursor is on.
-        The selection is preserved after the operation.
+        selection. With no selection, dedents the line the cursor is on. The
+        affected lines stay selected afterward (a partial-line selection is
+        re-selected to span the whole lines).
         """
         self._internal.dedent()
 

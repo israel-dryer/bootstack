@@ -239,11 +239,11 @@ def test_two_tables_share_source_independent_search(shown_app):
 
     table_a = bs.DataTable(
         data_source=src, columns=["name", "role"],
-        enable_search=True, page_size=10,
+        searchable=True, page_size=10,
     )
     table_b = bs.DataTable(
         data_source=src, columns=["name", "role"],
-        enable_search=True, page_size=10,
+        searchable=True, page_size=10,
     )
     _pump(shown_app)
 
@@ -252,7 +252,7 @@ def test_two_tables_share_source_independent_search(shown_app):
     assert len(table_b.to_rows("page")) == 3
 
     # Apply a search to table_a only.
-    table_a._internal.set_search("Ada")
+    table_a.set_search("Ada")
     _pump(shown_app)
 
     rows_a = table_a.to_rows("page")
@@ -276,7 +276,7 @@ def test_two_tables_share_source_independent_sort(shown_app):
     _pump(shown_app)
 
     # Sort table_a descending by name.
-    table_a._internal.set_sorting("name", ascending=False)
+    table_a.sort_by("name", ascending=False)
     _pump(shown_app)
 
     names_a = [r["name"] for r in table_a.to_rows("page")]
