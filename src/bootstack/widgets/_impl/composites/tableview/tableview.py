@@ -2407,23 +2407,30 @@ class TableView(Frame):
             if rows:
                 yield rows
             return
-        with self._apply_view_to_source():
-            if scope == "page":
+        # The view (this table's filter/sort) is applied to the SHARED source only
+        # for the duration of each read, never across a `yield` — otherwise a
+        # caller that stops iterating early (e.g. `break`s out of `iter_rows`)
+        # would suspend the generator inside the context manager and leave the
+        # shared source clobbered until GC, defeating per-view isolation.
+        if scope == "page":
+            with self._apply_view_to_source():
                 psize = self._ds_page_size()
                 start = self._current_page * psize
                 rows = self._datasource.page_slice(start, psize)
-                if rows:
-                    yield rows
-                return
-            # 'all' (the filtered/sorted set) — page through so memory stays flat.
+            if rows:
+                yield rows
+            return
+        # 'all' (the filtered/sorted set) — page through so memory stays flat.
+        with self._apply_view_to_source():
             total = self._datasource.count
-            offset = 0
-            while offset < total:
+        offset = 0
+        while offset < total:
+            with self._apply_view_to_source():
                 chunk = self._datasource.page_slice(offset, chunk_size)
-                if not chunk:
-                    break
-                yield chunk
-                offset += len(chunk)
+            if not chunk:
+                break
+            yield chunk
+            offset += len(chunk)
 
     def _to_delimited(self, rows: list, delimiter: str) -> str:
         """Serialize `rows` (raw records) as delimited text over the displayed columns."""

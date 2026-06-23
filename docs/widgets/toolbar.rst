@@ -95,6 +95,25 @@ for the application name or section titles.
    tb.add_divider()
    tb.add_button("New", icon="file-earmark-plus")
 
+Controlling items after creation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``add_button()`` returns the :class:`~bootstack.Button` and ``add_label()``
+returns the :class:`~bootstack.Label`, so you can keep a reference and drive it
+later with the widget's live properties — no need to rebuild the bar.
+
+.. code-block:: python
+
+   save = tb.add_button("Save", icon="floppy", on_click=save_doc)
+   status = tb.add_label("Ready")
+
+   save.disabled = True              # disable until there are changes
+   save.text = "Saving…"             # update the label text
+   status.text = "All changes saved"
+
+The bar applies its own ``density`` and ``surface`` to the items it builds, so a
+returned button or label already matches the rest of the toolbar.
+
 Adding menus
 ~~~~~~~~~~~~
 

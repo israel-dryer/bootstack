@@ -167,6 +167,35 @@ so map the stream — not the property — and read the position inside the map:
            .listen(status.set)
    )
 
+Selection and block indent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``selection`` reads and writes the selected range as a pair of 1-indexed
+``(line, col)`` tuples — the same coordinates the position methods use — or
+``None`` when nothing is selected. ``selected_text`` returns the selected string.
+
+.. code-block:: python
+
+   editor = bs.CodeEditor(value="line one\nline two\nline three")
+
+   sel = editor.selection          # e.g. ((1, 1), (2, 5)), or None
+   text = editor.selected_text     # the selected text, or ""
+
+   editor.selection = ((2, 1), (3, 1))  # select line 2
+   editor.selection = None              # clear the selection
+
+``indent()`` and ``dedent()`` shift whole lines by one tab stop. With a
+selection they act on every selected line and leave those lines selected;
+with no selection ``indent()`` inserts a tab stop at the cursor and
+``dedent()`` outdents the current line. They are the programmatic form of
+pressing ``Tab`` / ``Shift+Tab`` (see Keyboard).
+
+.. code-block:: python
+
+   editor.selection = ((2, 1), (3, 1))
+   editor.indent()    # indent lines 2–3 by one tab stop
+   editor.dedent()    # and back out again
+
 Validation
 ~~~~~~~~~~
 
@@ -240,7 +269,8 @@ on Windows and Linux, ``Cmd+Z`` / ``Cmd+Shift+Z`` on macOS).
 ============================  ============================================================
 Key                           Action
 ============================  ============================================================
-``Tab``                       Insert indentation to the next tab stop
+``Tab``                       Indent the selected lines, or insert a tab stop at the cursor
+``Shift+Tab``                 Dedent the selected lines, or the current line
 ``Return``                    New line, matching the current indent (``auto_indent``)
 Undo / redo                   Native per-platform shortcut (see above)
 ``Ctrl+F`` / ``Cmd+F``        Open the find bar
@@ -250,10 +280,17 @@ Undo / redo                   Native per-platform shortcut (see above)
 
 .. note::
 
-   ``Tab`` inserts indentation, so it does not move focus out of the editor —
-   that is deliberate for a code surface, matching desktop editors. Move focus
-   away by clicking another control. When you instead want a labeled multi-line
-   field where ``Tab`` advances focus, use :doc:`textarea`.
+   ``Tab`` indents, so it does not move focus out of the editor — that is
+   deliberate for a code surface, matching desktop editors. Move focus away by
+   clicking another control. When you instead want a labeled multi-line field
+   where ``Tab`` advances focus, use :doc:`textarea`.
+
+.. note::
+
+   The ``Tab`` / ``Shift+Tab`` block indent/dedent keys are active when
+   ``auto_indent=True`` (the default). The :meth:`~bootstack.CodeEditor.indent`
+   and :meth:`~bootstack.CodeEditor.dedent` methods work regardless of the
+   setting — see `Selection and block indent`_.
 
 Widget sizing
 ~~~~~~~~~~~~~

@@ -1,36 +1,45 @@
 Signals for bootstack
 =====================
 
-Lightweight reactive state built on top of tkinter's ``Variable`` API.
-Signals wrap a ``tk.Variable`` and provide a small, typed interface for
-reading, writing, deriving, and subscribing to changes.
+Lightweight reactive state. A ``Signal[T]`` holds a value, notifies subscribers
+when it changes, and can be bound two-way to widgets. It is backed by a Tk
+variable, but that variable is created lazily, so the Tk surface never leaks
+into the public API.
+
+> The user-facing guide is ``docs/reference/signals.rst`` (teaching) and the
+> API Reference page for ``bootstack.signals`` (lookup). This README covers the
+> package internals; keep it in sync with ``signal.py``.
 
 Architecture
-- ``Signal[T]``: Generic wrapper around a ``tk.Variable`` with ``get()``,
-  ``set()``, ``subscribe()``, and ``map()``.
-- ``_SignalTrace`` (internal): Manages Tcl traces for a variable
+- ``Signal[T]`` (public): the reactive cell — ``signal()`` to read, ``set()`` to
+  write, ``subscribe()`` to observe, ``map()`` to derive.
+- Lazy Tk-var realization: ``Signal(...)`` creates **no** Tk variable at
+  construction, so a signal can be created at module level (before any ``App``).
+  The backing variable is realized on first bind/escape-hatch access against the
+  running interpreter, and re-realized cleanly across ``App`` lifecycles.
+- Object mode: values that are not Tk-native (anything other than
+  ``bool``/``int``/``float``/``str``/``set`` — e.g. a ``date`` or a dataclass)
+  are held as the authoritative Python object; the Tk variable is used only as a
+  change-notification bus. Native values are stored in the Tk variable directly.
+- ``_SignalTrace`` (internal): manages the Tcl variable trace
   (``trace_add``/``trace_remove``).
-- ``TraceOperation``: Literal type alias for trace operations
-  ("array", "read", "write", "unset").
 
 Key behaviors
-- Value access: ``signal()`` returns the current value; ``signal.set(v)``
-  updates it. Signals can be passed directly to widget options like
-  ``textsignal``; bootstack uses the underlying Tcl variable name.
-- Subscriptions: ``subscribe(cb, immediate=False)`` registers a callback and
-  returns a trace id. Multiple subscriptions of the same callback are supported.
-  Use ``unsubscribe(cb)`` to remove all subscriptions for that callback or
-  ``unsubscribe_all()`` to clear all.
-- Derived signals: ``map(transform)`` creates a new signal that follows this
-  one using a transform function. A weak reference prevents the parent from
-  keeping derived signals alive unnecessarily.
-- Robustness: The last known value is cached and returned if the underlying
-  Tcl variable is destroyed. Redundant updates are skipped when the new value
-  equals the current one. ``set()`` enforces the signal's type, except that an
-  ``int`` is widened to a ``float``-typed signal.
+- Read / write: ``signal()`` returns the current value; ``signal.set(v)`` updates
+  it. A ``set()`` to an equal value is a no-op (no notification).
+- Subscriptions: ``subscribe(callback, *, immediate=False)`` returns a
+  ``streams.Handle``; call ``handle.cancel()`` to unsubscribe. ``immediate=True``
+  fires the callback once with the current value at subscribe time.
+- Derived signals: ``map(transform)`` returns a new signal that follows this one.
+  A weak reference keeps the parent from holding the derived signal alive.
+- Robustness: the last value is cached and returned even if the backing variable
+  has been dropped (e.g. between ``App`` lifecycles).
+- Escape hatch: ``Signal.from_variable(tk_var)`` wraps an existing Tk variable,
+  and ``signal.var`` exposes the backing variable. These are the only Tk-aware
+  paths; everything else stays Tk-free.
 
 Usage
-1) Quick start
+1) Quick start (works at module level — no ``App`` required)
 ```python
 from bootstack.signals import Signal
 
@@ -40,73 +49,50 @@ count.set(1)
 print(count())        # -> 1
 ```
 
-2) With widgets
+2) Two-way binding to a widget
 ```python
 import bootstack as bs
 
-app = bs.App()
-name = bs.Signal("")
-
-entry = bs.Entry(app, textvariable=name)
-entry.pack()
-
-label = bs.Label(app)
-label.pack()
-
-name.subscribe(lambda v: label.configure(text=f"Hello, {v}!"), immediate=True)
-
-app.mainloop()
+with bs.App() as app:
+    name = bs.Signal("")
+    bs.TextField(textsignal=name)          # edits flow into the signal
+    bs.Label(textsignal=name.map(lambda v: f"Hello, {v}!"))  # derived display
+app.run()
 ```
 
-3) Derived signals with ``map``
+3) Subscribing and unsubscribing
 ```python
-from bootstack.signals import Signal
+import bootstack as bs
 
-price = Signal(10.0)
-with_tax = price.map(lambda p: round(p * 1.07, 2))
+with bs.App() as app:
+    flag = bs.Signal(False)
 
-with_tax.subscribe(lambda v: print("price with tax:", v), immediate=True)
-price.set(12.0)
+    def on_flag(value):
+        print("flag:", value)
+
+    handle = flag.subscribe(on_flag, immediate=True)  # prints: flag: False
+    flag.set(True)                                     # prints: flag: True
+    handle.cancel()                                    # stop observing
+app.run()
 ```
 
-4) Wrap existing tkinter variables
+4) Typed (object-mode) values
 ```python
-import tkinter as tk
-from bootstack.signals import Signal
+from datetime import date
+import bootstack as bs
 
-root = tk.Tk()
-tk_var = tk.IntVar(value=5)
-sig = Signal.from_variable(tk_var)
-
-sig.subscribe(print, immediate=True)  # -> 5
-tk_var.set(6)  # prints 6
-sig.set(7)     # keeps both in sync
-```
-
-5) Multiple subscriptions and immediate firing
-```python
-from bootstack.signals import Signal
-
-flag = Signal(False)
-
-fid1 = flag.subscribe(lambda v: print("A:", v), immediate=True)
-fid2 = flag.subscribe(lambda v: print("B:", v))
-
-flag.set(True)  # triggers both
-
-flag.unsubscribe(lambda v: print("B:", v))  # remove all B callbacks
+with bs.App():
+    due = bs.Signal(date.today())
+    bs.DateField(signal=due)        # binds the typed value
+    print(type(due()))              # -> <class 'datetime.date'> (not str)
 ```
 
 Import path
-- Public API is available at the top-level namespace:
-  - ``import bootstack as bs; bs.Signal``
-  - ``from bootstack.signals import Signal, TraceOperation``
+- ``import bootstack as bs; bs.Signal``
+- ``from bootstack.signals import Signal``
 
 Notes
-- Tkinter is not thread-safe. Perform cross-thread updates using ``after``
-  on a Tk widget.
-- Callbacks should be fast; long-running work should be scheduled off the UI
+- The UI toolkit is not thread-safe. Marshal cross-thread updates onto the UI
+  via the framework's scheduling, not by touching the signal from a worker
   thread.
-- Create ``Signal`` after you create the App so the underlying ``tk.Variable``
-  is attached to the same interpreter, or pass ``master=...`` when constructing
-  ``Signal``.
+- Keep subscriber callbacks fast; offload long-running work.

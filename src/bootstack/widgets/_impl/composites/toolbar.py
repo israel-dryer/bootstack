@@ -479,14 +479,18 @@ class Toolbar(Frame):
             **kwargs
         )
         lbl.pack(side='left', padx=4)
-
-        # Make label draggable too if toolbar is draggable
-        if self._draggable:
-            lbl.bind('<Button-1>', self._on_drag_start, add='+')
-            lbl.bind('<B1-Motion>', self._on_drag_motion, add='+')
-            lbl.bind('<Double-Button-1>', self._on_drag_double, add='+')
-
+        self._attach_drag(lbl)
         return lbl
+
+    def _attach_drag(self, widget) -> None:
+        """Wire window-drag bindings onto a child widget so the bar can be
+        grabbed there (used for a draggable titlebar). No-op when the bar is not
+        draggable. Buttons are intentionally excluded — they are click targets."""
+        if not self._draggable:
+            return
+        widget.bind('<Button-1>', self._on_drag_start, add='+')
+        widget.bind('<B1-Motion>', self._on_drag_motion, add='+')
+        widget.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
     def add_separator(self, length: int = 16, **kwargs) -> Separator:
         """Add a vertical separator to the toolbar.
@@ -520,13 +524,7 @@ class Toolbar(Frame):
         """
         spacer = Frame(self._content_frame)
         spacer.pack(side='left', fill='both', expand=True)
-
-        # Make spacer draggable too
-        if self._draggable:
-            spacer.bind('<Button-1>', self._on_drag_start, add='+')
-            spacer.bind('<B1-Motion>', self._on_drag_motion, add='+')
-            spacer.bind('<Double-Button-1>', self._on_drag_double, add='+')
-
+        self._attach_drag(spacer)
         return spacer
 
     def add_widget(self, widget: Widget, **pack_kwargs) -> Widget:

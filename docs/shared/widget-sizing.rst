@@ -2,8 +2,7 @@ All widgets accept self-placement kwargs via ``**kwargs``. The parent
 container determines which options apply — ``Column`` / ``Row`` parents use
 the layout kwargs below, grid-based parents use grid kwargs.
 
-Column (vertical layout)
-''''''''''''''''''''''''
+.. rubric:: Column (vertical layout)
 
 Used inside a ``Column``, ``App``, or any other container with a column layout.
 Children are arranged top-to-bottom, so ``horizontal`` aligns each child across
@@ -32,8 +31,7 @@ the order of the children sets their top-to-bottom position.)
        or a 2-tuple ``(top, bottom)`` for asymmetric spacing. Overrides
        the vertical component of ``margin=``.
 
-Row (horizontal layout)
-'''''''''''''''''''''''
+.. rubric:: Row (horizontal layout)
 
 Used inside a ``Row`` or any other container with a row layout. Children are
 arranged left-to-right, so ``vertical`` aligns each child across the height and
@@ -62,8 +60,7 @@ of the children sets their left-to-right position.)
        or a 2-tuple ``(top, bottom)`` for asymmetric spacing. Overrides
        the vertical component of ``margin=``.
 
-Grid
-''''
+.. rubric:: Grid
 
 Used inside a ``Grid`` container.
 
