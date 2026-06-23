@@ -76,6 +76,47 @@ def test_user_enter_handler_survives_tooltip_destroy(app):
     assert fired == [1]  # the tooltip removed only its own binding
 
 
+# ----- container children added after attach (#260) -----
+
+def _covers(target, child) -> bool:
+    """True if `child` carries the target's bindtag (the tip reaches it)."""
+    return str(target.tk) in child.tk.bindtags()
+
+
+def test_child_present_at_attach_is_covered(app):
+    col = bs.Column(parent=app)
+    early = bs.Label("early", parent=col)
+    bs.Tooltip(col, "tip")
+    assert _covers(col, early)
+
+
+def test_child_added_after_attach_needs_refresh(app):
+    col = bs.Column(parent=app)
+    bs.Label("early", parent=col)
+    tip = bs.Tooltip(col, "tip")
+    late = bs.Label("late", parent=col)  # added after the tooltip was created
+    assert not _covers(col, late)  # not auto-covered (the #260 gap)
+    tip.refresh_bindings()
+    assert _covers(col, late)  # refresh extends coverage to it
+
+
+def test_refresh_bindings_is_idempotent(app):
+    col = bs.Column(parent=app)
+    early = bs.Label("early", parent=col)
+    tip = bs.Tooltip(col, "tip")
+    before = list(early.tk.bindtags())
+    tip.refresh_bindings()
+    assert list(early.tk.bindtags()) == before  # no duplicate tag
+
+
+def test_refresh_bindings_safe_after_target_destroyed(app):
+    btn = bs.Button("x")
+    tip = bs.Tooltip(btn, "tip")
+    btn.destroy()
+    app._tk_root.update_idletasks()
+    tip.refresh_bindings()  # must not raise
+
+
 # ----- normal lifecycle -----
 
 def test_construct_and_destroy(app):

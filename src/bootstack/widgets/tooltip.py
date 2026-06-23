@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any, Literal
 
@@ -19,7 +19,7 @@ class Tooltip:
         target: Widget to attach the tooltip to. Accepts any bootstack widget.
             When the target is a container, the tooltip shows while hovering
             anywhere inside it, including over its children present at attach
-            time.
+            time. For children added later, call `refresh_bindings()`.
         text: Tooltip text content. Defaults to `''`.
         delay: Milliseconds before the tooltip appears on mouse enter. Defaults
             to `250`.
@@ -68,6 +68,16 @@ class Tooltip:
             internal_kwargs["window_point"] = window_point
 
         self._internal = _InternalToolTip(tk_widget, **internal_kwargs)
+
+    def refresh_bindings(self) -> None:
+        """Re-cover a container target's subtree after adding children to it.
+
+        A tooltip on a container covers the children present when it was
+        created. Add more children later and call this so hovering them shows
+        the tip too. Safe to call repeatedly — already-covered children are
+        left untouched.
+        """
+        self._internal.refresh_bindings()
 
     @property
     def text(self) -> str:

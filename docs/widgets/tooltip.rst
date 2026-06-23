@@ -31,6 +31,30 @@ The tooltip appears after 250 ms on hover and hides on mouse leave or click.
    btn = bs.Button("Save")
    bs.Tooltip(btn, "Save your changes to disk")
 
+Covering a container
+~~~~~~~~~~~~~~~~~~~~~
+
+When the target is a container, the tooltip shows while the pointer is anywhere
+inside it — including over its children. This covers the children that exist
+when the tooltip is created.
+
+.. code-block:: python
+
+   with bs.Card(gap=8) as card:
+       bs.Label("Disk usage")
+       bs.Label("82% full")
+   bs.Tooltip(card, "Hover anywhere on the card")
+
+Add children to the container *after* creating the tooltip and they are not
+covered automatically. Call ``refresh_bindings()`` to extend coverage to them —
+it is safe to call repeatedly.
+
+.. code-block:: python
+
+   tip = bs.Tooltip(card, "Hover anywhere on the card")
+   bs.Label("3.2 GB free", parent=card)   # added later
+   tip.refresh_bindings()                 # now covered too
+
 Anchor positioning
 ~~~~~~~~~~~~~~~~~~
 
