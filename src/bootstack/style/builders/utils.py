@@ -211,12 +211,21 @@ def icon_size(icon_only: bool, density: str) -> int:
     if icon_only:
         return 20 if density != 'compact' else 17
 
-    # Get icon size from font ascent for proper alignment with text
-    # Different buffers compensate for y_bias effect per density
+    # Size the icon to the label's cap height (font ascent) for alignment.
+    # Different buffers compensate for y_bias effect per density.
     font_name = 'caption' if density == 'compact' else 'body'
     f = font.nametofont(font_name)
     buffer = 4 if density == 'compact' else 3
-    return f.metrics()['ascent'] + buffer
+    ascent = f.metrics()['ascent'] + buffer
+
+    # The ascent is already in physical pixels (named Tk fonts render at the
+    # current scaling), but this value is handed to normalize_icon_spec, which
+    # re-applies DPI scaling. Return the logical size (divide the scaling back
+    # out) so the icon is scaled exactly once and tracks the cap height at any
+    # DPI, instead of double-scaling to ~ui_scale x too large (#305).
+    from bootstack._runtime.utility import _ScalingState
+    ui_scale = _ScalingState.get_ui_scale() or 1.0
+    return round(ascent / ui_scale)
 
 
 def button_font(density: str) -> str:
