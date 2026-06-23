@@ -32,6 +32,7 @@ from bootstack.events._payloads import (
     RangeSliderEvent,
     RowEvent,
     RowsEvent,
+    ScrollEvent,
     SelectionEvent,
     SliderCommitEvent,
     SliderEvent,
@@ -97,4 +98,6 @@ __all__ = [
     # Payloads — data source
     "DataChangeEvent",
     "ChangeKind",
+    # Payloads — scroll view
+    "ScrollEvent",
 ]

@@ -487,3 +487,19 @@ class DataChangeEvent:
     record: Mapping[str, Any] | None = None
     """The affected record (or the applied updates) where cheaply available on
     `insert`/`update`; `None` otherwise."""
+
+
+# ---------------------------------------------------------------------------
+# ScrollView
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class ScrollEvent:
+    """Fires when a `ScrollView`'s viewport position changes."""
+
+    y: float = 0.0
+    """Vertical scroll position — 0.0 (top) to 1.0 (bottom)."""
+
+    x: float = 0.0
+    """Horizontal scroll position — 0.0 (left) to 1.0 (right)."""
