@@ -519,3 +519,21 @@ class ScrollEvent:
 
     x: float = 0.0
     """Horizontal scroll position — 0.0 (left) to 1.0 (right)."""
+
+
+# ---------------------------------------------------------------------------
+# Splash
+# ---------------------------------------------------------------------------
+
+SplashDismissReason = Literal["ready", "timer", "manual", "skip"]
+"""Why a splash screen dismissed — `'ready'` (the app finished building),
+`'timer'` (its timed duration elapsed), `'manual'` (an explicit `dismiss()`),
+or `'skip'` (the user clicked or pressed Escape)."""
+
+
+@dataclass(frozen=True, slots=True)
+class SplashDismissEvent:
+    """Fires when a splash screen begins dismissing."""
+
+    reason: SplashDismissReason = "ready"
+    """Why the splash dismissed."""

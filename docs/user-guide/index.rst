@@ -103,6 +103,12 @@ How-to guides
 
       Set the runtime and distribution icons from a single glyph.
 
+   .. grid-item-card:: :octicon:`rocket;1.5em;sd-mr-1` Showing Splash Screens
+      :link: /tasks/splash-screens
+      :link-type: doc
+
+      Intro screens that cover startup — timed branding, welcome, real progress.
+
 Topics
 ------
 
@@ -210,6 +216,7 @@ Topics
    /tasks/dialogs
    /tasks/navigation/index
    /tasks/application-icons
+   /tasks/splash-screens
 
 .. toctree::
    :caption: Topics

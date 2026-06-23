@@ -60,6 +60,7 @@ from bootstack.dialogs import (
 from bootstack.widgets.app import App
 from bootstack.widgets.appshell import AppShell, Workbench
 from bootstack.widgets.window import Window
+from bootstack.widgets.splash import Splash
 
 # ── Public widget layer ───────────────────────────────────────────────────────
 from bootstack.widgets.stacks import Row, Column, Spacer
@@ -130,7 +131,7 @@ __all__ = [
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
     "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
     # Application & windows
-    "App", "AppShell", "Workbench", "Window",
+    "App", "AppShell", "Workbench", "Window", "Splash",
     # Layout
     "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Divider", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
