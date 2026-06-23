@@ -455,6 +455,27 @@ class CodeEditor(PublicWidgetBase):
         """Hide the find/replace bar."""
         self._internal.hide_search()
 
+    def indent(self) -> None:
+        """Indent selected lines by one tab stop, or insert a tab stop at the cursor.
+
+        With a selection, every selected line is indented by one tab stop (spaces
+        or a tab character, depending on the editor's `insert_spaces` setting).
+        The selection is preserved after the operation.
+
+        Without a selection, inserts spaces to the next tab stop at the cursor
+        (same as pressing Tab with no selection).
+        """
+        self._internal.indent()
+
+    def dedent(self) -> None:
+        """Dedent selected lines (or the current line) by one tab stop.
+
+        Removes up to one tab stop of leading whitespace from each line in the
+        selection. With no selection, dedents the line the cursor is on.
+        The selection is preserved after the operation.
+        """
+        self._internal.dedent()
+
     # ----- Event shorthands -----
 
     @overload

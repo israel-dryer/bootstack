@@ -107,6 +107,8 @@ class CodeEditor(Frame):
         self._light_theme = light_theme
         self._dark_theme = dark_theme
         self._show_line_numbers = show_line_numbers
+        self._tab_width = tab_width
+        self._insert_spaces = insert_spaces
         self._highlighter = None
         self._rules: list = []
         self._valid_signal: Signal = Signal(True)
@@ -399,6 +401,62 @@ class CodeEditor(Frame):
         """Hide the find/replace bar and clear search highlights."""
         self._search.hide()
 
+    # ── indent/dedent ─────────────────────────────────────────────────────
+
+    def indent(self) -> None:
+        """Indent selected lines by one tab stop, or insert at cursor."""
+        if self._smart_indent is not None:
+            self._smart_indent.indent()
+        else:
+            self._indent_or_dedent(indent=True)
+
+    def dedent(self) -> None:
+        """Dedent selected lines (or current line) by one tab stop."""
+        if self._smart_indent is not None:
+            self._smart_indent.dedent()
+        else:
+            self._indent_or_dedent(indent=False)
+
+    def _indent_or_dedent(self, indent: bool) -> None:
+        from bootstack.widgets._impl.composites.textarea.extensions.smart_indent import _sel_line_range
+        tw = self._core.text
+        ranges = tw.tag_ranges("sel")
+        if indent:
+            prefix = " " * self._tab_width if self._insert_spaces else "\t"
+            if not ranges:
+                col = int(tw.index("insert").split(".")[1])
+                spaces = self._tab_width - (col % self._tab_width)
+                tw.insert("insert", " " * spaces if self._insert_spaces else "\t")
+                return
+            start_line, end_line = _sel_line_range(ranges)
+            self._core.undo_block_start()
+            try:
+                for ln in range(start_line, end_line + 1):
+                    if tw.get(f"{ln}.0", f"{ln}.end"):
+                        tw.insert(f"{ln}.0", prefix)
+            finally:
+                self._core.undo_block_stop()
+            tw.tag_add("sel", f"{start_line}.0", f"{end_line}.end")
+        else:
+            if ranges:
+                start_line, end_line = _sel_line_range(ranges)
+            else:
+                start_line = end_line = int(tw.index("insert").split(".")[0])
+            self._core.undo_block_start()
+            try:
+                for ln in range(start_line, end_line + 1):
+                    line_text = tw.get(f"{ln}.0", f"{ln}.end")
+                    if self._insert_spaces:
+                        n = min(self._tab_width, len(line_text) - len(line_text.lstrip(" ")))
+                        if n:
+                            tw.delete(f"{ln}.0", f"{ln}.{n}")
+                    else:
+                        if line_text.startswith("\t"):
+                            tw.delete(f"{ln}.0", f"{ln}.1")
+            finally:
+                self._core.undo_block_stop()
+            if ranges:
+                tw.tag_add("sel", f"{start_line}.0", f"{end_line}.end")
 
     # ── validation ────────────────────────────────────────────────────────
 
