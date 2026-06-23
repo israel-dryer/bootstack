@@ -21,6 +21,45 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Trust audit of the 2026-06-22 session + fixes (PRs #301, #302 — MERGED;
+  2026-06-22).** A prior agent (on another machine) shipped 14 PRs (#289, #291–#299
+  + releases `0.1.0a14`); the maintainer found repeated errors/hallucinations and
+  asked for a full review. Method: **5 parallel adversarial reviewers** (one per PR
+  cluster) + clean `-W` docs build + full GUI suite. Verdict: mostly sound but **not
+  trustworthy as-is**. Brief: **`docs/_dev/review-2026-06-22-trust-audit.md`**.
+  Fixed in **PR #301**: (1) 🔴 **#299 toolbar regression merged with a FAILING test**
+  — `_apply_bar_defaults` used "has `**kwargs`" as a proxy for "accepts
+  `density`/`surface`", crashing `add_widget(Checkbox/Switch/ToggleButton/Radio)` and
+  no-op for `TextField`/`Select`; fix = inject only **explicitly-declared** params;
+  (2) 🟠 **DataTable `iter_rows` clobbered the shared source** — the view-mutation CM
+  spanned a `yield`, leaking this view's filter/sort onto the shared source until GC;
+  fix = wrap each read, not the yield (+ regression test proven to fail pre-fix);
+  (3) 🟠 two **`lambda ok: btn.disabled = not ok`** docstrings (SyntaxError) →
+  named-handler; (4) the **`-W` docs build was broken** since PR #266
+  (`widget-sizing.rst` titles inside an include skipped a heading level) → `.. rubric::`;
+  (5) DataTable test hygiene (hallucinated `enable_search=` → `searchable=`; `_internal`
+  pokes → public); (6) `signals/README.md` rewritten (was pervasively stale —
+  `get()`/`unsubscribe()`/`bs.Entry`/`app.mainloop()`/the `master=` gotcha #292
+  overturned); (7) **CodeEditor #296/#297** (selection API, block indent/dedent) and
+  **ScrollView #298** (`on_scroll`/`scroll_position`/keyboard) shipped undocumented +
+  untested → docs + **20 new tests** + docstring fixes (incl. `scroll_position` no
+  longer claims `(1.0,1.0)` reachable); (8) **#262** — `Toolbar.add_button`/`add_label`
+  returned internal `_impl` primitives → now return public `bs.Button`/`bs.Label`
+  (live props); added **`surface=` to `bs.Button`** (construction-only — *build-time,
+  not a live property*; matches the surface a ghost/outline button sits on so it
+  blends; a toolbar sets `'chrome'` for the buttons it builds); preserved
+  draggable-titlebar label drag via internal `Toolbar._attach_drag`. **PR #302**:
+  documented `surface=` in `button.rst` (usage-only, no implementation detail).
+  **Verified clean (no over-flag corrections):** #292 Signal lazy-realization rewrite
+  is correct; #295 internal-access scrub, carousel #289, pyinstaller #291, new chart
+  example all check out. Two reviewer **over-flags disproved**: the #296 `read_only`
+  "fix" was a no-op rename, and `Toolbar._surface` is always defaulted by the base
+  Frame (no `AttributeError`). **Process gotchas (bit me):** piping a build/test
+  command to `tail` masks its exit code with `tail`'s 0 — *never pipe the command
+  whose status you need* (it hid both a failing test leg AND the broken docs build);
+  toolbar item spacing is now uniform `padx=2` (the pack-based bar has **no `gap`** —
+  a real gap migration is the unified-toolbars rework, `project_unified_toolbars`).
+  **Now-DONE issues (close them):** #246, #251, #252, #254, #255, #262, #263.
 - **Pre-release `0.1.0a12` shipped + demo rebuild + CONTRIBUTING + Topic-guide
   review** (2026-06-21; all MERGED). Cut **`0.1.0a12`** to PyPI + GitHub Release
   (`bump-my-version bump pre_n` → push `main` + tag → `release.yml` → `docs.yml`).
@@ -386,57 +425,53 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session.** **Pre-release `0.1.0a12` SHIPPED** (PyPI + GitHub
-> Release `v0.1.0a12`, 2026-06-21; docs deployed). It carried the whole session:
-> the **interactive-widget review initiative** (COMPLETE — Button/ButtonGroup/
-> TextArea/CodeEditor/ScrollView/SplitView/Tooltip/Toolbar/StatusBar all reviewed +
-> merged), the **Topic-guide review** (#155, PR #268 — only 2 real fixes; the
-> guides were already mostly to standard), the **dialog + screenshot refresh** (PR
-> #266 — dialogs captured like app windows, filter-dialog rebuilt on a managed
-> `FlexFrame`, Row/Column widget-sizing split), the **hero-first demo rebuild**
-> (#269, PR #270 — 995→564 lines, fixed the `nav_variant=` launch crash), the
-> **README** content/staleness fixes (stale theme list, broken AppShell example,
-> table additions), and **CONTRIBUTING.md** (PR #271 — consolidated and **closed**
-> the localization issue fan-out #17/#19–#37). CLI + all 6 templates verified green
-> pre-ship (scaffold/build/`add`/`doctor`/`icons`/`appicon`).
+> ⏭ **START HERE next session.** Last session = the **trust audit of the 2026-06-22
+> 14-PR session** (PRs #301, #302 — MERGED; see the top "Recently completed" entry +
+> `docs/_dev/review-2026-06-22-trust-audit.md`). It fixed a merged-broken toolbar
+> regression (#299), a DataTable `iter_rows` source leak, the broken `-W` docs build,
+> and filled docs/tests for the CodeEditor/ScrollView/toolbar features the prior agent
+> shipped bare. **`main` is green:** full GUI suite passes, `-W` docs build is clean.
 >
-> **NOW: the road to 0.1.0 STABLE.** Two ship gates + a cleanup backlog from the
-> reviews + one decision-gated feature. The 17 open issues, organized:
+> **Housekeeping first:** these issues are **DONE but still open** — close them:
+> **#246, #251, #252, #254, #255, #262, #263** (shipped in the 14-PR session, then
+> completed/verified in the audit). Also already done elsewhere: **#150** (test harness
+> shared-root — `tests/run_gui.py`; memory `project_test_harness_shared_root`), **#258**
+> (SplitView `on_sash_moved` — PR #300).
 >
-> **Ship gates (the stable cut):**
+> **NOW: the road to 0.1.0 STABLE.** The genuinely-open backlog (7 issues):
+>
+> **Ship gate (the stable cut):**
 > - **#149** — final public-surface audit + lock + **CHANGELOG** (the ship gate).
-> - **#150** — stabilize the test harness (GUI one-App-per-process; flaky tests).
 >
-> **Widget-review cleanup backlog** (additive fixes/features surfaced during the
-> interactive-widget reviews — group sensibly, one PR each):
-> - **Text widgets:** **#242** (`.text` setter dead when a `textsignal` is bound —
->   family-wide), **#250** (Pythonic `(row, column)` position model vs Tk
->   `"line.column"`), **#246** (TextArea/CodeEditor reactive `.valid`/`.error`),
->   **#251** (CodeEditor selection API), **#252** (CodeEditor block indent/dedent).
-> - **ScrollView:** **#254** (`on_scroll` + position getter), **#255** (keyboard scroll).
-> - **Toolbar:** **#262** (return handles from `add_button`/`add_label`), **#263**
->   (bar density/surface skipped for `**kwargs`-only widgets).
-> - **Other:** **#260** (Tooltip: children added after attach not covered), **#258**
->   (SplitView `on_sash_moved`), **#208** (DataTable: persist selection by record id
->   across search/sort/page), **#207** (ContextMenu outside-dismiss vs a
->   `'break'`-returning target — DEFERRED, analysis on the issue), **#267** (DPI-aware
->   icon sizing — own branch; also why the README's "DPI-scaled" icon claim was softened).
+> **Cleanup backlog (group sensibly, one PR each):**
+> - **#275** (MenuButton: `.text` get/set for Button/Label parity — new, from #262).
+> - **#242** (`.text` setter dead when a `textsignal` is bound — text-widget family).
+> - **#250** (Pythonic `(row, column)` position model vs Tk `"line.column"`).
+> - **#260** (Tooltip: children added after attach not covered).
+> - **#208** (DataTable: persist selection by record id across search/sort/page).
+> - **#207** (ContextMenu outside-dismiss vs a `'break'`-returning target — DEFERRED,
+>   analysis on the issue).
+> - **#267** (DPI-aware icon sizing — own branch; icons soft at fractional DPI).
 >
 > **Pre-ship feature (decision-gated):** **#192** — color-swatch Select control;
 > lock shape/naming with the maintainer before any code.
 >
 > **Standing principles** (apply in every review): live properties only for
-> *legitimate runtime needs* (`feedback_live_properties_runtime_need`); prefer Tk
-> native/virtual-event bindings, don't undo a convention without reason
-> (`feedback_prefer_native_bindings_dont_undo_conventions`).
+> *legitimate runtime needs* (`feedback_live_properties_runtime_need`) — e.g. `surface`
+> is **build-time, not live**; prefer Tk native/virtual-event bindings, don't undo a
+> convention without reason (`feedback_prefer_native_bindings_dont_undo_conventions`);
+> describe the clean public surface in docs, **no implementation/toolkit detail**
+> (`feedback_no_toolkit_internals_in_docs`); **adversarially verify reviewer claims** —
+> agents over-flag (the audit disproved 2 "bugs").
 >
 > **Process reminders:** a fix pushed AFTER its PR merged is **stranded** — verify
-> it's in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI test files
-> one-per-process (#150). Hold commits until the user tests; per-commit approval.
-> **Release flow:** `bump-my-version bump pre_n` (edits pyproject + commits +
-> tags) → push `main` + the `v*` tag → `release.yml` builds + publishes to PyPI +
-> creates the GitHub Release → `docs.yml` deploys. There is **no `development`
-> branch** (CONTRIBUTING.md and the localization workflow target `main`).
+> it's in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI tests via
+> `python tests/run_gui.py` (one root per process). **Never pipe a build/test command
+> to `tail`** — you capture `tail`'s exit 0 and miss real failures (bit the audit:
+> hid a failing test leg AND the broken docs build). Hold commits until the user tests;
+> per-commit approval. **Release flow:** `bump-my-version bump pre_n` → push `main` +
+> the `v*` tag → `release.yml` (PyPI + GitHub Release) → `docs.yml` deploys. There is
+> **no `development` branch** (CONTRIBUTING.md + the localization workflow target `main`).
 
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
 > DRAINED (#141/#142/#151/#153/#156/#157/#158 merged; see the "0.1.0 API-freeze
