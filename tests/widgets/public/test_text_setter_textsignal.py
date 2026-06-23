@@ -53,6 +53,38 @@ def test_badge_text_round_trip_with_textsignal(app):
     assert sig() == "9+"
 
 
+# ----- MenuButton gains .text get/set parity (#275) -----
+
+def test_menubutton_text_round_trip_unbound(app):
+    mb = bs.MenuButton("Actions")
+    assert mb.text == "Actions"
+    mb.text = "More"
+    assert mb.text == "More"
+
+
+def test_menubutton_text_round_trip_with_textsignal(app):
+    sig = bs.Signal("Initial")
+    mb = bs.MenuButton(textsignal=sig)
+    assert mb.text == "Initial"
+
+    # Setter writes through the bound variable and keeps the signal in sync.
+    mb.text = "Changed"
+    assert mb.text == "Changed"
+    assert sig() == "Changed"
+
+    # Signal writes flow back to .text.
+    sig.set("ViaSignal")
+    assert mb.text == "ViaSignal"
+
+
+def test_menubutton_text_settable_when_icon_only(app):
+    # icon_only hides the label, but setting .text still updates the underlying
+    # text (and reads back) — no error, parity with Button.
+    mb = bs.MenuButton(icon="gear", icon_only=True)
+    mb.text = "Settings"
+    assert mb.text == "Settings"
+
+
 # ----- display-vs-raw widgets stay live and read-only (must NOT break) -----
 
 def test_select_text_is_live_selected_label(app):

@@ -21,7 +21,7 @@ and remember a value.
 Basic
 ~~~~~
 
-Pass a ``label=`` for button text and use ``add_item()`` to populate the menu.
+Pass the button ``text`` and use ``add_item()`` to populate the menu.
 Items can have an ``icon=`` and an ``on_click=`` callback.
 
 .. code-block:: python
@@ -113,8 +113,8 @@ Shortcuts are most useful when ``MenuButton`` is used in a menubar context:
 Icon button
 ~~~~~~~~~~~
 
-Omit ``label=`` to get an icon-only button — ``icon_only`` is inferred
-automatically when ``icon=`` is set and no label is provided. Set
+Omit the ``text`` to get an icon-only button — ``icon_only`` is inferred
+automatically when ``icon=`` is set and no text is provided. Set
 ``show_arrow=False`` to hide the chevron.
 
 .. code-block:: python
@@ -196,6 +196,29 @@ also be toggled after construction.
 .. image:: /_static/examples/menubutton-states-dark.png
    :class: bs-screenshot-dark
    :alt: MenuButton states — dark theme
+
+Reactive text
+~~~~~~~~~~~~~
+
+The button label is a live property. Read or set ``mb.text`` after
+construction to relabel the button — useful when the action it triggers
+changes (for example, an "Actions" button that becomes "Apply").
+
+.. code-block:: python
+
+   mb = bs.MenuButton("Actions")
+   mb.text = "Apply"
+
+Bind a ``Signal[str]`` to ``textsignal=`` to drive the label reactively. The
+``.text`` setter writes through a bound signal, so the two stay in sync.
+
+.. code-block:: python
+
+   label = bs.Signal("Actions")
+   mb = bs.MenuButton(textsignal=label)
+
+   label.set("Apply")   # updates the button
+   mb.text = "Reset"    # flows back into the signal
 
 Dynamic item management
 ~~~~~~~~~~~~~~~~~~~~~~~

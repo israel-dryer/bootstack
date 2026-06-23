@@ -386,6 +386,29 @@ class MenuButton(IconProperty, PublicWidgetBase):
         return self._internal.context_menu
 
     @property
+    def text(self) -> str:
+        """The button's label text.
+
+        Reading reflects a bound `textsignal` (the option stays synced from
+        the variable). Setting writes through the bound variable when one
+        owns the text — keeping the signal in sync — and falls back to the
+        option otherwise. On an icon-only button the label stays hidden;
+        the setter still updates the underlying text.
+        """
+        return str(self._internal.cget("text"))
+
+    @text.setter
+    def text(self, value: str) -> None:
+        # When a textsignal/textvariable owns the text, ttk ignores the `text`
+        # option — write through the variable instead (which also keeps the
+        # bound signal in sync). Falls back to the option when unbound.
+        textvar = getattr(self._internal, "_textvariable", None)
+        if textvar is not None:
+            textvar.set(value)
+        else:
+            self._internal.configure(text=value)
+
+    @property
     def disabled(self) -> bool:
         """Whether the button is non-interactive."""
         return self._internal.instate(("disabled",))
