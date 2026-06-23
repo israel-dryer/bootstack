@@ -29,7 +29,10 @@ with bs.App(title="Switch Demo", padding=20, gap=16) as app:
         dark_sig = bs.Signal(False)
         bs.Switch("Dark mode", signal=dark_sig, accent="secondary")
         status_lbl = bs.Label("Theme: light", accent="secondary", font="caption")
-        dark_sig.subscribe(lambda v: setattr(status_lbl, 'text', f"Theme: {'dark' if v else 'light'}"))
+        def _update_theme(v):
+            status_lbl.text = f"Theme: {'dark' if v else 'light'}"
+
+        dark_sig.subscribe(_update_theme)
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")

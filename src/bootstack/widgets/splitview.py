@@ -381,7 +381,7 @@ class SplitView(PublicWidgetBase):
         pane = self._panes.pop(key)
         # `WidgetCapabilitiesMixin.forget()` shadows `ttk.Panedwindow.forget(pane)`
         # with a zero-arg method, so invoke the underlying Tk command directly.
-        self._internal.tk.call(self._internal._w, "forget", pane._frame)
+        self._internal.tk.call(str(self._internal), "forget", pane._frame)
         pane._frame.destroy()
 
     # ----- Sash control -----

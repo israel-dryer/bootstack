@@ -181,7 +181,7 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     @property
     def disabled(self) -> bool:
         """Whether the field is disabled (non-interactive and greyed out)."""
-        return str(self._internal._entry.cget("state")) == "disabled"
+        return self._internal._entry.instate(("disabled",))
 
     @disabled.setter
     def disabled(self, v: bool) -> None:
@@ -190,7 +190,7 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     @property
     def read_only(self) -> bool:
         """Whether the field is read-only (selectable but not editable)."""
-        return str(self._internal._entry.cget("state")) == "readonly"
+        return self._internal._entry.instate(("readonly",))
 
     @read_only.setter
     def read_only(self, v: bool) -> None:

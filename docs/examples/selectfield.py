@@ -79,16 +79,23 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
         color = bs.Signal("Red")
         bs.Select(["Red", "Green", "Blue"], label="Color", signal=color)
         color_lbl = bs.Label("Selected: Red", accent="secondary", font="caption")
-        color.subscribe(lambda v: setattr(color_lbl, 'text', f"Selected: {v}"))
+        def _update_color(v):
+            color_lbl.text = f"Selected: {v}"
+
+        color.subscribe(_update_color)
 
     # Runtime option updates
     bs.Label("Runtime Updates", font="heading-sm")
     with bs.Column(gap=6, horizontal="stretch", horizontal_items="stretch"):
         sel = bs.Select(["Alpha", "Beta", "Gamma"])
         with bs.Row(gap=8):
-            bs.Button("Set ABC", variant="outline",
-                on_click=lambda: setattr(sel, 'options', ["A", "B", "C"]))
-            bs.Button("Set 1-2-3", variant="outline",
-                on_click=lambda: setattr(sel, 'options', ["1", "2", "3"]))
+            def _set_abc():
+                sel.options = ["A", "B", "C"]
+
+            def _set_123():
+                sel.options = ["1", "2", "3"]
+
+            bs.Button("Set ABC", variant="outline", on_click=_set_abc)
+            bs.Button("Set 1-2-3", variant="outline", on_click=_set_123)
 
 app.run()

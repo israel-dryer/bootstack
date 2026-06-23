@@ -200,7 +200,7 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @property
     def disabled(self) -> bool:
         """Whether the field is fully non-interactive."""
-        return str(self._internal._entry.cget("state")) == "disabled"
+        return self._internal._entry.instate(("disabled",))
 
     @disabled.setter
     def disabled(self, v: bool) -> None:

@@ -140,7 +140,7 @@ class CodeEditor(PublicWidgetBase):
         self._internal = _InternalCodeEditor(tk_master, **internal_kwargs)
 
         # Generate <<CursorMove>> so on_cursor_move() subscribers always work.
-        t = self._internal._core.text
+        t = self._internal.core.text
         t.bind("<KeyRelease>",      lambda e: t.event_generate("<<CursorMove>>"), add="+")
         t.bind("<ButtonRelease-1>", lambda e: t.event_generate("<<CursorMove>>"), add="+")
 
@@ -158,7 +158,7 @@ class CodeEditor(PublicWidgetBase):
     # ----- Event routing -----
 
     def _text_widget(self) -> tkinter.Misc:
-        return self._internal._core.text
+        return self._internal.core.text
 
     @overload
     def on(self, event: str) -> Stream: ...
@@ -212,7 +212,7 @@ class CodeEditor(PublicWidgetBase):
     @property
     def signal(self) -> "Signal[str] | None":
         """The reactive `Signal` bound to this editor, or `None`."""
-        return getattr(self._internal._core, "signal", None)
+        return getattr(self._internal.core, "signal", None)
 
     @property
     def valid(self) -> "Signal[bool]":
@@ -245,14 +245,14 @@ class CodeEditor(PublicWidgetBase):
         and `goto()` accept. Read it in an `on_cursor_move` handler to drive a
         status-bar readout. Read-only — use `goto()` to move the cursor.
         """
-        idx = self._internal._core.text.index("insert")
+        idx = self._internal.core.text.index("insert")
         line, col = idx.split(".")
         return int(line), int(col) + 1
 
     @property
     def language(self) -> str | None:
         """Active syntax highlighting language, or `None` if disabled."""
-        return self._internal._language
+        return self._internal.language
 
     @language.setter
     def language(self, v: str | None) -> None:
@@ -261,24 +261,16 @@ class CodeEditor(PublicWidgetBase):
     @property
     def theme(self) -> str:
         """Active Pygments color scheme, or `'auto'` if tracking the bootstack theme."""
-        return self._internal._pygments_style
+        return self._internal.theme
 
     @theme.setter
     def theme(self, v: str) -> None:
-        self._internal._pygments_style = v
-        if self._internal._highlighter is not None:
-            self._internal._highlighter._auto = (v == "auto")
-            if v != "auto":
-                self._internal._highlighter._load_style(v)
-                for sname, color in self._internal._highlighter._style_colors.items():
-                    self._internal._core.define_style(sname, foreground=color)
-            self._internal._highlighter._apply_widget_colors(self._internal._core)
-            self._internal._highlighter._schedule()
+        self._internal.set_theme(v)
 
     @property
     def read_only(self) -> bool:
         """Whether the editor content is visible but not editable."""
-        return self._internal._core._read_only
+        return self._internal.core.read_only
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
@@ -334,7 +326,7 @@ class CodeEditor(PublicWidgetBase):
             index = "insert"
         else:
             index = f"{line}.{(col or 1) - 1}"
-        self._internal._core.insert(index, text)
+        self._internal.core.insert(index, text)
 
     def append(self, text: str) -> None:
         """Append `text` to the end of the content.
@@ -345,11 +337,11 @@ class CodeEditor(PublicWidgetBase):
         Args:
             text: Text to add at the end of the content.
         """
-        self._internal._core.insert("end-1c", text)
+        self._internal.core.insert("end-1c", text)
 
     def select_all(self) -> None:
         """Select all text content."""
-        tw = self._internal._core.text
+        tw = self._internal.core.text
         tw.focus_set()
         tw.tag_add("sel", "1.0", "end-1c")
         tw.mark_set("insert", "end-1c")
