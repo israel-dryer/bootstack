@@ -432,10 +432,31 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
     (sidebar hosting vs the workspace rail) lives on the concrete subclasses.
     """
 
+    _dev_supports_inprocess = True
+
     def _init_shell(
         self, init_kwargs: dict[str, Any], *, icon: Any, show_statusbar: bool
     ) -> None:
         self._statusbar: StatusBar | None = None
+        self._dev_body = None  # set in __enter__ under `bootstack dev`
+
+        # Under `bootstack dev`, persist window geometry by default so the
+        # process-restart fallback re-opens in place (in-process reload preserves
+        # everything already). Dev-scoped state file; honors an explicit choice.
+        from bootstack.dev._env import DEV_MIN_SIZE, is_dev_mode
+
+        if is_dev_mode():
+            if not init_kwargs.get("remember_window_state"):
+                from bootstack._core.paths import app_config_file
+
+                init_kwargs["remember_window_state"] = True
+                if not init_kwargs.get("state_path"):
+                    init_kwargs["state_path"] = str(
+                        app_config_file("dev_window_state.json", init_kwargs.get("title") or "bootstack")
+                    )
+            # A usable floor so a reload window starts/stays a sensible size.
+            init_kwargs.setdefault("minsize", DEV_MIN_SIZE)
+
         self._internal = _InternalShell(**init_kwargs)
 
         # Resolve the window icon AFTER the root exists (an AppIcon may resolve
@@ -472,6 +493,16 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
         return self._internal
 
     def __enter__(self):
+        from bootstack.dev._env import is_dev_mode
+
+        if is_dev_mode() and getattr(self, "_dev_body", None) is None:
+            import sys as _sys
+            from bootstack.dev._capture import capture_from_frame
+
+            try:
+                self._dev_body = capture_from_frame(_sys._getframe(1))
+            except Exception:
+                self._dev_body = None
         return self
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
@@ -479,6 +510,88 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
             self._internal.update_idletasks()
         except Exception:
             pass
+
+    # ----- dev hot-reload hooks (used only under `bootstack dev`) -------------
+
+    def _dev_reset_region(self) -> None:
+        """Tear down the chrome + authored navigation, keeping the shell layout."""
+        # Clear chrome toolbars (the stacked-toolbar band is pre-built and stays).
+        try:
+            for child in list(self._internal.toolbar_stack.winfo_children()):
+                child.destroy()
+        except Exception:
+            pass
+        self._chrome_toolbars = []
+        self._native_menu_renderer = None
+        self._native_menu_pending = None
+        try:
+            self._internal["menu"] = ""
+        except Exception:
+            pass
+        # Clear any status-band segments so a rebuild doesn't duplicate them.
+        try:
+            for child in list(self._internal.statusbar.winfo_children()):
+                child.destroy()
+        except Exception:
+            pass
+        self._statusbar = None
+        # Tear down + rebuild the navigation substructure.
+        self._internal._dev_reset()
+        try:
+            from bootstack.dev import _registry
+
+            _registry.reset_mounts()
+        except Exception:
+            pass
+
+    def _dev_after_rebuild(self) -> None:
+        """Re-apply window chrome that lives outside the body, then flush + grow."""
+        self._ensure_default_titlebar()
+        try:
+            root = self._internal
+            root.update_idletasks()
+            cur_w, cur_h = root.winfo_width(), root.winfo_height()
+            new_w = max(cur_w, root.winfo_reqwidth())
+            new_h = max(cur_h, root.winfo_reqheight())
+            if new_w > cur_w or new_h > cur_h:
+                root.geometry(f"{new_w}x{new_h}+{root.winfo_x()}+{root.winfo_y()}")
+        except Exception:
+            pass
+
+    def _dev_capture_route(self) -> Any:
+        """Capture the active workspace + per-workspace page, to restore post-reload."""
+        model = self._internal._model
+        pages = {
+            key: model.active_page(key)
+            for key in self._internal._workspaces
+            if model.active_page(key) is not None
+        }
+        return {
+            "workspace": model.active_workspace,
+            "pages": pages,
+            "sidebar_mode": model.sidebar_mode,
+        }
+
+    def _dev_restore_route(self, route: Any) -> None:
+        """Restore the page/workspace selected before the reload, if still present."""
+        if not isinstance(route, dict):
+            return
+        model = self._internal._model
+        for ws_key, page in route.get("pages", {}).items():
+            ws = self._internal._workspaces.get(ws_key)
+            if ws is not None and page in ws.keys():
+                model.select_page(page, workspace=ws_key)
+        active_ws = route.get("workspace")
+        if isinstance(active_ws, str) and model.has_workspace(active_ws):
+            model.select_workspace(active_ws)
+        mode = route.get("sidebar_mode")
+        if mode in ("hidden", "compact", "expanded"):
+            model.set_sidebar_mode(mode)
+            # Force the mode's *visual* (compact = icon-only + narrow) onto the
+            # freshly-rebuilt nav. set_sidebar_mode above is a no-op when the new
+            # model already holds this mode, so the view treatment (normally
+            # applied once in mainloop) must be re-applied explicitly here.
+            self._internal._apply_sidebar_mode(mode)
 
     # ----- Chrome hooks (mount the toolbar stack into the Shell's region) -----
 
@@ -572,6 +685,12 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
     def run(self) -> None:
         """Show the window and start the event loop."""
         self._ensure_default_titlebar()
+        from bootstack.dev._env import is_dev_mode
+
+        if is_dev_mode():
+            from bootstack.dev._reloader import install_reloader
+
+            install_reloader(self)
         self._internal.deiconify()
         self._internal.mainloop()
 

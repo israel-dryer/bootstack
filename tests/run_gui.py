@@ -32,6 +32,8 @@ ISOLATED = [
     "tests/widgets/public/test_workbench.py",
     "tests/widgets/public/test_sidebar_toggle.py",
     "tests/widgets/public/test_tabs_overflow.py",
+    "tests/widgets/public/test_hot_reload_app.py",
+    "tests/widgets/public/test_hot_reload_shell.py",
 ]
 
 # Modules that construct a fresh root PER TEST (e.g. an App-config factory

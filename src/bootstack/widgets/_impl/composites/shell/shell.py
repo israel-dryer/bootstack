@@ -81,6 +81,7 @@ class Shell(ShellLayout):
         self._model = NavModel(sidebar_mode=sidebar_mode)
         self._nav_accent = nav_accent
         self._nav_selection = nav_selection
+        self._rail_labels = rail_labels
         self._collapsible = collapsible
         self._remember_nav_state = remember_nav_state
         self._initial_applied = False
@@ -93,6 +94,23 @@ class Shell(ShellLayout):
         # event); only a hidden<->shown flip toggles.
         self._prev_sidebar_visible: bool = sidebar_mode != "hidden"
 
+        # Build the per-workspace decks, rail switcher, and model wiring. Factored
+        # out so dev hot reload can tear the authored navigation down and rebuild
+        # it against the same (stable) region frames (see _dev_reset).
+        self._build_nav_region()
+
+        # Ctrl/Cmd-B toggles sidebar visibility (the hamburger action).
+        if self._collapsible:
+            self.bind("<Control-b>", self._on_toggle_shortcut, add="+")
+            self.bind("<Command-b>", self._on_toggle_shortcut, add="+")
+
+    def _build_nav_region(self) -> None:
+        """Build the sidebar/content decks and rail switcher, and wire the model.
+
+        Parents into the stable region frames (`self.sidebar`/`content`/`rail`
+        from `ShellLayout`), so it is safe to call again after `_dev_reset` has
+        destroyed the previous decks.
+        """
         # Sidebar + content are decks of per-workspace frames.
         self._panel_stack = PageStack(self.sidebar)
         self._panel_stack.pack(fill="both", expand=True)
@@ -103,17 +121,41 @@ class Shell(ShellLayout):
         # NB: must NOT be named `self._rail` — that is ShellLayout's rail *region*
         # frame; shadowing it orphans the region so it never packs into the body.
         self._railnav = Rail(
-            self.rail, on_select=self._rail_select, accent=nav_accent,
-            labels=rail_labels, surface=self.rail_surface,
+            self.rail, on_select=self._rail_select, accent=self._nav_accent,
+            labels=self._rail_labels, surface=self.rail_surface,
         )
         self._railnav.pack(fill="both", expand=True)
 
         self._model.subscribe(self._on_model_change)
 
-        # Ctrl/Cmd-B toggles sidebar visibility (the hamburger action).
-        if self._collapsible:
-            self.bind("<Control-b>", self._on_toggle_shortcut, add="+")
-            self.bind("<Command-b>", self._on_toggle_shortcut, add="+")
+    def _dev_reset(self) -> None:
+        """Tear down all authored navigation so the with-body can rebuild it.
+
+        Dev hot reload only — closes provider subscriptions, destroys the decks
+        and rail, and starts a fresh model + nav region against the (stable)
+        region frames. Mirrors the navigation half of `__init__`.
+        """
+        for ws in list(self._workspaces.values()):
+            try:
+                ws.close()
+            except Exception:
+                pass
+        self._workspaces = {}
+        for attr in ("_panel_stack", "_content_stack", "_railnav"):
+            widget = getattr(self, attr, None)
+            if widget is not None:
+                try:
+                    widget.destroy()
+                except Exception:
+                    pass
+        mode = self._model.sidebar_mode
+        self._model = NavModel(sidebar_mode=mode)
+        self._initial_applied = False
+        self._prev_workspace = None
+        self._prev_page = None
+        self._prev_sidebar_visible = mode != "hidden"
+        self._pending_data = None
+        self._build_nav_region()
 
     # ----- Workspace creation -----
 

@@ -73,8 +73,8 @@ class PublicWidgetBase:
     _parent: "PublicWidgetBase | None"
     _placement: Any  # container.Placement — set when first placed in a layout
 
-    @staticmethod
     def _resolve_parent(
+        self,
         explicit_parent: "PublicWidgetBase | None",
     ) -> "PublicWidgetBase | None":
         if explicit_parent is not None:
@@ -86,7 +86,22 @@ class PublicWidgetBase:
             ):
                 return _RawTkContainer(explicit_parent)
             return explicit_parent
-        return current_container()
+        container = current_container()
+        if container is None and self._auto_place:
+            # A placed widget needs somewhere to mount. Resolving to None here
+            # would fail later with a cryptic Tk error; surface the real cause —
+            # this is the one failure mode of the builder-function pattern (a
+            # builder called outside any layout context).
+            from bootstack.errors import BootstackError
+
+            raise BootstackError(
+                f"{type(self).__name__} was created outside any container and "
+                f"without parent=. Create it inside a layout context "
+                f"(e.g. `with bs.App():` or `with bs.Column():`), or pass "
+                f"parent=<container>. A reusable builder function must be called "
+                f"inside a container so its widgets have somewhere to mount."
+            )
+        return container
 
     @staticmethod
     def _split_layout_kwargs(kwargs: dict) -> dict:

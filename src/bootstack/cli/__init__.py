@@ -26,7 +26,7 @@ import argparse
 import sys
 from typing import Sequence
 
-from bootstack.cli import add, appicon, build, doctor, icons, promote, run, start
+from bootstack.cli import add, appicon, build, dev, doctor, icons, promote, run, start
 from bootstack.cli.demo import run_demo
 
 
@@ -75,6 +75,7 @@ For more information on a command:
     # Register commands
     start.add_parser(subparsers)
     run.add_parser(subparsers)
+    dev.add_parser(subparsers)
     promote.add_parser(subparsers)
     build.add_parser(subparsers)
     add.add_parser(subparsers)
