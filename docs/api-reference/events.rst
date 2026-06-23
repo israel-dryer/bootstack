@@ -124,19 +124,6 @@ decodes and displays an image.
    ImageLoadEvent
    ImageErrorEvent
 
-Scroll and split payloads
---------------------------
-
-Position-change events for :class:`ScrollView <bootstack.ScrollView>` and
-:class:`SplitView <bootstack.SplitView>`.
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   SashMoveEvent
-   ScrollEvent
-
 Supporting types
 ----------------
 
