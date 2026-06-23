@@ -130,8 +130,22 @@ class ToolTip:
         # Tk events don't bubble, so hovering a child of a container target
         # would otherwise never reach these bindings. Extend them across the
         # subtree so the tip shows anywhere inside the container.
+        self.refresh_bindings()
+
+    def refresh_bindings(self) -> None:
+        """Re-cover the target's subtree after children were added post-attach.
+
+        `propagate_target_bindings` only tags the descendants present when it
+        runs, so children added to a container target after the tooltip was
+        created are not covered until this is called again. The call is
+        idempotent — already-tagged descendants are left untouched.
+        """
         from bootstack._runtime.utility import propagate_target_bindings
-        propagate_target_bindings(self._widget)
+        try:
+            if self._widget.winfo_exists():
+                propagate_target_bindings(self._widget)
+        except tk.TclError:
+            pass
 
     def destroy(self) -> None:
         """Cleanup tooltip resources and unbind all event handlers.
