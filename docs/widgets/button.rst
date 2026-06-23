@@ -64,6 +64,14 @@ actions from secondary ones.
    :class: bs-screenshot-dark
    :alt: Button style variants — dark theme
 
+.. note::
+
+   A ``ghost`` or ``outline`` button looks right only when it matches the
+   surface it sits on. On a non-default container (a :doc:`card`, a darker
+   chrome strip, an overlay) pass ``surface=`` at construction (``'card'``,
+   ``'chrome'``, ``'overlay'``, …) to match. It is a build-time setting, not a
+   runtime property; a :doc:`toolbar` sets it for you on the buttons it builds.
+
 Icons
 ~~~~~
 

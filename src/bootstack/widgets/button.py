@@ -41,10 +41,12 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
             buttons uniform width (e.g. `width=10`).
         textsignal: Reactive `Signal[str]` bound to the button text. Updates
             automatically when the signal changes.
-        surface: The background surface the button sits on — `'content'`,
-            `'card'`, `'card_raised'`, `'chrome'`, or `'overlay'`. Affects how a
-            `ghost`/`outline` button blends with its container (e.g. a toolbar
-            sets `'chrome'`). Defaults to the theme's content surface.
+        surface: The background the button is placed on — `'content'`, `'card'`,
+            `'card_raised'`, `'chrome'`, or `'overlay'`. Set it so a
+            `ghost`/`outline` button looks right on a non-default container (e.g.
+            a toolbar sets `'chrome'` on the buttons it builds). A build-time
+            setting, not a live property. Defaults to the theme's content
+            surface.
         density: Padding density.
         disabled: If `True`, the button is non-interactive and visually dimmed.
         localize: Whether the text is translated through the catalog — `True`,
