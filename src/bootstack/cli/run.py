@@ -85,7 +85,7 @@ def run_run(args: argparse.Namespace) -> None:
 
     try:
         result = subprocess.run(
-            [sys.executable, str(entry_point)],
+            [sys.executable, str(entry_point.resolve())],
             cwd=str(project_root),
             env=env,
         )

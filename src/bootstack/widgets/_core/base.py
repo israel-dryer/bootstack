@@ -120,6 +120,23 @@ class PublicWidgetBase:
             layout["attached"] = kwargs.pop("attached")
         return layout
 
+    @staticmethod
+    def _reject_signal_text(text: Any) -> None:
+        """Guard against a `Signal` landing in the plain `text=` slot.
+
+        A `Signal` is truthy and stringifies to its name, so passing one as
+        `text=` silently renders something like `"SIG2"` instead of binding.
+        The supported path is `textsignal=` (two-way binding). Raise a clear
+        `TypeError` rather than render the name.
+        """
+        from bootstack._core.capabilities.signals import is_signal
+
+        if is_signal(text):
+            raise TypeError(
+                "text= expects a string; pass a Signal via textsignal= to bind "
+                "reactive text (text= would render the Signal's name)."
+            )
+
     def _attach_to_parent(self, layout_kw: dict) -> None:
         if not self._auto_place:
             return
