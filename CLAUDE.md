@@ -21,6 +21,45 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.0 STABLE SHIPPED — ship gate + theme-repaint unification + accent contrast
+  (2026-06-24).** `bootstack 0.1.0` is on **PyPI** (`pip install bootstack`, no
+  `--pre`) and tagged **`v0.1.0`** (stable GitHub Release, `prerelease=false`).
+  Verified on **Windows AND macOS**. **#149 ship gate (PR #335 — MERGED):**
+  public-surface audit + lock + CHANGELOG + Release Notes + Roadmap page; the
+  folded items shipped in **PR #334** (`text=<Signal>` → `TypeError` guard across
+  text-bearing widgets; `cli/run.py` double-cwd fix). `bootstack.__version__` is
+  already DYNAMIC (`importlib.metadata`), so the "stale 0.1.0a6" worry was moot.
+  **Pre-release framing removed (PR #342):** README/CONTRIBUTING warnings gone;
+  pyproject `Development Status` 3-Alpha→**4-Beta** (Beta over Production/Stable —
+  no production mileage yet; pandas precedent = bump to 5 once earned, not at 1.0)
+  + fixed the bogus `Environment :: X11 :: GTK` (it's **Tk**) → Win32/MacOS X/X11.
+  **GitHub Release notes now come FROM the CHANGELOG (PR #343):** `release.yml`
+  checks out the repo and extracts the `## [<version>]` section as the release
+  body (GitHub's auto "What's Changed" appended below; an alpha tag with no
+  section falls back to auto-only). **Theme-repaint unification (PR #338):**
+  replaced THREE overlapping mechanisms (STD-publisher + `_enable_theme_repaint`;
+  `register_tk_widget` WeakSet + `<Map>` registry — RETIRED the grows-forever
+  leak; per-widget hacks) with ONE rule — a tree widget defines
+  **`_bs_apply_theme(self)`**, driven by `Style.apply_theme_walk(root,
+  only_stale=)` (theme-change → walk VISIBLE from root; container-show → walk
+  STALE subtree IGNORING `winfo_viewable()`, unreliable across a canvas boundary);
+  show-triggers in PageStack (covers Tabs) + Expander (covers Accordion);
+  non-tree reactors (Image handle / window chrome / app `on_theme_change`) stay on
+  root `<<BsThemeChanged>>`. The meter canvas takes the surface TOKEN (not a frozen
+  hex) so the walk re-resolves it; `style_resolver` now lets an explicit `surface=`
+  win over inheritance (the gauge "bg doesn't recolor" root cause). Dev note
+  **`docs/_dev/theme-repaint-architecture.md`**. **Accent text-on-color fix (PR
+  #340):** `on_color` light-mode white gate 4.5→**3.0** (the large/bold WCAG bar
+  that button labels meet) so saturated colored accents read white in BOTH modes
+  (dracula-light purple primary was wrongly black) while bright cyan `info`/yellow
+  `warning` stay black; + a contrast FLOOR catching bucket-edge cases in either
+  mode (catppuccin-dark `warning` was white at ~2:1). Test `test_on_color_contrast.py`.
+  **macOS fixes (PR #339, local agent):** kept nav pages mapped (#336) + anchored
+  toasts to the visible frame above the Dock (#337). **Dead-test cleanup (PR
+  #341):** deleted stale `test_gauge_theme.py` (asserted #338-deleted mechanisms)
+  + fixed `test_icon_image_props.py`'s private-fixture/no-container setup. Milestone
+  **0.1.0 (stable) CLOSED** (11 issues); **#322** (provisional hot-reload umbrella,
+  E2E test still deferred to the maintainer) moved to **0.1.1**.
 - **Hot-reload follow-ups #325/#326/#327 + #328 docs (PR #333 — MERGED;
   2026-06-24).** Four fixes on PROVISIONAL `bootstack.dev`, one PR. **#325:**
   AppShell `_dev_reset_region` restores the status band to its forced state
@@ -579,28 +618,17 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session: #149 — the 0.1.0 ship gate (public-surface audit +
-> lock + CHANGELOG + tag stable).** Both prior "START HERE" items are now DONE +
-> MERGED: **hot reload** (PR #329, 2026-06-24) and the **staged builder-pattern
-> work** (#321 + #320 Part 2, **PR #330, MERGED 2026-06-24** — class scaffolds →
-> `build_<name>()` builders; naming convention LOCKED; flagship example
-> demonstrates a reusable builder; full detail in the top "Recently completed"
-> entry). The builder-functions guide is the **"Composing with Builders"** how-to at
-> **`docs/tasks/composing-with-builders.rst`**. `bootstack.dev` stays
-> **PROVISIONAL** (carved out of the 0.1.0 freeze). Memories `project_hot_reload`,
-> `reference_win32_execv_not_inplace`.
+> ⏭ **0.1.0 STABLE SHIPPED (2026-06-24) — see the top "Recently completed" entry.**
+> `bootstack 0.1.0` is on PyPI + tagged `v0.1.0`; the public compose API is FROZEN
+> under SemVer; the **0.1.0 (stable) milestone is CLOSED**. **#149 is DONE** — all
+> its folded items shipped (`text=<Signal>` guard + `cli/run.py` via PR #334;
+> `__version__` is dynamic; CHANGELOG via #335). `bootstack.dev` stays
+> **PROVISIONAL** (excluded from the freeze). The next milestone is **0.1.1 —
+> Widget polish** (`gh` milestone #2); the post-0.1.0 release batching lives in
+> memory `project_roadmap_milestones` (0.1.1 polish → 0.2.0 Timeline/Wizard →
+> 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
 >
-> **#149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).**
-> Audit the whole `bootstack.*` surface, lock it, write the CHANGELOG, tag stable.
-> **Fold in these items found this session:** (a) guard `text=<Signal>` →
-> `TypeError` across text-bearing widgets (`Label`/`Button`/…) — a Signal in the
-> positional `text=` slot silently renders its name (e.g. `"SIG2"`) instead of
-> binding; the supported path is `textsignal=`; (b) **`bootstack.__version__`
-> reads `0.1.0a6`** (stale hardcoded) vs pyproject `0.1.0a16` — fix the source of
-> truth; (c) `cli/run.py`'s direct-file branch has the same double-cwd bug already
-> fixed in `cli/dev.py` (pass `entry_point.resolve()` to the subprocess);
-> (d) CHANGELOG should scope the freeze to the compose API and note `bootstack.dev`
-> is provisional/excluded. Own branch → PR.
+> **Open, additive items (no longer ship-blockers) — candidates for 0.1.1:**
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
@@ -618,9 +646,10 @@ memories and git history.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
-> **`main` is GREEN, and `0.1.0a16` is the latest pre-release** (cut 2026-06-23 —
-> contains the icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
-> `bs.Splash` #318). The splash session also added an **events-doc-coverage guard**
+> **`main` is GREEN, and `0.1.0` (STABLE) is released** (tag `v0.1.0`, on PyPI,
+> 2026-06-24). The prior `0.1.0a16` pre-release (cut 2026-06-23) contained the
+> icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
+> `bs.Splash` #318. The splash session also added an **events-doc-coverage guard**
 > (PR #319, `test_events_doc_coverage.py`) after `events.rst` was found drifting from
 > `events.__all__`. Memory `project_splash_widget`. **Watch-out the splash session
 > surfaced:** the event loop must turn for a splash to show motion — a `until="ready"`
