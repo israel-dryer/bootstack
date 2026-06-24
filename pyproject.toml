@@ -29,9 +29,10 @@ keywords = [
     "python-gui"
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Win32 (MS Windows)",
-    "Environment :: X11 Applications :: GTK",
+    "Environment :: MacOS X",
+    "Environment :: X11 Applications",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
