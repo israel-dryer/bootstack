@@ -19,5 +19,5 @@ banner, and the restart fallback — see the :doc:`/production/hot-reload` guide
    :toctree: generated
    :nosignatures:
 
-   reloadable
    is_dev_mode
+   reloadable

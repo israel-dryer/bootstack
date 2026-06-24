@@ -112,7 +112,7 @@ files, mark each page's builder so a save to that file rebuilds only its region:
 Editing ``pages/dashboard.py`` rebuilds **only** the dashboard region (the rest
 of the running app is untouched); editing ``main.py`` reloads the whole body.
 
-``@reloadable`` decorates a :doc:`builder function </reference/builder-functions>`
+``@reloadable`` decorates a :doc:`builder function </tasks/composing-with-builders>`
 — that is the primitive that makes per-page reload possible. Two practical notes:
 
 - **Import the module, not the name.** ``import pages.dashboard as dashboard``
@@ -123,7 +123,7 @@ of the running app is untouched); editing ``main.py`` reloads the whole body.
 - **Page files are pure view builders.** Reloading a page file re-runs its top
   level, so keep durable state (signals, data sources) in the entry module and
   pass it in — exactly the
-  :doc:`builder-function </reference/builder-functions>` discipline.
+  :doc:`builder-function </tasks/composing-with-builders>` discipline.
 
 Outside ``bootstack dev``, ``@reloadable`` returns the function unchanged — it
 costs nothing in production.
@@ -135,17 +135,44 @@ A save that does not parse, or that raises while rebuilding, does **not** crash
 the process. The error is shown as a banner in the window and the app keeps
 running; fix the file and save again to recover.
 
+This is the in-process behavior. Under the restart fallback described below, a
+broken edit cannot show the banner — the app exits with the error in the
+terminal, and the session relaunches it when you fix the file and save.
+
 The restart fallback
 --------------------
 
 In-process reload needs a module-level ``with bs.App()`` block. An app authored
-inside a function can't be re-executed safely in place, so it falls back to a
-process restart on save (window geometry is persisted so it re-opens where it
-was). Force this mode for any app with ``--restart``:
+inside a function can't be re-executed safely in place, so ``bootstack dev``
+**falls back to a process restart automatically** (window geometry is persisted
+so it re-opens where it was) — you do not have to ask for it.
+
+You can also force a restart for any app with ``--restart``:
 
 .. code-block:: console
 
    $ bootstack dev --restart app.py
+
+When to force it
+~~~~~~~~~~~~~~~~~
+
+Reach for ``--restart`` only when you want a full cold start on every save:
+
+- **You are editing the stable header** — the setup *above* the ``with`` block.
+  In-process reload keeps that frozen (data sources, module constants, and
+  startup logic are built once and preserved), so edits there are not picked up.
+  A restart re-runs the whole file.
+- **You want a guaranteed clean slate** — to check first-run behavior, or because
+  module-level state has drifted and you want it rebuilt from zero.
+- **In-process reload misbehaves** for your app — a rare global side effect that
+  does not reset cleanly in place. Restart is the robust floor.
+
+The trade-off: a restart is slower (a full relaunch, with a brief window blink)
+and preserves nothing across the save. A broken edit cannot show the in-window
+banner either — the app exits with the error printed to the terminal, and the
+session stays up and relaunches when you fix the file and save. For everyday UI
+work the default in-process reload is faster and more forgiving; prefer it unless
+you specifically need the cold start.
 
 Platform support
 ----------------
@@ -157,8 +184,8 @@ cross-platform. A few platform notes:
   rebuilds it correctly. macOS shows the menu of the *frontmost* app, so after a
   save in your editor you may need to click the app window to bring it forward
   before the updated menus appear — the rebuild already happened.
-- **Restart fallback.** The ``--restart`` path is a clean process replacement on
-  macOS and Linux.
+- **Restart fallback** works the same on Windows, macOS, and Linux — ``bootstack
+  dev`` supervises the app and relaunches it on save.
 - **File watching** uses modification times polled a few times a second. On
   filesystems with coarse timestamp resolution, two saves within the same tick
   may coalesce into one reload; the next save always catches up.
@@ -166,7 +193,7 @@ cross-platform. A few platform notes:
 See also
 --------
 
-- :doc:`/reference/builder-functions` — the composition pattern behind
+- :doc:`/tasks/composing-with-builders` — the composition pattern behind
   ``@reloadable`` and per-page reload.
 - :doc:`/production/cli` — the full ``bootstack`` command-line reference.
 - :doc:`/reference/signals` — module-level signals are the way to keep state

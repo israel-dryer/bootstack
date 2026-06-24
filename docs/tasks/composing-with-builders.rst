@@ -1,5 +1,5 @@
-Builder Functions
-=================
+Composing with Builders
+=======================
 
 A builder function is any plain function that *builds widgets*. Because a widget
 finds its parent from the **active container** at the moment it is constructed —
@@ -84,7 +84,7 @@ it runs, so they nest naturally:
 .. code-block:: python
 
    def toolbar_row():
-       with bs.Row(gap=8, horizontal="right"):
+       with bs.Row(gap=8, horizontal="stretch", horizontal_items="right"):
            bs.Button("New")
            bs.Button("Refresh")
 
