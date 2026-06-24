@@ -21,6 +21,34 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Builder-function scaffolds + examples audit (PR #330 — MERGED; 2026-06-24).**
+  The staged builder-pattern work the roadmap flagged as "START HERE." **#321:**
+  every CLI page/view scaffold flipped from a class
+  (`__init__`/`_build`/`self.root`) to a **`build_<name>()` builder function**
+  (`cli/templates/__init__.py`). Layout moved onto the page region — AppShell pages
+  paint **directly** into the page (`padding`/`gap`/`horizontal_items` on
+  `nav.add_page(...)`; the page IS the column, no inner wrapper); basic **pack** view
+  paints into the padded App body, **grid** view opens a `bs.Grid` (a layout the
+  column body lacks — not redundant; needs `horizontal="stretch"` to fill);
+  **master-detail** `build_detail(record)` opens its **own** padded `Column` (the
+  detail region is a bare `ContentHost` fill area, no padding). Stateful handlers
+  became **closures over local field refs** (not `self.*` methods) — the documented
+  "builder default, class is the escape hatch" story. `add page`/`add view` emit
+  `build_<name>` (suffix-stripped: `DashboardPage`→`build_dashboard`) + matching
+  wiring hints (new `_build_func_name`/`_readable_title` helpers). **Naming
+  convention LOCKED:** *component* builders are bare (`user_card`), *page/region*
+  builders are `build_<name>` — a **Naming** note in the **Composing with Builders**
+  how-to ties scaffolds + how-to into one system. **#320 Part 2:** flagship
+  `docs/examples/appshell.py` factors its metric cards into a reusable
+  `metric_card()` builder; nav examples were already class-free (the reshape did it);
+  the `bootstack gallery` demo already uses `_build_*` builders (left as-is — its
+  inner `Column` is legit scroll-content padding for `scrollable=True` pages, NOT
+  class-view redundancy). **#320 Part 1 + the `_resolve_parent` guard shipped in
+  #329** (the guard at `base.py:97` raises a clear `BootstackError` when a builder is
+  called with no active container + no `parent=` — matches the how-to's "one rule").
+  Verified: all 6 scaffold variants build in isolated subprocesses, the printed
+  add-page wiring builds end-to-end, 186 cli/public-surface tests, clean `-W` docs
+  build. Memory `project_builder_scaffolds`.
 - **Hot reload — `bootstack dev` + feature-review fixes (PR #329 — MERGED;
   2026-06-24).** The dev workflow (BUILT on `feat/hot-reload` in the prior
   session) got a **4-reviewer adversarial audit + fixes**, then merged.
@@ -510,31 +538,18 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session: the staged builder-pattern work (#320 PART 2 +
-> #321), then #149 (the 0.1.0 ship gate).** **Hot reload is DONE + MERGED** (PR
-> #329, 2026-06-24 — full detail in the top "Recently completed" entry): the
-> feature, a 4-reviewer adversarial audit + fixes (win32 `os.execv` restart → a
-> CLI supervisor loop; AppShell banner; crash-resilient restart), the demo video,
-> the README hero, and the docs all shipped. The builder-functions guide was
-> reclassified as the **"Composing with Builders"** how-to at
-> **`docs/tasks/composing-with-builders.rst`** (was `reference/builder-functions.rst`
-> — fix any stale references). `bootstack.dev` stays **PROVISIONAL** (carved out of
-> the 0.1.0 freeze). Memories `project_hot_reload`, `reference_win32_execv_not_inplace`.
+> ⏭ **START HERE next session: #149 — the 0.1.0 ship gate (public-surface audit +
+> lock + CHANGELOG + tag stable).** Both prior "START HERE" items are now DONE +
+> MERGED: **hot reload** (PR #329, 2026-06-24) and the **staged builder-pattern
+> work** (#321 + #320 Part 2, **PR #330, MERGED 2026-06-24** — class scaffolds →
+> `build_<name>()` builders; naming convention LOCKED; flagship example
+> demonstrates a reusable builder; full detail in the top "Recently completed"
+> entry). The builder-functions guide is the **"Composing with Builders"** how-to at
+> **`docs/tasks/composing-with-builders.rst`**. `bootstack.dev` stays
+> **PROVISIONAL** (carved out of the 0.1.0 freeze). Memories `project_hot_reload`,
+> `reference_win32_execv_not_inplace`.
 >
-> **Hot-reload finish items (ALL DONE this session):** demo video (3.1 MB) + the
-> `.. raw:: html` `<video>` embed + `.bs-video` CSS; README `## Hot reload` section
-> with the video; PR #329 opened + merged; status comment posted on **#322** (the
-> design-of-record issue).
->
-> **THEN the staged builder-pattern work (before tag; maintainer chose "guide +
-> guard now, audit/scaffold staged"):** **#320 PART 2** — audit `docs/examples/*`
-> + the screenshot scenes + the CLI demo to model the cleanest builder pattern
-> (factor inline UI into builders, drop redundant layout nesting, call them
-> "builders" everywhere). **#321** — flip the CLI scaffolds (`add page`/`add
-> view`/templates) from class-based views → builder functions. (#320 part 1 — now
-> the **Composing with Builders** how-to — and the guard are DONE, merged via #329.)
->
-> **THEN #149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).**
+> **#149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).**
 > Audit the whole `bootstack.*` surface, lock it, write the CHANGELOG, tag stable.
 > **Fold in these items found this session:** (a) guard `text=<Signal>` →
 > `TypeError` across text-bearing widgets (`Label`/`Button`/…) — a Signal in the
