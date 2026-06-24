@@ -11,25 +11,25 @@ extra to install — see :ref:`checking-tk` below if a window fails to appear.
 Install
 -------
 
-bootstack is in **pre-release**, so pass ``--pre`` to opt in to the latest alpha:
+Install bootstack with pip:
 
 .. code-block:: bash
 
-   python -m pip install --pre bootstack
+   python -m pip install bootstack
 
-Upgrade to the newest pre-release the same way:
+Upgrade to the latest release the same way:
 
 .. code-block:: bash
 
-   python -m pip install --upgrade --pre bootstack
+   python -m pip install --upgrade bootstack
 
-To pin an exact version — for a reproducible environment — name it directly
-(``--pre`` is then not required). Pick a version from the
+To pin an exact version — for a reproducible environment — name it directly.
+Pick a version from the
 `release history <https://pypi.org/project/bootstack/#history>`__:
 
 .. code-block:: bash
 
-   python -m pip install bootstack==0.1.0a11
+   python -m pip install bootstack==0.1.0
 
 .. _checking-tk:
 
@@ -77,11 +77,11 @@ adding the extra in brackets:
 
 .. code-block:: bash
 
-   python -m pip install --pre "bootstack[excel]"        # .xlsx export from DataTable
-   python -m pip install --pre "bootstack[parquet]"      # read and write Parquet and Feather
-   python -m pip install --pre "bootstack[hdf5]"         # read and write HDF5
-   python -m pip install --pre "bootstack[viz]"          # Chart — embed matplotlib figures
-   python -m pip install --pre "bootstack[viz-seaborn]"  # Chart, with seaborn added
+   python -m pip install "bootstack[excel]"        # .xlsx export from DataTable
+   python -m pip install "bootstack[parquet]"      # read and write Parquet and Feather
+   python -m pip install "bootstack[hdf5]"         # read and write HDF5
+   python -m pip install "bootstack[viz]"          # Chart — embed matplotlib figures
+   python -m pip install "bootstack[viz-seaborn]"  # Chart, with seaborn added
 
 Combine extras in one install — for example ``bootstack[excel,parquet]``. The
 data-format extras power the file reader/writer registry behind data sources and

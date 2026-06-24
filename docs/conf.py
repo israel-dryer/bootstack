@@ -211,10 +211,6 @@ nitpick_ignore_regex = [
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "announcement": (
-        "bootstack is in <strong>pre-release</strong> — the API may still "
-        "change before 1.0. Install with <code>pip install --pre bootstack</code>."
-    ),
     "github_url": "https://github.com/israel-dryer/bootstack",
     "logo": {
         "image_light": "_static/bootstack-logo-light.svg",

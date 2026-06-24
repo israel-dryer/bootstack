@@ -60,10 +60,10 @@ state, and active page, so you never lose your spot.
 ## Installation
 
 Requires Python 3.12+ and Tk/Tcl (bundled with most Python distributions).
-bootstack is in pre-release, so opt in with `--pre`:
+Install with pip:
 
 ```bash
-python -m pip install --pre bootstack
+python -m pip install bootstack
 ```
 
 See the [installation guide](https://bootstack.org/getting-started/installation/)
