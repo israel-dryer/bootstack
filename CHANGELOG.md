@@ -8,6 +8,16 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [0.1.1] — packaging fix
+
+### Fixed
+
+- **Declared `pygments` as a runtime dependency.** `CodeEditor` requires Pygments
+  for syntax highlighting, but it was not listed in the project dependencies, so a
+  clean `pip install bootstack` would raise `ModuleNotFoundError: No module named
+  'pygments'` when constructing a `CodeEditor` (including on the bundled demo's
+  editing page). Pygments is now installed automatically with bootstack.
+
 ## [0.1.0] — first stable release
 
 The first stable release of bootstack. The public **compose API** — everything
