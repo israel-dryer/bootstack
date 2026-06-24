@@ -1,5 +1,13 @@
 import bootstack as bs
 
+
+def metric_card(label, value):
+    """A reusable builder — paints one metric card into the active container."""
+    with bs.Card(padding=16, gap=4):
+        bs.Label(label, font="caption")
+        bs.Label(value, font="heading-md")
+
+
 with bs.AppShell(title="My App", size=(800, 540)) as shell:
 
     # ── Toolbar ───────────────────────────────────────────────────────────────
@@ -14,15 +22,9 @@ with bs.AppShell(title="My App", size=(800, 540)) as shell:
             bs.Label("Dashboard", font="heading-lg")
             bs.Label("Welcome back. Here is your overview.")
             with bs.Grid(columns=3, gap=12, horizontal="stretch"):
-                with bs.Card(padding=16, gap=4):
-                    bs.Label("Revenue", font="caption")
-                    bs.Label("$12,400", font="heading-md")
-                with bs.Card(padding=16, gap=4):
-                    bs.Label("Users", font="caption")
-                    bs.Label("1,280", font="heading-md")
-                with bs.Card(padding=16, gap=4):
-                    bs.Label("Orders", font="caption")
-                    bs.Label("340", font="heading-md")
+                metric_card("Revenue", "$12,400")
+                metric_card("Users", "1,280")
+                metric_card("Orders", "340")
 
         with nav.add_page("inbox", text="Inbox", icon="inbox", padding=24, gap=8):
             bs.Label("Inbox", font="heading-lg")

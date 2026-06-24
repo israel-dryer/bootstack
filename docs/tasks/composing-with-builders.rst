@@ -97,6 +97,20 @@ it runs, so they nest naturally:
    with shell.add_page("people", text="People", icon="people"):
        page_body(records)
 
+Naming
+------
+
+Name a builder for what it makes. A *component* builder is named for the thing it
+builds — ``user_card``, ``action_bar``, ``search_box``. A builder that fills a
+whole page or region is conventionally named ``build_<name>`` — ``build_home``,
+``build_settings`` — which reads as an action at its single call site::
+
+   with shell.add_page("home", text="Home", icon="house"):
+       build_home()
+
+The CLI scaffolds (:doc:`/production/cli`) generate page builders in this
+``build_*`` form, so a generated project already models the pattern.
+
 The one rule
 ------------
 

@@ -23,7 +23,7 @@ Run with: python -m {module_name}
 
 import bootstack as bs
 
-from {module_name}.views.main_view import MainView
+from {module_name}.views.main_view import build_main
 
 
 def main() -> None:
@@ -32,8 +32,13 @@ def main() -> None:
         title="{app_name}",
         theme="{theme}",
         size=(800, 600),
+        padding=20,
+        gap=10,
     ) as app:
-        MainView()
+        # `build_main` is a builder function: it paints its widgets into the
+        # active container (here, the App body). See the "Composing with
+        # Builders" guide.
+        build_main()
 
     app.run()
 
@@ -53,35 +58,21 @@ MAIN_VIEW_GRID_TEMPLATE = '''\
 import bootstack as bs
 
 
-class MainView:
-    """Main application view using a grid layout."""
-
-    def __init__(self, parent=None):
-        with bs.Grid(
-            parent=parent,
-            columns=["auto", 1],
-            gap=10,
-            padding=20,
-            grow=True,
-            horizontal="stretch",
-        ) as self.root:
-            self._build()
-
-    def _build(self) -> None:
+def build_main() -> None:
+    """Build the main view (a two-column grid form)."""
+    # The App body is a column, so open a Grid for the label/field columns.
+    # `horizontal="stretch"` lets the Grid fill the width so the field column grows.
+    with bs.Grid(columns=["auto", 1], gap=10, horizontal="stretch"):
         bs.Label("Welcome to {app_name}", font="heading-lg", columnspan=2)
         bs.Label("Name:")
-        self.name_field = bs.TextField()
+        name_field = bs.TextField()
         bs.Label("Email:")
-        self.email_field = bs.TextField()
-        bs.Button(
-            "Get Started",
-            accent="primary",
-            on_click=self._on_submit,
-            columnspan=2,
-        )
+        email_field = bs.TextField()
 
-    def _on_submit(self) -> None:
-        print(f"Name: {{self.name_field.value}}, Email: {{self.email_field.value}}")
+        def on_submit() -> None:
+            print(f"Name: {{name_field.value}}, Email: {{email_field.value}}")
+
+        bs.Button("Get Started", accent="primary", on_click=on_submit, columnspan=2)
 '''
 
 
@@ -91,27 +82,17 @@ MAIN_VIEW_PACK_TEMPLATE = '''\
 import bootstack as bs
 
 
-class MainView:
-    """Main application view using a vertical stack layout."""
+def build_main() -> None:
+    """Build the main view (a vertical stack of fields)."""
+    # Paints directly into the active container (the padded App body).
+    bs.Label("Welcome to {app_name}", font="heading-lg")
+    name_field = bs.TextField(label="Name:", horizontal="stretch")
+    email_field = bs.TextField(label="Email:", horizontal="stretch")
 
-    def __init__(self, parent=None):
-        with bs.Column(
-            parent=parent,
-            gap=10,
-            padding=20,
-            grow=True,
-            horizontal="stretch",
-        ) as self.root:
-            self._build()
+    def on_submit() -> None:
+        print(f"Name: {{name_field.value}}, Email: {{email_field.value}}")
 
-    def _build(self) -> None:
-        bs.Label("Welcome to {app_name}", font="heading-lg")
-        self.name_field = bs.TextField(label="Name:", horizontal="stretch")
-        self.email_field = bs.TextField(label="Email:", horizontal="stretch")
-        bs.Button("Get Started", accent="primary", on_click=self._on_submit)
-
-    def _on_submit(self) -> None:
-        print(f"Name: {{self.name_field.value}}, Email: {{self.email_field.value}}")
+    bs.Button("Get Started", accent="primary", on_click=on_submit)
 '''
 
 
@@ -120,57 +101,30 @@ class MainView:
 # =============================================================================
 
 VIEW_GRID_TEMPLATE = '''\
-"""
-{class_name} view.
-"""
+"""{title} view."""
 
 import bootstack as bs
 
 
-class {class_name}:
-    """{class_name} view."""
-
-    def __init__(self, parent=None):
-        with bs.Grid(
-            parent=parent,
-            columns=["auto", 1],
-            gap=10,
-            padding=20,
-            grow=True,
-            horizontal="stretch",
-        ) as self.root:
-            self._build()
-
-    def _build(self) -> None:
-        bs.Label("{class_name}", font="heading-lg", columnspan=2)
+def {func_name}() -> None:
+    """Build the {title} view (a two-column grid)."""
+    with bs.Grid(columns=["auto", 1], gap=10, horizontal="stretch"):
+        bs.Label("{title}", font="heading-lg", columnspan=2)
         # Add your widgets here
 '''
 
 
 VIEW_PACK_TEMPLATE = '''\
-"""
-{class_name} view.
-"""
+"""{title} view."""
 
 import bootstack as bs
 
 
-class {class_name}:
-    """{class_name} view."""
-
-    def __init__(self, parent=None):
-        with bs.Column(
-            parent=parent,
-            gap=10,
-            padding=20,
-            grow=True,
-            horizontal="stretch",
-        ) as self.root:
-            self._build()
-
-    def _build(self) -> None:
-        bs.Label("{class_name}", font="heading-lg")
-        # Add your widgets here
+def {func_name}() -> None:
+    """Build the {title} view."""
+    # Paints into the active container; the caller supplies padding/gap.
+    bs.Label("{title}", font="heading-lg")
+    # Add your widgets here
 '''
 
 
@@ -318,8 +272,8 @@ Run with: python -m {module_name}
 
 import bootstack as bs
 
-from {module_name}.pages.home_page import HomePage
-from {module_name}.pages.settings_page import SettingsPage
+from {module_name}.pages.home_page import build_home
+from {module_name}.pages.settings_page import build_settings
 
 
 def main() -> None:
@@ -332,12 +286,17 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: a flat sidebar of pages ----------------------------
+        # Each page IS a layout container, so configure padding/gap/alignment on
+        # add_page() and let the page's builder paint straight into it.
         with shell.page_nav() as nav:
-            with nav.add_page("home", text="Home", icon="house"):
-                HomePage()
+            with nav.add_page("home", text="Home", icon="house",
+                              padding=20, gap=12, horizontal_items="stretch"):
+                build_home()
 
-            with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
-                SettingsPage()
+            with nav.add_page("settings", text="Settings", icon="gear",
+                              pin_to_footer=True, padding=20, gap=12,
+                              horizontal_items="stretch"):
+                build_settings()
 
         shell.navigate("home")
 
@@ -358,10 +317,10 @@ Run with: python -m {module_name}
 
 import bootstack as bs
 
-from {module_name}.pages.home_page import HomePage
-from {module_name}.pages.reports_page import ReportsPage
-from {module_name}.pages.profile_page import ProfilePage
-from {module_name}.pages.settings_page import SettingsPage
+from {module_name}.pages.home_page import build_home
+from {module_name}.pages.reports_page import build_reports
+from {module_name}.pages.profile_page import build_profile
+from {module_name}.pages.settings_page import build_settings
 
 
 def main() -> None:
@@ -374,19 +333,26 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: pages grouped under section headers ----------------
+        # Each page IS a layout container, so configure padding/gap/alignment on
+        # add_page() and let the page's builder paint straight into it.
         with shell.page_nav() as nav:
             nav.add_header("Workspace")
-            with nav.add_page("home", text="Home", icon="house"):
-                HomePage()
-            with nav.add_page("reports", text="Reports", icon="bar-chart"):
-                ReportsPage()
+            with nav.add_page("home", text="Home", icon="house",
+                              padding=20, gap=12, horizontal_items="stretch"):
+                build_home()
+            with nav.add_page("reports", text="Reports", icon="bar-chart",
+                              padding=20, gap=12, horizontal_items="stretch"):
+                build_reports()
 
             nav.add_header("Account")
-            with nav.add_page("profile", text="Profile", icon="person"):
-                ProfilePage()
+            with nav.add_page("profile", text="Profile", icon="person",
+                              padding=20, gap=12, horizontal_items="stretch"):
+                build_profile()
 
-            with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
-                SettingsPage()
+            with nav.add_page("settings", text="Settings", icon="gear",
+                              pin_to_footer=True, padding=20, gap=12,
+                              horizontal_items="stretch"):
+                build_settings()
 
         shell.navigate("home")
 
@@ -408,7 +374,7 @@ Run with: python -m {module_name}
 import bootstack as bs
 from bootstack.data import MemoryDataSource
 
-from {module_name}.pages.detail_view import DetailView
+from {module_name}.pages.detail_view import build_detail
 
 # Sample records drive the sidebar list. Swap in your own data source.
 RECORDS = MemoryDataSource().load([
@@ -428,11 +394,13 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: a record list drives a detail view -----------------
+        # `build_detail` is a builder: it paints the selected record into the
+        # detail region each time the selection changes.
         shell.list_nav(RECORDS)
 
         @shell.detail
         def show(record):
-            DetailView(record)
+            build_detail(record)
 
     shell.run()
 
@@ -451,9 +419,9 @@ Run with: python -m {module_name}
 
 import bootstack as bs
 
-from {module_name}.pages.home_page import HomePage
-from {module_name}.pages.reports_page import ReportsPage
-from {module_name}.pages.settings_page import SettingsPage
+from {module_name}.pages.home_page import build_home
+from {module_name}.pages.reports_page import build_reports
+from {module_name}.pages.settings_page import build_settings
 
 
 def main() -> None:
@@ -467,20 +435,25 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: a labeled rail of workspaces -----------------------
+        # Each page IS a layout container, so configure padding/gap/alignment on
+        # add_page() and let the page's builder paint straight into it.
         with shell.add_workspace("home", text="Home", icon="house") as ws:
             with ws.page_nav() as nav:
-                with nav.add_page("overview", text="Overview", icon="speedometer2"):
-                    HomePage()
+                with nav.add_page("overview", text="Overview", icon="speedometer2",
+                                  padding=20, gap=12, horizontal_items="stretch"):
+                    build_home()
 
         with shell.add_workspace("reports", text="Reports", icon="bar-chart") as ws:
             with ws.page_nav() as nav:
-                with nav.add_page("monthly", text="Monthly", icon="calendar3"):
-                    ReportsPage()
+                with nav.add_page("monthly", text="Monthly", icon="calendar3",
+                                  padding=20, gap=12, horizontal_items="stretch"):
+                    build_reports()
 
         with shell.add_workspace("settings", text="Settings", icon="gear", pin_to_footer=True) as ws:
             with ws.page_nav() as nav:
-                with nav.add_page("general", text="General", icon="sliders"):
-                    SettingsPage()
+                with nav.add_page("general", text="General", icon="sliders",
+                                  padding=20, gap=12, horizontal_items="stretch"):
+                    build_settings()
 
     shell.run()
 
@@ -496,27 +469,26 @@ APPSHELL_HOME_PAGE_TEMPLATE = '''\
 import bootstack as bs
 
 
-class HomePage:
-    """Home page content."""
+def build_home():
+    """Build the Home page.
 
-    def __init__(self, parent=None):
-        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
-            self._build()
-
-    def _build(self):
-        bs.Label("Welcome to {app_name}", font="heading-xl")
+    A builder function: it paints into the active container. The page region
+    (configured on `nav.add_page(...)` in main.py) supplies the padding and gap,
+    so there is no extra layout wrapper here.
+    """
+    bs.Label("Welcome to {app_name}", font="heading-xl")
+    bs.Label(
+        "This is your home page. Edit this file to get started.",
+        wrap_width=500,
+    )
+    with bs.GroupBox("Getting Started", grow=True, horizontal="stretch"):
         bs.Label(
-            "This is your home page. Edit this file to get started.",
-            wrap_width=500,
+            "Add your widgets here.\\n\\n"
+            "To add another page:\\n"
+            "  1. Run \\'bootstack add page <Name>\\' to generate the file.\\n"
+            "  2. In main.py, add a \\'with nav.add_page(...):\\' block inside\\n"
+            "     your \\'shell.page_nav()\\' and call the page's build_* function in it."
         )
-        with bs.GroupBox("Getting Started", grow=True, horizontal="stretch"):
-            bs.Label(
-                "Add your widgets here.\\n\\n"
-                "To add another page:\\n"
-                "  1. Run \\'bootstack add page <Name>\\' to generate the file.\\n"
-                "  2. In main.py, add a \\'with nav.add_page(...):\\' block inside\\n"
-                "     your \\'shell.page_nav()\\' and instantiate the page class in it."
-            )
 '''
 
 
@@ -526,20 +498,14 @@ APPSHELL_SETTINGS_PAGE_TEMPLATE = '''\
 import bootstack as bs
 
 
-class SettingsPage:
-    """Settings page content."""
-
-    def __init__(self, parent=None):
-        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
-            self._build()
-
-    def _build(self):
-        bs.Label("Settings", font="heading-xl[bold]")
-        bs.Label("Configure your application preferences.", wrap_width=500)
-        with bs.GroupBox("Preferences", grow=True, horizontal="stretch"):
-            with bs.Row(gap=8):
-                bs.Label("Theme:")
-                bs.ThemeToggle()
+def build_settings():
+    """Build the Settings page."""
+    bs.Label("Settings", font="heading-xl")
+    bs.Label("Configure your application preferences.", wrap_width=500)
+    with bs.GroupBox("Preferences", grow=True, horizontal="stretch"):
+        with bs.Row(gap=8):
+            bs.Label("Theme:")
+            bs.ThemeToggle()
 '''
 
 
@@ -549,17 +515,11 @@ APPSHELL_PAGE_TEMPLATE = '''\
 import bootstack as bs
 
 
-class {class_name}:
-    """{page_title} page content."""
-
-    def __init__(self, parent=None):
-        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
-            self._build()
-
-    def _build(self):
-        bs.Label("{page_title}", font="heading-lg")
-        with bs.GroupBox("Content", grow=True, horizontal="stretch"):
-            pass  # Add your widgets here
+def {func_name}():
+    """Build the {page_title} page."""
+    bs.Label("{page_title}", font="heading-lg")
+    with bs.GroupBox("Content", grow=True, horizontal="stretch"):
+        pass  # Add your widgets here
 '''
 
 
@@ -569,17 +529,11 @@ APPSHELL_CONTENT_PAGE_TEMPLATE = '''\
 import bootstack as bs
 
 
-class {class_name}:
-    """{page_title} page content."""
-
-    def __init__(self, parent=None):
-        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
-            self._build()
-
-    def _build(self):
-        bs.Label("{page_title}", font="heading-lg")
-        with bs.GroupBox("Content", grow=True, horizontal="stretch"):
-            bs.Label("Add your widgets here.")
+def {func_name}():
+    """Build the {page_title} page."""
+    bs.Label("{page_title}", font="heading-lg")
+    with bs.GroupBox("Content", grow=True, horizontal="stretch"):
+        bs.Label("Add your widgets here.")
 '''
 
 
@@ -589,17 +543,15 @@ APPSHELL_DETAIL_VIEW_TEMPLATE = '''\
 import bootstack as bs
 
 
-class DetailView:
-    """Renders the record selected in the master list."""
+def build_detail(record):
+    """Build the detail view for the selected record.
 
-    def __init__(self, record, parent=None):
-        self.record = record
-        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
-            self._build()
-
-    def _build(self):
-        bs.Label(self.record["title"], font="heading-lg")
-        bs.Label(self.record.get("text", ""), accent="secondary")
+    The detail region is a plain fill area, so this builder opens its own
+    padded `Column` to frame the content.
+    """
+    with bs.Column(padding=20, gap=12, horizontal_items="stretch"):
+        bs.Label(record["title"], font="heading-lg")
+        bs.Label(record.get("text", ""), accent="secondary")
         bs.Divider(horizontal="stretch")
         bs.Label("Detail content for this record goes here.")
 '''
@@ -629,9 +581,10 @@ bootstack run
 bootstack add page DashboardPage
 
 # Then wire it up in main.py, inside your shell.page_nav() block:
-#   from {module_name}.pages.dashboard_page import DashboardPage
-#   with nav.add_page("dashboard", text="Dashboard", icon="speedometer2"):
-#       DashboardPage()
+#   from {module_name}.pages.dashboard_page import build_dashboard
+#   with nav.add_page("dashboard", text="Dashboard", icon="speedometer2",
+#                     padding=20, gap=12, horizontal_items="stretch"):
+#       build_dashboard()
 ```
 
 ### Building for Distribution
@@ -688,17 +641,9 @@ def create_page(
     """
     file_name = _camel_to_snake(class_name) + ".py"
 
-    # Derive a readable title from the class name (e.g. "DashboardPage" -> "Dashboard")
-    page_title = class_name
-    if page_title.endswith("Page"):
-        page_title = page_title[:-4]
-    # Insert spaces before uppercase letters
-    import re
-    page_title = re.sub(r"([a-z])([A-Z])", r"\1 \2", page_title)
-
     content = APPSHELL_PAGE_TEMPLATE.format(
-        class_name=class_name,
-        page_title=page_title,
+        func_name=_build_func_name(class_name),
+        page_title=_readable_title(class_name),
     )
 
     file_path = target_dir / file_name
@@ -857,7 +802,7 @@ def _create_appshell_project(
 
     def _write_content_page(class_name: str, title: str) -> None:
         content = APPSHELL_CONTENT_PAGE_TEMPLATE.format(
-            class_name=class_name, page_title=title
+            func_name=_build_func_name(class_name), page_title=title
         )
         (pages_dir / f"{_camel_to_snake(class_name)}.py").write_text(
             content, encoding="utf-8"
@@ -923,7 +868,10 @@ def create_view(
     else:
         template = VIEW_PACK_TEMPLATE
 
-    content = template.format(class_name=class_name)
+    content = template.format(
+        func_name=_build_func_name(class_name),
+        title=_readable_title(class_name),
+    )
 
     file_path = target_dir / file_name
     file_path.write_text(content, encoding="utf-8")
@@ -960,3 +908,24 @@ def _camel_to_snake(name: str) -> str:
     # Insert underscore before uppercase letters and lowercase
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def _strip_kind_suffix(name: str) -> str:
+    """Drop a trailing `Page`/`View` from a CamelCase name (keep if it's all there is)."""
+    for suffix in ("Page", "View"):
+        if name.endswith(suffix) and len(name) > len(suffix):
+            return name[: -len(suffix)]
+    return name
+
+
+def _build_func_name(class_name: str) -> str:
+    """Derive a builder function name from a name (e.g. `DashboardPage` -> `build_dashboard`)."""
+    return "build_" + _camel_to_snake(_strip_kind_suffix(class_name))
+
+
+def _readable_title(class_name: str) -> str:
+    """Derive a readable title from a name (e.g. `DashboardPage` -> `Dashboard`)."""
+    import re
+
+    base = _strip_kind_suffix(class_name)
+    return re.sub(r"([a-z])([A-Z])", r"\1 \2", base)
