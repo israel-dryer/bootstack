@@ -116,8 +116,10 @@ of the running app is untouched); editing ``main.py`` reloads the whole body.
 — that is the primitive that makes per-page reload possible. Two practical notes:
 
 - **Import the module, not the name.** ``import pages.dashboard as dashboard``
-  is reload-safe; ``from pages.dashboard import build_dashboard`` pins the stale
-  function after a reload.
+  always reaches the current code after a reload. A ``@reloadable`` builder is
+  robust either way, but a ``from pages.dashboard import helper`` binding for a
+  plain function is captured once and won't refresh on save — importing the
+  module is the one habit that keeps *everything* in that file live.
 - **Page files are pure view builders.** Reloading a page file re-runs its top
   level, so keep durable state (signals, data sources) in the entry module and
   pass it in — exactly the
