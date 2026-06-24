@@ -52,6 +52,79 @@ class WindowPositioning:
         >>> # Returns adjusted coordinates within screen bounds
     """
 
+    # Per-process cache of the macOS visible frame (work area) per monitor rect,
+    # keyed by the full monitor bounds. Computed once via a clamped probe.
+    _work_area_cache: dict[Tuple[int, int, int, int], Tuple[int, int, int, int]] = {}
+
+    @staticmethod
+    def get_work_area(
+        root: Optional[tkinter.Misc],
+        monitor_rect: Tuple[int, int, int, int],
+    ) -> Tuple[int, int, int, int]:
+        """Return the usable area of a monitor, OS-reserved strips excluded.
+
+        On macOS the menu bar (top) and Dock sit *inside* the physical monitor
+        bounds, so anchoring a window to the raw monitor rect lands it under the
+        Dock. Tk exposes no `NSScreen.visibleFrame` accessor, so this clamps a
+        throwaway, fully transparent managed Toplevel to the monitor — Aqua snaps
+        a managed window to the visible frame — and reads back the realized
+        origin and size. The result is cached per monitor rect.
+
+        Off macOS the full `monitor_rect` is returned unchanged: the X11/Windows
+        transient path already clears the taskbar via a topmost overlay.
+
+        Args:
+            root: A live widget used to parent the probe. If None, the full
+                `monitor_rect` is returned unchanged.
+            monitor_rect: `(x, y, w, h)` full bounds of the target monitor.
+
+        Returns:
+            `(x, y, w, h)` of the usable work area within `monitor_rect`.
+        """
+        if root is None:
+            return monitor_rect
+        try:
+            if root.tk.call("tk", "windowingsystem") != "aqua":
+                return monitor_rect
+        except tkinter.TclError:
+            return monitor_rect
+
+        cached = WindowPositioning._work_area_cache.get(monitor_rect)
+        if cached is not None:
+            return cached
+
+        mx, my, mw, mh = monitor_rect
+        area = monitor_rect
+        probe: Optional[tkinter.Toplevel] = None
+        try:
+            probe = tkinter.Toplevel(root)
+            try:
+                probe.attributes("-alpha", 0.0)  # invisible — no flash
+            except tkinter.TclError:
+                pass
+            # Oversize and place at the monitor origin; a managed Aqua window is
+            # clamped to that monitor's visible frame, so the realized geometry
+            # is the work area (menu bar + Dock excluded).
+            probe.geometry(f"{mw * 2}x{mh * 2}+{mx}+{my}")
+            probe.update_idletasks()
+            x, y = probe.winfo_rootx(), probe.winfo_rooty()
+            w, h = probe.winfo_width(), probe.winfo_height()
+            # Guard a degenerate probe (e.g. 1x1 if it never mapped): only trust
+            # a result that fills most of the monitor.
+            if w >= mw // 2 and h >= mh // 2:
+                area = (x, y, w, h)
+        except tkinter.TclError:
+            pass
+        finally:
+            if probe is not None:
+                try:
+                    probe.destroy()
+                except tkinter.TclError:
+                    pass
+
+        WindowPositioning._work_area_cache[monitor_rect] = area
+        return area
+
     @staticmethod
     def _get_monitor_at_point(x: int, y: int) -> Optional[Tuple[int, int, int, int]]:
         """Find the monitor containing the given point.

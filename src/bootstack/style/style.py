@@ -363,6 +363,12 @@ class Style(ttkStyle):
         stack = [root_widget]
         while stack:
             w = stack.pop()
+            # A PageStack keeps inactive pages mapped (so re-showing one doesn't
+            # blank-flash on macOS) but flags them hidden; prune the whole subtree
+            # so a theme change repaints only the visible page. A hidden page's
+            # widgets stay stale and are repainted on its next show (only_stale).
+            if getattr(w, '_bs_nav_hidden', False):
+                continue
             try:
                 stack.extend(w.winfo_children())
             except Exception:

@@ -39,7 +39,12 @@ def _alive(top: tkinter.Toplevel) -> bool:
 
 
 def _monitor_rect() -> tuple[int, int, int, int]:
-    """`(x, y, w, h)` of the monitor the app window is on; full screen fallback."""
+    """`(x, y, w, h)` usable work area of the monitor the app window is on.
+
+    On macOS this is the visible frame (menu bar + Dock excluded) so a corner
+    toast never lands under the Dock; elsewhere it is the full monitor bounds.
+    Falls back to the full screen, then a fixed default.
+    """
     root = get_default_root()
     if root is not None:
         try:
@@ -47,9 +52,9 @@ def _monitor_rect() -> tuple[int, int, int, int]:
             cx = root.winfo_rootx() + root.winfo_width() // 2
             cy = root.winfo_rooty() + root.winfo_height() // 2
             rect = WindowPositioning._get_monitor_at_point(cx, cy)
-            if rect:
-                return rect
-            return (0, 0, root.winfo_screenwidth(), root.winfo_screenheight())
+            if rect is None:
+                rect = (0, 0, root.winfo_screenwidth(), root.winfo_screenheight())
+            return WindowPositioning.get_work_area(root, rect)
         except tkinter.TclError:
             pass
     return (0, 0, 1920, 1080)
