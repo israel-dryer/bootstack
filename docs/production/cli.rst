@@ -78,7 +78,8 @@ it in. The kinds:
    bootstack add i18n --languages en es  # translatable-text scaffolding
 
 `add page` is for `appshell` projects and `add view` for `basic` projects; each
-generates a class file and prints the lines to paste into `main.py`.
+generates a builder function (`def build_<name>(): ...`) and prints the lines to
+paste into `main.py`. See :doc:`/tasks/composing-with-builders` for the pattern.
 
 Packaging
 ---------

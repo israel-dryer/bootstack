@@ -6,7 +6,12 @@ import argparse
 from pathlib import Path
 
 from bootstack.cli.config import TtkbConfig, find_config
-from bootstack.cli.templates import create_dialog, create_page, create_view
+from bootstack.cli.templates import (
+    _build_func_name,
+    create_dialog,
+    create_page,
+    create_view,
+)
 
 
 def add_parser(subparsers: argparse._SubParsersAction) -> None:
@@ -202,6 +207,7 @@ def run_add_page(args: argparse.Namespace) -> None:
     scrollable = args.scrollable
     file_path = create_page(class_name, target_dir, scrollable=scrollable)
 
+    func_name = _build_func_name(class_name)
     print(f"Created page: {file_path.relative_to(project_root)}")
     print()
     print("This created the file only - it is NOT yet shown in the sidebar.")
@@ -209,10 +215,11 @@ def run_add_page(args: argparse.Namespace) -> None:
     print("inside your shell.page_nav() block:")
     print()
     import_module = f"{module_name}.pages" if module_name else "<module>.pages"
-    print(f"  from {import_module}.{file_path.stem} import {class_name}")
+    print(f"  from {import_module}.{file_path.stem} import {func_name}")
     scrollable_arg = ", scrollable=True" if scrollable else ""
-    print(f'  with nav.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg}):')
-    print(f"      {class_name}()")
+    print(f'  with nav.add_page("<id>", text="<Label>", icon="<icon>",')
+    print(f'                    padding=20, gap=12, horizontal_items="stretch"{scrollable_arg}):')
+    print(f"      {func_name}()")
 
 
 def run_add_dialog(args: argparse.Namespace) -> None:

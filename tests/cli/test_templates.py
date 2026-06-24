@@ -93,13 +93,17 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
     # subclass for the chosen container.
     main_src = (target / "src" / "myapp" / "main.py").read_text(encoding="utf-8")
     assert 'theme="cosmo"' in main_src
-    assert "from myapp.views.main_view import MainView" in main_src
+    assert "from myapp.views.main_view import build_main" in main_src
 
-    view_src = (target / "src" / "myapp" / "views" / "main_view.py").read_text(encoding="utf-8")
+    # The view is a builder function, not a class.
+    view_path = target / "src" / "myapp" / "views" / "main_view.py"
+    view_src = view_path.read_text(encoding="utf-8")
+    funcs = [n.name for n in ast.walk(_assert_python_parses(view_path)) if isinstance(n, ast.FunctionDef)]
+    assert "build_main" in funcs
     if container == "grid":
         assert "bs.Grid" in view_src
     else:
-        assert "bs.Column" in view_src
+        assert "bs.Column" not in view_src  # pack view paints directly, no wrapper
 
 
 # ---------------------------------------------------------------------------
@@ -136,7 +140,16 @@ def test_create_appshell_project(tmp_path: Path, simple: bool) -> None:
     main_src = (target / "src" / "myshell" / "main.py").read_text(encoding="utf-8")
     assert "bs.AppShell" in main_src
     assert 'theme="superhero"' in main_src
-    assert "HomePage" in main_src and "SettingsPage" in main_src
+    # Pages are wired in as builder functions, called inside add_page() blocks.
+    assert "build_home()" in main_src and "build_settings()" in main_src
+    home_path = target / "src" / "myshell" / "pages" / "home_page.py"
+    home_funcs = [
+        n.name for n in ast.walk(_assert_python_parses(home_path))
+        if isinstance(n, ast.FunctionDef)
+    ]
+    assert "build_home" in home_funcs
+    # The page builder paints directly into the page region — no inner wrapper.
+    assert "bs.Column" not in home_path.read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -168,10 +181,13 @@ def test_create_view(tmp_path: Path, container: str) -> None:
     out = create_view("ProfileView", tmp_path, container=container)
     assert out.name == "profile_view.py"
     mod = _assert_python_parses(out)
-    classes = [n.name for n in ast.walk(mod) if isinstance(n, ast.ClassDef)]
-    assert "ProfileView" in classes
+    funcs = [n.name for n in ast.walk(mod) if isinstance(n, ast.FunctionDef)]
+    assert "build_profile" in funcs
     src = out.read_text(encoding="utf-8")
-    assert ("bs.Grid" if container == "grid" else "bs.Column") in src
+    if container == "grid":
+        assert "bs.Grid" in src
+    else:
+        assert "bs.Column" not in src  # pack view paints directly
 
 
 def test_create_dialog(tmp_path: Path) -> None:
@@ -186,8 +202,9 @@ def test_create_page_camel_to_snake(tmp_path: Path) -> None:
     out = create_page("DashboardPage", tmp_path)
     assert out.name == "dashboard_page.py"
     mod = _assert_python_parses(out)
-    classes = [n.name for n in ast.walk(mod) if isinstance(n, ast.ClassDef)]
-    assert "DashboardPage" in classes
+    funcs = [n.name for n in ast.walk(mod) if isinstance(n, ast.FunctionDef)]
+    # Builder function strips the trailing 'Page' suffix
+    assert "build_dashboard" in funcs
     # Page title strips trailing 'Page' for the heading
     src = out.read_text(encoding="utf-8")
     assert '"Dashboard"' in src
