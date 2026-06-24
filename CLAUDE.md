@@ -21,6 +21,28 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.1 PATCH SHIPPED — `pygments` declared as a runtime dependency (PR #344;
+  2026-06-24).** `bootstack 0.1.1` is on **PyPI** and tagged **`v0.1.1`** (GitHub
+  Release, notes from the CHANGELOG `## [0.1.1]` section). **Bug:** `CodeEditor`
+  hard-imports `pygments` (via `_try_install_highlighter`) for syntax highlighting,
+  but it was declared as a dependency **nowhere** in `pyproject.toml` — so a clean
+  `pip install bootstack` (no incidental pygments) crashed on any
+  `CodeEditor(language=...)`, including the bundled `bootstack` demo's editing page
+  (`ModuleNotFoundError: No module named 'pygments'`). Fix = add `pygments>=2.15`
+  to `[project].dependencies` (hard dep, per the maintainer — pure-Python, no
+  transitive deps, and highlighting is core to a top-level `bs.*` widget; matches
+  batteries-included). **Full dependency audit done while here — `pygments` was the
+  ONLY gap:** every optional extra (`viz`/matplotlib, `parquet`/pyarrow,
+  `excel`/xlsxwriter, `hdf5`/pandas+tables, `viz-seaborn`/seaborn) is lazy-imported
+  inside functions and gated by `_require(...)`/`_require_matplotlib` (so `import
+  bootstack` + core widget construction never crash); `PyInstaller` is a
+  packaging-time tool (`try/except` in the CLI); `tomli` is a dead fallback
+  (`tomllib` is stdlib on `requires-python >=3.12`); `cycler` is guarded + ships
+  with matplotlib. **Release process note:** `bump-my-version` was NOT on PATH /
+  importable in any reachable interpreter this session (the maintainer runs it from
+  a manually-activated venv); replicated its config by hand — bumped BOTH `version`
+  (line 7) and `[tool.bumpversion] current_version` + commit `Release 0.1.1` +
+  annotated tag `v0.1.1` (`message`/`tag_message` = `Release {new_version}`).
 - **0.1.0 STABLE SHIPPED — ship gate + theme-repaint unification + accent contrast
   (2026-06-24).** `bootstack 0.1.0` is on **PyPI** (`pip install bootstack`, no
   `--pre`) and tagged **`v0.1.0`** (stable GitHub Release, `prerelease=false`).
