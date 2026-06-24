@@ -1,24 +1,15 @@
-"""Live `icon` / `image` properties and the icon-spec form (one App/process)."""
+"""Live `icon` / `image` properties and the icon-spec form.
+
+Uses the shared `app` fixture from tests/conftest.py, which pushes a container so
+bare widgets created in a test have somewhere to mount. (A private module-scoped
+fixture used to create a second Tk root and push no container, which raised under
+the builder-pattern parent guard.)
+"""
 
 from __future__ import annotations
 
-import pytest
-
 import bootstack as bs
 from bootstack.images import get_icon
-
-
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a._tk_root.withdraw()
-    try:
-        yield a
-    finally:
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
 
 
 def test_label_icon_and_image_settable(app):
