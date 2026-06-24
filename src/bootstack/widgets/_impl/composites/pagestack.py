@@ -55,6 +55,19 @@ class PageStack(Frame):
         self._current: str | None = None
         self._history: list[tuple[str, dict]] = []
         self._index: int = -1
+        # macOS (Aqua) only: re-mapping a previously-unmapped page paints blank
+        # for one display cycle, so swapping pages with pack_forget/pack flashes
+        # white. There we instead keep every visited page mapped, stacked in a
+        # single grid cell, and switch with lift()/lower() — no remap, no flash.
+        # A page must stay *full size* while hidden for this to hold (a shrunk
+        # page re-expands with the same blank flash), so each mapped page does
+        # reflow on a window resize; that cost is the deliberate trade. Other
+        # platforms don't have the flash and keep the cheaper one-page-mapped
+        # pack path unchanged.
+        try:
+            self._stacked: bool = self.tk.call('tk', 'windowingsystem') == 'aqua'
+        except tkinter.TclError:
+            self._stacked = False
 
     def add(self, key: str, page: tkinter.Widget = None, **kwargs) -> tkinter.Widget:
         """Add a page to the stack, optionally creating a Frame.
@@ -80,8 +93,16 @@ class PageStack(Frame):
             page = Frame(self, **kwargs)
 
         self._pages[key] = page
-        page.pack(fill='both', expand=True)
-        page.pack_forget()
+        if self._stacked:
+            # Stacked layout: every page shares grid cell (0, 0); navigate()
+            # maps/lifts the active one. Left unmapped here — it maps on first
+            # show (the initial render always paints fresh, flash or not).
+            self.grid_rowconfigure(0, weight=1)
+            self.grid_columnconfigure(0, weight=1)
+            page._bs_nav_hidden = True
+        else:
+            page.pack(fill='both', expand=True)
+            page.pack_forget()
         return page
 
     def remove(self, key: str) -> None:
@@ -161,8 +182,16 @@ class PageStack(Frame):
             self._history.append((key, data))
             self._index += 1
 
-        # Unmount previous page
-        if self._current is not None:
+        # Unmount the previous page. On Aqua keep it mapped (stacked behind the
+        # incoming page) so returning to it doesn't remap-flash; elsewhere unmap
+        # it for the cheaper one-page-mapped path.
+        if self._stacked:
+            if self._current is not None and self._current != key:
+                prev_page = self._pages[self._current]
+                prev_page.event_generate('<<PageUnmount>>', when="tail")
+                prev_page._bs_nav_hidden = True
+                prev_page.lower()
+        elif self._current is not None:
             # Pre-size the target page while the current one is still mounted, so
             # the swap doesn't briefly collapse the content area (a freshly built
             # page is otherwise unsized at mount time and the view jumps when it
@@ -189,7 +218,15 @@ class PageStack(Frame):
         # Mount and notify
         page = self._pages[key]
         page.event_generate('<<PageWillMount>>', data=payload, when="tail")
-        page.pack(fill='both', expand=True)
+        if self._stacked:
+            page._bs_nav_hidden = False
+            # Map into the shared cell (the first show maps it; later shows are a
+            # no-op reconfigure of an already-mapped page) and lift it above the
+            # stack. Pages are never unmapped again, so a return never remaps.
+            page.grid(row=0, column=0, sticky='nsew')
+            page.lift()
+        else:
+            page.pack(fill='both', expand=True)
         self._current = key
         # A theme change that arrived while this page was hidden left its widgets
         # stale (the walk skips off-screen widgets); recolor the now-visible page.
