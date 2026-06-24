@@ -22,7 +22,14 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_design",
     "sphinx_copybutton",
+    "myst_parser",
 ]
+
+# The Release Notes page supplies its own reStructuredText H1 and includes the
+# version entries from the root CHANGELOG.md, which begin at H2 — so myst's
+# "headings start at H2, not H1" lint fires on that fragment by design. It is the
+# only myst-parsed document, so silencing this one lint is precise.
+suppress_warnings = ["myst.header"]
 
 # ---------------------------------------------------------------------------
 # Autodoc
@@ -204,10 +211,6 @@ nitpick_ignore_regex = [
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "announcement": (
-        "bootstack is in <strong>pre-release</strong> — the API may still "
-        "change before 1.0. Install with <code>pip install --pre bootstack</code>."
-    ),
     "github_url": "https://github.com/israel-dryer/bootstack",
     "logo": {
         "image_light": "_static/bootstack-logo-light.svg",
