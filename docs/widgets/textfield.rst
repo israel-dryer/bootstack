@@ -207,7 +207,7 @@ See also
 
 - :doc:`Validation </reference/validation>` — the full rule set, typed-value model,
   and form-level validity.
-- :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a
+- :doc:`Customizing Fields </tasks/customizing-fields>` — add buttons or icons inside a
   field, and subclass it into a reusable type.
 - :doc:`/widgets/passwordfield` — a text field with a built-in mask and reveal toggle.
 - :doc:`/widgets/numberfield`, :doc:`/widgets/datefield` — typed siblings for numeric

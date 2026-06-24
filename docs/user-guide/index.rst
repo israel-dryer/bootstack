@@ -2,10 +2,11 @@ User Guide
 ==========
 
 Everything you need to build real applications with bootstack — start with setup
-and the basics, reach for a how-to when you have a specific task in mind, or read
-a topic guide to learn a subsystem end to end. For the complete lookup of every
-public name, see the :doc:`/api-reference/index`; for the visual widget catalog,
-see :doc:`/widgets/index`.
+and the basics, reach for a how-to when you have a specific task in mind, read a
+feature guide to learn a subsystem end to end, or pick up the developer tools that
+run, debug, and package your app. For the complete lookup of every public name,
+see the :doc:`/api-reference/index`; for the visual widget catalog, see
+:doc:`/widgets/index`.
 
 Getting started
 ---------------
@@ -73,8 +74,8 @@ How-to guides
 
       Embed themed matplotlib/seaborn charts that update from a signal or source.
 
-   .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Composing Fields
-      :link: /tasks/composing-fields
+   .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Customizing Fields
+      :link: /tasks/customizing-fields
       :link-type: doc
 
       Add icons, labels, buttons, and toggles inside a field to specialize it.
@@ -115,11 +116,17 @@ How-to guides
 
       Intro screens that cover startup — timed branding, welcome, real progress.
 
-Topics
-------
+Feature guides
+--------------
 
 .. grid:: 1 2 2 3
    :gutter: 3
+
+   .. grid-item-card:: :octicon:`gear;1.5em;sd-mr-1` App Configuration
+      :link: /production/app-settings
+      :link-type: doc
+
+      Configure the app at construction and read or change it live at runtime.
 
    .. grid-item-card:: :octicon:`paintbrush;1.5em;sd-mr-1` Theming
       :link: /reference/theming
@@ -199,6 +206,37 @@ Topics
 
       The exception types bootstack raises.
 
+Developer tools
+---------------
+
+.. grid:: 1 2 2 3
+   :gutter: 3
+
+   .. grid-item-card:: :octicon:`terminal;1.5em;sd-mr-1` CLI & Tooling
+      :link: /production/cli
+      :link-type: doc
+
+      The ``bootstack`` command — scaffold, run, add components, and explore the
+      framework.
+
+   .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Hot Reload
+      :link: /production/hot-reload
+      :link-type: doc
+
+      Edit and save to update the running app in place with ``bootstack dev``.
+
+   .. grid-item-card:: :octicon:`bug;1.5em;sd-mr-1` Debugging
+      :link: /production/debugging
+      :link-type: doc
+
+      The ``doctor`` health check, full tracebacks, and the exceptions to expect.
+
+   .. grid-item-card:: :octicon:`package;1.5em;sd-mr-1` Distribution
+      :link: /production/distribution
+      :link-type: doc
+
+      Package a project into a standalone executable with PyInstaller.
+
 .. toctree::
    :caption: Getting started
    :hidden:
@@ -217,7 +255,7 @@ Topics
    /tasks/clipboard
    /tasks/displaying-data
    /tasks/visualizing-data/index
-   /tasks/composing-fields
+   /tasks/customizing-fields
    /tasks/composing-with-builders
    /tasks/building-forms
    /tasks/dialogs
@@ -226,9 +264,10 @@ Topics
    /tasks/splash-screens
 
 .. toctree::
-   :caption: Topics
+   :caption: Feature guides
    :hidden:
 
+   /production/app-settings
    /reference/theming
    /reference/typography
    /reference/images
@@ -242,3 +281,12 @@ Topics
    /reference/shortcuts
    /reference/scheduling
    /reference/errors
+
+.. toctree::
+   :caption: Developer tools
+   :hidden:
+
+   /production/cli
+   /production/hot-reload
+   /production/debugging
+   /production/distribution

@@ -21,6 +21,23 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Docs-IA: fold Production into the User Guide + caption renames (#323/#324;
+  2026-06-24).** The docs navbar dropped from **4 pillars to 3** (**User Guide ·
+  Widgets · API Reference**). The former **Production** pillar folded into the User
+  Guide as a new **Developer tools** caption (`cli`/`hot-reload`/`debugging`/
+  `distribution`); **`App Configuration`** (`/production/app-settings`) moved to the
+  **Feature guides** caption (it's a subsystem guide, not tooling/shipping). **#324
+  decision = fold-into-User-Guide** (maintainer chose it over rename-in-place /
+  reorder). The **Topics** caption was renamed **Feature guides** (more descriptive of
+  the subsystem deep-dives; the locked constraint is only "not Concepts/Explanation").
+  **#323:** the `Composing Fields` how-to renamed → **`Customizing Fields`**
+  (`/tasks/composing-fields` → `/tasks/customizing-fields`) to kill the "Composing X"
+  clash with the new **Composing with Builders** how-to (it's about *specializing* a
+  field, not decomposition). Leaf pages STAY in `production/` (no URL churn — internal
+  dir name only); the one accepted churn is the #323 rename (no redirect mechanism →
+  dead old URL, fine per no-shims). `production/index.rst` DELETED. Inbound `:doc:`
+  refs + 6 widget See-also links repointed. Clean `-W` build, no orphans. Memory
+  `project_docs_ia_pillars`.
 - **Builder-function scaffolds + examples audit (PR #330 — MERGED; 2026-06-24).**
   The staged builder-pattern work the roadmap flagged as "START HERE." **#321:**
   every CLI page/view scaffold flipped from a class
@@ -569,11 +586,13 @@ memories and git history.
 > - **#222** (TextField live `placeholder`/`mask` props) and **#234** (SpinnerField↔
 >   NumberField parity, decision-gated) remain open and additive — see the
 >   field-family follow-ups section below.
-> - **Hot-reload follow-ups (filed 2026-06-24, non-blocking):** #325 (reset-cleanup
->   gaps), #326 (`_reload_modules` identity-split scoping), #327 (watcher scope +
->   polling), #328 (multi-file reload test + thin is_dev_mode docs). **Docs-IA
->   spin-offs:** #323 (rename "Composing Fields" → "Customizing Fields"), #324
->   (rethink the "Production" pillar — name / order / fold into User Guide).
+> - **Hot-reload follow-ups (filed 2026-06-24, non-blocking, STILL OPEN):** #325
+>   (reset-cleanup gaps), #326 (`_reload_modules` identity-split scoping), #327
+>   (watcher scope + polling), #328 (multi-file reload test + thin is_dev_mode docs).
+>   All on the PROVISIONAL `bootstack.dev` (excluded from the freeze → don't block the
+>   tag); a tidy fast-follow cluster (#325+#326+#328 one PR, #327 mostly a doc note).
+> - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
+>   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
 > **`main` is GREEN, and `0.1.0a16` is the latest pre-release** (cut 2026-06-23 —
 > contains the icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
@@ -776,16 +795,25 @@ the open backlog are kept here.
 
 ### Still-live conventions
 
-- **Docs structure** — top-level navbar is now **4 pillars** (numpy-style):
-  **User Guide · Widgets · API Reference · Production** (`docs/index.rst`).
-  - **User Guide** (`docs/user-guide/index.rst`) folds the old Getting Started +
-    Tasks + Reference sections into ONE pillar with three `:caption:` toctree groups —
-    **Getting started** (`/getting-started/*`), **How-to guides** (`/tasks/*`,
-    goal-indexed recipes), **Topics** (`/reference/*`, subsystem-indexed usage guides;
-    both how-to and topics are example-rich — the split is goal-vs-subsystem, NOT
-    recipe-vs-theory, so do NOT call Topics "Concepts"/"Explanation"). The leaf pages
-    STAY in their `getting-started/`/`tasks/`/`reference/` dirs (no URL churn); only the
-    landing + top toctree changed. The three old section `index.rst` landings are DELETED.
+- **Docs structure** — top-level navbar is **3 pillars** (numpy-style):
+  **User Guide · Widgets · API Reference** (`docs/index.rst`). (The old **Production**
+  pillar was folded into the User Guide as the **Developer tools** caption — PR after
+  #330, 2026-06-24; navbar overflow stays low.)
+  - **User Guide** (`docs/user-guide/index.rst`) folds Getting Started + Tasks +
+    Reference + the former Production pages into ONE pillar with four `:caption:`
+    toctree groups — **Getting started** (`/getting-started/*`), **How-to guides**
+    (`/tasks/*`, goal-indexed recipes), **Feature guides** (`/reference/*` +
+    `/production/app-settings`, subsystem-indexed usage guides — renamed from
+    **Topics** 2026-06-24; both how-to and feature guides are example-rich — the split
+    is goal-vs-subsystem, NOT recipe-vs-theory, so do NOT call them
+    "Concepts"/"Explanation"), and **Developer tools** (`/production/cli` ·
+    `hot-reload` · `debugging` · `distribution`). The leaf pages STAY in their
+    `getting-started/`/`tasks/`/`reference/`/`production/` dirs (no URL churn — the
+    `production/` dir name is now just an internal artifact); only the landing + top
+    toctree changed. The section `index.rst` landings (incl. `production/index.rst`)
+    are DELETED. **`composing-fields` → `customizing-fields`** (#323, the one accepted
+    URL churn — the title clashed with "Composing with Builders"; no redirect, per the
+    no-shims stance).
   - **Widgets** (`docs/widgets/index.rst`) = flat leaf pages grouped by
     `.. toctree:: :caption:` blocks (curated common-first order, NOT alphabetical);
     kept as its own pillar (large *visual* catalog). The 10 old category landing pages
@@ -802,8 +830,8 @@ the open backlog are kept here.
   **in-page section headers are sentence case** (`Backing a widget with a data
   source`). **How-to (`/tasks/*`) titles are action-driven gerunds** —
   `‹Gerund› ‹object›` (`Displaying Data`, `Using the Clipboard`, `Showing Dialogs`),
-  NOT topical nouns. **Topics (`/reference/*`) keep noun/subsystem titles** (`Events`,
-  `Data Sources`) — that's correct, not a violation. Keep titles short enough to not
+  NOT topical nouns. **Feature guides (`/reference/*`) keep noun/subsystem titles**
+  (`Events`, `Data Sources`) — that's correct, not a violation. Keep titles short enough to not
   wrap in the sidenav (~≤20 chars; drop articles: `Setting App Icons`, not `Setting an
   Application Icon`). **A page's H1, its User-Guide card title, and its sidenav entry
   must all match** (the sidenav shows the H1, so a card/H1 mismatch shows as drift).

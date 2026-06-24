@@ -146,4 +146,4 @@ See also
   page's content area.
 - :doc:`/tasks/dialogs` — ``content_builder`` is a builder painting into the
   dialog's content area.
-- :doc:`/tasks/composing-fields` — building reusable field components.
+- :doc:`/tasks/customizing-fields` — customizing fields with addons.

@@ -1,5 +1,5 @@
-Composing Fields
-================
+Customizing Fields
+==================
 
 Every bootstack field — :class:`~bootstack.TextField`,
 :class:`~bootstack.NumberField`, :class:`~bootstack.DateField`, and the rest —
