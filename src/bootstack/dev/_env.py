@@ -24,6 +24,13 @@ DEV_MODE_VAR = "BOOTSTACK_DEV_MODE"
 #: production launches are unaffected.
 DEV_MIN_SIZE = (640, 480)
 
+#: Exit code the dev child uses to ask the ``bootstack dev`` supervisor to
+#: relaunch it — the cross-platform restart signal. The app exits with this code
+#: instead of calling ``os.execv``, which on Windows spawns a new process (new
+#: PID) and terminates the caller rather than replacing it in place. The CLI
+#: supervisor re-launches on this code; any other exit code ends the session.
+DEV_RESTART_EXIT_CODE = 42
+
 
 def is_dev_mode() -> bool:
     """Return True when running under ``bootstack dev`` (hot reload enabled)."""

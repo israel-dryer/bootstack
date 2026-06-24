@@ -9,9 +9,11 @@ Two strategies, chosen in :func:`install_reloader`:
   (signals, datasources, stores) lives outside the body and survives. Multi-file
   edits reload the changed page modules first; ``@reloadable`` builders rebuild
   just their own region.
-* **restart** — on save, re-exec the whole process (``os.execv``). The floor for
-  apps that aren't a module-level ``with bs.App()``; window geometry is persisted
-  so it re-opens where it was.
+* **restart** — on save, exit with a sentinel code so the ``bootstack dev``
+  supervisor relaunches the process. The floor for apps that aren't a
+  module-level ``with bs.App()``; window geometry is persisted so it re-opens
+  where it was. (We avoid ``os.execv``: on Windows it does not replace the
+  process in place.)
 
 The watcher only enqueues; all Tk work happens on a main-thread ``after`` pump,
 so the one tkinter threading rule is never broken.
@@ -124,7 +126,8 @@ class _RestartReloader(_BaseReloader):
         if self._watcher is not None:
             self._watcher.stop()
         # Persist geometry (and, for a shell, the selected page) so the
-        # relaunched process re-opens in place. execv skips destroy, so save now.
+        # relaunched process re-opens in place. We exit immediately, skipping
+        # destroy, so save now.
         for attr in ("_save_window_state", "_save_nav_state"):
             save = getattr(self.app._internal, attr, None)
             if callable(save):
@@ -134,7 +137,14 @@ class _RestartReloader(_BaseReloader):
                     pass
         sys.stdout.flush()
         sys.stderr.flush()
-        os.execv(sys.executable, [sys.executable, *sys.argv])
+        # Ask the `bootstack dev` supervisor to relaunch us by exiting with the
+        # sentinel code. We do NOT os.execv: on Windows it spawns a new process
+        # and terminates this one, orphaning the app and dropping the supervisor
+        # after the first reload. os._exit skips interpreter cleanup/atexit — the
+        # supervisor owns the new process's lifecycle.
+        from bootstack.dev._env import DEV_RESTART_EXIT_CODE
+
+        os._exit(DEV_RESTART_EXIT_CODE)
 
 
 class _InProcessReloader(_BaseReloader):
@@ -264,7 +274,11 @@ class _InProcessReloader(_BaseReloader):
         import tkinter as tk
 
         self._clear_error()
+        # `_content_frame` is an attribute on App but a method on AppShell/
+        # Workbench — resolve both to the content widget that hosts the banner.
         frame = getattr(self.app, "_content_frame", None)
+        if callable(frame):
+            frame = frame()
         if frame is None:
             sys.stderr.write(text + "\n")
             return

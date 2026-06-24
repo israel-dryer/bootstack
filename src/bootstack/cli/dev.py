@@ -10,6 +10,7 @@ import argparse
 import os
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 from bootstack.cli.config import TtkbConfig, find_config
@@ -51,7 +52,11 @@ def run_dev(args: argparse.Namespace) -> None:
         print(f"Error: Entry point '{entry_point}' does not exist.")
         return
 
-    print(f"Starting {entry_point.relative_to(project_root)} with hot reload...")
+    try:
+        display_path = entry_point.relative_to(project_root)
+    except ValueError:
+        display_path = entry_point
+    print(f"Starting {display_path} with hot reload...")
     print("(Save a file to reload. Press Ctrl+C to stop.)")
     print()
 
@@ -66,16 +71,60 @@ def run_dev(args: argparse.Namespace) -> None:
             f"{src_dir}{os.pathsep}{python_path}" if python_path else str(src_dir)
         )
 
+    # Supervise the app here rather than letting it os.execv itself on restart:
+    # on Windows execv does not replace the process in place — it spawns a new
+    # PID and terminates the caller, which would drop this supervisor after the
+    # first reload and orphan the app. The child re-launches by exiting with
+    # DEV_RESTART_EXIT_CODE; looping subprocess.run is portable and re-establishes
+    # cwd + env on every relaunch.
+    from bootstack.dev._env import DEV_RESTART_EXIT_CODE
+
     try:
-        result = subprocess.run(
-            [sys.executable, str(entry_point.resolve())],
-            cwd=str(project_root),
-            env=env,
-        )
-        sys.exit(result.returncode)
+        while True:
+            result = subprocess.run(
+                [sys.executable, str(entry_point.resolve())],
+                cwd=str(project_root),
+                env=env,
+            )
+            if result.returncode == DEV_RESTART_EXIT_CODE:
+                continue  # a valid edit asked for a clean restart
+            if result.returncode == 0:
+                sys.exit(0)  # the app window was closed normally
+            # The app crashed (e.g. an edit raised at import). Don't end the
+            # session — stay alive and relaunch when the file is fixed and
+            # saved. This is the restart-mode counterpart to the in-process
+            # error banner's fix-and-save recovery; the child's own watcher
+            # died with it, so the supervisor watches in the meantime.
+            print(
+                f"\n[bootstack dev] app exited with code {result.returncode} - "
+                "waiting for a change to retry (Ctrl+C to stop)...",
+                flush=True,
+            )
+            _wait_for_change(str(project_root))
     except KeyboardInterrupt:
         print("\nStopped.")
         sys.exit(0)
+
+
+def _wait_for_change(root: str) -> None:
+    """Block until a watched source file under `root` changes (or Ctrl+C).
+
+    Used by the restart supervisor to stay alive after the app crashes: rather
+    than ending the dev session, it waits for the next save and lets the loop
+    relaunch.
+    """
+    from bootstack.dev._watcher import PollWatcher
+
+    changed = threading.Event()
+    watcher = PollWatcher(root, lambda _paths: changed.set())
+    watcher.start()
+    try:
+        # Short timed waits keep Ctrl+C responsive on Windows, where a bare
+        # Event.wait() with no timeout can swallow the interrupt.
+        while not changed.wait(0.3):
+            pass
+    finally:
+        watcher.stop()
 
 
 def _resolve_entry(path: str | None) -> tuple[Path, Path] | None:
