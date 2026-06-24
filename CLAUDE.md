@@ -21,6 +21,30 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Hot-reload follow-ups #325/#326/#327 + #328 docs (PR #333 — MERGED;
+  2026-06-24).** Four fixes on PROVISIONAL `bootstack.dev`, one PR. **#325:**
+  AppShell `_dev_reset_region` restores the status band to its forced state
+  (`set_statusbar_visible(False)` unless `show_statusbar=True`) so an empty band
+  doesn't linger after a no-segment reload — AND `show_statusbar=True` now genuinely
+  forces the band visible at construction (was materialize-only; stored
+  `self._show_statusbar_forced`); App/AppShell reset now CANCEL a scheduled
+  native-menu `after_idle` (new `ChromeHostMixin._cancel_native_menu_pending`) vs
+  nulling the handle (macOS double-fire). **#326:** the per-page fast path is gated
+  on EVERY changed file being a builder module (`_builder_module_files`) — a changed
+  non-builder/state module takes the full reload-then-reexec instead of a selective
+  `importlib.reload` that splits object identity without rebinding. **#327:** watch
+  root widens from the entry file's dir to the project `src/` tree
+  (`_project_watch_root` walks up to `bootstack.toml`; falls back to the file dir for
+  loose scripts); watcher snapshot stamps `(mtime, size)` to catch same-tick saves;
+  symlink/scope caveats documented. **#328 (docs only):** added a "Gating dev-only
+  code" section for `is_dev_mode()` — **the E2E multi-file `@reloadable` reload test
+  is the remaining #328 piece, DEFERRED** (the maintainer will do it). Tests: watcher
+  tuple + size-change; `_project_watch_root` widen/fallback; shell GUI legs green.
+  **Naming note (`set_*_visible` is INTERNAL):** `ShellLayout.set_statusbar_visible`
+  / `set_rail_visible` / `set_sidebar_visible` / `set_dock_visible` are an internal
+  family (public uses verbs `show_sidebar()`/`hide_sidebar()`/`toggle_sidebar()` +
+  `show_statusbar=`); **#332 filed** to rename the internal family to the idiom (low
+  priority). Memory `project_hot_reload` (followups thread).
 - **Docs-IA: fold Production into the User Guide + caption renames (#323/#324;
   2026-06-24).** The docs navbar dropped from **4 pillars to 3** (**User Guide ·
   Widgets · API Reference**). The former **Production** pillar folded into the User
@@ -586,11 +610,11 @@ memories and git history.
 > - **#222** (TextField live `placeholder`/`mask` props) and **#234** (SpinnerField↔
 >   NumberField parity, decision-gated) remain open and additive — see the
 >   field-family follow-ups section below.
-> - **Hot-reload follow-ups (filed 2026-06-24, non-blocking, STILL OPEN):** #325
->   (reset-cleanup gaps), #326 (`_reload_modules` identity-split scoping), #327
->   (watcher scope + polling), #328 (multi-file reload test + thin is_dev_mode docs).
->   All on the PROVISIONAL `bootstack.dev` (excluded from the freeze → don't block the
->   tag); a tidy fast-follow cluster (#325+#326+#328 one PR, #327 mostly a doc note).
+> - **Hot-reload follow-ups #325/#326/#327 — DONE (PR #333);** #328's docs DONE,
+>   its **E2E multi-file `@reloadable` reload test is the one OPEN piece, DEFERRED**
+>   (maintainer will write it). **#332** (rename the internal `set_*_visible` family)
+>   is OPEN, low priority. All on PROVISIONAL `bootstack.dev` — see the "Recently
+>   completed" entry.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
