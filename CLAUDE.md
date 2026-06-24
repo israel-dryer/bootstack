@@ -21,6 +21,35 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Hot reload — `bootstack dev` + feature-review fixes (PR #329 — MERGED;
+  2026-06-24).** The dev workflow (BUILT on `feat/hot-reload` in the prior
+  session) got a **4-reviewer adversarial audit + fixes**, then merged.
+  `bootstack dev app.py` re-execs the `with bs.App()` body in place on save
+  (window + module-level signals/sources/stores + active route survive; broken
+  edits show an in-window banner); `@reloadable` rebuilds just one page's region
+  (multi-file); a restart fallback covers function-wrapped apps (auto-selected;
+  `--restart` forces). New **PROVISIONAL** `bootstack.dev` (carved OUT of the
+  0.1.0 freeze): `reloadable` + `is_dev_mode`. **Blockers the review caught +
+  fixed:** 🔴 **win32 `os.execv` restart was BROKEN** — execv does NOT replace the
+  process in place on Windows (new PID + caller exits), so the supervisor died
+  after the FIRST reload (the prior session's "Verified Windows" missed it — it
+  only exercised in-process). Replaced execv with a **CLI `subprocess.run`
+  supervisor loop** on a sentinel exit code (`DEV_RESTART_EXIT_CODE`), made
+  **crash-resilient** (a broken edit waits-and-relaunches instead of ending the
+  session — surfaced by LIVE testing, not the static review). 🔴 **AppShell/
+  Workbench error banner was dead** (`_content_frame` is a method on shells, an
+  attr on App — reloader now resolves both). + `relative_to` guard on an
+  absolute/`..` entry. **Docs IA:** the builder-functions guide became the
+  **"Composing with Builders"** how-to (`docs/tasks/composing-with-builders.rst`
+  — goal-indexed, not a subsystem topic) + restart-mode "when to force
+  `--restart`" guidance + the demo video / README hero. Reviewers over-flagged
+  (the mount-accumulation suspicion was disproved — `reset_mounts` is wired).
+  Memories `reference_win32_execv_not_inplace`, `project_hot_reload`.
+  **Non-blocking follow-ups filed: #325** (reset-cleanup gaps), **#326**
+  (`_reload_modules` identity-split scoping), **#327** (watcher scope/polling),
+  **#328** (multi-file reload test + thin is_dev_mode docs). **Docs-IA spin-offs:
+  #323** (rename "Composing Fields" → "Customizing Fields") · **#324** (rethink the
+  "Production" pillar). Process note: **running it caught what reading it didn't.**
 - **Splash screen — cross-platform `windowtype` + `bs.Splash` (PRs #313, #318 —
   MERGED; 2026-06-23).** Two-step feature, each its own branch→PR→`main`.
   **#308 (PR #313):** `Toplevel(windowtype=...)` was honored only on macOS
@@ -481,54 +510,29 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session: finish + merge the HOT RELOAD branch, then the
-> staged builder-pattern work, then #149 (the 0.1.0 ship gate).** This session
-> BUILT dev-mode hot reload on **`feat/hot-reload`** (pushed; NOT merged, no PR
-> yet). Memory `project_hot_reload` updated to BUILT.
+> ⏭ **START HERE next session: the staged builder-pattern work (#320 PART 2 +
+> #321), then #149 (the 0.1.0 ship gate).** **Hot reload is DONE + MERGED** (PR
+> #329, 2026-06-24 — full detail in the top "Recently completed" entry): the
+> feature, a 4-reviewer adversarial audit + fixes (win32 `os.execv` restart → a
+> CLI supervisor loop; AppShell banner; crash-resilient restart), the demo video,
+> the README hero, and the docs all shipped. The builder-functions guide was
+> reclassified as the **"Composing with Builders"** how-to at
+> **`docs/tasks/composing-with-builders.rst`** (was `reference/builder-functions.rst`
+> — fix any stale references). `bootstack.dev` stays **PROVISIONAL** (carved out of
+> the 0.1.0 freeze). Memories `project_hot_reload`, `reference_win32_execv_not_inplace`.
 >
-> **Hot reload — BUILT on `feat/hot-reload`** (commits: `08b018aa` feature,
-> `6395bcd3` docs, + a quickstart-tip commit). `bootstack dev <file>` runs an app
-> with live reload: a module-level `with bs.App()`/`bs.AppShell()` reloads IN
-> PLACE on save — the window + module-level signals/datasources + the shell route
-> survive; only the with-body rebuilds. Non-module-level apps (or `--restart`)
-> fall back to `os.execv` process restart. New **`bootstack.dev`** package
-> (**PROVISIONAL — carved OUT of the 0.1.0 freeze**, maintainer's call): public
-> `reloadable` (`@reloadable` = per-page multi-file reload) + `is_dev_mode`.
-> Stdlib mtime-poll watcher (no new dep). Error banner on a bad edit (process
-> survives), grow-only window resize, dev `min_size=(640,480)` floor + geometry
-> persistence. `_resolve_parent` now RAISES when a placed widget has no container
-> (#320's builder-pattern failure mode — the guard, DONE). **Verified Windows +
-> macOS** (native menu rebuilds; macOS shows the frontmost app's menu, so focus
-> the window to see it — expected). Tests: 15 unit + 2 isolated GUI (green). Docs
-> (clean `-W`): `production/hot-reload.rst`, **Builder functions guide
-> `reference/builder-functions.rst` (= #320 PART 1, DONE)**, `api-reference/dev.rst`,
-> quickstart tip.
->
-> **FINISH hot reload FIRST (do these before the staged work):**
-> 1. **Demo video.** A 23 MB `live-reload.mp4` was recorded; maintainer is
->    compressing + speeding it (target **<1 MB**, 2-3x, ~900px, H.264 — existing
->    demo videos are 88K-756K). Drop the compressed file at
->    **`docs/_static/examples/live-reload.mp4`**. ⚠ **The docs video embed is
->    UNCOMMITTED, git-STASHED on the original Windows box — it is NOT on the
->    pushed branch; RE-ADD it:** (a) a `.. raw:: html` `<video class="bs-video"
->    autoplay loop muted playsinline controls>` block at the TOP of
->    `production/hot-reload.rst` sourcing `../_static/examples/live-reload.mp4`;
->    (b) add `.bs-video` to the shared `.bs-video-dark, .bs-video-light` rule in
->    `docs/_static/custom.css` (single theme-agnostic video, NOT light/dark).
-> 2. **README hero** (maintainer wants hot reload featured there). GitHub will
->    NOT autoplay a committed raw `.mp4` — use a small **GIF** in `assets/readme/`
->    OR upload the mp4 to a GH PR/issue comment for the `user-attachments`
->    autoplay URL.
-> 3. **Open the PR** (`feat/hot-reload` → `main`) + a status comment on **#322**
->    (the design-of-record issue) marking it built.
+> **Hot-reload finish items (ALL DONE this session):** demo video (3.1 MB) + the
+> `.. raw:: html` `<video>` embed + `.bs-video` CSS; README `## Hot reload` section
+> with the video; PR #329 opened + merged; status comment posted on **#322** (the
+> design-of-record issue).
 >
 > **THEN the staged builder-pattern work (before tag; maintainer chose "guide +
 > guard now, audit/scaffold staged"):** **#320 PART 2** — audit `docs/examples/*`
 > + the screenshot scenes + the CLI demo to model the cleanest builder pattern
 > (factor inline UI into builders, drop redundant layout nesting, call them
 > "builders" everywhere). **#321** — flip the CLI scaffolds (`add page`/`add
-> view`/templates) from class-based views → builder functions. (#320 part 1 + the
-> guard are already DONE on the branch.)
+> view`/templates) from class-based views → builder functions. (#320 part 1 — now
+> the **Composing with Builders** how-to — and the guard are DONE, merged via #329.)
 >
 > **THEN #149 — final public-surface audit + lock + CHANGELOG (THE SHIP GATE).**
 > Audit the whole `bootstack.*` surface, lock it, write the CHANGELOG, tag stable.
@@ -550,6 +554,11 @@ memories and git history.
 > - **#222** (TextField live `placeholder`/`mask` props) and **#234** (SpinnerField↔
 >   NumberField parity, decision-gated) remain open and additive — see the
 >   field-family follow-ups section below.
+> - **Hot-reload follow-ups (filed 2026-06-24, non-blocking):** #325 (reset-cleanup
+>   gaps), #326 (`_reload_modules` identity-split scoping), #327 (watcher scope +
+>   polling), #328 (multi-file reload test + thin is_dev_mode docs). **Docs-IA
+>   spin-offs:** #323 (rename "Composing Fields" → "Customizing Fields"), #324
+>   (rethink the "Production" pillar — name / order / fold into User Guide).
 >
 > **`main` is GREEN, and `0.1.0a16` is the latest pre-release** (cut 2026-06-23 —
 > contains the icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
