@@ -4,8 +4,11 @@ from __future__ import annotations
 from PIL import Image, ImageDraw
 from PIL.ImageTk import PhotoImage
 
-# Highlight thickness for focus ring
-HL = 2
+# Focus-ring border thickness. Retired (0): the ring was never wired to an
+# actual keyboard-focus style and its frozen color did not track theme changes,
+# so it only ever showed as a stale 1-2px border. Kept as a named constant so
+# the geometry math (`cross_size + HL * 2`) and the highlight kwargs stay valid.
+HL = 0
 
 HANDLE_SIZE = 22   # handle diameter (px) — matches slider-handle.png at standard DPI
 TRACK_H = 6        # track height (px)
@@ -170,7 +173,12 @@ def resolve_colors(accent: str, surface: str, bg_override: str | None = None) ->
     bg = bg_override or b.color('background')
     accent_hex = b.color(accent)
     border = b.border(bg)
-    muted = b.color('foreground[muted]')
+    # A muted tone with guaranteed ≥4.5 contrast against the slider's own surface.
+    # (NOT `foreground[muted]`, which computes muted *relative to the foreground*
+    # and so lands near the background — faint everywhere, invisible in e.g.
+    # solarized-light. `muted_foreground(bg)` is the same value the public
+    # `'muted'` token resolves to.)
+    muted = b.muted_foreground(bg)
     return {
         'bg':              bg,
         'trough':          border,
@@ -182,6 +190,6 @@ def resolve_colors(accent: str, surface: str, bg_override: str | None = None) ->
         'handle_border':   border,
         'badge_bg':        b.color('foreground'),
         'badge_text':      b.on_color(b.color('foreground')),
-        'tick':            b.color('foreground[muted]'),
+        'tick':            muted,
         'focus':           b.color('foreground'),
     }
