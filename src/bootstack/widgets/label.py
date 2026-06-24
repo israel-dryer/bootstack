@@ -90,6 +90,7 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
         # 'default'); it rides in via kwargs as the conduit for the Badge
         # subclass, which sets its own 'square'/'pill' on a Badge ttk class.
         variant = kwargs.pop("variant", None)
+        self._reject_signal_text(text)
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None

@@ -79,6 +79,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        self._reject_signal_text(text)
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
