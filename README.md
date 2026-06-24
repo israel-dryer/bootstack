@@ -9,8 +9,7 @@
 ![](https://img.shields.io/github/stars/israel-dryer/bootstack.svg)
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
-> **Pre-release.** The API may still change before 1.0. Full documentation is at
-> **[bootstack.org](https://bootstack.org)**.
+> Full documentation is at **[bootstack.org](https://bootstack.org)**.
 
 ### From idea to a shipped desktop app — fast.
 

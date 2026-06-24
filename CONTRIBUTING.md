@@ -3,7 +3,9 @@
 Thanks for helping improve bootstack! This guide covers development setup, the
 pull-request workflow, and how to contribute translations.
 
-bootstack is in pre-release — the public API may still change before 1.0.
+The public `bootstack` API is stable and follows
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html) — breaking changes are
+reserved for a major release.
 
 ## Getting started
 
