@@ -160,7 +160,6 @@ class ListView(Frame):
         # so it must be re-resolved on theme change — gated to on-screen by the
         # Frame base hook (an off-screen list defers its per-row repaint to <Map>)
         # and released on destroy automatically.
-        self._enable_theme_repaint(self._on_theme_changed)
         self._bind_scroll_events(self)
         self._bind_scroll_events(self._container)
 
@@ -823,7 +822,7 @@ class ListView(Frame):
         # Fallback to original data if we can't fetch fresh state
         self.event_generate('<<ItemClick>>', data=event.data)
 
-    def _on_theme_changed(self, _event: Any = None) -> None:
+    def _bs_apply_theme(self, _event: Any = None) -> None:
         """Re-resolve theme-dependent per-row surfaces on a theme change.
 
         The striped background is applied imperatively (not via a ttk style), so

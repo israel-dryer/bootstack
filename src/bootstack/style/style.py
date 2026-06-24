@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import tkinter
-import weakref
 from tkinter.ttk import Style as ttkStyle
 from typing import Dict, Optional, Set
 
@@ -76,10 +75,9 @@ class Style(ttkStyle):
         # Current theme tracking
         self._current_theme: Optional[str] = theme
 
-        # Track legacy Tk widgets for theme-change restyling
-        self._tk_widgets = weakref.WeakSet()
-
-        # Incremented on every theme change so widgets can detect a missed restyle
+        # Incremented on every theme change so a widget can detect a restyle it
+        # missed while off-screen (stamped on `_bs_theme_version`; see
+        # apply_theme_walk).
         self._theme_version: int = 0
 
         # Cached Tk builder — lazily initialized, reused across all widget creations
@@ -240,15 +238,9 @@ class Style(ttkStyle):
 
         self._rebuild_all_styles()
 
-        # Bump version so hidden widgets know they missed this theme change
+        # Bump version so off-screen widgets know they missed this theme change
+        # (they recolor when their container next shows them — see apply_theme_walk).
         self._theme_version += 1
-
-        # Re-apply Tk widget styling (legacy widgets)
-        self._rebuild_all_tk_widgets()
-
-        # Publish theme-change event for legacy subscribers
-        from bootstack._core.publisher import Channel, Publisher  # lazy import
-        Publisher.publish_message(Channel.STD, theme=name, mode=self._theme_provider.mode)
 
         # Fire the bootstack theme-change event after full rebuild so handlers
         # can safely read new colors. Uses get_default_root lazily to avoid
@@ -256,6 +248,12 @@ class Style(ttkStyle):
         try:
             from bootstack._runtime.app import get_default_root
             root = get_default_root()
+            # Unified theme walk: recolor every visible tree widget now; off-screen
+            # ones are left stale and recovered when their page/tab/section is next
+            # shown. Non-tree reactors (the Image handle, OS window chrome, the
+            # app-level on_theme_change callback) listen on <<BsThemeChanged>> below.
+            if root is not None:
+                self.apply_theme_walk(root, only_stale=False)
             root.event_generate(
                 "<<BsThemeChanged>>",
                 data={"theme": name, "mode": self._theme_provider.mode},
@@ -313,51 +311,75 @@ class Style(ttkStyle):
             )
         return self._cached_tk_builder
 
-    def _restyle_single_tk_widget(self, widget) -> None:
-        """Restyle one Tk widget and stamp it with the current theme version."""
-        try:
-            surface = getattr(widget, '_surface', 'content')
-            self._get_tk_builder().call_builder(widget, surface=surface)
-            widget._bs_theme_version = self._theme_version
-        except Exception:
-            pass
+    # ------------------------------------------------------------------ Unified theme walk
+    #
+    # The single mechanism for recoloring *tree widgets* on a theme change. A
+    # widget that needs theming exposes one method, ``_bs_apply_theme()``, doing
+    # all of its work (background + any canvas repaint). Two triggers drive it,
+    # and neither relies on ``<Map>``:
+    #   * a theme change walks from the root and applies every *visible* widget;
+    #   * a container showing a page/tab walks that subtree and applies the
+    #     *stale* ones (those that missed the change while hidden).
+    # Visibility is resolved at apply time, so nothing is deferred to a hoped-for
+    # event. Non-tree reactors (the Image handle, OS window chrome, the app-level
+    # on_theme_change callback) stay on the root ``<<BsThemeChanged>>`` binding.
 
-    def register_tk_widget(self, widget) -> None:
-        """Register a Tk widget to be restyled on theme changes."""
-        self._tk_widgets.add(widget)
+    def _apply_theme_to_widget(self, widget) -> None:
+        """Apply the current theme to one widget and stamp its version.
 
-        # Lazily restyle if a theme change happened while the widget was hidden.
-        # <Map> fires when a widget transitions from unmapped to mapped (e.g. when
-        # its page is shown after pack_forget), so this is the right hook point.
-        style = self
-
-        def _on_map(event):
-            w = event.widget
-            if getattr(w, '_bs_theme_version', -1) != style._theme_version:
-                style._restyle_single_tk_widget(w)
-
-        # Use BaseWidget.bind to bypass any bind() override on subclasses
-        # (e.g. _MultilineCore forwards bind() to self.text, which doesn't exist
-        # yet when this is called from inside __init__).
-        tkinter.BaseWidget.bind(widget, '<Map>', _on_map, add='+')
-
-    def _rebuild_all_tk_widgets(self) -> None:
-        """Restyle all currently visible Tk widgets on theme change.
-
-        Widgets that are hidden (winfo_viewable() == 0, e.g. on a background page)
-        are skipped here — their <Map> handler will restyle them the next time
-        their page is shown.
+        Re-applies the surface background for an autostyled Tk widget, then runs
+        the widget's ``_bs_apply_theme`` hook if it defines one (canvas painters
+        redraw there). Both are best-effort; a failure on one widget never aborts
+        the walk.
         """
-        version = self._theme_version
-        for widget in list(self._tk_widgets):
+        surface = getattr(widget, '_surface', None)
+        if surface is not None:
             try:
-                if not widget.winfo_viewable():
-                    continue  # deferred to <Map> handler
-                surface = getattr(widget, '_surface', 'content')
                 self._get_tk_builder().call_builder(widget, surface=surface)
-                widget._bs_theme_version = version
             except Exception:
                 pass
+        hook = getattr(widget, '_bs_apply_theme', None)
+        if hook is not None:
+            try:
+                hook()
+            except Exception:
+                pass
+        widget._bs_theme_version = self._theme_version
+
+    def apply_theme_walk(self, root_widget, *, only_stale: bool) -> None:
+        """Walk ``root_widget``'s subtree and theme each on-screen widget.
+
+        Args:
+            root_widget: Subtree root — the application root on a theme change, or
+                a freshly-shown page/tab on a container-show.
+            only_stale: When True (container-show), apply every widget in the
+                subtree that missed the current theme version — regardless of
+                ``winfo_viewable()``, which is unreliable for a widget embedded in
+                a scrollable page's canvas; the container is showing it now. When
+                False (theme change), apply every *visible* widget and leave the
+                off-screen ones stale for their next container-show.
+        """
+        version = self._theme_version
+        stack = [root_widget]
+        while stack:
+            w = stack.pop()
+            try:
+                stack.extend(w.winfo_children())
+            except Exception:
+                pass
+            themed = hasattr(w, '_bs_apply_theme') or getattr(w, '_surface', None) is not None
+            if not themed:
+                continue
+            if only_stale:
+                if getattr(w, '_bs_theme_version', -1) == version:
+                    continue
+            else:
+                try:
+                    if not w.winfo_viewable():
+                        continue
+                except Exception:
+                    continue
+            self._apply_theme_to_widget(w)
 
     @staticmethod
     def _parse_style_name(ttk_style: str) -> Optional[dict]:

@@ -265,6 +265,13 @@ class Expander(Frame):
 
         self._expanded = True
         self._content_frame.pack(fill='both', expand=True)
+        # Recolor any widget that missed a theme change while this section was
+        # collapsed (the theme walk skips off-screen widgets; this is the
+        # genuine "now visible" trigger, like PageStack page navigation).
+        def _recolor(p=self._content_frame):
+            from bootstack.style.style import get_style
+            get_style().apply_theme_walk(p, only_stale=True)
+        self.after_idle(_recolor)
         self._toggle_button.configure(icon=self._current_chevron_icon)
         if self._highlight:
             self._header_frame.set_selected(True)

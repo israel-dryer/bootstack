@@ -258,13 +258,12 @@ class Gallery(Frame):
         # Tile surfaces + the accent ring are painted imperatively, so re-resolve
         # on a theme change — gated to on-screen by the Frame base hook (an
         # off-screen gallery defers its thumbnail-grid repaint to <Map>).
-        self._enable_theme_repaint(self._on_theme)
         # First render is driven by the container's <Configure> (bound above);
         # no init timer needed.
 
     # ----- theme / silence / source change ----------------------------------
 
-    def _on_theme(self, _event=None) -> None:
+    def _bs_apply_theme(self, _event=None) -> None:
         """Re-apply theme-dependent colors after a theme switch.
 
         The tile surface backgrounds and the accent selection ring are resolved

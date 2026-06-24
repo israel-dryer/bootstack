@@ -70,7 +70,6 @@ class Avatar(Frame):
                               background=self._surface_color())
         self._canvas.pack()
         self._canvas.bind("<Button-1>", self._forward_click)
-        self._enable_theme_repaint(self._on_theme)
 
         self._render()
 
@@ -159,7 +158,7 @@ class Avatar(Frame):
         except Exception:
             return ""
 
-    def _on_theme(self, _event=None) -> None:
+    def _bs_apply_theme(self, _event=None) -> None:
         try:
             self._canvas.configure(background=self._surface_color())
         except TclError:

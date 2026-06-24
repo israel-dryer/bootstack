@@ -146,13 +146,16 @@ class Meter(Frame):
         # Resolve styles first to get colors
         self._resolve_meter_styles()
 
-        # layout - use canvas for both meter and text
+        # layout - use canvas for both meter and text. Pass the surface *token*
+        # (not a resolved color) so the unified theme walk re-resolves the canvas
+        # background against the active theme on every change — a frozen hex would
+        # re-apply the old color forever.
         self._canvas = Canvas(
             master=self,
             width=self._size,
             height=self._size,
             highlightthickness=0,
-            background=self._surface
+            surface=self._surface_token,
         )
 
         # Canvas text items (will be created/updated in _draw_meter)
@@ -163,12 +166,10 @@ class Meter(Frame):
         self._subtitle_text_id = None
 
         # The meter face / track / arc / text are painted imperatively onto the
-        # canvas (outside the ttk style loop), so re-resolve + redraw on a theme
-        # change. The Frame base hook gates this to on-screen: an off-screen meter
-        # defers its (supersampled, expensive) redraw to the next <Map>, so a
-        # theme toggle repaints only visible gauges (#167 fixed the timing; this
-        # keeps it cheap with many gauges across pages).
-        self._enable_theme_repaint(self._repaint_theme)
+        # canvas (outside the ttk style loop), so the unified theme walk calls
+        # `_bs_apply_theme` to re-resolve + redraw them. The canvas *background*
+        # is handled by the walk's surface pass (the token above); the redraw owns
+        # only the painted content.
         self._bind_interactive_events()
         self._draw_base_meter_images()
         self._draw_meter()
@@ -771,15 +772,12 @@ class Meter(Frame):
 
         return int(normalized * self._arc_range + self._arc_offset)
 
-    def _repaint_theme(self):
-        """Re-resolve theme colors and repaint the canvas (face + arcs + text).
-
-        Invoked by the Frame base hook only while on screen; an off-screen meter
-        defers this to its next `<Map>`. Reconfigures the canvas background too,
-        since the face surface can be reset to the default during a re-map.
+    def _bs_apply_theme(self):
+        """Re-resolve theme colors and repaint the painted content (face + arcs +
+        text). Called by the unified theme walk when this gauge is on screen; the
+        canvas *background* is recolored separately by the walk's surface pass.
         """
         self._resolve_meter_styles()
-        self._canvas.configure(background=self._surface)
         self._draw_base_meter_images()
         self._draw_meter()
 

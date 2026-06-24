@@ -328,7 +328,6 @@ class Chart(Frame):
             self._canvas.draw_idle()
 
         self._first_paint_done = False
-        self._enable_theme_repaint(self._on_theme_changed)
         self._bind_signals()
         # First-paint + visibility gating. A chart is usually built while its
         # window is hidden (inside the `with App()/Workbench()` block), so the
@@ -633,7 +632,7 @@ class Chart(Frame):
             for text in legend.get_texts():
                 text.set_color(pal["fg"])
 
-    def _on_theme_changed(self) -> None:
+    def _bs_apply_theme(self) -> None:
         """Re-resolve theme colors and redraw (called after a theme rebuild).
 
         Runs regardless of ``themed=`` — the chrome always follows the theme so

@@ -303,15 +303,9 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
 
         self._lo_var.trace_add("write", self._on_lo_write)
         self._hi_var.trace_add("write", self._on_hi_write)
-        # Re-resolve track/handle colors on a theme change via the STD publisher
-        # (fires ONCE, after the rebuild) — NOT the ttk `<<ThemeChanged>>`, which
-        # re-fires per style reconfigure during the rebuild (×N styles × every
-        # slider on screen → thousands of redraws, the gallery's ~2s theme lag).
-        from bootstack._core.publisher import Channel, Publisher
-        name = str(self)
-        Publisher.subscribe(name=name, func=lambda *_a, **_k: self._on_theme_changed(),
-                            channel=Channel.STD)
-        self.bind("<Destroy>", lambda e, n=name: Publisher.unsubscribe(n), add="+")
+        # The unified theme walk re-resolves track/handle colors via
+        # `_bs_apply_theme` on a theme change. The <Map> flush also covers a
+        # redraw deferred while the slider was off-screen (value/size changes).
         self.bind("<Map>", lambda e: self._on_map(), add="+")
 
     # ------------------------------------------------------------------
@@ -748,10 +742,11 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         if getattr(self, '_theme_update_pending', False):
             self._on_theme_changed()
 
-    def _on_theme_changed(self) -> None:
-        if not self.winfo_viewable():
-            self._theme_update_pending = True
-            return
+    def _bs_apply_theme(self) -> None:
+        """Theme walk hook — re-resolve colors and redraw track, handles, badge,
+        focus halo, and tick marks + tick labels. The walk owns visibility
+        gating, so this always repaints (no early-out).
+        """
         self._theme_update_pending = False
         self._colors = resolve_colors(self._accent, self._surface, get_widget_bg(self.master))
         colors = self._colors
@@ -765,8 +760,17 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         # Recolor the focus halo to the new theme's focus color.
         self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, colors['focus'])
         self._canvas.itemconfig(self._focus_ring_item, image=self._focus_ring_photo)
-        self._setup_ticks()
+        self._setup_ticks()   # redraws ticks + tick labels with colors['tick']
         self._sync()   # _sync repositions/shows the halo as needed
+
+    def _on_theme_changed(self) -> None:
+        # Value/size redraws keep their own off-screen deferral (flushed on
+        # <Map>); a genuine theme change is driven through _bs_apply_theme by the
+        # unified theme walk.
+        if not self.winfo_viewable():
+            self._theme_update_pending = True
+            return
+        self._bs_apply_theme()
 
     # ------------------------------------------------------------------
     # Public API
