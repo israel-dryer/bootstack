@@ -1,14 +1,17 @@
 Hot Reload
 ==========
 
-.. note::
+Hot reload updates a running app from your source as you edit it: save a file
+and the window refreshes in place, without a restart.
 
-   **Provisional.** The dev workflow ships in 0.1.0 but is carved out of the API
-   freeze — unlike the ``bootstack`` compose surface, ``bootstack dev`` and
-   ``bootstack.dev`` may change in a minor release while the workflow settles.
+.. raw:: html
 
-Run an app with live reload and edits show up in the running window — without
-losing your place:
+   <video class="bs-video" autoplay loop muted playsinline controls
+          aria-label="Editing a bootstack app and seeing it reload live on save">
+     <source src="../_static/examples/live-reload.mp4" type="video/mp4">
+   </video>
+
+Run it with ``bootstack dev``:
 
 .. code-block:: console
 
@@ -18,6 +21,12 @@ Save a source file and the app updates in place: the window stays put, your
 module-level state survives, and only the UI rebuilds. The file you run is
 identical in development and production — only the launch differs (``python
 app.py`` versus ``bootstack dev app.py``).
+
+.. note::
+
+   **Provisional.** The dev workflow ships in 0.1.0 but is carved out of the API
+   freeze — unlike the ``bootstack`` compose surface, ``bootstack dev`` and
+   ``bootstack.dev`` may change in a minor release while the workflow settles.
 
 The mental model
 ----------------
@@ -32,7 +41,7 @@ Hot reload is built around a single, visible boundary in your source:
    import bootstack as bs
    from bootstack.data import SqliteDataSource
 
-   notes = SqliteDataSource(rows=load_notes())   # stable — survives reloads
+   notes = SqliteDataSource().load(load_notes())  # stable — survives reloads
    query = bs.Signal("")                          # stable — value survives reloads
 
    with bs.App(title="Notes") as app:             # the body reloads on save

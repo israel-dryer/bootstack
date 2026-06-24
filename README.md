@@ -47,6 +47,16 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **Hot reload** — `bootstack dev app.py` updates the running app on save and keeps your place; module-level state and the active page survive the reload
 - **PyInstaller packaging built in** — `bootstack build` produces a standalone executable; no separate toolchain required
 
+## Hot reload
+
+Edit and save — the running window updates in place. `bootstack dev app.py`
+reloads the UI on every save while keeping your window position, module-level
+state, and active page, so you never lose your spot.
+
+<p align="center">
+<video src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/docs/_static/examples/live-reload.mp4" controls muted loop playsinline></video>
+</p>
+
 ## Installation
 
 Requires Python 3.12+ and Tk/Tcl (bundled with most Python distributions).
