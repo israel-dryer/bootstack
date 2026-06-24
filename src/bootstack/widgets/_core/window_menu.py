@@ -218,6 +218,22 @@ class ChromeHostMixin:
         except Exception:
             self._rebuild_native_menu()
 
+    def _cancel_native_menu_pending(self) -> None:
+        """Cancel a scheduled native-menu rebuild and clear the handle.
+
+        Used on teardown / dev-reload reset: an `after_idle` rebuild scheduled
+        just before a reset would otherwise fire against freshly-rebuilt chrome.
+        """
+        pending = getattr(self, "_native_menu_pending", None)
+        if pending is not None:
+            root = self._menu_root()
+            if root is not None:
+                try:
+                    root.after_cancel(pending)
+                except Exception:
+                    pass
+        self._native_menu_pending = None
+
     def _rebuild_native_menu(self) -> None:
         from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
 

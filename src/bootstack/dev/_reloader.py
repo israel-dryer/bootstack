@@ -33,6 +33,29 @@ from bootstack.dev._watcher import PollWatcher
 _PREFIX = "[bootstack dev]"
 
 
+def _project_watch_root(start: str) -> str:
+    """Widen the watch root from a starting file to the project tree.
+
+    Walks up from `start` looking for a `bootstack.toml`; when found, watches its
+    `src/` subtree if present (the conventional layout) else the project dir — so
+    edits to any module in the project, not just the entry file's directory, are
+    picked up. Falls back to the starting file's directory when no project marker
+    is found.
+    """
+    start = os.path.abspath(start)
+    cur = start if os.path.isdir(start) else os.path.dirname(start)
+    base = cur
+    for _ in range(40):  # bounded walk-up
+        if os.path.isfile(os.path.join(cur, "bootstack.toml")):
+            src = os.path.join(cur, "src")
+            return src if os.path.isdir(src) else cur
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            break
+        cur = parent
+    return base
+
+
 def install_reloader(app: Any) -> None:
     """Install the appropriate reloader for the running app, if in dev mode."""
     if not is_dev_mode():
@@ -119,7 +142,7 @@ class _RestartReloader(_BaseReloader):
 
     def _watch_root(self) -> str:
         entry = sys.argv[0] if sys.argv and sys.argv[0] else os.getcwd()
-        return os.path.dirname(os.path.abspath(entry)) or os.getcwd()
+        return _project_watch_root(entry) or os.getcwd()
 
     def _handle(self, changed: set[str]) -> None:
         _log("change detected - restarting")
@@ -161,7 +184,7 @@ class _InProcessReloader(_BaseReloader):
         _log(f"hot reload active - editing {rel} updates the running app on save")
 
     def _watch_root(self) -> str:
-        return os.path.dirname(os.path.abspath(self.capture.filename))
+        return _project_watch_root(self.capture.filename)
 
     def _handle(self, changed: set[str]) -> None:
         entry = os.path.abspath(self.capture.filename)
@@ -170,17 +193,24 @@ class _InProcessReloader(_BaseReloader):
         page_files = changed_abs - {entry}
 
         try:
-            reloaded = self._reload_modules(page_files)
-
-            # Per-page fast path: only page module(s) changed and their builders
-            # are registered — rebuild just those regions, skip the entry body.
-            if not entry_changed and reloaded:
-                if self._reinvoke_pages(reloaded):
+            # Per-page fast path: the entry is unchanged AND every changed file is a
+            # module that holds registered @reloadable builders — rebuild just those
+            # regions, skip the entry body. A changed module WITHOUT a builder
+            # (constants/models with module-level state) must take the full path:
+            # importlib.reload would otherwise split object identity (fresh objects
+            # while live widgets still hold the old ones) without rebinding. (#326)
+            builder_files = set(self._builder_module_files())
+            if not entry_changed and page_files and page_files <= builder_files:
+                reloaded = self._reload_modules(page_files)
+                if reloaded and self._reinvoke_pages(reloaded):
                     self._clear_error()
                     self.app._dev_after_rebuild()
                     _log("reloaded " + ", ".join(sorted(reloaded)))
                     return
 
+            # Full reload: reload any changed project modules first (so the re-exec'd
+            # entry body rebinds to the fresh objects), then re-run the body.
+            self._reload_modules(page_files)
             self._full_reload()
             self._clear_error()
             _log("reloaded")
@@ -226,6 +256,17 @@ class _InProcessReloader(_BaseReloader):
         if ran:
             self._prune_style_registry()
         return ran
+
+    def _builder_module_files(self) -> dict[str, str]:
+        """Map abspath -> module name for loaded modules holding registered builders."""
+        from bootstack.dev import _registry
+
+        out: dict[str, str] = {}
+        for name, module in list(sys.modules.items()):
+            path = getattr(module, "__file__", None)
+            if path and _registry.builders_in_module(name):
+                out[os.path.abspath(path)] = name
+        return out
 
     def _reload_modules(self, files: set[str]) -> set[str]:
         """importlib.reload any loaded project module whose file changed."""

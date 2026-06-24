@@ -472,9 +472,14 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
                 self._app_icon_photo = icon_image._materialize()
                 self._internal._setup_icon(self._app_icon_photo)
 
+        # Remember whether the band was forced on, so a dev reload can restore it.
+        self._show_statusbar_forced = bool(show_statusbar)
         if show_statusbar:
-            # Materialize the band now so it is present from the first frame.
+            # Materialize the band and force it visible now so it is present from
+            # the first frame (a content-driven band shows lazily on its first
+            # segment; `show_statusbar=True` means "always on").
             _ = self.statusbar
+            self._internal.set_statusbar_visible(True)
 
     @classmethod
     def from_store(cls, store: Any, **overrides: Any):
@@ -523,7 +528,7 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
             pass
         self._chrome_toolbars = []
         self._native_menu_renderer = None
-        self._native_menu_pending = None
+        self._cancel_native_menu_pending()
         try:
             self._internal["menu"] = ""
         except Exception:
@@ -535,6 +540,15 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
         except Exception:
             pass
         self._statusbar = None
+        # Reset the band to its forced state: hidden unless `show_statusbar=True`
+        # was passed (an empty band shouldn't linger if the new body adds no
+        # segment; a content-driven band re-shows lazily on the first segment).
+        try:
+            self._internal.set_statusbar_visible(
+                getattr(self, "_show_statusbar_forced", False)
+            )
+        except Exception:
+            pass
         # Tear down + rebuild the navigation substructure.
         self._internal._dev_reset()
         try:

@@ -174,6 +174,23 @@ session stays up and relaunches when you fix the file and save. For everyday UI
 work the default in-process reload is faster and more forgiving; prefer it unless
 you specifically need the cold start.
 
+Gating dev-only code
+--------------------
+
+``is_dev_mode()`` reports whether the app is running under ``bootstack dev``. Use
+it to gate instrumentation you only want while developing — extra logging, a debug
+panel, or seeded sample data:
+
+.. code-block:: python
+
+   from bootstack.dev import is_dev_mode
+
+   if is_dev_mode():
+       bs.Label("DEV BUILD", accent="warning")
+
+It returns ``False`` under a normal ``python app.py`` run, so the guarded code
+costs nothing in production.
+
 Platform support
 ----------------
 
@@ -186,9 +203,12 @@ cross-platform. A few platform notes:
   before the updated menus appear — the rebuild already happened.
 - **Restart fallback** works the same on Windows, macOS, and Linux — ``bootstack
   dev`` supervises the app and relaunches it on save.
-- **File watching** uses modification times polled a few times a second. On
-  filesystems with coarse timestamp resolution, two saves within the same tick
-  may coalesce into one reload; the next save always catches up.
+- **File watching** polls modification times and file sizes a few times a second
+  over your project's ``src/`` tree (or the entry file's directory when you run a
+  loose script outside a project), so edits to any module are picked up — not just
+  the entry file. On filesystems with coarse timestamp resolution, two saves within
+  the same tick may still coalesce into one reload; the next save always catches up.
+  Symlinked directories are not followed.
 
 See also
 --------
