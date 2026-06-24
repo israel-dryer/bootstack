@@ -145,3 +145,4 @@ gallery:
    widgets/index
    api-reference/index
    release-notes
+   roadmap
