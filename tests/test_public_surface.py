@@ -156,3 +156,37 @@ def test_internal_style_accessors_not_public():
     import bootstack.style as style
     for name in ("get_style", "get_style_builder", "get_theme_provider"):
         assert name not in style.__all__, f"{name} should not be public in bootstack.style"
+
+
+# ----- bootstack.widgets lazy namespace -----
+
+# Top-level names that are NOT composable widgets (verbs / reactive primitives /
+# version) — these have their own homes and are not re-exported by the widgets
+# package, so exclude them when comparing the two surfaces.
+_NON_WIDGET_TOPLEVEL = {
+    "__version__", "Signal", "set_theme", "toggle_theme",
+    "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
+    "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
+    "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
+}
+
+# Extension base classes importable from bootstack.widgets but intentionally not
+# top-level (you compose with them only when building a custom widget).
+_WIDGET_ONLY_EXTRAS = {"PublicWidgetBase", "PublicContainer", "EditFilter"}
+
+
+def test_widgets_all_resolves():
+    """Every name in bootstack.widgets.__all__ must lazily import (no broken
+    entries). This catches stale `_EXPORTS` mappings pointing at moved/renamed
+    modules — e.g. the dialog block that lingered after dialogs moved out."""
+    import bootstack.widgets as w
+    broken = [n for n in w.__all__ if not hasattr(w, n)]
+    assert broken == [], f"broken bootstack.widgets exports: {broken}"
+
+
+def test_widgets_namespace_mirrors_toplevel():
+    """bootstack.widgets exports exactly the composable widget set (mirroring
+    bs.*) plus the extension base classes — no drift in either direction."""
+    import bootstack.widgets as w
+    expected = (set(bs.__all__) - _NON_WIDGET_TOPLEVEL) | _WIDGET_ONLY_EXTRAS
+    assert set(w.__all__) == expected

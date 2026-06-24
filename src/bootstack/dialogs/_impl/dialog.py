@@ -12,6 +12,7 @@ import tkinter
 from tkinter import Widget
 from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, TypedDict, Union
 
+from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._impl.primitives.button import Button as _Button
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.separator import Separator as _Separator
@@ -27,6 +28,21 @@ from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 # explicit handle can declare a single parameter (`def build(content): ...`).
 ContentBuilder = Callable[..., None]
 FooterBuilder = Callable[[Widget], None]
+
+# Where a dialog can anchor itself. A public widget anchors to that widget; the
+# string forms anchor to the screen, the cursor, or the parent window.
+AnchorTarget = Union["PublicWidgetBase", Literal["screen", "cursor", "parent"]]
+
+
+def _resolve_anchor_target(anchor_to: Any) -> Any:
+    """Unwrap a public widget to its underlying tk widget for positioning.
+
+    A public bootstack widget is a plain object holding `_internal`, not a tk
+    widget — so positioning (which reads `winfo_*`) needs the internal handle.
+    String forms (`'screen'`/`'cursor'`/`'parent'`) and `None` pass through.
+    """
+    internal = getattr(anchor_to, "_internal", None)
+    return internal if internal is not None else anchor_to
 
 
 def _call_builder(builder: Callable[..., None], content: Any) -> None:
@@ -96,7 +112,7 @@ class ShowOptions(TypedDict, total=False):
     Attributes:
         position (tuple[int, int] | None): Optional (x, y) coordinates.
         modal (bool | None): Override the mode's default modality.
-        anchor_to (Widget | str | None): Positioning target widget or string.
+        anchor_to (PublicWidgetBase | str | None): Positioning target widget or string.
         anchor_point (AnchorPoint): Point on the anchor target.
         window_point (AnchorPoint): Point on the dialog window.
         offset (tuple[int, int]): Additional (x, y) offset in pixels.
@@ -104,7 +120,7 @@ class ShowOptions(TypedDict, total=False):
     """
     position: Optional[Tuple[int, int]]
     modal: Optional[bool]
-    anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]]
+    anchor_to: Optional[AnchorTarget]
     anchor_point: AnchorPoint
     window_point: AnchorPoint
     offset: Tuple[int, int]
@@ -223,7 +239,7 @@ class Dialog:
             *,
             position: Optional[Tuple[int, int]] = None,
             modal: Optional[bool] = None,
-            anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]] = None,
+            anchor_to: Optional[AnchorTarget] = None,
             anchor_point: AnchorPoint = 'center',
             window_point: AnchorPoint = 'center',
             offset: Tuple[int, int] = (0, 0),
@@ -237,10 +253,10 @@ class Dialog:
             modal: Override the mode's default modality. When `None`, follows the
                 mode — `"modal"` grabs focus and waits for the dialog to close;
                 `"popover"` waits without grabbing.
-            anchor_to: Positioning target. A widget anchors to that widget;
-                `"screen"` anchors to the screen edges/corners; `"cursor"` anchors
-                to the mouse cursor; `"parent"` anchors to the parent window; and
-                `None` (default) centers on the parent.
+            anchor_to: Positioning target. A widget (e.g. a `bs.Button`) anchors to
+                that widget; `"screen"` anchors to the screen edges/corners;
+                `"cursor"` anchors to the mouse cursor; `"parent"` anchors to the
+                parent window; and `None` (default) centers on the parent.
             anchor_point: Point on the anchor target (n, s, e, w, ne, nw, se, sw, center).
                 Default 'center'.
             window_point: Point on the dialog window (n, s, e, w, ne, nw, se, sw, center).
@@ -266,7 +282,7 @@ class Dialog:
         self._build_content()
         self._position_dialog(
             position=position,
-            anchor_to=anchor_to,
+            anchor_to=_resolve_anchor_target(anchor_to),
             anchor_point=anchor_point,
             window_point=window_point,
             offset=offset,

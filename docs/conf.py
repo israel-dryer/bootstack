@@ -22,7 +22,14 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_design",
     "sphinx_copybutton",
+    "myst_parser",
 ]
+
+# The Release Notes page supplies its own reStructuredText H1 and includes the
+# version entries from the root CHANGELOG.md, which begin at H2 — so myst's
+# "headings start at H2, not H1" lint fires on that fragment by design. It is the
+# only myst-parsed document, so silencing this one lint is precise.
+suppress_warnings = ["myst.header"]
 
 # ---------------------------------------------------------------------------
 # Autodoc
