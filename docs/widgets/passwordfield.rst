@@ -190,7 +190,7 @@ See also
 * :doc:`textfield` — plain text input
 * :doc:`numberfield` — numeric input with optional range constraints
 * :doc:`Validation </reference/validation>` — the full rule set and form-level validity
-* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field, and reusable field types
+* :doc:`Customizing Fields </tasks/customizing-fields>` — add buttons or icons inside a field, and reusable field types
 * :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``
 
 API

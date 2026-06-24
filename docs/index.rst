@@ -145,4 +145,3 @@ gallery:
    user-guide/index
    widgets/index
    api-reference/index
-   production/index

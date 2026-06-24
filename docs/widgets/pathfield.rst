@@ -202,7 +202,7 @@ See also
 * :doc:`textfield` — plain single-line text input
 * :doc:`numberfield` — numeric-only input with stepper
 * :doc:`Validation </reference/validation>` — the full rule set and form-level validity
-* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field
+* :doc:`Customizing Fields </tasks/customizing-fields>` — add buttons or icons inside a field
 * :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``
 
 API

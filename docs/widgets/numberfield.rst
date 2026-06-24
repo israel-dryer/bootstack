@@ -214,7 +214,7 @@ See also
 * :doc:`textfield` — plain text input
 * :doc:`slider` — drag-to-set numeric value
 * :doc:`Validation </reference/validation>` — the full rule set, typed-value model, and form validity
-* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field, and reusable field types
+* :doc:`Customizing Fields </tasks/customizing-fields>` — add buttons or icons inside a field, and reusable field types
 * :doc:`Signals </reference/signals>` — the reactive binding behind ``signal=``
 
 API

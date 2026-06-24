@@ -20,7 +20,7 @@ Copy a field's value
 --------------------
 
 A common pattern is a read-only field with a copy button beside it — for an API
-key, a token, or a generated value. The :doc:`/tasks/composing-fields` how-to
+key, a token, or a generated value. The :doc:`/tasks/customizing-fields` how-to
 builds exactly this with an addon button:
 
 .. code-block:: python

@@ -189,7 +189,7 @@ See also
 * :doc:`datefield` — date input with calendar picker
 * :doc:`textfield` — plain single-line text input
 * :doc:`Validation </reference/validation>` — the full rule set and form-level validity
-* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field
+* :doc:`Customizing Fields </tasks/customizing-fields>` — add buttons or icons inside a field
 * :doc:`Signals </reference/signals>` — reactive binding for fields
 
 API
