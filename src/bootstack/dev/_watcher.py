@@ -32,7 +32,9 @@ class PollWatcher:
         self._suffixes = suffixes
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
-        self._snapshot: dict[str, float] = {}
+        # Per-file (mtime, size): size catches a same-tick save whose mtime did
+        # not advance past the filesystem's coarse resolution.
+        self._snapshot: dict[str, tuple[float, int]] = {}
 
     def start(self) -> None:
         """Take a baseline snapshot and begin watching on a daemon thread."""
@@ -56,8 +58,8 @@ class PollWatcher:
                 continue
             changed = {
                 path
-                for path, mtime in current.items()
-                if self._snapshot.get(path) != mtime
+                for path, stamp in current.items()
+                if self._snapshot.get(path) != stamp
             }
             # Deletions also count as changes worth a reload attempt.
             changed |= {p for p in self._snapshot if p not in current}
@@ -69,8 +71,9 @@ class PollWatcher:
                     # The watcher thread must never die on a callback error.
                     pass
 
-    def _scan(self) -> dict[str, float]:
-        result: dict[str, float] = {}
+    def _scan(self) -> dict[str, tuple[float, int]]:
+        result: dict[str, tuple[float, int]] = {}
+        # Symlinked directories are not followed (os.walk default) — avoids cycles.
         for dirpath, dirnames, filenames in os.walk(self._root):
             # Skip the usual noise so a save doesn't churn over caches/venvs.
             dirnames[:] = [
@@ -81,7 +84,8 @@ class PollWatcher:
                 if name.endswith(self._suffixes):
                     full = os.path.join(dirpath, name)
                     try:
-                        result[full] = os.path.getmtime(full)
+                        st = os.stat(full)
+                        result[full] = (st.st_mtime, st.st_size)
                     except OSError:
                         continue
         return result

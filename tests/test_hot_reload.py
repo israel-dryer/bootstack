@@ -203,13 +203,49 @@ def test_pollwatcher_scan_detects_change(tmp_path):
     assert any(p.endswith("a.py") for p in snap)
     assert not any(p.endswith("note.txt") for p in snap)
 
-    # A changed mtime shows up against the snapshot.
-    import os, time
+    # The snapshot stamps each file with (mtime, size).
     target = str(tmp_path / "a.py")
-    os.utime(target, (snap[target] + 5, snap[target] + 5))
+    assert isinstance(snap[target], tuple) and len(snap[target]) == 2
+
+    # A changed mtime shows up against the snapshot.
+    import os
+    mtime, _size = snap[target]
+    os.utime(target, (mtime + 5, mtime + 5))
     snap2 = watcher._scan()
     changed = {p for p, m in snap2.items() if snap.get(p) != m}
     assert target in changed
+
+    # A same-mtime save that changes size is also detected (size catches it).
+    (tmp_path / "a.py").write_text("x = 1234567890", encoding="utf-8")
+    new_mtime, _ = snap2[target]
+    os.utime(target, (new_mtime, new_mtime))  # pin mtime back to the snapshot's
+    snap3 = watcher._scan()
+    changed2 = {p for p, m in snap3.items() if snap2.get(p) != m}
+    assert target in changed2
+
+
+def test_project_watch_root_widens_to_src(tmp_path):
+    from bootstack.dev._reloader import _project_watch_root
+
+    # A toml project with a src/ layout: watch the whole src/ tree, not just the
+    # entry file's directory (so edits to sibling packages are picked up). (#327)
+    (tmp_path / "bootstack.toml").write_text("[app]\nname='x'\n", encoding="utf-8")
+    entry = tmp_path / "src" / "myapp" / "main.py"
+    entry.parent.mkdir(parents=True)
+    entry.write_text("x = 1", encoding="utf-8")
+
+    assert _project_watch_root(str(entry)) == str(tmp_path / "src")
+
+
+def test_project_watch_root_falls_back_to_file_dir(tmp_path):
+    from bootstack.dev._reloader import _project_watch_root
+
+    # A loose script outside any project: watch its own directory (prior behavior).
+    loose = tmp_path / "scratch" / "app.py"
+    loose.parent.mkdir(parents=True)
+    loose.write_text("x = 1", encoding="utf-8")
+
+    assert _project_watch_root(str(loose)) == str(loose.parent)
 
 
 def test_pollwatcher_skips_pycache(tmp_path):

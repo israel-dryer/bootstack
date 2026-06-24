@@ -317,7 +317,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         self._toolbar_stack = None
         self._chrome_toolbars = []
         self._native_menu_renderer = None
-        self._native_menu_pending = None
+        self._cancel_native_menu_pending()
         # Clear the native menu bar (macOS) so a rebuild doesn't double it.
         try:
             root = self._menu_root()
