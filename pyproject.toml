@@ -45,6 +45,9 @@ classifiers = [
 dependencies = [
     "pillow>=10,<=12",
 
+    # Syntax highlighting for the CodeEditor widget
+    "pygments>=2.15",
+
     # Backported typing primitives (Self, Unpack, ParamSpec, etc.)
     "typing-extensions>=4.10",
 
