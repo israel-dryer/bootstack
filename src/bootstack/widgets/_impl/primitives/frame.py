@@ -61,58 +61,10 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
         kwargs['style_options'] = {**existing, **captured}
         super().__init__(master, **kwargs)
 
-    # ----- Theme repaint (for imperatively-painted / canvas widgets) -----
-
-    def _enable_theme_repaint(self, repaint) -> None:
-        """Repaint canvas-painted content on theme change, gated on visibility.
-
-        Widgets that paint colors directly onto a canvas live outside the ttk
-        style loop, so they must re-resolve and redraw when the theme changes.
-        Calling this once (after the drawing surface exists) wires that up the
-        right way:
-
-        - It subscribes to the `STD` publisher channel, which fires AFTER the
-          theme rebuild (so resolved colors are the new theme's) and calls back
-          directly (virtual events do not reach descendants).
-        - The redraw runs ONLY while the widget is on screen. A theme change that
-          arrives while it is off-screen (e.g. an inactive page) is deferred to
-          the next `<Map>` — so a theme toggle repaints just the visible widgets
-          instead of every canvas widget in the app.
-        - The subscription is released on `<Destroy>`.
-
-        Args:
-            repaint: The widget's full re-resolve-and-redraw callback (no args).
-        """
-        from bootstack._core.publisher import Channel, Publisher
-
-        self._theme_repaint = repaint
-        self._theme_repaint_pending = False
-        name = str(self)
-        Publisher.subscribe(name=name, func=self._on_theme_notify, channel=Channel.STD)
-        self.bind('<Map>', self._on_theme_map, add='+')
-        self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), add='+')
-
-    def _on_theme_notify(self, *_: Any, **__: Any) -> None:
-        """STD-publisher callback (after the rebuild): repaint now, or defer."""
-        if not self.winfo_exists():
-            return
-        if self.winfo_viewable():
-            self._theme_repaint_pending = False
-            self._theme_repaint()
-        else:
-            self._theme_repaint_pending = True
-
-    def _on_theme_map(self, _event: Any = None) -> None:
-        """On map, run a theme repaint that was deferred while off-screen."""
-        if getattr(self, '_theme_repaint_pending', False):
-            # Defer to idle so the repaint runs after the map cascade settles
-            # (a canvas background can be reset to the default during mapping).
-            self.after_idle(self._run_pending_theme_repaint)
-
-    def _run_pending_theme_repaint(self) -> None:
-        if getattr(self, '_theme_repaint_pending', False) and self.winfo_exists():
-            self._theme_repaint_pending = False
-            self._theme_repaint()
+    # A canvas-painting Frame subclass (Meter, Slider, …) recolors on a theme
+    # change by defining `_bs_apply_theme(self)`; the unified theme walk in
+    # `bootstack.style.style` calls it. There is no per-widget subscription or
+    # `<Map>` deferral — visibility is resolved by the walk at apply time.
 
     def configure_style_options(self, value=None, **kwargs):
         """Set style options and refresh descendant surfaces if needed."""

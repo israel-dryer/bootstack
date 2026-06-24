@@ -191,6 +191,13 @@ class PageStack(Frame):
         page.event_generate('<<PageWillMount>>', data=payload, when="tail")
         page.pack(fill='both', expand=True)
         self._current = key
+        # A theme change that arrived while this page was hidden left its widgets
+        # stale (the walk skips off-screen widgets); recolor the now-visible page.
+        # Deferred to idle so the page is mapped first.
+        def _recolor_shown(p=page):
+            from bootstack.style.style import get_style
+            get_style().apply_theme_walk(p, only_stale=True)
+        self.after_idle(_recolor_shown)
         self.event_generate('<<PageMount>>', data=payload, when="tail")
         self.event_generate('<<PageChange>>', data=payload, when="tail")
 

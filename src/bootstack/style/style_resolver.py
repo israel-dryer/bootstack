@@ -412,24 +412,28 @@ class StyleResolver:
             else:
                 parent_surface_token = 'content'
 
-            if inherit_surface:
-                surface_token = parent_surface_token
-            else:
-                surface_token = surface_token or 'content'
+            # An explicit `surface=` always wins; otherwise inherit from the
+            # parent (the default) or fall back to 'content'. (This mirrors the
+            # ttk autostyle path — the Tk path previously let inheritance clobber
+            # an explicit surface, freezing e.g. a meter canvas to a resolved hex.)
+            if surface_token is None:
+                surface_token = parent_surface_token if inherit_surface else 'content'
 
             setattr(self, '_surface', surface_token)
 
             if not auto_style:
                 return
 
-            # ==== Update widget style & register for theme changes =====
+            # ==== Apply the initial theme background =====
+            # `_surface` (the token, set above) is what the unified theme walk
+            # later re-resolves on a theme change; `_bs_theme_version` lets the
+            # walk tell whether this widget already matches the current theme.
 
             from bootstack.style.style import get_style
             style = get_style()
             surface = getattr(self, '_surface', 'content')
             style._get_tk_builder().call_builder(self, surface=surface)
             self._bs_theme_version = style._theme_version
-            style.register_tk_widget(self)
 
         return __init__wrapper
 

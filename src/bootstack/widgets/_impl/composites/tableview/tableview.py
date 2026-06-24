@@ -492,11 +492,10 @@ class TableView(Frame):
             except Exception:
                 self._change_sub = None
         self.bind('<Destroy>', self._on_table_destroy, add='+')
-        # The alternating-row stripe is applied via imperative tag colors, which
-        # are NOT refreshed by the ttk style rebuild. Re-apply on a theme change —
-        # gated to on-screen by the Frame base hook (an off-screen table defers
-        # its per-row repaint to <Map>), and released on destroy automatically.
-        self._enable_theme_repaint(self._on_theme_changed)
+        # The alternating-row stripe + theme-colored marker/chevron/sort-arrow
+        # icons are imperative (not refreshed by the ttk style rebuild), so the
+        # unified theme walk re-applies them via `_bs_apply_theme` when the table
+        # is on screen.
 
     def _silence_source(self):
         """Context manager suppressing source change broadcasts for our own writes."""
@@ -2167,11 +2166,27 @@ class TableView(Frame):
             except Exception:
                 pass
 
-    def _on_theme_changed(self, _event: Any = None) -> None:
-        """Re-resolve the imperative stripe tag colors on a theme change (tag
-        colors aren't refreshed by the ttk style rebuild)."""
+    def _bs_apply_theme(self, _event: Any = None) -> None:
+        """Re-resolve imperatively-colored visuals on a theme change.
+
+        The ttk style rebuild refreshes neither the imperative stripe tag colors
+        nor the theme-colored marker / group-chevron / sort-arrow PhotoImages —
+        the latter are cached by color and held on rows, so without this they
+        keep their old-theme tint after a light/dark toggle.
+        """
         try:
             self._apply_row_alternation()
+        except Exception:
+            pass
+        # Drop the by-color icon cache and re-apply every theme-colored glyph so
+        # it re-renders against the new theme. Each call no-ops when its glyph
+        # isn't in play (e.g. markers only in multi-select, chevrons only in
+        # group mode), so this is safe regardless of the current configuration.
+        try:
+            self._marker_icons.clear()
+            self._update_selection_markers()
+            self._refresh_group_chevrons()
+            self._update_heading_icons()
         except Exception:
             pass
 

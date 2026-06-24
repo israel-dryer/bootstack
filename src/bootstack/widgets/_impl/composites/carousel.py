@@ -140,7 +140,6 @@ class Carousel(Frame):
         self._stage.bind("<Button-1>", self._on_stage_click, add="+")
         self._stage.bind("<Left>", lambda e: self.previous())
         self._stage.bind("<Right>", lambda e: self.next())
-        self._enable_theme_repaint(self._on_theme)
 
         # Auto-refresh when the data source changes externally (parity with the
         # other record-native widgets); the subscription is released on destroy.
@@ -188,7 +187,7 @@ class Carousel(Frame):
         except Exception:
             return b.color("background")
 
-    def _on_theme(self, _event=None) -> None:
+    def _bs_apply_theme(self, _event=None) -> None:
         try:
             self._stage.configure(background=self._surface_color())
         except TclError:

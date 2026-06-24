@@ -243,7 +243,6 @@ class _InProcessReloader(_BaseReloader):
                 self.app._dev_restore_route(route)
             except Exception:
                 pass
-        self._prune_style_registry()
 
     def _reinvoke_pages(self, modules: set[str]) -> bool:
         from bootstack.dev import _registry
@@ -253,8 +252,6 @@ class _InProcessReloader(_BaseReloader):
             for qualname in _registry.builders_in_module(module):
                 if _registry.reinvoke(qualname):
                     ran = True
-        if ran:
-            self._prune_style_registry()
         return ran
 
     def _builder_module_files(self) -> dict[str, str]:
@@ -283,31 +280,6 @@ class _InProcessReloader(_BaseReloader):
                 importlib.reload(module)  # exceptions surface as a banner
                 reloaded.add(name)
         return reloaded
-
-    def _prune_style_registry(self) -> None:
-        """Drop dead entries from the style registry (timing safety net).
-
-        Clean teardown self-prunes the WeakSet on GC; doing it eagerly removes
-        nondeterminism. A climbing count across reloads is the canary that a
-        reference is leaking — surfaced only when it grows suspiciously.
-        """
-        try:
-            from bootstack.style import style as style_mod
-
-            style = style_mod._style_instance
-            if style is None:
-                return
-            registry = getattr(style, "_tk_widgets", None)
-            if registry is None:
-                return
-            for widget in list(registry):
-                try:
-                    if not widget.winfo_exists():
-                        registry.discard(widget)
-                except Exception:
-                    registry.discard(widget)
-        except Exception:
-            pass
 
     # --- error banner --------------------------------------------------------
 

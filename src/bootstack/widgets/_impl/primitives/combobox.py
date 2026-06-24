@@ -76,9 +76,9 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
         # Store original postcommand if provided
         self._original_postcommand = kwargs.get('postcommand')
 
-        # Set up popdown styling (also bound to theme changes)
+        # Set up popdown styling. A theme change re-styles an already-open
+        # popdown through the unified theme walk (`_bs_apply_theme`).
         self._setup_postcommand()
-        self._subscribe_theme_changes()
 
     @configure_delegate('density')
     def _delegate_density(self, value=None):
@@ -147,9 +147,10 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
         except Exception:
             pass
 
-    def _subscribe_theme_changes(self) -> None:
-        """Re-style any already-created popdown when the theme changes."""
-        from bootstack._core.publisher import Channel, Publisher
-        name = str(self)
-        Publisher.subscribe(name=name, func=self._apply_popdown_style, channel=Channel.STD)
-        self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), '+')
+    def _bs_apply_theme(self) -> None:
+        """Unified theme-walk hook — re-style an already-open popdown.
+
+        The ttk style engine handles the entry itself; this re-colors the
+        embedded Tk listbox/scrollbar of the popdown if one has been created.
+        """
+        self._apply_popdown_style()

@@ -87,7 +87,6 @@ class Picture(Frame):
         self._canvas.pack(fill="both", expand=True)
         self._canvas.bind("<Configure>", self._on_configure)
         self._canvas.bind("<Button-1>", self._forward_click)
-        self._enable_theme_repaint(self._on_theme_changed)
 
         # Defer the initial load to idle so the constructor returns first: the
         # caller can bind on_load/on_error before the <<PictureLoad>> fires.
@@ -105,7 +104,7 @@ class Picture(Frame):
         except Exception:
             return builder.color("background")
 
-    def _on_theme_changed(self, _event=None) -> None:
+    def _bs_apply_theme(self, _event=None) -> None:
         self._surface_color = self._resolve_surface()
         try:
             self._canvas.configure(background=self._surface_color)

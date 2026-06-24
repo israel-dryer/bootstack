@@ -288,15 +288,9 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._canvas.bind("<Configure>", self._on_configure)
 
         self._var.trace_add("write", self._on_var_write)
-        # Re-resolve the track/handle colors on a theme change. Subscribe to the
-        # STD publisher (fires ONCE, after the rebuild) — NOT the ttk
-        # `<<ThemeChanged>>`, which re-fires per style reconfigure during the
-        # rebuild (×N styles × every slider on screen → thousands of redraws).
-        from bootstack._core.publisher import Channel, Publisher
-        name = str(self)
-        Publisher.subscribe(name=name, func=lambda *_a, **_k: self._on_theme_changed(),
-                            channel=Channel.STD)
-        self.bind("<Destroy>", lambda e, n=name: Publisher.unsubscribe(n), add="+")
+        # The unified theme walk re-resolves the track/handle colors via
+        # `_bs_apply_theme` on a theme change. The <Map> flush also covers a
+        # redraw deferred while the slider was off-screen (value/size changes).
         self.bind("<Map>", lambda e: self._on_map(), add="+")
 
     # ------------------------------------------------------------------
@@ -651,10 +645,11 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         if getattr(self, '_theme_update_pending', False):
             self._on_theme_changed()
 
-    def _on_theme_changed(self) -> None:
-        if not self.winfo_viewable():
-            self._theme_update_pending = True
-            return
+    def _bs_apply_theme(self) -> None:
+        """Theme walk hook — re-resolve colors and redraw track, handle, badge,
+        focus halo, and tick marks + tick labels. The walk owns visibility
+        gating, so this always repaints (no early-out).
+        """
         self._theme_update_pending = False
         self._colors = resolve_colors(self._accent, self._surface, get_widget_bg(self.master))
         colors = self._colors
@@ -672,8 +667,17 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             self._canvas.itemconfig(self._minlabel_item, fill=colors['tick'])
         if self._maxlabel_item is not None:
             self._canvas.itemconfig(self._maxlabel_item, fill=colors['tick'])
-        self._setup_ticks()
+        self._setup_ticks()   # redraws ticks + tick labels with colors['tick']
         self._sync()   # _sync repositions/shows the halo as needed
+
+    def _on_theme_changed(self) -> None:
+        # Value/size redraws keep their own off-screen deferral (flushed on
+        # <Map>); a genuine theme change is driven through _bs_apply_theme by the
+        # unified theme walk.
+        if not self.winfo_viewable():
+            self._theme_update_pending = True
+            return
+        self._bs_apply_theme()
 
     # ------------------------------------------------------------------
     # Public API
