@@ -345,12 +345,18 @@ class StyleBuilderBase:
                         accent_force_light = True
 
             # Never force white when white is actually unreadable. A bright but
-            # mid-luminance accent like cyan (info) has far higher contrast with
-            # black than white (~10:1 vs ~2:1), so it must take dark text — the
-            # luminance buckets alone would wrongly pick white. Gate the
-            # light-text bias on white clearing a real WCAG contrast threshold.
+            # mid-luminance accent like cyan (info) or yellow (warning) has far
+            # higher contrast with black than white, so it must take dark text —
+            # the luminance buckets alone would wrongly pick white. Gate the
+            # light-text bias on white clearing a real WCAG threshold.
+            #
+            # Use the large-text / UI threshold (3.0), not the normal-text 4.5:
+            # accent text is button/pill/badge labels (bold, >=14pt), so 3.0 is the
+            # correct WCAG bar. 4.5 was too strict and sent saturated mid-tone
+            # accents (e.g. dracula-light's purple primary, white ~3.7) to black,
+            # making them inconsistent with the same accent in dark mode (white).
             contrast_white = 1.05 / (lum + 0.05)  # ratio of #ffffff vs the color
-            white_ok = contrast_white >= 4.5
+            white_ok = contrast_white >= 3.0
 
             # Saturated / dark-ish accents prefer white text — but only when it
             # is legible; otherwise fall through to a contrast-chosen dark color.
@@ -381,7 +387,24 @@ class StyleBuilderBase:
             if c and c not in unique:
                 unique.append(c)
 
-        return best_foreground(color, unique)
+        chosen = best_foreground(color, unique)
+
+        # Safety floor (3.0 = the large/bold WCAG bar that accent labels meet).
+        # An accent sitting near a luminance-bucket boundary can land on a biased
+        # candidate that is actually unreadable (e.g. a light amber `warning` just
+        # under the dark-mode 0.45 cutoff takes white at ~2:1). If the biased pick
+        # misses the bar, fall back to the higher-contrast of pure black/white.
+        def _ratio(fg: str) -> float:
+            try:
+                lf = relative_luminance(fg)
+            except Exception:
+                return 0.0
+            hi, lo = max(lf, lum), min(lf, lum)
+            return (hi + 0.05) / (lo + 0.05)
+
+        if _ratio(chosen) < 3.0:
+            chosen = "#000000" if _ratio("#000000") >= _ratio("#ffffff") else "#ffffff"
+        return chosen
 
     def muted_foreground(self, background: str, min_contrast: float = 4.5) -> str:
         """Return a muted foreground color with adequate contrast against background."""
