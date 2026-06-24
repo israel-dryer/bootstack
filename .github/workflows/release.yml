@@ -48,13 +48,32 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v6
+
       - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
 
+      - name: Extract release notes for this tag from CHANGELOG
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^## \[/ { if (found) exit; if (index($0, "[" ver "]")) found=1 }
+            found { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          if [ -s RELEASE_NOTES.md ]; then
+            echo "Using curated CHANGELOG notes for $version ($(wc -l < RELEASE_NOTES.md) lines)."
+          else
+            echo "No CHANGELOG section for $version; using auto-generated notes only."
+          fi
+
+      # The curated CHANGELOG section becomes the release body; GitHub's
+      # auto-generated "What's Changed" + Full Changelog link are appended below
+      # it (and stand alone for an alpha tag with no CHANGELOG section).
       - uses: softprops/action-gh-release@v3
         with:
+          body_path: RELEASE_NOTES.md
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
           files: dist/*
