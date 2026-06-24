@@ -79,6 +79,12 @@ How-to guides
 
       Add icons, labels, buttons, and toggles inside a field to specialize it.
 
+   .. grid-item-card:: :octicon:`stack;1.5em;sd-mr-1` Composing with Builders
+      :link: /tasks/composing-with-builders
+      :link-type: doc
+
+      Reusable components from plain functions that build widgets.
+
    .. grid-item-card:: :octicon:`checklist;1.5em;sd-mr-1` Building Forms
       :link: /tasks/building-forms
       :link-type: doc
@@ -212,6 +218,7 @@ Topics
    /tasks/displaying-data
    /tasks/visualizing-data/index
    /tasks/composing-fields
+   /tasks/composing-with-builders
    /tasks/building-forms
    /tasks/dialogs
    /tasks/navigation/index

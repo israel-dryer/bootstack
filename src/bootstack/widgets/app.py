@@ -74,6 +74,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
     """
 
     _auto_place = False  # no parent
+    _dev_supports_inprocess = True  # supports in-process hot reload (bootstack dev)
 
     def __init__(
         self,
@@ -115,6 +116,23 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         **app_kwargs: Any,
     ) -> None:
         self._parent = None
+        self._dev_body = None  # set in __enter__ under `bootstack dev`
+
+        # Under `bootstack dev`, persist window geometry by default so a
+        # process-restart reload re-opens the window where it was. Honors an
+        # explicit choice; uses a dev-scoped state file so it never clobbers the
+        # app's real saved state.
+        from bootstack.dev._env import DEV_MIN_SIZE, is_dev_mode
+
+        if is_dev_mode():
+            if not remember_window_state and state_path is None:
+                from bootstack._core.paths import app_config_file
+
+                remember_window_state = True
+                state_path = str(app_config_file("dev_window_state.json", title or "bootstack"))
+            # A usable floor so a reload window starts/stays a sensible size.
+            if min_size is None:
+                min_size = DEV_MIN_SIZE
 
         init_kwargs: dict[str, Any] = {
             "light_theme": light_theme,
@@ -192,6 +210,9 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         else:
             self._region_root = self._tk_root
 
+        # Stash the content-frame config so dev hot reload can rebuild a fresh
+        # content frame with identical guidance after tearing the old one down.
+        self._dev_frame_kwargs = dict(frame_kwargs)
         self._content_frame = FlexFrame(self._region_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
 
@@ -245,11 +266,33 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
     def run(self) -> None:
         """Show the window and start the event loop."""
         self._ensure_default_titlebar()
+        from bootstack.dev._env import is_dev_mode
+
+        if is_dev_mode():
+            from bootstack.dev._reloader import install_reloader
+
+            install_reloader(self)
         # Let the internal mainloop center and *then* show the window — it
         # flushes layout and applies the window style while still withdrawn, so
         # the window is fully drawn and positioned before it becomes visible.
         # (Deiconifying here first would map it uncentered, then jump on center.)
         self._tk_root.mainloop()
+
+    def __enter__(self) -> "App":
+        result = super().__enter__()
+        # Under `bootstack dev`, capture where this `with` body lives so a save
+        # can re-exec it. No-op (and zero cost) outside dev mode.
+        from bootstack.dev._env import is_dev_mode
+
+        if is_dev_mode() and self._dev_body is None:
+            import sys as _sys
+            from bootstack.dev._capture import capture_from_frame
+
+            try:
+                self._dev_body = capture_from_frame(_sys._getframe(1))
+            except Exception:
+                self._dev_body = None
+        return result
 
     def __exit__(self, exc_type, exc, tb) -> None:
         super().__exit__(exc_type, exc, tb)
@@ -257,4 +300,72 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
             self._tk_root.update_idletasks()
         except Exception:
             pass
+        return None
+
+    # ----- dev hot-reload hooks ----------------------------------------------
+    # Used only under `bootstack dev`; see bootstack.dev. AppShell/Workbench
+    # override the route hooks to preserve the selected page across a reload.
+
+    def _dev_reset_region(self) -> None:
+        """Tear down the chrome + content the `with` body built, keep the root."""
+        stack = getattr(self, "_toolbar_stack", None)
+        if stack is not None:
+            try:
+                stack.destroy()
+            except Exception:
+                pass
+        self._toolbar_stack = None
+        self._chrome_toolbars = []
+        self._native_menu_renderer = None
+        self._native_menu_pending = None
+        # Clear the native menu bar (macOS) so a rebuild doesn't double it.
+        try:
+            root = self._menu_root()
+            if root is not None:
+                root["menu"] = ""
+        except Exception:
+            pass
+        # Replace the content frame wholesale — destroying the subtree fires
+        # <Destroy> on every descendant (the normal teardown path) and avoids
+        # carrying stale flex bookkeeping into the rebuild.
+        old = getattr(self, "_content_frame", None)
+        if old is not None:
+            try:
+                old.destroy()
+            except Exception:
+                pass
+        self._content_frame = FlexFrame(self._region_root, **self._dev_frame_kwargs)
+        self._content_frame.pack(fill="both", expand=True)
+        try:
+            from bootstack.dev import _registry
+
+            _registry.reset_mounts()
+        except Exception:
+            pass
+
+    def _dev_after_rebuild(self) -> None:
+        """Re-apply window chrome that lives outside the body, then flush.
+
+        Grows the window to fit if the rebuilt layout needs more room than the
+        current geometry, but never shrinks it — so a reload that adds content
+        doesn't clip it, without the jarring shrink when content is removed.
+        """
+        self._ensure_default_titlebar()
+        try:
+            root = self._tk_root
+            root.update_idletasks()
+            cur_w, cur_h = root.winfo_width(), root.winfo_height()
+            new_w = max(cur_w, root.winfo_reqwidth())
+            new_h = max(cur_h, root.winfo_reqheight())
+            if new_w > cur_w or new_h > cur_h:
+                root.geometry(f"{new_w}x{new_h}+{root.winfo_x()}+{root.winfo_y()}")
+        except Exception:
+            pass
+
+    def _dev_capture_route(self) -> Any:
+        """Route to restore after a reload. Plain App has none."""
+        return None
+
+    def _dev_restore_route(self, route: Any) -> None:
+        """Restore a route captured before a reload. No-op for plain App."""
         return None

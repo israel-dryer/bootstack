@@ -37,6 +37,13 @@ A few things to notice:
   The same code looks correct across all themes.
 - ``app.run()`` starts the event loop. It goes *after* the ``with`` block.
 
+.. tip::
+
+   While building, run your app with ``bootstack dev app.py`` instead of
+   ``python app.py``. Edits appear in the running window the moment you save —
+   the window stays put and your state is preserved. See
+   :doc:`/production/hot-reload`.
+
 Navigation apps
 ---------------
 

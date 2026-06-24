@@ -129,6 +129,7 @@ html[data-theme="dark"] .bs-dialog-screenshot {
 
 /* Demo videos (content-only captures) — plain, no border or shadow. Light/dark
    variants follow the theme exactly as the screenshot classes do. */
+.bs-video,
 .bs-video-dark,
 .bs-video-light {
     display: block;

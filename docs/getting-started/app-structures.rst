@@ -175,6 +175,8 @@ See also
 
 - :doc:`/getting-started/quickstart` — your first app in 60 seconds.
 - :doc:`/tasks/layout` — arranging widgets inside any of these containers.
+- :doc:`/tasks/composing-with-builders` — factor reusable UI out of plain
+  functions as your app grows.
 - :doc:`/tasks/navigation/index` — the full set of `AppShell` navigation patterns.
 - :doc:`/widgets/app` · :doc:`/widgets/appshell` · :doc:`/widgets/window` — the
   container reference pages.

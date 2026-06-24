@@ -9,6 +9,7 @@ The bootstack CLI provides commands for:
 Usage:
     bootstack start <appname>        Create a new project
     bootstack run [path]             Run the application
+    bootstack dev [path]             Run with hot reload (live edit-and-save)
     bootstack promote --pyinstaller  Enable PyInstaller support
     bootstack build                  Build for distribution
     bootstack add page <ClassName>   Add a new page (AppShell)
@@ -26,7 +27,7 @@ import argparse
 import sys
 from typing import Sequence
 
-from bootstack.cli import add, appicon, build, doctor, icons, promote, run, start
+from bootstack.cli import add, appicon, build, dev, doctor, icons, promote, run, start
 from bootstack.cli.demo import run_demo
 
 
@@ -42,6 +43,7 @@ Examples:
   bootstack start MyApp --template appshell  Create an AppShell project
   bootstack start MyApp --theme superhero    Use a specific theme
   bootstack run                      Run the application
+  bootstack dev app.py               Run with hot reload
   bootstack promote --pyinstaller    Enable PyInstaller support
   bootstack build                    Build for distribution
   bootstack add view SettingsView    Add a new view
@@ -75,6 +77,7 @@ For more information on a command:
     # Register commands
     start.add_parser(subparsers)
     run.add_parser(subparsers)
+    dev.add_parser(subparsers)
     promote.add_parser(subparsers)
     build.add_parser(subparsers)
     add.add_parser(subparsers)
