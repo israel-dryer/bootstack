@@ -63,6 +63,12 @@ jobs:
             found { print }
           ' CHANGELOG.md > RELEASE_NOTES.md
           if [ -s RELEASE_NOTES.md ]; then
+            # The awk slice stops at the next "## [" heading, so for any section
+            # except the oldest it excludes the reference-link definitions at the
+            # file bottom — leaving the "## [ver]" heading's "[ver]" rendering as
+            # literal brackets in the release body. Append this version's link
+            # definition so the heading resolves to a link (matching the file).
+            grep -F "[$version]: " CHANGELOG.md >> RELEASE_NOTES.md || true
             echo "Using curated CHANGELOG notes for $version ($(wc -l < RELEASE_NOTES.md) lines)."
           else
             echo "No CHANGELOG section for $version; using auto-generated notes only."

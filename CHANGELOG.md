@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [0.1.2] — widget polish
+## [0.1.2] — menu dismissal fix
 
 ### Fixed
 

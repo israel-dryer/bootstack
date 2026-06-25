@@ -21,6 +21,32 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.2 PATCH SHIPPED — dropdown/context menus dismiss on window move (PR #345;
+  2026-06-25).** `bootstack 0.1.2` is on **PyPI** + tagged **`v0.1.2`**. **Bug
+  (user-reported, Win10):** an open toolbar `add_menu` dropdown (and any Win/Linux
+  `ContextMenu`/`Select`/`MenuButton` popup) stayed pinned at its old screen
+  position when you dragged/resized/minimized the window — it "hung in the air."
+  The `_ToplevelContextMenu` (overrideredirect Toplevel backend) only dismissed on
+  **outside mouse clicks** bound on the owning window; dragging the native title
+  bar fires no click, only `<Configure>`/`<Unmap>` on the toplevel, which nothing
+  listened for. **Fix:** while shown, also bind the binding-root's
+  `<Configure>`/`<Unmap>` → new `_on_window_change` method dismisses (guarded to
+  `event.widget is the toplevel` so a child relayout doesn't close it); torn down
+  with the existing outside-click cleanup. Shared backend → fixes ALL Win/Linux
+  popups at once. Verified decorated AND undecorated (both move via `wm geometry`
+  → `<Configure>`); macOS `_NativeContextMenu` untouched (native menu self-dismisses).
+  **NB this is the window-MOVE bug — DISTINCT from #207** (the `'break'`-target
+  dismiss case, still OPEN; I confirmed a `'break'` toolbar widget already dismisses
+  here). Tests in `test_toolbar_menu.py` (window-change dismissal + binding
+  teardown). **Process:** empirical self-driving repro (move window, assert
+  `winfo_viewable()`) was decisive — static reading missed that no click fires on a
+  title-bar drag. Confirmed Py 3.12.10's `unbind(seq, funcid)` removes only that
+  funcid (not the unbind-wipes-all of older Tkinter), so binding `<Configure>` on
+  the app toplevel is safe. **CHANGELOG gotcha (fixed):** `## [0.1.1]` was a
+  bracketed link with NO `[0.1.1]:` definition (dead link); added `[0.1.1]:` +
+  `[0.1.2]:` defs. **Release-notes gotcha:** `release.yml` extracts ONLY the
+  `## [x]` section, so the bottom link-defs are excluded → `[0.1.2]` renders as
+  literal brackets in the GitHub Release body (see Next-up for the fix).
 - **0.1.1 PATCH SHIPPED — `pygments` declared as a runtime dependency (PR #344;
   2026-06-24).** `bootstack 0.1.1` is on **PyPI** and tagged **`v0.1.1`** (GitHub
   Release, notes from the CHANGELOG `## [0.1.1]` section). **Bug:** `CodeEditor`
@@ -645,12 +671,15 @@ memories and git history.
 > under SemVer; the **0.1.0 (stable) milestone is CLOSED**. **#149 is DONE** — all
 > its folded items shipped (`text=<Signal>` guard + `cli/run.py` via PR #334;
 > `__version__` is dynamic; CHANGELOG via #335). `bootstack.dev` stays
-> **PROVISIONAL** (excluded from the freeze). The next milestone is **0.1.1 —
-> Widget polish** (`gh` milestone #2); the post-0.1.0 release batching lives in
-> memory `project_roadmap_milestones` (0.1.1 polish → 0.2.0 Timeline/Wizard →
+> **PROVISIONAL** (excluded from the freeze). The active milestone is **0.1.x —
+> Widget polish** (`gh` milestone #2 — RENAMED 2026-06-25 from "0.1.1"; it is a
+> **rolling line of patch releases**, not a single version: `0.1.1` shipped the
+> pygments packaging fix, `0.1.2` shipped the menu window-move dismiss fix — see
+> the top "Recently completed" entry). Post-0.1.0 release batching lives in
+> memory `project_roadmap_milestones` (0.1.x polish → 0.2.0 Timeline/Wizard →
 > 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
 >
-> **Open, additive items (no longer ship-blockers) — candidates for 0.1.1:**
+> **Open, additive items (no longer ship-blockers) — candidates for the next 0.1.x patch:**
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
