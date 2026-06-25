@@ -68,3 +68,67 @@ def test_no_menu_model_without_add_menu(app):
     tb = bs.Toolbar(parent=app)
     tb.add_button(text="Save", icon="floppy")
     assert tb._internal.menu_model is None
+
+
+def _toplevel_menu(app):
+    """Build a toolbar menu and return its themed (Win/Linux) backend.
+
+    Skips on the macOS native backend, which has no Toplevel to dismiss —
+    the system menu already closes on window interaction.
+    """
+    import bootstack as bs
+    from bootstack.widgets._impl.composites.contextmenu import _ToplevelContextMenu
+
+    tb = bs.Toolbar(parent=app)
+    with tb.add_menu("File") as file:
+        file.add_action("Quit", on_click=lambda: None)
+    menu = tb._internal._menu_triggers["File"].context_menu._impl
+    if not isinstance(menu, _ToplevelContextMenu):
+        pytest.skip("native menu backend dismisses on its own")
+    return tb, menu
+
+
+class _Evt:
+    def __init__(self, widget):
+        self.widget = widget
+
+
+def test_menu_dismisses_on_owning_window_move(app):
+    """Dragging the title bar moves the window but fires no click, so the
+    dropdown must dismiss on the window's own `<Configure>`/`<Unmap>` — else it
+    floats at its old screen position ("hangs in the air"). Regression test."""
+    _tb, menu = _toplevel_menu(app)
+    root = app._tk_root
+
+    # Post-show state: the dismiss bindings are installed on the window root,
+    # and the popup is on screen.
+    menu._click_binding_root = root
+    menu._toplevel.winfo_viewable = lambda: True  # pretend it's mapped
+
+    hidden = []
+    menu.hide = lambda: hidden.append(True)
+
+    # A child relayout (event.widget is a descendant) must NOT dismiss it.
+    menu._on_window_change(_Evt(_tb._internal))
+    assert hidden == []
+
+    # The window itself moving/resizing/minimizing DOES dismiss it.
+    menu._on_window_change(_Evt(root))
+    assert hidden == [True]
+
+
+def test_window_dismiss_bindings_torn_down_on_hide(shown_app):
+    """The `<Configure>`/`<Unmap>` dismiss bindings are removed when the menu
+    hides, so a closed menu leaves no live handlers on the window root."""
+    app = shown_app
+    _tb, menu = _toplevel_menu(app)
+    root = app._tk_root
+
+    # Simulate installed window bindings (as bind_click would do post-show).
+    menu._click_binding_root = root
+    hid = root.bind("<Configure>", menu._on_window_change, add="+")
+    menu._window_handler_ids = [("<Configure>", hid)]
+
+    menu.hide()
+    assert menu._window_handler_ids == []
+    assert menu._click_binding_root is None

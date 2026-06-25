@@ -8,6 +8,19 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [0.1.2] — widget polish
+
+### Fixed
+
+- **Dropdown and context menus now dismiss when their window moves.** On
+  Windows and Linux, an open menu — a toolbar `add_menu` dropdown, or any
+  right-click `ContextMenu`, `Select`, or `MenuButton` popup — stayed pinned to
+  its original screen position when the window was dragged, resized, or
+  minimized: it "hung in the air." Only clicks *outside* the menu dismissed it,
+  and dragging the title bar fires no click. Menus now also close on the owning
+  window's own move, resize, or minimize, matching native menu behavior. (macOS
+  already used the native system menu, which dismisses on its own.)
+
 ## [0.1.1] — packaging fix
 
 ### Fixed
@@ -109,4 +122,6 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.1.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.2
+[0.1.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.1
 [0.1.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.0
