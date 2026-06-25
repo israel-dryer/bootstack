@@ -158,6 +158,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._density = density
         self._command = command
         self._click_handler_ids: list[tuple[str, str]] = []
+        # Bindings that dismiss the menu when the owning window moves, resizes,
+        # or is minimized — otherwise an open menu floats at its old screen
+        # position while the window is dragged ("hangs in the air").
+        self._window_handler_ids: list[tuple[str, str]] = []
         self._click_binding_root = None
         self._click_bind_after_id = None
         # One-shot guard: the click that (re)opens the menu reaches the
@@ -881,10 +885,30 @@ class _ToplevelContextMenu(CustomConfigMixin):
                     for seq in ('<Button-1>', '<Button-2>', '<Button-3>'):
                         handler_id = root.bind(seq, on_click, add='+')
                         self._click_handler_ids.append((seq, handler_id))
+                    # Moving or resizing the window (e.g. dragging the native
+                    # title bar) fires no click, so also dismiss on the
+                    # window's own geometry changes.
+                    for seq in ('<Configure>', '<Unmap>'):
+                        handler_id = root.bind(seq, self._on_window_change, add='+')
+                        self._window_handler_ids.append((seq, handler_id))
 
         # Delay binding to avoid capturing the click that shows the menu
         self._cancel_click_outside_after()
         self._click_bind_after_id = self._toplevel.after(100, bind_click)
+
+    def _on_window_change(self, event) -> None:
+        """Hide the menu when its owning window moves, resizes, or unmaps.
+
+        Dragging the title bar (or resizing/minimizing) fires no click, so the
+        outside-click handler never sees it and the menu would otherwise float
+        at its old screen position. `<Configure>`/`<Unmap>` bubble up from
+        descendants through bindtags, so only act for the bound toplevel itself
+        — a child relayout must not close the menu.
+        """
+        if str(event.widget) != str(self._click_binding_root):
+            return
+        if self._toplevel.winfo_viewable():
+            self.hide()
 
     def _get_binding_root(self) -> Widget | None:
         """Return the widget to bind click-outside events to."""
@@ -897,18 +921,21 @@ class _ToplevelContextMenu(CustomConfigMixin):
         return None
 
     def _unbind_click_outside_handler(self) -> None:
-        """Remove the click-outside bindings if present."""
-        if not self._click_handler_ids or not self._click_binding_root:
+        """Remove the click-outside and window-change bindings if present."""
+        if not (self._click_handler_ids or self._window_handler_ids) or not self._click_binding_root:
             return
 
         try:
             if self._click_binding_root.winfo_exists():
                 for seq, handler_id in self._click_handler_ids:
                     self._click_binding_root.unbind(seq, handler_id)
+                for seq, handler_id in self._window_handler_ids:
+                    self._click_binding_root.unbind(seq, handler_id)
         except TclError:
             pass
         finally:
             self._click_handler_ids = []
+            self._window_handler_ids = []
             self._click_binding_root = None
 
     def _cancel_click_outside_after(self) -> None:
