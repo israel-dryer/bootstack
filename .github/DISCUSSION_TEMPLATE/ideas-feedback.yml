@@ -1,0 +1,56 @@
+title: "[Idea]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this category for early ideas, API suggestions, and design feedback.
+
+        Accepted and scoped ideas may later become issues.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the pain point or use case.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Widgets
+        - Layout
+        - Themes and styling
+        - Forms and validation
+        - DataSource
+        - Charts and visualization
+        - CLI and packaging
+        - Documentation
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+      description: Describe the API, behavior, example, or workflow you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workaround
+      description: Describe anything you tried or considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+    validations:
+      required: false
