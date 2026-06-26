@@ -1,42 +1,74 @@
-name: Feature request
-description: Suggest an idea for this project
-title: "enter title of enhancement here"
+name: Accepted feature request
+description: Track scoped implementation work after an idea has been discussed
+title: "[Feature]: "
 labels: ["enhancement"]
 assignees: israel-dryer
 
 body:
-  - type: textarea
-    id: what
+  - type: markdown
     attributes:
-      label: Is your feature request related to a problem? Please describe.
-      description: |
-        "A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]"
+      value: |
+        Please use this issue type for feature work that is already reasonably scoped.
+
+        If this is an early idea, API suggestion, or design discussion, start with an Ideas & Feedback discussion instead:
+        https://github.com/israel-dryer/bootstack/discussions/new?category=ideas-feedback
+
+  - type: input
+    id: discussion
+    attributes:
+      label: Related discussion
+      description: Link to the discussion where this idea was explored, if one exists.
+      placeholder: "https://github.com/israel-dryer/bootstack/discussions/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What user problem does this solve?
     validations:
       required: true
 
   - type: textarea
-    id: extra
+    id: proposal
     attributes:
-      label: "Describe the solution you'd like"
-      description: |
-        A clear and concise description of what you want to happen.
+      label: Proposed behavior
+      description: Describe the expected API, behavior, or implementation direction.
     validations:
       required: true
 
-  - type: textarea
-    id: want
+  - type: dropdown
+    id: area
     attributes:
-      label: "Describe alternatives you've considered"
-      description: |
-        "A clear and concise description of any alternative solutions or features you've considered."
+      label: Area
+      options:
+        - Widgets
+        - Layout
+        - Themes and styling
+        - Forms and validation
+        - DataSource
+        - Charts and visualization
+        - CLI and packaging
+        - Documentation
+        - Other
     validations:
-      required: true
+      required: false
 
   - type: textarea
-    id: add
+    id: acceptance
     attributes:
-      label: "Additional context"
-      description: |
-        "Add any other context or screenshots about the feature request here."
+      label: Acceptance criteria
+      description: What would need to be true for this issue to be considered complete?
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
     validations:
       required: false

@@ -1,0 +1,59 @@
+name: Documentation issue
+description: Report incorrect, outdated, missing, or broken documentation
+title: "[Docs]: "
+labels: ["documentation"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for actionable documentation defects: broken examples, incorrect instructions, outdated pages, typos, or missing reference material.
+
+        If you are asking how to use bootstack, please start a Q&A discussion instead:
+        https://github.com/israel-dryer/bootstack/discussions/new?category=q-a
+
+  - type: input
+    id: page
+    attributes:
+      label: Documentation page
+      description: Link to the relevant documentation page, if applicable.
+      placeholder: "https://bootstack.org/..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue type
+      options:
+        - Incorrect information
+        - Broken example
+        - Missing information
+        - Typo or wording
+        - Broken link
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What needs to be fixed?
+      description: Describe the documentation problem clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Suggested correction
+      description: If you know the correct wording or behavior, describe it here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+    validations:
+      required: false

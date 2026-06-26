@@ -1,0 +1,37 @@
+title: "[Show and Tell]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share apps, examples, experiments, recipes, and patterns built with bootstack.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What did you build?
+      description: Give a short overview of the app, demo, or pattern.
+    validations:
+      required: true
+
+  - type: textarea
+    id: demo
+    attributes:
+      label: Demo or links
+      description: Add links or visual examples if you have them.
+    validations:
+      required: false
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Relevant code or repository
+      render: python
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for other users
+    validations:
+      required: false
