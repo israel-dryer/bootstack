@@ -1,0 +1,63 @@
+title: "[Q&A]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this category for usage questions, troubleshooting, and "how do I build this?" topics.
+
+        If you have a confirmed bug with a minimal reproduction, please open a bug report issue instead.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to build or understand?
+      description: Describe the UI, behavior, or pattern you are trying to implement.
+    validations:
+      required: true
+
+  - type: input
+    id: bootstack-version
+    attributes:
+      label: bootstack version
+      placeholder: "0.1.2"
+    validations:
+      required: false
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "Python 3.12"
+    validations:
+      required: false
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      placeholder: "Windows, macOS, or Linux"
+    validations:
+      required: false
+
+  - type: input
+    id: docs-page
+    attributes:
+      label: Relevant documentation page
+      placeholder: "https://bootstack.org/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Minimal code sample
+      render: python
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+    validations:
+      required: false
