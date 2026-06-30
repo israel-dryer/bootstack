@@ -132,13 +132,11 @@ signal, not the (instant) main-window build.
        time.sleep(len(word) * 0.5)
 
 
-   with bs.App(title="My App", size=(500, 500), vertical_items="center") as app:
-       bs.Label("Welcome to bootstack!", font="heading-lg")
-
+   with bs.App(title="My App") as app:
        progress = bs.Signal(0)
        status = bs.Signal("Starting…")
 
-       splash = bs.Splash(until="manual", size=(500, 500))
+       splash = bs.Splash(until="manual")
        with splash:
            bs.Picture(get_icon("rocket", size=96, color="primary"), width=96, height=96)
            bs.Label("My App", font="heading-lg")
@@ -155,7 +153,7 @@ signal, not the (instant) main-window build.
                progress.set(int(i / total * 100))
 
            progress.set(100)
-           splash.dismiss()  # close when the real work finishes
+           splash.dismiss()                  # close when the real work finishes
 
        threading.Thread(target=load, daemon=True).start()
    app.run()
