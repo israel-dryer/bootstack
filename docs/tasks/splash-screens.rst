@@ -114,53 +114,41 @@ Showing real progress
 
 For genuine, determinate progress you must move the slow work off the main thread
 so the loop stays free to repaint. Run the work in a background thread, push
-``0`` to ``100`` values into a :class:`~bootstack.Signal` the bar is bound to,
-update a status label the same way, and call :meth:`~bootstack.Splash.dismiss`
-when the work is done. Use ``until="manual"`` so the splash waits for *your*
-signal, not the (instant) main-window build.
+fractions into a :class:`~bootstack.Signal` the bar is bound to, update a status
+label the same way, and call :meth:`~bootstack.Splash.dismiss` when the work is
+done. Use ``until="manual"`` so the splash waits for *your* signal, not the
+(instant) main-window build.
 
 .. code-block:: python
 
    import threading
-   import time
    import bootstack as bs
-   from bootstack.images import get_icon
-
-
-   def do_work(word):
-       """Simulate a time-consuming task."""
-       time.sleep(len(word) * 0.5)
-
 
    with bs.App(title="My App") as app:
-       progress = bs.Signal(0)
+       progress = bs.Signal(0.0)
        status = bs.Signal("Starting…")
 
        splash = bs.Splash(until="manual")
        with splash:
-           bs.Picture(get_icon("rocket", size=96, color="primary"), width=96, height=96)
-           bs.Label("My App", font="heading-lg")
+           bs.Picture(logo, width=140, height=140)
            bs.ProgressBar(signal=progress)
            bs.Label(textsignal=status)
 
        def load():
            steps = ["settings", "plugins", "workspace"]
-           total = len(steps)
-
-           for i, step in enumerate(steps, start=1):
-               status.set(f"Loading {step}…")
+           for i, step in enumerate(steps):
+               status(f"Loading {step}…")
+               progress(i / len(steps))
                do_work(step)
-               progress.set(int(i / total * 100))
-
-           progress.set(100)
+           progress(1.0)
            splash.dismiss()                  # close when the real work finishes
 
        threading.Thread(target=load, daemon=True).start()
    app.run()
 
 Signals marshal updates back to the UI thread, so it is safe to call
-``progress.set(...)`` and ``status.set(...)`` from the worker. ``dismiss()`` is
-likewise safe to call from the thread.
+``progress(...)`` and ``status(...)`` from the worker. ``dismiss()`` is likewise
+safe to call from the thread.
 
 Reacting to dismissal
 ---------------------
