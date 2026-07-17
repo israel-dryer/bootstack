@@ -8,6 +8,23 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [0.1.3] — form editor options fix
+
+### Fixed
+
+- **Form field editors now accept the editor widget's public option names.** A
+  `FieldItem`'s `editor_options` are documented as the editor widget's keyword
+  arguments, but the form built the *internal* widgets and forwarded the options
+  unchanged — so the public names raised an error
+  (`editor_options={"step": 10}` on a `numberfield` failed with
+  `unknown option "-step"`; only the internal `increment` worked), and the
+  `textarea` editor could not accept `show_border` at all. Editors are now built
+  from their public widgets, so `step`, `min_value` / `max_value`,
+  `show_steppers`, `show_border`, `mask`, and the slider bounds all work as
+  documented — in `Form`, `FormDialog`, and the `DataTable` add/edit dialog. This
+  also fixes two latent `textarea` bugs, where a programmatically set value and
+  `required` validation were ignored. (#353, #354)
+
 ## [0.1.2] — menu dismissal fix
 
 ### Fixed
@@ -122,6 +139,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.1.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.3
 [0.1.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.2
 [0.1.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.1
 [0.1.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.0
