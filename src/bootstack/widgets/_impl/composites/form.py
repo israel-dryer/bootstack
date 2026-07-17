@@ -4,27 +4,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Text, Variable
+from tkinter import Variable
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TYPE_CHECKING
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
 from bootstack.signals import Signal
 from bootstack.widgets._impl.primitives.button import Button
-from bootstack.widgets._impl.primitives.checkbutton import CheckButton
-from bootstack.widgets._impl.primitives.switch import Switch
-from bootstack.widgets._impl.composites.dateentry import DateEntry
-from bootstack.widgets._impl.composites.field import Field
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.labelframe import LabelFrame
 from bootstack.widgets._impl.mixins import configure_delegate
-from bootstack.widgets._impl.composites.numericentry import NumericEntry
 from bootstack.widgets._impl.composites.tabs.tabview import TabView
-from bootstack.widgets._impl.composites.passwordentry import PasswordEntry
-from bootstack.widgets._impl.composites.slider.slider import Slider
-from bootstack.widgets._impl.composites.selectbox import SelectBox
-from bootstack.widgets._impl.primitives.spinbox import Spinbox
-from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack.widgets.types import EditorType, Master
 
 if TYPE_CHECKING:
@@ -50,8 +40,9 @@ class FieldItem:
     """Render the field read-only. Default `False`."""
     required: bool = False
     """Mark the field as required — adds a `'required'` validation rule and appends
-    an asterisk to the label. Honored by the text, number, password, date, and
-    select editors; has no effect on boolean or slider editors. Default `False`."""
+    an asterisk to the label. Honored by the text, number, password, date, select,
+    textarea, and spinner editors; has no effect on boolean or slider editors.
+    Default `False`."""
     visible: bool = True
     """Show the field. Set `False` to hide it. Default `True`."""
     column: int | None = None
@@ -66,9 +57,11 @@ class FieldItem:
     """Force a specific editor widget (see `EditorType`). `None` infers it from
     `dtype`."""
     editor_options: dict[str, Any] = field(default_factory=dict)
-    """Extra keyword arguments forwarded to the editor widget. For `'select'`,
-    pass `{"values": ["A", "B", "C"]}`; add `{"allow_custom_values": True}` for an
-    editable combobox."""
+    """Keyword arguments for the editor widget, using its public `bs.*` parameter
+    names — e.g. `{"step": 10}` for a `numberfield`, `{"show_border": True}` for a
+    `textarea`, `{"mask": "*"}` for a `textfield`. For `'select'`, pass the choices
+    as `{"values": ["A", "B", "C"]}` (or `{"items": [...]}`); add
+    `{"allow_custom_values": True}` for an editable combobox."""
     type: Literal['field'] = "field"
     """Item-type discriminator. Set automatically; only needed when building items
     as plain dicts."""
@@ -152,8 +145,8 @@ class Form(Frame):
     and manipulating form fields and their values.
 
     Field Access:
-        - `field(key)` — returns the Field widget for a key
-        - `fields()` — returns all Field widgets in order
+        - `field(key)` — returns the field widget for a key
+        - `fields()` — returns all field widgets in order
         - `keys()` — returns all field keys in order
 
     Value Operations:
@@ -304,12 +297,18 @@ class Form(Frame):
 
     @staticmethod
     def _validity_entry(widget: Any) -> Any | None:
-        """Return a field's validation-bearing entry, or None if it has none."""
-        if not isinstance(widget, Field):
-            return None
-        entry = getattr(widget, "_entry", None)
+        """Return a field's validation-bearing entry, or None if it has none.
+
+        Resolves through a public wrapper's internal widget: a field editor's
+        internal `Field` exposes the validity signals on its `_entry`, while the
+        text-area composite carries them directly.
+        """
+        internal = getattr(widget, "_internal", widget)
+        entry = getattr(internal, "_entry", None)
         if entry is not None and hasattr(entry, "_valid_signal"):
             return entry
+        if hasattr(internal, "_valid_signal"):
+            return internal
         return None
 
     def _register_validity_aggregate(self) -> None:
@@ -331,39 +330,46 @@ class Form(Frame):
         all_valid = True
         first_invalid_widget = None
 
-        def _validate_field(widget: Field) -> bool:
-            entry = getattr(widget, "_entry", widget)
+        def _validate_entry(entry: Any) -> bool:
             if not getattr(entry, "_rules", None):
                 return True
             # Delegate to the entry's own validator. An explicit form.validate()
             # is a manual action, so the "manual" trigger runs every rule; the
             # entry validates its typed value, updates the field's reactive
-            # validity signals, and emits the validation events.
-            return entry.validate(entry._get_validation_value(), trigger="manual")
+            # validity signals, and emits the validation events. The text-area
+            # composite exposes a no-argument validate().
+            if hasattr(entry, "_get_validation_value"):
+                return entry.validate(entry._get_validation_value(), trigger="manual")
+            return entry.validate()
 
         for widget in self._widgets.values():
-            if isinstance(widget, Field):
-                ok = _validate_field(widget)
-                if not ok and first_invalid_widget is None:
-                    first_invalid_widget = widget
-                all_valid = all_valid and ok
-        if first_invalid_widget:
+            entry = self._validity_entry(widget)
+            if entry is None:
+                continue
+            ok = _validate_entry(entry)
+            if not ok and first_invalid_widget is None:
+                first_invalid_widget = widget
+            all_valid = all_valid and ok
+        if first_invalid_widget is not None:
             try:
-                first_invalid_widget.focus_set()
+                first_invalid_widget.focus()
             except Exception:
-                pass
+                try:
+                    first_invalid_widget._internal.focus_set()
+                except Exception:
+                    pass
         return all_valid
 
     # --- Field access API (v2) -------------------------------------------
 
-    def field(self, key: str) -> Field:
-        """Return the Field widget for the given key.
+    def field(self, key: str) -> Any:
+        """Return the field widget for the given key.
 
         Args:
             key: The field key.
 
         Returns:
-            The Field widget instance.
+            The public field widget instance (e.g. `NumberField`, `TextArea`).
 
         Raises:
             KeyError: If no field with the given key exists.
@@ -372,11 +378,11 @@ class Form(Frame):
             raise KeyError(f"No field with key '{key}'")
         return self._widgets[key]
 
-    def fields(self) -> tuple[Field, ...]:
+    def fields(self) -> tuple[Any, ...]:
         """Return all field widgets in insertion order.
 
         Returns:
-            Tuple of Field widget instances.
+            Tuple of public field widget instances.
         """
         return tuple(self._widgets[k] for k in self._items_by_key.keys() if k in self._widgets)
 
@@ -597,117 +603,122 @@ class Form(Frame):
                     auto_col = 0
                     auto_row += 1
 
+    # Editors that accept validation kwargs (required, etc.). Boolean and slider
+    # editors validate nothing, so `required` and friends are dropped for them.
+    _VALIDATING_EDITORS = frozenset(
+        {'textfield', 'numberfield', 'passwordfield', 'datefield', 'textarea', 'select', 'spinnerfield'})
+
     def _build_field(self, parent: Frame, item: FieldItem):
         if not item.visible:
             return None
 
         editor = item.editor or self._default_editor_for_dtype(item.dtype, self._data.get(item.key))
         options = dict(item.editor_options or {})
-        if item.required:
+        if item.required and editor in self._VALIDATING_EDITORS:
             options["required"] = True
         initial_value = self._data.get(item.key)
-        variable = self._variable_for_item(item, initial_value, editor)
         label_text = item.label if item.label is not None else item.key.replace("_", " ").title()
 
         container = Frame(parent)
         container.columnconfigure(0, weight=1)  # Allow field widgets to expand horizontally
 
-        # Validation options that should only be passed to widgets supporting ValidationMixin
-        validation_options = {'show_message', 'required', 'validator'}
+        # Build the public wrapper. `editor_options` are that widget's public
+        # kwargs (issue #353) — the wrapper is the single translation layer to
+        # the internal Tk options, so `step`, `show_border`, `mask`, etc. work.
+        field_widget = self._construct_editor(editor, container, label_text, initial_value, options)
 
-        field_widget: Any
-        if editor == 'textfield':
-            field_widget = TextEntry(
-                container, value=initial_value or "", label=label_text, textvariable=variable, **options)
-        elif editor == 'numberfield':
-            numeric_value = initial_value if initial_value is not None else 0
-            field_widget = NumericEntry(
-                container, value=numeric_value, label=label_text, **options)
-            self._bind_numeric_variable(item.key, field_widget, variable)
-        elif editor == 'passwordfield':
-            field_widget = PasswordEntry(
-                container, value=initial_value or "", label=label_text, textvariable=variable, **options)
-        elif editor == 'datefield':
-            field_widget = DateEntry(container, value=initial_value, label=label_text, textvariable=variable, **options)
-        else:
-            # Filter out validation options for widgets that don't support ValidationMixin
-            filtered_options = {k: v for k, v in options.items() if k not in validation_options}
+        # Commit sync: mirror the field's committed value into the form data.
+        try:
+            field_widget.on_change(lambda *_a, k=item.key: self._sync_value_from_widget(k))
+        except Exception:
+            pass
 
-            # Checkbox and switch use an inline label; select handles its own label.
-            if editor in ('checkbox', 'switch'):
-                if not filtered_options.get("text"):
-                    filtered_options["text"] = label_text
-            elif label_text != "" and editor != 'select':
-                Label(container, text=label_text).pack(anchor='w', pady=(0, 2))
+        # Preserve field_variable(): adopt the internal tk variable when present.
+        internal = getattr(field_widget, "_internal", None)
+        try:
+            var = getattr(internal, "variable", None)
+        except Exception:
+            var = None
+        if var is not None:
+            self._variables[item.key] = var
 
-            if editor == 'select':
-                items = options.pop('items', options.pop('values', None)) or []
-                items = [str(i) for i in items]
-                field_widget = SelectBox(
-                    container,
-                    label=label_text,
-                    value=initial_value or "",
-                    items=items,
-                    textvariable=variable,
-                    **options
-                )
-                if initial_value is not None and variable is not None:
-                    variable.set(initial_value)
-            elif editor == 'spinnerfield':
-                field_widget = Spinbox(container, textvariable=variable, **filtered_options)
-                if initial_value is not None:
-                    variable.set(initial_value)
-            elif editor == 'textarea':
-                field_widget = Text(container, **filtered_options)
-                if initial_value:
-                    field_widget.insert('1.0', str(initial_value))
-            elif editor == 'switch':
-                field_widget = Switch(container, variable=variable, **filtered_options)
-            elif editor == 'checkbox':
-                field_widget = CheckButton(container, variable=variable, **filtered_options)
-            elif editor == 'slider':
-                slider_opts = dict(filtered_options)
-                if 'from_' in slider_opts:
-                    slider_opts['minvalue'] = slider_opts.pop('from_')
-                if 'to' in slider_opts:
-                    slider_opts['maxvalue'] = slider_opts.pop('to')
-                field_widget = Slider(container, variable=variable, **slider_opts)
-            else:
-                field_widget = TextEntry(
-                    container, value=initial_value or "", label=label_text, textvariable=variable, **options)
-
-            if editor != 'textarea':
-                field_widget.pack(fill='x', expand=True)
-            else:
-                field_widget.pack(fill='both', expand=True)
-
-        if isinstance(field_widget, Field):
-            field_widget.bind("<<Change>>", lambda _e, k=item.key: self._sync_value_from_widget(k))
-            field_widget.pack(fill='both', expand=True)
-            if not isinstance(field_widget, NumericEntry):
-                traced_var = getattr(field_widget, "variable", None)
-                if traced_var is not None:
-                    self._register_variable(item.key, traced_var)
-        elif isinstance(field_widget, Text):
-            text_var = variable or StringVar(value=str(initial_value) if initial_value is not None else "")
-            self._register_variable(item.key, text_var)
-            self._bind_text_change(field_widget, item.key, text_var)
-        elif variable is not None:
-            self._register_variable(item.key, variable)
-
-        # record signals if the widget exposes them
-        signal_obj = getattr(field_widget, "_signal", None)
+        # Record signals the wrapper exposes (for field_signal/field_textsignal).
+        signal_obj = getattr(field_widget, "signal", None)
         if signal_obj is not None:
             self._signals[item.key] = signal_obj
-        text_signal = getattr(field_widget, "_textsignal", None)
-        if text_signal is not None:
-            self._textsignals[item.key] = text_signal
 
         if item.readonly:
             self._set_readonly(field_widget)
 
         self._widgets[item.key] = field_widget
         return container
+
+    def _construct_editor(self, editor: str, container: Frame, label_text: str, initial: Any, options: dict):
+        """Construct the public wrapper widget for an editor, parented to `container`.
+
+        `options` are the wrapper's public keyword arguments; a few documented
+        aliases (`values`/`items` for the option list) are normalized to the
+        wrapper's parameter name. The wrapper auto-attaches to `container`.
+        """
+        # Local imports: the public wrappers depend on this package, so import
+        # them lazily to avoid import-time cycles (mirrors _normalize_buttons).
+        from bootstack.widgets.textfield import TextField
+        from bootstack.widgets.numberfield import NumberField
+        from bootstack.widgets.passwordfield import PasswordField
+        from bootstack.widgets.datefield import DateField
+        from bootstack.widgets.textarea import TextArea
+        from bootstack.widgets.select import Select
+        from bootstack.widgets.spinnerfield import SpinnerField
+        from bootstack.widgets.boolean_controls import Checkbox, Switch
+        from bootstack.widgets.slider import Slider
+
+        opts = dict(options)
+        # Internal-only options the public wrappers don't accept. Dropping them
+        # keeps the strict boolean controls from raising and matches the old
+        # per-editor filtering (a required/message field auto-reserves its
+        # message row, so `show_message` is no longer needed here).
+        for internal_only in ("show_message", "validator"):
+            opts.pop(internal_only, None)
+
+        if editor == 'textfield':
+            return TextField(value=initial or "", label=label_text, parent=container, **opts)
+        if editor == 'numberfield':
+            numeric_value = initial if initial is not None else 0
+            return NumberField(value=numeric_value, label=label_text, parent=container, **opts)
+        if editor == 'passwordfield':
+            return PasswordField(value=initial or "", label=label_text, parent=container, **opts)
+        if editor == 'datefield':
+            return DateField(value=initial, label=label_text, parent=container, **opts)
+        if editor == 'textarea':
+            text = str(initial) if initial is not None else ""
+            return TextArea(value=text, label=label_text, parent=container, **opts)
+        if editor == 'select':
+            choices = opts.pop('items', opts.pop('values', None)) or []
+            choices = [str(i) for i in choices]
+            return Select(options=choices, value=initial if initial is not None else "",
+                          label=label_text, parent=container, **opts)
+        if editor == 'spinnerfield':
+            choices = opts.pop('items', opts.pop('values', None))
+            if choices is not None:
+                opts['options'] = [str(i) for i in choices]
+            return SpinnerField(value=initial if initial is not None else "",
+                                label=label_text, parent=container, **opts)
+        if editor == 'checkbox':
+            text = opts.pop('text', None) or label_text
+            return Checkbox(text, value=bool(initial) if initial is not None else False,
+                            parent=container, **opts)
+        if editor == 'switch':
+            text = opts.pop('text', None) or label_text
+            return Switch(text, value=bool(initial) if initial is not None else False,
+                          parent=container, **opts)
+        if editor == 'slider':
+            # Slider has no label parameter, so render a stacked caption above it
+            # (the field wrappers render their own label internally).
+            if label_text:
+                Label(container, text=label_text).pack(anchor='w', pady=(0, 2))
+            return Slider(value=initial if initial is not None else 0, parent=container, **opts)
+        # Fallback: treat any unknown editor as a text field.
+        return TextField(value=initial or "", label=label_text, parent=container, **opts)
 
     def _build_buttons(self, parent: Frame, buttons: Sequence[ButtonInput]) -> None:
         parsed = self._normalize_buttons(buttons)
@@ -820,17 +831,13 @@ class Form(Frame):
         if widget is None:
             return self._data.get(key)
 
-        if hasattr(widget, "value"):
-            val_attr = getattr(widget, "value")
-            value = val_attr() if callable(val_attr) else val_attr
-        elif key in self._variables:
-            value = self._variables[key].get()
-        elif isinstance(widget, Text):
-            value = widget.get("1.0", "end-1c")
-        else:
-            try:
-                value = widget.get()
-            except Exception:
+        # Every public wrapper exposes a `.value` property.
+        try:
+            value = widget.value
+        except Exception:
+            if key in self._variables:
+                value = self._variables[key].get()
+            else:
                 value = self._data.get(key)
 
         item = self._items_by_key.get(key)
@@ -843,31 +850,21 @@ class Form(Frame):
         if widget is None:
             return
 
-        if isinstance(widget, Field):
-            if hasattr(widget, "_suppress_changed_event"):
-                widget._suppress_changed_event = True  # type: ignore[attr-defined]
-                try:
-                    widget.value = value
-                finally:
-                    widget._suppress_changed_event = False  # type: ignore[attr-defined]
-            else:
-                widget.value = value
-            return
-
-        if isinstance(widget, Text):
-            widget.delete("1.0", "end")
-            if value is not None:
-                widget.insert("1.0", str(value))
-            return
-
-        if key in self._variables:
-            self._variables[key].set("" if value is None else value)
-            return
-
+        # Programmatic writes must not echo back as a user change. Suspend sync
+        # around the assignment so a wrapper that emits <<Change>> synchronously
+        # doesn't re-enter _sync_value_from_widget.
+        previous_suspend = self._suspend_sync
+        self._suspend_sync = True
         try:
-            widget.configure(value=value)
+            widget.value = value
         except Exception:
-            pass
+            if key in self._variables:
+                try:
+                    self._variables[key].set("" if value is None else value)
+                except Exception:
+                    pass
+        finally:
+            self._suspend_sync = previous_suspend
 
     def _sync_value_from_widget(self, key: str) -> None:
         if self._suspend_sync:
@@ -875,20 +872,16 @@ class Form(Frame):
         if key not in self._items_by_key:
             return
         new_value = self._read_value_from_widget(key)
+        # Notify only on a real change. This also drops a spurious echo from an
+        # editor that emits its change event asynchronously (e.g. Select fires
+        # `<<Change>>` with when="tail"), which lands after a programmatic write
+        # has already restored `_suspend_sync` and stored the value.
+        if key in self._data and new_value == self._data[key]:
+            return
         self._data[key] = new_value
         if self._on_data_change:
             self._on_data_change(dict(self._data))
         self.event_generate("<<BsDataChange>>")
-
-    def _variable_for_item(self, item: FieldItem, initial: Any, editor: EditorType | None) -> Variable | None:
-        dtype = item.dtype
-        if editor in ('checkbox', 'switch'):
-            return BooleanVar(value=bool(initial) if initial is not None else False)
-        if editor in ('numberfield', 'spinnerfield', 'slider') or dtype in ('int', int, 'float', float):
-            if dtype in ('float', float):
-                return DoubleVar(value=float(initial) if initial is not None else 0.0)
-            return IntVar(value=int(initial) if initial is not None else 0)
-        return StringVar(value="" if initial is None else str(initial))
 
     def _default_editor_for_dtype(self, dtype: Any, value: Any) -> EditorType:
         if dtype in ('int', int, 'float', float):
@@ -925,81 +918,22 @@ class Form(Frame):
             return value
         return value
 
-    def _register_variable(self, key: str, var: Variable) -> None:
-        self._variables[key] = var
-        var.trace_add("write", lambda *_a, k=key: self._sync_value_from_widget(k))
-
-    def _bind_text_change(self, widget: Text, key: str, var: StringVar | None = None) -> None:
-        _updating = {"text": False}
-
-        def _on_change(_event=None):
-            if _updating["text"]:
-                return
-            _updating["text"] = True
-            try:
-                widget.edit_modified(False)
-                text = widget.get("1.0", "end-1c")
-                if var is not None:
-                    var.set(text)
-                self._sync_value_from_widget(key)
-            finally:
-                _updating["text"] = False
-
-        def _on_var_change(*_args):
-            if _updating["text"] or var is None:
-                return
-            _updating["text"] = True
-            try:
-                widget.delete("1.0", "end")
-                widget.insert("1.0", var.get())
-            finally:
-                _updating["text"] = False
-
-        widget.bind("<<Modified>>", _on_change)
-        widget.edit_modified(False)
-
-        if var is not None:
-            var.trace_add("write", _on_var_change)
-
-    def _bind_numeric_variable(self, key: str, widget: NumericEntry, var: Variable | None) -> None:
-        if var is None:
-            return
-
-        self._register_variable(key, var)
-
-        def _sync_numeric_var(*_args):
-            new_value = widget.value
-            if new_value is None:
-                return
-            try:
-                current_value = var.get()
-            except Exception:
-                current_value = None
-            if current_value == new_value:
-                return
-            previous_suspend = self._suspend_sync
-            self._suspend_sync = True
-            try:
-                var.set(new_value)
-            finally:
-                self._suspend_sync = previous_suspend
-
-        text_signal = getattr(widget, "signal", None)
-        if text_signal is not None:
-            text_signal.subscribe(lambda *_: _sync_numeric_var())
-        _sync_numeric_var()
 
     def _set_readonly(self, widget: Any) -> None:
-        if isinstance(widget, Field):
-            widget.readonly(True)
-        else:
+        # Field editors expose a live `read_only` property; boolean and slider
+        # editors have no read-only state, so they fall back to `disabled`
+        # (matching the pre-rewrite behavior for those editors).
+        if hasattr(widget, "read_only"):
             try:
-                widget.state(['disabled'])
+                widget.read_only = True
+                return
             except Exception:
-                try:
-                    widget.configure(state='disabled')
-                except Exception:
-                    pass
+                pass
+        if hasattr(widget, "disabled"):
+            try:
+                widget.disabled = True
+            except Exception:
+                pass
 
     # --- button helpers -------------------------------------------------
     def _make_button_command(self, spec: DialogButton):
@@ -1038,7 +972,6 @@ class Form(Frame):
                     label=str(key).replace('_', ' ').title(),
                     dtype=self._infer_dtype_from_value(value),
                     editor=self._default_editor_for_dtype(self._infer_dtype_from_value(value), value),
-                    editor_options={"show_message": True},
                 )
             )
         return inferred

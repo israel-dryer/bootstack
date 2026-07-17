@@ -233,15 +233,15 @@ def test_form_validate_updates_field_validity_signal(app):
     # validate must update it (not just emit events).
     form = bs.Form(items=[bs.FieldItem(key="name", label="Name", required=True)])
     app._tk_root.update_idletasks()
-    entry = form.field("name")._entry
+    field = form.field("name")
 
     assert form.validate() is False
     app._tk_root.update_idletasks()
-    assert entry._error_signal() == "This field is required."
-    assert entry._valid_signal() is False
+    assert field.error() == "This field is required."
+    assert field.valid() is False
 
-    form.field("name").value = "Alice"
+    field.value = "Alice"
     app._tk_root.update_idletasks()
     assert form.validate() is True
     app._tk_root.update_idletasks()
-    assert entry._error_signal() == ""
+    assert field.error() == ""
