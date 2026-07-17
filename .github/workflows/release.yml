@@ -55,30 +55,29 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Extract release notes for this tag from CHANGELOG
+      - name: Extract release title + notes for this tag from CHANGELOG
+        id: notes
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v ver="$version" '
-            /^## \[/ { if (found) exit; if (index($0, "[" ver "]")) found=1 }
-            found { print }
-          ' CHANGELOG.md > RELEASE_NOTES.md
+          # Emits `title=<version> — <heading suffix>` to $GITHUB_OUTPUT and the
+          # section body (WITHOUT its "## [version]" heading) to RELEASE_NOTES.md.
+          # Dropping the heading keeps the release title from being repeated in
+          # the body and removes the "[version]" self-link — so no bottom
+          # link-definition needs appending anymore.
+          python3 .github/scripts/release_notes.py "$version" RELEASE_NOTES.md "$GITHUB_OUTPUT"
           if [ -s RELEASE_NOTES.md ]; then
-            # The awk slice stops at the next "## [" heading, so for any section
-            # except the oldest it excludes the reference-link definitions at the
-            # file bottom — leaving the "## [ver]" heading's "[ver]" rendering as
-            # literal brackets in the release body. Append this version's link
-            # definition so the heading resolves to a link (matching the file).
-            grep -F "[$version]: " CHANGELOG.md >> RELEASE_NOTES.md || true
             echo "Using curated CHANGELOG notes for $version ($(wc -l < RELEASE_NOTES.md) lines)."
           else
             echo "No CHANGELOG section for $version; using auto-generated notes only."
           fi
 
-      # The curated CHANGELOG section becomes the release body; GitHub's
+      # The release title comes from the CHANGELOG heading ("0.1.3 — ...") and
+      # the curated section (minus its heading) becomes the body; GitHub's
       # auto-generated "What's Changed" + Full Changelog link are appended below
       # it (and stand alone for an alpha tag with no CHANGELOG section).
       - uses: softprops/action-gh-release@v3
         with:
+          name: ${{ steps.notes.outputs.title }}
           body_path: RELEASE_NOTES.md
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
