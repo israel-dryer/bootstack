@@ -224,7 +224,9 @@ class ColumnSpec(TypedDict, total=False):
     """Field type used to edit this column in the add/edit dialog. Inferred from
     `dtype` when omitted."""
     editor_options: dict
-    """Keyword options passed to the editor field."""
+    """Keyword arguments for the editor field, using its public `bs.*` parameter
+    names (e.g. `{"step": 10}` for a `numberfield`, `{"values": [...]}` for a
+    `select`)."""
     readonly: bool
     """Show the column but make it non-editable in the dialog."""
     required: bool

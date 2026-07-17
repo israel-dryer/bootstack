@@ -42,13 +42,14 @@ def test_form_valid_is_reactive_to_a_single_field(app):
     seen = []
     form.valid.subscribe(seen.append)
 
-    entry = form.field("name")._entry
-    entry.validate("", trigger="manual")  # empty fails 'required'
+    field = form.field("name")
+    field.validate()  # empty value fails 'required'
     app._tk_root.update_idletasks()
     assert form.valid() is False
     assert seen and seen[-1] is False
 
-    entry.validate("Ada", trigger="manual")
+    field.value = "Ada"
+    field.validate()
     app._tk_root.update_idletasks()
     assert form.valid() is True
     assert seen[-1] is True
