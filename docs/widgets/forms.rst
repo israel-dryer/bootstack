@@ -134,6 +134,26 @@ the corresponding ``bs.*`` widget class name in lowercase:
      - :class:`Slider <bootstack.widgets.slider.Slider>`
      - Horizontal slider.
 
+Editor options
+~~~~~~~~~~~~~~
+
+``editor_options`` are the keyword arguments of the editor's public widget — the
+same names you would pass when constructing that ``bs.*`` widget directly. For a
+``numberfield`` that means :class:`NumberField <bootstack.widgets.numberfield.NumberField>`
+options such as ``step`` and ``min_value``; for a ``textarea`` it means
+:class:`TextArea <bootstack.widgets.textarea.TextArea>` options such as ``show_border``:
+
+.. code-block:: python
+
+   bs.Form(
+       items=[
+           bs.FieldItem(key="quantity", label="Quantity", editor="numberfield",
+                        editor_options={"step": 10, "min_value": 0}),
+           bs.FieldItem(key="notes", label="Notes", editor="textarea",
+                        editor_options={"height": 5, "show_border": True}),
+       ],
+   )
+
 Grouped fields
 ~~~~~~~~~~~~~~
 
