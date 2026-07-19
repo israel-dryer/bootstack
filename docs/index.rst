@@ -5,11 +5,12 @@ bootstack
 
 .. rst-class:: bs-lead
 
-From idea to a shipped desktop app — fast.
+Desktop apps in pure Python — Tk underneath, none of the boilerplate.
 
-bootstack gives engineers, data scientists, and hobbyists everything to build a
-polished desktop interface and package it into a standalone executable —
-declarative, reactive, and batteries-included, all in pure Python.
+bootstack is built on Tk, so the install is light, there's no Qt license, and
+your app ships as a small standalone executable. But you'll never write a
+``StringVar`` or call ``.pack()`` — the API is its own. 60+ widgets, reactive
+state, and a CLI that packages it all.
 
 .. container:: hero-ctas
 
