@@ -8,6 +8,21 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`Checkbox(tristate=True)` now produces a real indeterminate state.** Setting
+  `tristate=True` previously left the checkbox unchecked — the dash indicator
+  never rendered and `.value` returned `False` instead of `None`. (#358)
+- **`ToggleButton.value` / `.checked` report the correct state.** A toggle built
+  with `value=True` (and visually "on") wrongly reported `.checked` as `False`
+  and `.value` as `None`. (#359)
+- **Non-bool `checked_value` / `unchecked_value` round-trip on `Checkbox` and
+  `Switch`.** A string or other custom on/off value (e.g. `checked_value="yes"`)
+  was silently coerced to `True` / `False`; `.value` now returns the value you
+  set, matching `ToggleButton`.
+
 ## [0.1.4] — Select validation fix
 
 ### Fixed
