@@ -21,6 +21,75 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.5 PATCH SHIPPED — boolean-control state reads + Checkbox tristate (PR #360;
+  2026-07-20).** `bootstack 0.1.5` is on **PyPI** + tagged **`v0.1.5`** ("boolean
+  control state fixes"). **Three bugs, one root cause (user `bLynnb2762`).** `Checkbox`,
+  `Switch`, `ToggleButton` share **`_BooleanControlBase`**, which read state by
+  comparing the backing Tk var's *coerced* value against the Python `checked_value`
+  (`self._internal.get() == self._checked_value`) — type-fragile, only correct when
+  the var type matched the value type. **(#358)** `Checkbox(tristate=True)` never went
+  indeterminate — `BooleanVar` can't hold a third value and the dash never rendered;
+  `.value` returned `False` not `None`. **(#359)** `ToggleButton(value=True).checked`
+  returned **`False`** (StringVar-backed → `'1' == True` is `False`). **Latent:** a
+  non-bool `checked_value`/`unchecked_value` (`"yes"`, ints) was silently coerced away
+  on Checkbox/Switch. **Fix = read the ttk `selected`/`alternate` STATE** (var-agnostic)
+  in `.value`/`.checked`/`_command`; a shared **`_apply_value`** maps the public value
+  onto on/off + the indeterminate flag. **Two gotchas the empirical probes caught:**
+  (1) **`configure(command=...)` RESETS ttk state** — so seeding must run AFTER it
+  (indeterminate `alternate` set earlier is wiped); (2) a **var write clears
+  `alternate`**, so indeterminate = set off-value THEN flag `state(('alternate',))`,
+  and the explicit `!alternate` clears elsewhere are redundant. **Var-type fix pushed
+  to the PRIMITIVE** (`checkbutton.py`), **consistent with RadioGroup/ToggleGroup**
+  (both do `StringVar(value=...)` explicitly — the precedent that made the tk import OK):
+  inject a `StringVar` **only when non-bool on/off values are given**, else keep the
+  `BooleanVar` so the **default control's auto-created `.signal` stays boolean** (the
+  code-review caught that always-StringVar leaked `'1'`/`'0'` strings through `.signal`,
+  where `"0"` is truthy — a real regression; conditional injection closes it). **Adversarial
+  `/code-review` (high) found 5, 2 real** — the `.signal`-type leak (fixed) + a redundant
+  `!alternate` (removed); the other 3 were non-issues (tristate+signal is documented;
+  `.value` fallback is more-correct; `_prev_value` staleness didn't reproduce). NB
+  **ToggleButton was ALREADY StringVar** (its `class_='Toolbutton'` dodges the
+  `TCheckbutton`→BooleanVar inference in `infer_default_value_for_widget`), so its
+  `.signal` was always string — no regression there. Tests **`test_boolean_controls.py`**
+  (the `.value`/`.checked`/tristate coverage these widgets NEVER had — which is why all
+  three shipped; 8 fail pre-fix). Docs: tristate scene added to the Full Example +
+  **regenerated `checkbox-tristate-*.png`** (old ones rendered indeterminate as
+  unchecked). **Process win: running empirical probes beat static reading repeatedly** —
+  the `configure(command)` reset, the var-write-clears-alternate rule, and the
+  ToggleButton-already-StringVar fact were all discovered by driving the widget, not
+  reading it.
+- **0.1.4 PATCH SHIPPED — `Select.add_validation_rule` restored (PR #357;
+  2026-07-20).** `bootstack 0.1.4` is on **PyPI** + tagged **`v0.1.4`** ("Select
+  validation fix"). Also re-worded the PyPI **`description`** (maintainer's pending
+  "built on Tk" tagline, folded into this cut). **Bug (user `bLynnb2762`, #356):** a
+  **0.1.3 regression** — `form.field(key).add_validation_rule(...)` on a `select`
+  editor raised `AttributeError: 'Select' object has no attribute
+  'add_validation_rule'`. **Root cause:** PR #354 (0.1.3) made `Form.field()` return
+  the **public wrapper** widget; the field-family wrappers carry `add_validation_rule`
+  via `field_mixin`, but `bs.Select` did **not** — and among the non-field editors its
+  internal `SelectBox` was the only one that had been inheriting it (from the `Field`
+  composite). So Select was the single casualty. **Fix (bounty PR #357 by external
+  contributor AnasBabari):** add `add_validation_rule` on `bs.Select`. **My review +
+  refactor:** the contributor's first pass hoisted `message`/`trigger` params with a
+  **`trigger="change"` default — but `'change'` is NOT a valid `RuleTriggerType`**
+  (`key`/`blur`/`always`/`manual`), so a rule added with no explicit trigger only ran
+  on manual `validate()`, never live. Refactored to **mirror the field-family
+  signature exactly** — `add_validation_rule(self, rule_type: RuleType, **kwargs)`
+  delegating straight through — which lets `ValidationRule`'s per-rule
+  `_default_trigger()` apply (required→`always`). Pushed onto the fork PR branch
+  (`maintainerCanModify`), squash-merged (contributor keeps authored credit + bounty).
+  Test added to `test_form_editor_options.py`. **CHANGELOG/close gotcha:** #356 used
+  `Fixes: <url>` (colon) which GitHub's auto-close does NOT parse → closed manually.
+- **0.1.3 PATCH SHIPPED — Form `editor_options` use public widget kwargs (PR #354,
+  #353; 2026-07-17, pre-session).** `bootstack 0.1.3` on **PyPI** + tagged **`v0.1.3`**.
+  Form built the **internal** impl widgets and forwarded `editor_options` raw, so users
+  had to pass Tk option names (`increment` not `step`) and `textarea` couldn't take
+  `show_border`. Rewrote `_build_field` to construct the **public wrapper** widgets via
+  `_construct_editor`, so `step`/`min_value`/`show_border`/`mask`/slider-bounds work as
+  documented; **`field()` now returns the public wrapper** (the change that regressed
+  Select validation — see 0.1.4). Also a homepage-tagline docs commit landed on `main`
+  the same day. **NB this predates the session** — recorded here because CLAUDE.md had
+  gone stale at 0.1.2.
 - **0.1.2 PATCH SHIPPED — dropdown/context menus dismiss on window move (PR #345;
   2026-06-25).** `bootstack 0.1.2` is on **PyPI** + tagged **`v0.1.2`**. **Bug
   (user-reported, Win10):** an open toolbar `add_menu` dropdown (and any Win/Linux
@@ -673,9 +742,12 @@ memories and git history.
 > `__version__` is dynamic; CHANGELOG via #335). `bootstack.dev` stays
 > **PROVISIONAL** (excluded from the freeze). The active milestone is **0.1.x —
 > Widget polish** (`gh` milestone #2 — RENAMED 2026-06-25 from "0.1.1"; it is a
-> **rolling line of patch releases**, not a single version: `0.1.1` shipped the
-> pygments packaging fix, `0.1.2` shipped the menu window-move dismiss fix — see
-> the top "Recently completed" entry). Post-0.1.0 release batching lives in
+> **rolling line of patch releases**, not a single version: `0.1.1` pygments
+> packaging · `0.1.2` menu window-move dismiss · `0.1.3` Form `editor_options`
+> public kwargs (#354) · `0.1.4` `Select.add_validation_rule` restored (#357) ·
+> **`0.1.5` boolean-control state reads + Checkbox tristate (#360, latest — on
+> PyPI 2026-07-20)** — see the top "Recently completed" entries). Post-0.1.0
+> release batching lives in
 > memory `project_roadmap_milestones` (0.1.x polish → 0.2.0 Timeline/Wizard →
 > 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
 >
@@ -697,8 +769,10 @@ memories and git history.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
-> **`main` is GREEN, and `0.1.0` (STABLE) is released** (tag `v0.1.0`, on PyPI,
-> 2026-06-24). The prior `0.1.0a16` pre-release (cut 2026-06-23) contained the
+> **`main` is GREEN; latest release is `0.1.5`** (tag `v0.1.5`, on PyPI,
+> 2026-07-20 — see the top "Recently completed" entries for 0.1.3/0.1.4/0.1.5).
+> `0.1.0` (STABLE) was released 2026-06-24 (tag `v0.1.0`). The prior `0.1.0a16`
+> pre-release (cut 2026-06-23) contained the
 > icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
 > `bs.Splash` #318. The splash session also added an **events-doc-coverage guard**
 > (PR #319, `test_events_doc_coverage.py`) after `events.rst` was found drifting from
