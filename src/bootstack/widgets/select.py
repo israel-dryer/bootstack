@@ -9,6 +9,7 @@ from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, Option, OptionDict, WidgetDensity
 
@@ -142,22 +143,29 @@ class Select(PublicWidgetBase):
 
     # ----- Validation -----
 
-    def add_validation_rule(
-        self,
-        rule: str,
-        message: str | None = None,
-        trigger: str = "change",
-        **kwargs: Any,
-    ) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to the field.
 
+        Rules run automatically on blur or key events depending on the rule
+        type, or manually via `validate()`. Multiple rules can be added;
+        they are evaluated in order and stop at the first failure.
+
         Args:
-            rule: Validation rule name (e.g. ``'required'``).
-            message: Custom error message shown when the rule fails.
-            trigger: When to evaluate the rule (e.g. ``'blur'``, ``'change'``).
-            **kwargs: Extra rule-specific options.
+            rule_type: The kind of validation rule to apply — `'required'`,
+                `'stringLength'`, `'pattern'`, `'email'`, `'compare'`, or
+                `'custom'`.
+            **kwargs: Rule-specific options:
+
+                - `message` *(all rules)* — override the default error message.
+                - `trigger` *(all rules)* — when to run: `'always'` (key and
+                  blur), `'key'`, `'blur'`, or `'manual'`. Each rule type has
+                  its own sensible default.
+                - `min`, `max` *(stringLength)* — minimum/maximum character count.
+                - `pattern` *(pattern)* — regex string the value must match.
+                - `other_field` *(compare)* — field whose value must match.
+                - `func` *(custom)* — callable `(value) -> bool`.
         """
-        self._internal.add_validation_rule(rule, message=message, trigger=trigger, **kwargs)
+        self._internal.add_validation_rule(rule_type, **kwargs)
 
     # ----- Event routing -----
 

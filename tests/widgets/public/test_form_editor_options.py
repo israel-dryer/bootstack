@@ -172,3 +172,57 @@ def test_value_roundtrip_across_editors(app):
     form.set({"name": "Grace", "age": 45, "active": False})
     app._tk_root.update_idletasks()
     assert form.get() == {"name": "Grace", "age": 45, "active": False}
+
+
+# --- add_validation_rule on the returned editor (#356) -------------------
+#
+# `field()` returns the public wrapper. That wrapper must still expose
+# `add_validation_rule`, or the documented pattern
+# `form.field(key).add_validation_rule("required", ...)` breaks. It regressed
+# for `select` in 0.1.3: the wrapper swap dropped the method the internal
+# SelectBox composite had inherited (the *Field wrappers keep it via the field
+# mixin, so only the select editor lost it).
+
+def test_select_field_exposes_add_validation_rule(app):
+    form = bs.Form(items=[bs.FieldItem(key="state", label="State", editor="select",
+                                       editor_options={"values": ["AL", "AK", "AZ"]})])
+    app._tk_root.update_idletasks()
+    assert hasattr(form.field("state"), "add_validation_rule")
+
+
+def test_select_field_validation_rule_is_enforced(app):
+    # The rule added on the returned Select must actually drive form.validate()
+    # and surface its custom message — not just avoid the AttributeError.
+    form = bs.Form(items=[bs.FieldItem(key="state", label="State", editor="select",
+                                       editor_options={"values": ["AL", "AK", "AZ"]})])
+    app._tk_root.update_idletasks()
+    form.field("state").add_validation_rule(
+        "required", message="State is required", trigger="blur")
+
+    # Empty -> invalid, with the custom message.
+    assert form.validate() is False
+    assert form.errors.get("state") == "State is required"
+
+    # Filled -> valid, error cleared.
+    form.set_field_value("state", "AK")
+    app._tk_root.update_idletasks()
+    assert form.validate() is True
+    assert "state" not in form.errors
+
+
+def test_select_rule_uses_live_default_trigger(app):
+    # A rule added without an explicit trigger must adopt the rule type's
+    # sensible live default (required -> "always"), matching the field family.
+    # Regression guard: a hardcoded "change" default (not a real trigger) made
+    # live blur/key validation a silent no-op on Select while every other field
+    # validated live.
+    form = bs.Form(items=[bs.FieldItem(key="state", label="State", editor="select",
+                                       editor_options={"values": ["AL", "AK", "AZ"]})])
+    app._tk_root.update_idletasks()
+    form.field("state").add_validation_rule("required", message="Required")
+
+    entry = form.field("state")._internal._entry
+    # Stored trigger is a real live trigger, not the bogus "change".
+    assert entry._rules[-1].trigger in ("always", "blur", "key")
+    # A blur-scoped run actually evaluates the rule (a no-op under "change").
+    assert entry.validate(entry._get_validation_value(), trigger="blur") is False
