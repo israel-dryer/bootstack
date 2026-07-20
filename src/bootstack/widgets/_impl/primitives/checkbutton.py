@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from tkinter import ttk
+from tkinter import StringVar, ttk
 from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from typing_extensions import Unpack
@@ -94,9 +94,21 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
         signal_provided = 'signal' in kwargs
         variable_provided = 'variable' in kwargs
         initial_value = kwargs.pop('value', None)
+        # Only non-bool on/off values need a StringVar. A BooleanVar (the type
+        # inferred from the ttk class) coerces the value to True/False, which
+        # loses a string or other custom `onvalue`/`offvalue`; a StringVar holds
+        # it verbatim (mirrors RadioGroup / ToggleGroup, which track with a
+        # StringVar). For the default bool control we keep the BooleanVar so its
+        # reactive `signal` stays boolean — the common case is unchanged.
+        custom_values = any(
+            not isinstance(kwargs.get(k, True), bool) for k in ('onvalue', 'offvalue')
+        )
+        injected_variable = not signal_provided and not variable_provided and custom_values
+        if injected_variable:
+            kwargs['variable'] = StringVar(master=master)
         kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'on_icon', 'off_icon', 'show_indicator', 'anchor'], kwargs))
         super().__init__(master, **kwargs)
-        if initial_value is not None and not signal_provided and not variable_provided:
+        if initial_value is not None and not signal_provided and injected_variable:
             self.variable.set(initial_value)
 
     def get(self) -> Any:
