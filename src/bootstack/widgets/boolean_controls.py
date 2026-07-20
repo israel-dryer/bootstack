@@ -81,29 +81,14 @@ class _BooleanControlBase(PublicWidgetBase):
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
 
-        # Seed initial value when no signal was passed.
-        # tristate=False: default to unchecked_value so the box never shows the
-        # indeterminate dash unexpectedly. tristate=True: leave unseeded so the
-        # initial state is None (indeterminate) unless value= was explicitly given.
-        if signal is None:
-            if value is not None:
-                self._internal.set(value)
-            elif not _tristate:
-                self._internal.set(unchecked_value)
-
-        # Track the previous value so on_change can report it. The control may be
-        # tristate (checked / unchecked / indeterminate), so prev cannot be derived
-        # from the new value alone — and the command fires after Tk updates the var.
-        self._prev_value = self._internal.get()
-
         # Wire command → virtual events so on_change() / on_check() subscriptions work.
         def _command():
-            v = self._internal.get()
+            v = self.value
             prev, self._prev_value = self._prev_value, v
             self._internal.event_generate(
                 "<<Change>>", data=ChangeEvent(value=v, prev_value=prev)
             )
-            if v == self._checked_value:
+            if self._internal.instate(("selected",)):
                 self._internal.event_generate("<<ToggleOn>>")
             else:
                 self._internal.event_generate("<<ToggleOff>>")
@@ -111,7 +96,50 @@ class _BooleanControlBase(PublicWidgetBase):
                 _ctor_callback()
 
         self._internal.configure(command=_command)
+
+        # Seed the initial state when no signal was passed. tristate + no value
+        # starts indeterminate (the documented behavior); otherwise start from
+        # the given value, defaulting to unchecked. This must run AFTER
+        # configure(command=...), which resets the ttk state (clearing an
+        # indeterminate `alternate` flag set earlier).
+        if signal is None:
+            if value is not None:
+                self._apply_value(value)
+            elif _tristate:
+                self._apply_value(None)
+            else:
+                self._apply_value(unchecked_value)
+
+        # Track the previous value so on_change can report it. The control may be
+        # tristate (checked / unchecked / indeterminate), so prev cannot be derived
+        # from the new value alone — and the command fires after Tk updates state.
+        self._prev_value = self.value
+
         self._attach_to_parent(layout_kw)
+
+    def _apply_value(self, v: Any) -> None:
+        """Drive the internal control to represent `v`.
+
+        Maps the public value onto the ttk widget's on/off values and the
+        indeterminate (`alternate`) state. A variable write clears `alternate`,
+        so indeterminate is set by writing the off value first and then flagging
+        the state.
+        """
+        on = self._internal.cget("onvalue")
+        off = self._internal.cget("offvalue")
+        if v is None and self._tristate:
+            # Writing the var clears `alternate`, so set the off value first and
+            # then flag the indeterminate state.
+            self._internal.set(off)
+            self._internal.state(("alternate",))
+        elif v == self._checked_value:
+            self._internal.set(on)
+        elif v == self._unchecked_value or v is None:
+            self._internal.set(off)
+        else:
+            # A value that matches neither on nor off — pass it through so the
+            # widget reflects it (best effort for custom values).
+            self._internal.set(v)
 
     # ----- Properties -----
 
@@ -123,25 +151,24 @@ class _BooleanControlBase(PublicWidgetBase):
         unchecked, or `None` when in the indeterminate state (only possible
         when `tristate=True`).
         """
-        v = self._internal.get()
-        if v == self._checked_value:
+        if self._tristate and self._internal.instate(("alternate",)):
+            return None
+        if self._internal.instate(("selected",)):
             return self._checked_value
-        if v == self._unchecked_value:
-            return self._unchecked_value
-        return None
+        return self._unchecked_value
 
     @value.setter
     def value(self, v: Any) -> None:
-        self._internal.set(v)
+        self._apply_value(v)
 
     @property
     def checked(self) -> bool:
         """Whether the control is in the checked/on state."""
-        return self._internal.get() == self._checked_value
+        return bool(self._internal.instate(("selected",)))
 
     @checked.setter
     def checked(self, v: bool) -> None:
-        self._internal.set(self._checked_value if v else self._internal.cget("offvalue"))
+        self._apply_value(self._checked_value if v else self._unchecked_value)
 
     @property
     def signal(self) -> "Signal | None":

@@ -16,6 +16,13 @@ with bs.App(title="Checkbox Demo", padding=20, gap=16) as app:
     bs.Checkbox("Unchecked", value=False)
     bs.Checkbox("Checked",   value=True)
 
+    # Tristate — a third, indeterminate state (value is None)
+    bs.Label("Tristate", font="heading-sm")
+    with bs.Row(gap=16):
+        bs.Checkbox("Indeterminate", tristate=True)
+        bs.Checkbox("Checked",       tristate=True, value=True)
+        bs.Checkbox("Unchecked",     tristate=True, value=False)
+
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
     with bs.Row(gap=16):
