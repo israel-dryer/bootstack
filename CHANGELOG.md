@@ -8,6 +8,19 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [0.1.4] — Select validation fix
+
+### Fixed
+
+- **`add_validation_rule` works on `Select` fields again.** In `0.1.3`, calling
+  `form.field(key).add_validation_rule(...)` on a `select` editor — or the same
+  method on a standalone `bs.Select` — raised `AttributeError: 'Select' object
+  has no attribute 'add_validation_rule'`. This was a regression from the `0.1.3`
+  form rework: `field()` now returns the public editor widget, and `bs.Select`
+  was the one editor missing the method. It is restored with the same signature
+  as the other field widgets, so custom rules with a `message=` and `trigger=`
+  work as they did in `0.1.2`. (#356, #357)
+
 ## [0.1.3] — form editor options fix
 
 ### Fixed
@@ -139,6 +152,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.1.4]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.4
 [0.1.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.3
 [0.1.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.2
 [0.1.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.1
