@@ -140,6 +140,25 @@ class Select(PublicWidgetBase):
         self._internal = _InternalSelectBox(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+    # ----- Validation -----
+
+    def add_validation_rule(
+        self,
+        rule: str,
+        message: str | None = None,
+        trigger: str = "change",
+        **kwargs: Any,
+    ) -> None:
+        """Add a validation rule to the field.
+
+        Args:
+            rule: Validation rule name (e.g. ``'required'``).
+            message: Custom error message shown when the rule fails.
+            trigger: When to evaluate the rule (e.g. ``'blur'``, ``'change'``).
+            **kwargs: Extra rule-specific options.
+        """
+        self._internal.add_validation_rule(rule, message=message, trigger=trigger, **kwargs)
+
     # ----- Event routing -----
 
     def _entry_widget(self) -> tkinter.Misc:
