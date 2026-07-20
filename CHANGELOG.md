@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.1.5] — boolean control state fixes
 
 ### Fixed
 
@@ -167,6 +167,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.1.5]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.5
 [0.1.4]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.4
 [0.1.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.3
 [0.1.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.2
