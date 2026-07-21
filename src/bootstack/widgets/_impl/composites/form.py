@@ -610,10 +610,10 @@ class Form(Frame):
                     auto_col = 0
                     auto_row += 1
 
-    # Editors that accept validation kwargs (required, etc.). Boolean and slider
-    # editors validate nothing, so `required` and friends are dropped for them.
-    _VALIDATING_EDITORS = frozenset(
-        {'textfield', 'numberfield', 'passwordfield', 'datefield', 'textarea', 'select', 'spinnerfield'})
+    # Editors that render something other than a validating field, so `required`
+    # and friends are dropped for them. Anything NOT named here — including a
+    # misspelled editor name — falls back to a text field, which does validate.
+    _NON_VALIDATING_EDITORS = frozenset({'checkbox', 'switch', 'slider'})
 
     def _build_field(self, parent: Frame, item: FieldItem):
         if not item.visible:
@@ -621,7 +621,11 @@ class Form(Frame):
 
         editor = item.editor or self._default_editor_for_dtype(item.dtype, self._data.get(item.key))
         options = dict(item.editor_options or {})
-        if item.required and editor in self._VALIDATING_EDITORS:
+        # Gate on what does NOT validate, not on what does: an unrecognized
+        # editor name falls back to a text field, so testing membership of the
+        # validating set silently dropped `required` on a typo and let the form
+        # submit empty.
+        if item.required and editor not in self._NON_VALIDATING_EDITORS:
             options["required"] = True
         initial_value = self._data.get(item.key)
         label_text = item.label if item.label is not None else item.key.replace("_", " ").title()

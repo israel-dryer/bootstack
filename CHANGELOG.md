@@ -46,6 +46,23 @@ and from 0.1.0 onward the project adheres to
 - **`text` no longer reports the placeholder as content.** A field showing only
   its placeholder returned the hint from `text` while `value` reported empty;
   the two now agree on whether the field holds anything.
+- **`required` survives an unrecognized `editor=` name.** An editor name the
+  form does not know falls back to a text field, but the `required` rule was
+  dropped on the way, so a misspelled editor silently let an empty field
+  submit. (#366)
+
+### Changed
+
+- **A format rule no longer rejects an empty field.** `email`, `pattern`, and
+  `stringLength` describe what a value must look like, not that one must be
+  present, so they now pass on an empty field — matching `range`, which
+  already behaved this way. Previously a field with no `required=` reported an
+  error while untouched and `Form.validate()` refused to submit, leaving no
+  way forward but typing into a field the form called optional. **If you used
+  a format rule as a presence check — `stringLength(min=1)`, or a pattern that
+  cannot match the empty string — add `required` to keep that behavior.**
+  `compare` and `custom` are unaffected; both still run on an empty value.
+  (#366)
 
 ## [0.1.5] — boolean control state fixes
 

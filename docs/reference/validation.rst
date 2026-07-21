@@ -99,8 +99,9 @@ out-of-range value with a message:
    start = bs.DateField(label="Start date")
    start.add_validation_rule("range", min=datetime.date.today())
 
-An empty field is not out of range — pair ``'range'`` with ``'required'`` if the
-field must also be filled in.
+An empty field is not out of range, and an empty box is not a malformed email
+address — ``'range'`` and the text rules pass when there is nothing to check.
+Add ``'required'`` when the field must also be filled in.
 
 .. note::
 
@@ -134,6 +135,10 @@ went wrong:
        message="Enter a multiple of 5.",
    )
 
+Unlike the built-in rules, ``'custom'`` and ``'compare'`` also run on an empty
+field — only your predicate can say what an empty value means. On an optional
+field, accept it explicitly: ``func=lambda v: not v or v.isdigit()``.
+
 Confirming a second field
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -144,7 +149,7 @@ compares against the current text:
 
 .. code-block:: python
 
-   password = bs.PasswordField(label="Password")
+   password = bs.PasswordField(label="Password", required=True)
    password.add_validation_rule("stringLength", min=8)
 
    confirm = bs.PasswordField(label="Confirm password")
