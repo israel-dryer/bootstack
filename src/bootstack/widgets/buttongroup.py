@@ -5,9 +5,16 @@ from typing import Any, Callable, Literal, overload
 from bootstack.widgets._impl.composites.buttongroup import ButtonGroup as _InternalButtonGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.kwargs import merge_kwargs
 from bootstack.events import ButtonGroupClickEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity, Orient, IconPosition, ButtonVariant
+
+# Structural keys a per-button options dict may not set — the group owns each
+# button's command so it can emit the group's click event with that button's key.
+_RESERVED_ITEM_KWARGS = {
+    'command': "use the group's on_click event, which reports the button key.",
+}
 
 _BUTTONGROUP_EVENTS: dict[str, str] = {
     "click": "<<BsButtonGroupClick>>",
@@ -94,6 +101,10 @@ class ButtonGroup(PublicWidgetBase):
             disabled: If `True`, this button starts disabled.
             localize: Translation mode for this button's label, overriding the
                 group's `localize=`. Defaults to the group setting.
+            **kwargs: Further options for the rendered button, using its public
+                parameter names. These override what `add()` derives — pass the
+                caption as `text` if you prefer. `command` is owned by the
+                group; use `on_click()`, which reports the button key.
 
         Returns:
             The key assigned to this button.
@@ -102,22 +113,14 @@ class ButtonGroup(PublicWidgetBase):
             key = f"widget_{self._key_counter}"
             self._key_counter += 1
 
-        icon_only = icon is not None and not label
-
         btn_kwargs: dict[str, Any] = {}
         if icon is not None:
             btn_kwargs["icon"] = icon
-        if icon_only:
-            btn_kwargs["icon_only"] = True
-        elif icon is not None:
-            btn_kwargs["compound"] = icon_position
         if disabled:
             btn_kwargs["state"] = "disabled"
         item_localize = localize if localize is not None else self._localize
         if item_localize is not None:
             btn_kwargs["localize"] = item_localize
-        btn_kwargs.update(kwargs)
-
         _key = key
         _group = self
 
@@ -129,7 +132,18 @@ class ButtonGroup(PublicWidgetBase):
                 icon=btn.configure_style_options("icon"),
             ))
 
-        self._internal.add(label or None, key=key, command=_command, **btn_kwargs)
+        btn_kwargs["text"] = label or None
+        btn_kwargs = merge_kwargs(btn_kwargs, kwargs, reserved=_RESERVED_ITEM_KWARGS,
+                                  context='ButtonGroup.add()')
+        # Derive the icon-only rendering from the FINAL caption, not the `label`
+        # argument: a caller may supply the caption as `text=` (the name the
+        # rendered button uses), and an icon-only button with a label renders
+        # with zero padding — a visibly crammed button rather than a clean one.
+        if icon is not None and not btn_kwargs.get("text"):
+            btn_kwargs.setdefault("icon_only", True)
+        elif icon is not None:
+            btn_kwargs.setdefault("compound", icon_position)
+        self._internal.add(key=key, command=_command, **btn_kwargs)
         return key
 
     def add_all(self, items: list) -> list[str]:

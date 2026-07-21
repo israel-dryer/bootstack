@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any, Callable
 from bootstack.errors import BootstackError
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.kwargs import RESERVED_BAR_KWARGS, merge_kwargs, reject_reserved
 from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
-
 if TYPE_CHECKING:
     from bootstack.widgets._impl.composites.menu.model import MenuGroup
     from bootstack.widgets.button import Button
@@ -147,7 +147,9 @@ class Toolbar(PublicWidgetBase):
             kw["on_click"] = on_click
         if accent is not None:
             kw["accent"] = accent
-        kw.update(kwargs)  # explicit kwargs (incl. text=) win over the defaults
+        # Explicit kwargs (incl. text=) win over the bar's defaults.
+        kw = merge_kwargs(kw, kwargs, reserved=RESERVED_BAR_KWARGS,
+                          context='Toolbar.add_button()')
         return Button(parent=self, **kw)
 
     def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
@@ -201,7 +203,8 @@ class Toolbar(PublicWidgetBase):
             kw["icon"] = icon
         if font is not None:
             kw["font"] = font
-        kw.update(kwargs)
+        kw = merge_kwargs(kw, kwargs, reserved=RESERVED_BAR_KWARGS,
+                          context='Toolbar.add_label()')
         lbl = Label(parent=self, **kw)
         # On a draggable bar (e.g. a titlebar) the label doubles as a drag handle.
         self._internal._attach_drag(lbl._internal)
@@ -257,6 +260,8 @@ class Toolbar(PublicWidgetBase):
         `TypeError`, and injecting into ones that ignore it is a silent no-op.
         """
         import inspect
+
+        reject_reserved(kwargs, RESERVED_BAR_KWARGS, 'Toolbar.add_widget()')
 
         try:
             params = inspect.signature(widget_cls).parameters

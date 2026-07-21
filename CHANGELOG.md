@@ -29,6 +29,16 @@ and from 0.1.0 onward the project adheres to
 - **A form no longer changes the type of the data it was given.** Values that
   are not text — a `Decimal`, a `date` — keep their type in `form.data`
   instead of being converted to strings at construction.
+- **Option dicts aimed at a built widget no longer collide with the
+  framework's own arguments.** The same defect appeared in
+  `MenuButton(menu_options=)`, `ButtonGroup.add()` / `add_all()`,
+  `RadioGroup.add()` / `ToggleGroup.add()`, and `Toolbar` / `StatusBar`
+  `add_widget()`. In each, your options now win; the few keys a widget must
+  own — where it is parented, how it tracks its selection, the callback that
+  emits its events — raise a clear error naming what to use instead.
+- **A `ButtonGroup` button given both a caption and an icon renders as both.**
+  Supplying the caption as `text` produced an icon-only button with its label
+  crammed into zero padding.
 
 ## [0.1.5] — boolean control state fixes
 

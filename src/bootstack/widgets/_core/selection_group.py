@@ -4,6 +4,13 @@ from typing import Any
 
 from bootstack.widgets._core.options import OptionRecord, record_to_dict, option_localize
 
+# Structural keys a per-option kwargs passthrough may not set — the group owns
+# each option's identity and tracks its own selection.
+RESERVED_OPTION_KWARGS = {
+    'text': 'set the caption with the label argument.',
+    'variable': 'the group tracks its own selection.',
+}
+
 
 class SelectionGroupMixin:
     """Shared item-management surface for the option-group widgets.

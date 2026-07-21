@@ -7,7 +7,17 @@ from typing_extensions import Unpack
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem, ContextMenuItemResult
 from bootstack.widgets._impl.primitives._menubutton import MenuButton
 from bootstack.widgets._impl.mixins import configure_delegate
+from bootstack.widgets._core.kwargs import merge_kwargs
 from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState, WidgetDensity
+
+# Structural keys a menu_options bag may not set — the button owns the menu's
+# contents and the callback that emits its selection events.
+_RESERVED_MENU_OPTIONS = {
+    'items': 'pass the menu items to the button itself.',
+    'command': "use the button's on_select event.",
+    'trigger': 'the button opens its own menu when clicked.',
+    'target': 'the menu belongs to the button that opens it.',
+}
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -122,10 +132,13 @@ class DropdownButton(MenuButton):
             "offset": (offset_x, 0),
             "density": density,
         }
-        options.update(self._popdown_options)
         # DropdownButton manages its own activation (left-click, Return/
         # KP_Enter via show_menu), so opt out of ContextMenu's auto-trigger.
-        cm = ContextMenu(self, target=self, items=self._items, trigger=None, command=self._command, **options)
+        options["trigger"] = None
+        options = merge_kwargs(options, self._popdown_options,
+                               reserved=_RESERVED_MENU_OPTIONS,
+                               context='MenuButton menu_options')
+        cm = ContextMenu(self, target=self, items=self._items, command=self._command, **options)
         return cm
 
     @property
