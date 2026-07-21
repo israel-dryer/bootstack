@@ -12,6 +12,7 @@ import locale
 import re
 import warnings
 from dataclasses import dataclass
+from decimal import Decimal
 from datetime import date, datetime, time
 from typing import Any, Literal, Mapping, Optional, TypedDict, Union, cast
 
@@ -148,7 +149,10 @@ SUFFIXES_EN = (
     Suffix(1_000, "K"),
 )
 _SUFFIX_TO_FACTOR = {"K": 1_000, "M": 1_000_000, "B": 1_000_000_000, "T": 1_000_000_000_000}
-_NUMBERISH = (int, float)
+# Values formatted as numbers. `Decimal` is passed to Babel as-is rather than
+# coerced: Babel formats it natively, and going through `float` would round
+# away the precision a caller chose `Decimal` to keep.
+_NUMBERISH = (int, float, Decimal)
 
 
 def _locale_to_languages(loc: str) -> list[str]:
@@ -208,7 +212,7 @@ class IntlFormatter:
         if value is None:
             return ""
         if isinstance(value, _NUMBERISH):
-            return self._format_number(float(value), spec)
+            return self._format_number(value if isinstance(value, Decimal) else float(value), spec)
         if isinstance(value, datetime):
             return self._format_datetime(value, spec)
         if isinstance(value, date):
@@ -238,7 +242,7 @@ class IntlFormatter:
         return self._parse_temporal(s, spec)
 
     # ---------- Numbers ----------
-    def _format_number(self, x: float, spec: LooseSpec) -> str:
+    def _format_number(self, x: float | Decimal, spec: LooseSpec) -> str:
         opt = self._normalize_number_spec(spec)
 
         if opt["type"] == "custom":

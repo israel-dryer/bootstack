@@ -198,3 +198,15 @@ def test_select_text_is_label_value_is_value(app):
     s = bs.Select(options=[("Dark Mode", "dark")], value="dark")
     assert s.value == "dark"        # value-space
     assert s.text == "Dark Mode"    # display label
+
+
+def test_decimal_seeded_field_displays_formatted(app):
+    # A currency field seeded with a Decimal showed the raw number until you
+    # edited it — the commit parsed to a float, which then formatted, so the
+    # field appeared to fix itself. The formatter ignored Decimal entirely.
+    from decimal import Decimal
+
+    field = bs.TextField(value=Decimal("3.50"), value_format="currency")
+    app._tk_root.update_idletasks()
+    assert field.text == "$3.50"
+    assert field.value == Decimal("3.50")

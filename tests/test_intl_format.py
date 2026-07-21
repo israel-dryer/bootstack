@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, time
+from decimal import Decimal
 
 import pytest
 
@@ -97,3 +98,27 @@ def test_locale_wiring_smoke():
     assert f.format(1234.56, "decimal") == "1.234,56"
     long_date = f.format(date(2025, 9, 2), "longDate")
     assert "September" in long_date and "2025" in long_date
+
+
+# --- Decimal values format like any other number ---------------------------
+
+@pytest.mark.parametrize("spec", [
+    "decimal", "currency", "percent", "#,##0.00",
+    "thousands", "millions", "largeNumber", "exponential",
+])
+def test_decimal_formats_like_the_equivalent_float(spec):
+    # A Decimal matched no branch in `format()` and fell through to `str(value)`,
+    # so `value_format` was silently ignored — worst on `currency`, which is the
+    # format you reach for precisely when the value is a Decimal.
+    fmt = IntlFormatter(locale="en_US")
+    assert fmt.format(Decimal("12345.6789"), spec) == fmt.format(12345.6789, spec)
+
+
+def test_decimal_is_not_rounded_through_float():
+    # Babel formats a Decimal natively. Coercing to float first would round away
+    # the precision the caller chose Decimal to keep.
+    fmt = IntlFormatter(locale="en_US")
+    pattern = "#,##0.0000000000000000000"
+    exact = Decimal("0.1234567890123456789")
+    assert fmt.format(exact, pattern) == "0.1234567890123456789"
+    assert fmt.format(exact, pattern) != fmt.format(float(exact), pattern)

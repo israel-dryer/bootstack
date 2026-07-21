@@ -57,6 +57,11 @@ and from 0.1.0 onward the project adheres to
   On a decoupled option list — where an option displays `'United States'` and
   stores `'US'` — every rule saw the label, so a rule checking the value
   rejected valid selections. (#355)
+- **A `Decimal` value now respects `value_format`.** It matched none of the
+  formatter's numeric branches, so the format was silently ignored: a currency
+  field seeded with a `Decimal` displayed the raw number and only started
+  formatting once you edited it. `Decimal` is handed to the formatter as-is
+  rather than converted, so a value keeps the precision it was given.
 
 ### Added
 
