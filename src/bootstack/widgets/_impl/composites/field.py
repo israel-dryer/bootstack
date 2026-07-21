@@ -273,8 +273,13 @@ class Field(EntryMixin, Frame):
         self._entry.value(value)
 
     def get(self) -> str:
-        """Return the raw text from the underlying entry widget."""
-        return self._entry.get()
+        """Return the display text from the underlying entry widget.
+
+        Reads the entry's own text rather than its raw contents, so a field
+        showing only its placeholder reports an empty string — `text` and
+        `value` are a pair and must agree on whether the field is empty.
+        """
+        return self._entry.text()
 
     @property
     def entry_widget(self) -> EntryWidget:

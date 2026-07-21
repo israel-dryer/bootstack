@@ -272,9 +272,10 @@ class NumberEntryPart(TextEntryPart):
         A plain numeric field parses to a string when no display format is set,
         so coerce it the same way the public value does — validation rules and a
         `custom` func receive a real `int`/`float` (or `None` for empty/invalid
-        input), never the display string.
+        input), never the display string. A visible placeholder is not input,
+        so it reads as empty here — same rule as the text field this overrides.
         """
-        text = self.get()
+        text = '' if self._showing_placeholder else self.get()
         try:
             raw = self._parse_or_none(text)
         except Exception:

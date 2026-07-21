@@ -288,11 +288,17 @@ class TextEntryPart(ValidationMixin, Entry):
         last-committed value. This keeps a manual `validate()`, the automatic
         blur/key validation, and a form-level validate in agreement on the same
         live, typed input.
+
+        A visible placeholder is not input. It is inserted into the entry to
+        render it, so reading the raw text would hand the placeholder string to
+        the rules and `required` would pass on an untouched field — the field
+        reads as empty here, exactly as it does through `value`.
         """
+        text = "" if self._showing_placeholder else self.get()
         try:
-            return self._parse_or_none(self.get())
+            return self._parse_or_none(text)
         except Exception:
-            return self.get()
+            return text
 
     def text(self, value=None):
         """Get or set the raw display text without committing.

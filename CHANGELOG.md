@@ -39,6 +39,13 @@ and from 0.1.0 onward the project adheres to
 - **A `ButtonGroup` button given both a caption and an icon renders as both.**
   Supplying the caption as `text` produced an icon-only button with its label
   crammed into zero padding.
+- **A required field with a placeholder no longer passes validation while
+  empty.** A field showing only its placeholder was treated as though the hint
+  had been typed, so `required` reported it valid — and a form with an
+  untouched required field validated and submitted.
+- **`text` no longer reports the placeholder as content.** A field showing only
+  its placeholder returned the hint from `text` while `value` reported empty;
+  the two now agree on whether the field holds anything.
 
 ## [0.1.5] — boolean control state fixes
 
