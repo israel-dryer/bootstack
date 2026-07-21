@@ -50,6 +50,18 @@ and from 0.1.0 onward the project adheres to
   form does not know falls back to a text field, but the `required` rule was
   dropped on the way, so a misspelled editor silently let an empty field
   submit. (#366)
+- **A searchable `Select` no longer changes its value when you just look.**
+  Opening the drop-down and dismissing it without typing or choosing anything
+  replaced the field's value with the first option in the list. (#355)
+- **`Select` validation rules run against the selected value, not its label.**
+  On a decoupled option list — where an option displays `'United States'` and
+  stores `'US'` — every rule saw the label, so a rule checking the value
+  rejected valid selections. (#355)
+
+### Added
+
+- **`Select.validate()`** — run a select's validation rules on demand, matching
+  the other field widgets. `add_validation_rule` already pointed at it. (#355)
 
 ### Changed
 
@@ -63,6 +75,16 @@ and from 0.1.0 onward the project adheres to
   cannot match the empty string — add `required` to keep that behavior.**
   `compare` and `custom` are unaffected; both still run on an empty value.
   (#366)
+- **A `Select` no longer rejects a value that is not in its option list.**
+  Opening an editor on a stored record whose option had since been retired
+  raised `ValueError: '…' is not one of the options` — in a `Form`, and in
+  `DataTable`'s add/edit dialog, on ordinary data drift. A later programmatic
+  write of the same value was silently dropped instead, so one value produced
+  two different wrong answers. Such a value is now displayed as given, reads
+  back with its own type, and is **not** added to the list, so a user cannot
+  pick it. Use a `'custom'` validation rule to report one. `SelectButton`,
+  which maps a value to an option's label and has no text entry, still
+  rejects. (#355)
 
 ## [0.1.5] — boolean control state fixes
 

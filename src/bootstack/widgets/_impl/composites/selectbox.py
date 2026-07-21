@@ -39,7 +39,6 @@ class SelectBox(Field):
             label: str = None,
             message: str = None,
             allow_custom_values: bool = False,
-            strict_value: bool = False,
             show_dropdown_button: bool = True,
             dropdown_button_icon: str = None,
             enable_search: bool = False,
@@ -49,8 +48,8 @@ class SelectBox(Field):
     ):
         """Args:
             master: Parent widget. If None, uses the default root window.
-            value: Initial selected value (value-space). Should match one of the
-                options unless `allow_custom_values` is set.
+            value: Initial selected value (value-space). A value that is not in
+                the options is displayed but not added to the list.
             items: Options to present in the popup — each a string,
                 `(text, value)` tuple, or `{'text', 'value'}` dict. The popup
                 and field display each option's text; the selected value is
@@ -106,7 +105,6 @@ class SelectBox(Field):
         # so a plain option is treated like a decoupled one (display != value).
         self._records = normalize_options(items)
         self._allow_custom_values = allow_custom_values
-        self._strict_value = strict_value
         self._rebuild_option_maps()
 
         # Forward an explicit localize mode to Field so the label/message follow
@@ -116,6 +114,14 @@ class SelectBox(Field):
 
         # Seed the entry with the display form of the initial value.
         super().__init__(master, value=self._resolve_display(value), label=label, message=message, **kwargs)
+
+        # Decode the entry's LIVE text into value-space before rules see it. A
+        # decoupled option shows a label ("United States") whose value ("US") is
+        # what a rule means, so validating the label would reject every valid
+        # selection. Keep the part's own live parse as the fallback: it reads
+        # what is currently typed, which is what key/blur triggers must judge.
+        self._entry_live_validation_value = self._entry._get_validation_value
+        self._entry._get_validation_value = self._validation_value
 
         # Re-translate the displayed text + option maps on a live locale switch.
         self.winfo_toplevel().bind('<<LocaleChanged>>', self._on_locale_changed_refresh, add='+')
@@ -201,6 +207,10 @@ class SelectBox(Field):
         """
         self._value_by_text: dict[str, Any] = {}
         self._text_by_value: dict[Any, str] = {}
+        # A retired value registered by `_resolve_display` lives only in these
+        # maps, so rebuilding from the records drops it — a new option list
+        # supersedes whatever the field was holding.
+        self._retired_text: str | None = None
         for rec in self._records:
             display = self._record_display(rec)
             self._value_by_text.setdefault(display, rec.value)
@@ -220,7 +230,13 @@ class SelectBox(Field):
         """
         current_text = self.entry_widget.get()
         value = self._value_by_text.get(current_text) if current_text else None
+        retired = self._retired_text
         self._rebuild_option_maps()
+        if retired is not None and retired == current_text:
+            # Rebuilding drops the registration for a value that is not in the
+            # list, but a translation change does not retire a value the field
+            # is still holding — re-register it so it keeps its own type.
+            self._register_retired_value(value)
         if value is None:
             return
         new_display = self._text_by_value.get(value, current_text)
@@ -250,9 +266,22 @@ class SelectBox(Field):
         - A known plain option, a custom value, or a typed value (e.g. a
           `datetime.time`) -> the value itself, so the entry's `value_format`
           parses/formats it.
-        - An unknown value, when `strict_value` is set and custom values are
-          off -> raises `ValueError`.
+        - An unknown value -> the value itself. A fixed option list constrains
+          what a *user* can pick; it is not a schema for the data the program
+          supplies. A stored record whose value has since left the list still
+          displays, rather than crashing the editor that opened it. The value
+          is shown but never added to the list, so it cannot be picked again
+          once changed. Use a `'custom'` validation rule to report one.
+
+        The entry holds text, so every value is coerced to a string on the way
+        in and decoded back through the display-text map on the way out. A
+        retired value has no option to decode from, so it is registered under
+        its own coerced text — otherwise it would come back as that string
+        instead of, say, the `int` it was.
         """
+        # Whatever was registered describes the OLD value; drop it first so a
+        # single registration always tracks what the field currently holds.
+        self._clear_retired_value()
         if value is None or value == "":
             return value
         try:
@@ -261,9 +290,45 @@ class SelectBox(Field):
                 return text if text != value else value
         except TypeError:
             pass
-        if self._strict_value and not self._allow_custom_values:
-            raise ValueError(f"{value!r} is not one of the options")
+        self._register_retired_value(value)
         return value
+
+    def _validation_value(self) -> Any:
+        """The value validation rules run against — decoded, not the label shown.
+
+        Reads the text currently in the entry (not the last committed value) so
+        a key or blur trigger judges what the user is actually typing, then maps
+        it back to the option's value when it names one.
+        """
+        text = self.entry_widget.get()
+        if text in self._value_by_text and self._value_by_text[text] != text:
+            return self._value_by_text[text]
+        return self._entry_live_validation_value()
+
+    def _register_retired_value(self, value: Any) -> None:
+        """Make a value that is not in the option list decodable.
+
+        Keyed on the text the entry will actually show. A display that already
+        belongs to an option is left alone: two different values rendering the
+        same text are indistinguishable to the widget *and* to the user, so the
+        option wins rather than being shadowed by a stale registration.
+        """
+        text = str(value)
+        if text in self._value_by_text:
+            return
+        self._retired_text = text
+        self._value_by_text[text] = value
+
+    def _clear_retired_value(self) -> None:
+        """Drop a previously registered retired value, if any.
+
+        Called before registering another and whenever the user picks from the
+        list, so a stale registration can never hijack a real option.
+        """
+        text = getattr(self, "_retired_text", None)
+        if text is not None:
+            self._value_by_text.pop(text, None)
+            self._retired_text = None
 
     def _on_dropdown_click(self):
         """Handle dropdown button click by focusing entry then showing popup."""
@@ -758,6 +823,9 @@ class SelectBox(Field):
         if enabled:
             popup_state['first_filtered_item'] = enabled[0].value
         popup_state['last_search_text'] = self.entry_widget.get().lower()
+        # Remember the text the popup opened on: an auto-select at close is only
+        # meaningful if the user actually typed a filter.
+        popup_state['opened_search_text'] = popup_state['last_search_text']
 
         # Bind KeyRelease for filtering (delegates to the testable method)
         keyrelease_binding = self.entry_widget.bind(
@@ -840,9 +908,16 @@ class SelectBox(Field):
         self._popup_state = None
 
         # Handle value selection for search mode without custom values
+        # A search popup commits its top match when the user typed a filter and
+        # dismissed without clicking. Without a filter there is no match to
+        # commit, and rewriting the field would silently replace a value the
+        # user only opened the list to look at.
         if self._search_enabled and not self._allow_custom_values:
-            if not popup_state['item_was_selected']:
+            typed = (popup_state.get('last_search_text')
+                     != popup_state.get('opened_search_text'))
+            if not popup_state['item_was_selected'] and typed:
                 if popup_state['first_filtered_item'] is not None:
+                    self._clear_retired_value()
                     self._last_selected_value = popup_state['first_filtered_item']
                     self.value = popup_state['first_filtered_item']
 
@@ -851,6 +926,9 @@ class SelectBox(Field):
         if selected_value is None:
             return
 
+        # The user picked from the list, so any retired value it was holding is
+        # gone; drop its registration before it can shadow a real option.
+        self._clear_retired_value()
         self._last_selected_value = selected_value
         self.value = selected_value
         self._close_popup(toplevel, popup_state)
@@ -992,9 +1070,8 @@ class SelectBox(Field):
         """Select `value`, updating the displayed text and emitting `<<Change>>`.
 
         A decoupled option shows its text; a plain/typed/custom value is handed
-        to the entry, which owns the raw value <-> text formatting. An unknown
-        value raises `ValueError` when `strict_value` is set and custom values
-        are off.
+        to the entry, which owns the raw value <-> text formatting. A value that
+        is not in the list is displayed as given and is not added to the list.
         """
         prev_value = self.value
         display = self._resolve_display(value)
