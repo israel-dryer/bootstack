@@ -13,10 +13,9 @@
 
 ### Desktop apps in pure Python — Tk underneath, none of the boilerplate.
 
-bootstack is built on Tk, so the install is light, there's no Qt license, and
-your app ships as a small standalone executable. But you'll never write a
-`StringVar` or call `.pack()` — the API is its own. 60+ widgets, reactive state,
-and a CLI that scaffolds and packages the whole thing.
+bootstack is built on Tk, so the install is light and your app ships as a small standalone executable. But you'll never
+write a `StringVar` or call `.pack()` — the API is its own. 60+ widgets, reactive state, and a CLI that scaffolds and
+packages the whole thing.
 
 <p align="center">
 <picture>
