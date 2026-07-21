@@ -91,7 +91,9 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {"mode": mode}
-        if value:
+        # Test against the empty value, not truthiness: `0` or `False` is a
+        # value the caller passed, and dropping it here leaves the field blank.
+        if value is not None and value != "":
             internal_kwargs["value"] = value
         if dialog_title is not None:
             internal_kwargs["dialog_title"] = dialog_title
