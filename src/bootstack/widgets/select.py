@@ -111,9 +111,6 @@ class Select(PublicWidgetBase):
             "allow_custom_values": allow_custom_values,
             "group_by":            group_by,
             "max_visible_items":   max_visible_items,
-            # Public Select rejects an unknown value (unless custom values are
-            # allowed); internal/embedded SelectBoxes stay lenient.
-            "strict_value":        not allow_custom_values,
         }
         if value is not None:
             internal_kwargs["value"] = value
@@ -166,6 +163,20 @@ class Select(PublicWidgetBase):
                 - `func` *(custom)* — callable `(value) -> bool`.
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
+
+    def validate(self) -> bool:
+        """Run validation rules against the current selection.
+
+        Rules run against the selected `value`, not the label shown for it, so
+        a rule on a decoupled option list sees `'US'` rather than
+        `'United States'`. A value outside the option list is displayed rather
+        than rejected, so a `custom` rule is how you report one.
+
+        Returns:
+            `True` if all rules pass, `False` otherwise.
+        """
+        entry = self._internal._entry
+        return entry.validate(entry._get_validation_value(), trigger="manual")
 
     # ----- Event routing -----
 

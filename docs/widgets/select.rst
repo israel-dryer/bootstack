@@ -46,9 +46,30 @@ the value, not the label. The label currently shown is available as ``.text``.
 
    theme.options          # -> [{"text": "Light theme", "value": "light"}, ...]
 
-Setting ``.value`` to something that is not one of the options raises
-``ValueError`` (unless ``allow_custom_values=True``, where a typed value is kept
-as its own text).
+The option list controls what a *user* can pick — it is not a schema for the
+data you supply. Setting ``.value`` to something outside the list displays it
+without adding it to the list, so a stored record whose option has since been
+retired still opens in an editor, and reads back as the value you set (an
+``int`` stays an ``int``). Once the user picks something else the old value is
+gone, and it was never in the list to pick again. One edge: if the retired
+value renders as the same text as a live option's label, that option wins —
+the two are indistinguishable on screen. Use a validation rule to report a
+retired value:
+
+.. code-block:: python
+
+   country.add_validation_rule(
+       "custom",
+       func=lambda v: not v or v in current_codes,
+       message="That option is no longer available.",
+   )
+
+Rules run against the ``value``, not the label shown for it, so on a decoupled
+option list a rule sees ``"US"`` rather than ``"United States"``. A ``'custom'``
+rule runs on ``validate()`` and on form submit; pass ``trigger="always"`` to
+have it report as soon as the value changes. See :doc:`/reference/validation`.
+
+With ``allow_custom_values=True`` the user may also *type* a value of their own.
 
 Carrying extra data (the data bag)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

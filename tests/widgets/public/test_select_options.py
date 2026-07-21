@@ -216,10 +216,14 @@ def test_select_value_setter_is_value_space(app):
 # Unknown values
 # --------------------------------------------------------------------------
 
-def test_select_unknown_value_raises(app):
+def test_select_unknown_value_is_displayed_not_rejected(app):
+    # Was: raised ValueError. A fixed list constrains what a user can pick, so
+    # rejecting a value the PROGRAM supplies crashed editors opened on records
+    # whose option had been retired (#355). SelectButton, which maps a value to
+    # an option's label and has no text entry, still rejects.
     s = bs.Select(options=[("Big", "b")])
-    with pytest.raises(ValueError):
-        s.value = "nope"
+    s.value = "nope"
+    assert s.value == "nope"
 
 
 def test_selectbutton_unknown_value_raises(app):
@@ -228,9 +232,10 @@ def test_selectbutton_unknown_value_raises(app):
         sb.value = "nope"
 
 
-def test_select_unknown_initial_value_raises(app):
-    with pytest.raises(ValueError):
-        bs.Select(options=["a", "b"], value="z")
+def test_select_unknown_initial_value_is_displayed(app):
+    # Seeding and setting must agree; construction used to raise while a later
+    # write was silently dropped.
+    assert bs.Select(options=["a", "b"], value="z").value == "z"
 
 
 # --------------------------------------------------------------------------
@@ -610,3 +615,215 @@ def test_group_runtime_add_blank_label_is_icon_only(app):
 def test_icon_only_selection_carries_bag(app):
     tg = bs.ToggleGroup(options=ICON_ONLY_OPTS, value="grid")
     assert tg.selection == {"text": "", "value": "grid", "icon": "grid"}
+
+
+# --- A value the list no longer offers (#355) ------------------------------
+
+def test_off_list_value_displays_without_joining_the_list(app):
+    # A fixed option list constrains what a USER can pick; it is not a schema
+    # for the data the program supplies. A stored record whose option has since
+    # been retired must still display — and must not become pickable again.
+    select = bs.Select(options=["US", "CA"])
+    app._tk_root.update_idletasks()
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    assert select.value == "MX"
+    assert [o["value"] for o in select.options] == ["US", "CA"]
+
+
+def test_form_seeds_and_sets_an_off_list_value(app):
+    # Construction used to raise and a later write was silently dropped, so the
+    # same value produced two different wrong answers. Both now round-trip.
+    form = bs.Form(data={"c": "MX"},
+                   items=[bs.FieldItem(key="c", editor="select",
+                                       editor_options={"values": ["US", "CA"]})])
+    app._tk_root.update_idletasks()
+    assert form.get()["c"] == "MX"          # seeded at construction
+
+    form.set_field_value("c", "BR")
+    app._tk_root.update_idletasks()
+    assert form.get()["c"] == "BR"          # and set programmatically
+
+
+def test_datatable_edit_form_opens_on_a_retired_option(app):
+    # The real-world case: opening the add/edit dialog on a legacy record.
+    table = bs.DataTable(rows=[{"country": "MX"}],
+                         columns=[{"key": "country", "editor": "select",
+                                   "editor_options": {"values": ["US", "CA"]}}])
+    app._tk_root.update_idletasks()
+    form = bs.Form(items=table._internal._build_form_items(), data={"country": "MX"})
+    app._tk_root.update_idletasks()
+    assert form.get()["country"] == "MX"
+
+
+def test_in_list_selection_is_unaffected(app):
+    select = bs.Select(options=["US", "CA"], value="US")
+    app._tk_root.update_idletasks()
+    select.value = "CA"
+    app._tk_root.update_idletasks()
+    assert select.value == "CA"
+
+
+def test_validate_reports_an_off_list_value(app):
+    # Reporting an out-of-list value is a validation rule's job — it reports
+    # rather than crashing the editor that opened the record.
+    allowed = {"US", "CA"}
+    select = bs.Select(options=sorted(allowed))
+    select.add_validation_rule("custom", func=lambda v: not v or v in allowed,
+                               message="That option is no longer available.")
+    app._tk_root.update_idletasks()
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    assert select.validate() is False
+    select.value = "US"
+    app._tk_root.update_idletasks()
+    assert select.validate() is True
+
+def test_off_list_value_keeps_its_type(app):
+    # The entry stores text, and the option list is what decodes it back to a
+    # real value. A retired value has no option, so without registering it the
+    # int 7 would come back as "7" — and Form.get() would hand a string to the
+    # caller's persistence layer.
+    select = bs.Select(options=[("One", 1), ("Two", 2)], value=1)
+    app._tk_root.update_idletasks()
+    select.value = 7
+    app._tk_root.update_idletasks()
+    assert select.value == 7 and isinstance(select.value, int)
+
+
+def test_off_list_value_keeps_its_type_through_a_form(app):
+    form = bs.Form(data={"s": 7},
+                   items=[bs.FieldItem(key="s", editor="select",
+                                       editor_options={"values": [("One", 1), ("Two", 2)]})])
+    app._tk_root.update_idletasks()
+    assert form.get()["s"] == 7
+
+
+def test_picking_an_option_supersedes_a_retired_value(app):
+    # The retired value is registered under its own display text. Selecting a
+    # real option must drop that registration, or it would shadow the option
+    # the next time the same text is shown.
+    select = bs.Select(options=[("One", 1), ("Two", 2)])
+    app._tk_root.update_idletasks()
+    select.value = 7
+    app._tk_root.update_idletasks()
+    select.value = 2
+    app._tk_root.update_idletasks()
+    assert select.value == 2
+    assert select._internal._retired_text is None
+
+
+def test_replacing_the_options_drops_a_retired_value(app):
+    select = bs.Select(options=["US", "CA"])
+    app._tk_root.update_idletasks()
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    select.options = ["GB", "FR"]
+    app._tk_root.update_idletasks()
+    assert select.value is None                      # the observable outcome
+    assert select._internal._retired_text is None    # and no stale decoder key
+    assert "MX" not in select._internal._value_by_text
+
+
+def test_off_list_value_that_matches_an_option_label_resolves_to_that_option(app):
+    # Two values rendering the same text are indistinguishable to the widget
+    # AND to the user, so the real option wins rather than being shadowed.
+    select = bs.Select(options=[{"text": "MX", "value": "mex"},
+                                {"text": "US", "value": "usa"}])
+    app._tk_root.update_idletasks()
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    assert select.value == "mex"
+
+
+def test_dismissing_a_search_popup_without_typing_keeps_the_value(app):
+    # Opening the list to look at it, then dismissing, must not rewrite the
+    # field — the user selected nothing and typed nothing.
+    select = bs.Select(options=["US", "CA", "GB"], searchable=True)
+    app._tk_root.update_idletasks()
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    inner = select._internal
+    inner._show_selection_options()
+    app._tk_root.update_idletasks()
+    inner._close_popup(inner._popup_frame.winfo_toplevel(), inner._popup_state)
+    app._tk_root.update_idletasks()
+    assert select.value == "MX"
+
+
+def test_dismissing_a_search_popup_after_typing_still_commits_the_match(app):
+    # The counterpart: type-to-filter then dismiss keeps committing the top
+    # match, so the guard above did not disable the feature.
+    select = bs.Select(options=["US", "CA", "GB"], searchable=True)
+    app._tk_root.update_idletasks()
+    inner = select._internal
+    inner._show_selection_options()
+    app._tk_root.update_idletasks()
+    inner.entry_widget.delete(0, "end")
+    inner.entry_widget.insert(0, "G")
+    inner._apply_search_filter(inner._popup_state)
+    app._tk_root.update_idletasks()
+    inner._close_popup(inner._popup_frame.winfo_toplevel(), inner._popup_state)
+    app._tk_root.update_idletasks()
+    assert select.value == "GB"
+
+
+def test_rules_run_against_the_value_not_the_label(app):
+    # A decoupled option shows "United States" but means "US". Validating the
+    # label would reject every valid selection.
+    select = bs.Select(options=[{"text": "United States", "value": "US"},
+                                {"text": "Canada", "value": "CA"}])
+    select.add_validation_rule("custom", func=lambda v: not v or v in {"US", "CA"},
+                               message="no longer available")
+    app._tk_root.update_idletasks()
+    select.value = "US"
+    app._tk_root.update_idletasks()
+    assert select.validate() is True
+    select.value = "MX"
+    app._tk_root.update_idletasks()
+    assert select.validate() is False
+
+
+def test_a_locale_change_keeps_a_retired_value(app):
+    # Re-translating the options rebuilds the decode map. A translation change
+    # does not retire a value the field is still holding, so its registration
+    # has to survive — otherwise an int would come back as a string.
+    select = bs.Select(options=[("One", 1), ("Two", 2)], value=1)
+    app._tk_root.update_idletasks()
+    select.value = 7
+    app._tk_root.update_idletasks()
+    select._internal.winfo_toplevel().event_generate("<<LocaleChanged>>")
+    app._tk_root.update_idletasks()
+    assert select.value == 7 and isinstance(select.value, int)
+
+
+# --- Validation reads LIVE text, decoded (guards the automatic triggers) ----
+
+def test_validation_sees_text_being_typed_not_the_committed_value(app):
+    # Rules must judge what the user is typing, not the last committed value —
+    # key/blur triggers fire mid-edit. TimeField shares this machinery (it is
+    # built on the same composite), so getting this wrong let an out-of-range
+    # time validate clean.
+    from datetime import time
+
+    field = bs.TimeField(value=time(9, 0))
+    field.add_validation_rule("range", min=time(8, 0), max=time(10, 0))
+    app._tk_root.update_idletasks()
+    entry = field._internal._entry
+    entry.delete(0, "end")
+    entry.insert(0, "11:45 PM")
+    app._tk_root.update_idletasks()
+    assert field.validate() is False
+
+
+def test_typing_into_a_custom_value_select_is_not_reported_as_empty(app):
+    # `required` fires on every keystroke, so reading the last committed value
+    # showed "required" while the user was part-way through typing.
+    select = bs.Select(options=["alpha", "beta"], allow_custom_values=True,
+                       required=True)
+    app._tk_root.update_idletasks()
+    entry = select._internal._entry
+    entry.delete(0, "end")
+    entry.insert(0, "gamma")
+    app._tk_root.update_idletasks()
+    assert entry._get_validation_value() == "gamma"
