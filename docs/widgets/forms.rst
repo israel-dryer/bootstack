@@ -154,6 +154,12 @@ options such as ``step`` and ``min_value``; for a ``textarea`` it means
        ],
    )
 
+An option that names something the form also fills — such as ``label``, or a
+select's choices — overrides the form's own default. Two behave differently:
+``value`` seeds the editor only when the form's ``data`` carries nothing for
+that key, so your record always wins; and ``parent`` is owned by the form,
+which places every editor in its own field container.
+
 Grouped fields
 ~~~~~~~~~~~~~~
 

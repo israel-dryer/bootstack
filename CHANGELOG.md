@@ -8,6 +8,28 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`tristate` works on a `checkbox` form editor.** `0.1.5` fixed
+  `bs.Checkbox(tristate=True)` itself, but a checkbox built by a `Form` (or by
+  `DataTable`'s add/edit dialog) still started unchecked: the form supplied an
+  explicit `value=False` that overrode the indeterminate default. (#358)
+- **`editor_options` may set any of the editor's public keyword arguments.**
+  Naming one the form also fills — `label`, `options`, or a boolean editor's
+  caption — raised `TypeError: got multiple values for keyword argument`.
+  Those options now override the form's default instead of colliding with it.
+  A `value` option seeds the editor only when the form's `data` carries
+  nothing for that key. (#358)
+- **A falsy value no longer disappears from a text field.** `bs.TextField`,
+  `bs.PasswordField`, and `bs.PathField` tested the initial value for
+  truthiness, so `value=0` rendered an empty field — and in a `Form`, the
+  blank was written back over the record's value.
+- **A form no longer changes the type of the data it was given.** Values that
+  are not text — a `Decimal`, a `date` — keep their type in `form.data`
+  instead of being converted to strings at construction.
+
 ## [0.1.5] — boolean control state fixes
 
 ### Fixed

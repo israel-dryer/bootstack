@@ -15,7 +15,14 @@ from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.labelframe import LabelFrame
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets._impl.composites.tabs.tabview import TabView
+from bootstack.widgets._core.kwargs import merge_kwargs
 from bootstack.widgets.types import EditorType, Master
+
+# Structural keys an editor_options bag may not set — the form's field
+# container owns where the editor is placed.
+_RESERVED_EDITOR_OPTIONS = {
+    'parent': 'the form places each editor in its own field container',
+}
 
 if TYPE_CHECKING:
     from bootstack.dialogs._impl.dialog import DialogButton
@@ -680,45 +687,76 @@ class Form(Frame):
         for internal_only in ("show_message", "validator"):
             opts.pop(internal_only, None)
 
+        # `value` in editor_options seeds the editor when the form data carries
+        # nothing for the key; the data wins when it does. Every editor below
+        # passes `value=` positionally-by-keyword, so leaving it in `opts` would
+        # raise "got multiple values for keyword argument 'value'".
+        seed_value = opts.pop('value', None)
+        if initial is None:
+            initial = seed_value
+
+        def build(cls, *args, **defaults):
+            """Construct `cls`, letting `editor_options` override the defaults."""
+            merged = merge_kwargs(defaults, opts, reserved=_RESERVED_EDITOR_OPTIONS,
+                                  context='Form editor_options')
+            merged['parent'] = container
+            return cls(*args, **merged)
+
+        def choice_list():
+            """Pop the documented `items`/`values` aliases for the option list."""
+            choices = opts.pop('items', None)
+            if choices is None:
+                choices = opts.pop('values', None)
+            return choices
+
+        # Test against None, not truthiness: a falsy-but-real datum (0, False)
+        # is a value, not an absent one, and blanking it here would write the
+        # blank straight back into the form data. Pass the datum through as it
+        # came, too — `data` is the caller's record, and stringifying it here
+        # would flip a Decimal or a date to `str` in `form.data` before the
+        # user has edited anything.
+        text_value = initial if initial is not None else ""
+
         if editor == 'textfield':
-            return TextField(value=initial or "", label=label_text, parent=container, **opts)
+            return build(TextField, value=text_value, label=label_text)
         if editor == 'numberfield':
-            numeric_value = initial if initial is not None else 0
-            return NumberField(value=numeric_value, label=label_text, parent=container, **opts)
+            return build(NumberField, value=initial if initial is not None else 0,
+                         label=label_text)
         if editor == 'passwordfield':
-            return PasswordField(value=initial or "", label=label_text, parent=container, **opts)
+            return build(PasswordField, value=text_value, label=label_text)
         if editor == 'datefield':
-            return DateField(value=initial, label=label_text, parent=container, **opts)
+            return build(DateField, value=initial, label=label_text)
         if editor == 'textarea':
-            text = str(initial) if initial is not None else ""
-            return TextArea(value=text, label=label_text, parent=container, **opts)
+            return build(TextArea, value=text_value, label=label_text)
         if editor == 'select':
-            choices = opts.pop('items', opts.pop('values', None)) or []
-            choices = [str(i) for i in choices]
-            return Select(options=choices, value=initial if initial is not None else "",
-                          label=label_text, parent=container, **opts)
+            choices = [str(i) for i in (choice_list() or [])]
+            return build(Select, options=choices, label=label_text,
+                         value=initial if initial is not None else "")
         if editor == 'spinnerfield':
-            choices = opts.pop('items', opts.pop('values', None))
+            choices = choice_list()
             if choices is not None:
                 opts['options'] = [str(i) for i in choices]
-            return SpinnerField(value=initial if initial is not None else "",
-                                label=label_text, parent=container, **opts)
-        if editor == 'checkbox':
-            text = opts.pop('text', None) or label_text
-            return Checkbox(text, value=bool(initial) if initial is not None else False,
-                            parent=container, **opts)
-        if editor == 'switch':
-            text = opts.pop('text', None) or label_text
-            return Switch(text, value=bool(initial) if initial is not None else False,
-                          parent=container, **opts)
+            return build(SpinnerField, value=initial if initial is not None else "",
+                         label=label_text)
+        if editor in ('checkbox', 'switch'):
+            # The boolean controls call their caption `label`, so pass it by
+            # keyword — passing it positionally would collide with a `label`
+            # option instead of letting it override, and `text` is the alias a
+            # caller reaches for first.
+            caption = opts.pop('text', None) or label_text
+            # `None` stays `None` so a tristate checkbox starts indeterminate;
+            # the widget maps `None` to unchecked when tristate is off.
+            cls = Checkbox if editor == 'checkbox' else Switch
+            return build(cls, label=caption,
+                         value=bool(initial) if initial is not None else None)
         if editor == 'slider':
             # Slider has no label parameter, so render a stacked caption above it
             # (the field wrappers render their own label internally).
             if label_text:
                 Label(container, text=label_text).pack(anchor='w', pady=(0, 2))
-            return Slider(value=initial if initial is not None else 0, parent=container, **opts)
+            return build(Slider, value=initial if initial is not None else 0)
         # Fallback: treat any unknown editor as a text field.
-        return TextField(value=initial or "", label=label_text, parent=container, **opts)
+        return build(TextField, value=text_value, label=label_text)
 
     def _build_buttons(self, parent: Frame, buttons: Sequence[ButtonInput]) -> None:
         parsed = self._normalize_buttons(buttons)

@@ -86,7 +86,9 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
             "show": mask,
             "show_visibility_toggle": show_visibility_toggle,
         }
-        if value:
+        # Test against the empty value, not truthiness: `0` or `False` is a
+        # value the caller passed, and dropping it here leaves the field blank.
+        if value is not None and value != "":
             internal_kwargs["value"] = value
         if placeholder is not None:
             internal_kwargs["placeholder"] = placeholder
