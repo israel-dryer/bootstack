@@ -65,7 +65,8 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
 
     # Validation
     bs.Label("Validation", font="heading-sm")
-    vf = bs.TextField(label="Min 3 characters", placeholder="Enter text…", horizontal="stretch")
+    vf = bs.TextField(label="Min 3 characters", placeholder="Enter text…",
+                      required=True, horizontal="stretch")
     vf.add_validation_rule(
         "stringLength",
         message="Must be at least 3 characters.",

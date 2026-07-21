@@ -33,6 +33,16 @@ def rule_applies_to_kind(rule_type: str, kind: str) -> bool:
     return True
 
 
+def _is_empty(value: object) -> bool:
+    """Whether a field holds nothing, for rules that only shape a value.
+
+    Matches the emptiness test `range` uses: `None` or the empty string. A
+    whitespace-only entry is real input — `stringLength` should still measure
+    it — so only `required` treats blank text as absent.
+    """
+    return value is None or value == ""
+
+
 def _as_text(value: object) -> str:
     """Coerce a value to text for the string rules.
 
@@ -104,7 +114,15 @@ class ValidationRule:
             # Everything else is valid (non-empty string, number, date, etc.)
             return ValidationResult(True, "")
 
-        elif self.type == "email":
+        # A rule other than `required` describes what a value must look like,
+        # not that one must be present. An untouched optional field has nothing
+        # to check, so it passes — otherwise leaving it blank would block a
+        # submit with no way forward. Use `required` for presence, the same
+        # contract `range` states below.
+        if self.type in TEXT_RULES and _is_empty(value):
+            return ValidationResult(True, "")
+
+        if self.type == "email":
             if not re.match(r"[^@]+@[^@]+\.[^@]+", _as_text(value)):
                 return ValidationResult(False, msg)
         elif self.type == "stringLength":
@@ -119,7 +137,7 @@ class ValidationRule:
         elif self.type == "range":
             # Bounds on an ordered value (number/date/time). An empty field is
             # not out of range — use 'required' for presence.
-            if value is None or value == "":
+            if _is_empty(value):
                 return ValidationResult(True)
             lo = self.params.get("min")
             hi = self.params.get("max")

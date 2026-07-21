@@ -107,14 +107,16 @@ def test_form_blocks_submit_on_empty_required_field_with_placeholder(app):
     assert "name" in form.errors
 
 
-@pytest.mark.parametrize("rule, kwargs, expected", [
-    # `Hint` is 4 characters: a max of 2 rejects the placeholder text but
-    # accepts an empty field, so this rule diverges in BOTH directions and
-    # catches a fix that leaked the hint either way.
-    ("stringLength", {"max": 2}, True),
-    ("stringLength", {"min": 3}, False),
+@pytest.mark.parametrize("rule, kwargs", [
+    # Each rule REJECTS the placeholder text but ACCEPTS an empty field, so a
+    # leaked hint flips the result. (`Hint` is 4 characters and not a number;
+    # an empty field skips a format rule entirely — see `required` for
+    # presence.) A rule the hint would satisfy, such as `min=3`, could not tell
+    # the two apart and would prove nothing.
+    ("stringLength", {"max": 2}),
+    ("pattern", {"pattern": r"^\d+$"}),
 ])
-def test_placeholder_field_validates_like_an_empty_one(app, rule, kwargs, expected):
+def test_placeholder_field_validates_like_an_empty_one(app, rule, kwargs):
     # The invariant: a field showing its placeholder behaves exactly as a
     # genuinely empty one — for every rule, not just `required`. Assert the
     # concrete outcome, not just that the two agree: comparing two fields that
@@ -124,7 +126,7 @@ def test_placeholder_field_validates_like_an_empty_one(app, rule, kwargs, expect
     holder.add_validation_rule(rule, **kwargs)
     app._tk_root.update_idletasks()
     plain_result, holder_result = plain.validate(), holder.validate()
-    assert holder_result is expected
+    assert holder_result is True, f"{rule} saw the placeholder as input"
     assert plain_result is holder_result, f"{rule} differs with a placeholder"
 
 

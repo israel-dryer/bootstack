@@ -150,3 +150,64 @@ def test_form_with_unruled_fields_still_validates(shown_app):
     form.field("name").add_validation_rule("required")
     form.field("name").value = "Ada"        # note has no rules
     assert form.validate() is True
+
+
+# --- A format rule has nothing to check on an empty field ------------------
+
+@pytest.mark.parametrize("rule, kwargs, bad_value", [
+    ("email", {}, "not-an-email"),
+    ("pattern", {"pattern": r"^\d+$"}, "abc"),
+    ("stringLength", {"min": 3}, "ab"),
+])
+@pytest.mark.parametrize("empty", [None, ""])
+def test_format_rules_pass_on_an_empty_value(rule, kwargs, bad_value, empty):
+    # An optional field left blank must not block a submit: `email`/`pattern`/
+    # `stringLength` describe what a value looks like, not that one is present.
+    # This is the contract `range` already states — use `required` for presence.
+    assert ValidationRule(rule, **kwargs).validate(empty).is_valid is True
+    # ...and the rule must still reject a genuinely bad value.
+    assert ValidationRule(rule, **kwargs).validate(bad_value).is_valid is False
+
+
+def test_whitespace_is_still_measured_by_string_length():
+    # Only `required` treats blank text as absent. A space is real input, so a
+    # length rule still measures it — otherwise `min` would silently pass.
+    assert ValidationRule("stringLength", min=3).validate("  ").is_valid is False
+
+
+def test_required_still_rejects_empty_and_blank():
+    for value in (None, "", "   "):
+        assert ValidationRule("required").validate(value).is_valid is False
+
+
+@pytest.mark.gui
+def test_optional_format_field_does_not_block_submit(shown_app):
+    """An optional email field left blank must not block the form."""
+    form = bs.Form(items=[bs.FieldItem(key="name"), bs.FieldItem(key="email")])
+    form.field("email").add_validation_rule("email", message="Enter a valid email")
+    form.set_field_value("name", "Ada")
+    assert form.validate() is True
+    assert "email" not in form.errors
+    # A bad address still blocks it.
+    form.set_field_value("email", "nope")
+    assert form.validate() is False
+
+
+@pytest.mark.gui
+def test_required_survives_an_unrecognized_editor_name(shown_app):
+    """An unknown editor falls back to a text field, so `required` still applies.
+
+    Gating on membership of the validating set meant a misspelled editor name
+    silently dropped the rule and the form submitted empty.
+    """
+    form = bs.Form(items=[bs.FieldItem(key="a", editor="text", required=True)])
+    assert form.validate() is False
+    form.set_field_value("a", "filled")
+    assert form.validate() is True
+
+
+@pytest.mark.gui
+def test_boolean_editors_still_skip_required(shown_app):
+    """A checkbox has no empty state, so `required` stays inapplicable there."""
+    form = bs.Form(items=[bs.FieldItem(key="ok", editor="checkbox", required=True)])
+    assert form.validate() is True
