@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets.types import SurfaceToken, WidgetDensity
+from bootstack.widgets._core.kwargs import RESERVED_BAR_KWARGS, reject_reserved
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -105,7 +106,8 @@ class StatusBar(PublicWidgetBase):
 
         Pass a widget **class** — the bar builds it, applying its own `density`
         and `surface` (for any the class accepts) so the widget matches the band,
-        and forwarding `kwargs` to the constructor:
+        and forwarding `kwargs` to the constructor (overriding those defaults;
+        `parent` is owned by the bar):
 
             status.add_widget(bs.ThemeToggle, side="right")
             status.add_widget(bs.ProgressBar, value=65)
@@ -133,6 +135,8 @@ class StatusBar(PublicWidgetBase):
         only for parameters the widget actually accepts (and not if the caller
         already passed them)."""
         import inspect
+
+        reject_reserved(kwargs, RESERVED_BAR_KWARGS, 'StatusBar.add_widget()')
 
         try:
             params = inspect.signature(widget_cls).parameters

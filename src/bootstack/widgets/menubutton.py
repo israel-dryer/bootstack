@@ -80,7 +80,10 @@ class MenuButton(IconProperty, PublicWidgetBase):
         show_arrow: If `True` (default), shows the dropdown chevron arrow.
             Pass `False` to hide it (useful when the icon implies the action).
         menu_options: Extra options forwarded to the underlying `ContextMenu`
-            at construction (e.g. `{'anchor': 'se', 'offset': 4}`).
+            at construction, using its public parameter names — e.g.
+            `{'anchor': 'se', 'offset': (4, 0)}`. The menu's contents, its
+            selection callback, and how it opens belong to the button, so
+            `items`, `command`, `target`, and `trigger` are not accepted here.
         disabled: If `True`, button is shown but non-interactive. Defaults
             to `False`.
         accent: Color intent token. Defaults to the theme default.

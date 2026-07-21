@@ -1,8 +1,10 @@
 """Merging a caller's options dict over framework-built keyword arguments.
 
-Some widgets accept a bag of options aimed at a widget they build for you —
-`Form`'s `editor_options` names the editor widget's own public keyword
-arguments, so a caller may name a parameter the framework also fills.
+Several widgets accept a bag of options aimed at a widget they build for you —
+`Form`'s `editor_options`, `MenuButton`'s `menu_options`, the keyword
+passthrough on `ButtonGroup.add` / `RadioGroup.add` / `Toolbar.add_widget`.
+Those bags name the built widget's own public keyword arguments, so a caller
+may name a parameter the framework also fills.
 
 Splatting both into one call raises `TypeError: got multiple values for
 keyword argument`, which names an internal class the caller never wrote.
@@ -11,8 +13,9 @@ keyword argument`, which names an internal class the caller never wrote.
 - The caller's options WIN over the framework's defaults. Naming a parameter
   the framework also fills is how you override it.
 - A short list of keys is structural — the widget cannot do its job if they
-  are replaced (it would be parented somewhere else entirely). Supplying one
-  raises `BootstackError` naming the API you called and what to use instead.
+  are replaced (it would be parented elsewhere, or lose the command that emits
+  its events). Supplying one raises `BootstackError` naming the API you called
+  and what to use instead.
 """
 from __future__ import annotations
 
@@ -73,3 +76,10 @@ def merge_kwargs(
     reject_reserved(user, reserved, context)
     merged.update(user)
     return merged
+
+
+# Structural keys a bar's widget-options passthrough may not set — a toolbar or
+# status bar places every widget it builds.
+RESERVED_BAR_KWARGS = {
+    'parent': 'the bar places the widgets it builds.',
+}

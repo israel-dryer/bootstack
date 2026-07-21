@@ -5,7 +5,8 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.selection_group import SelectionGroupMixin
+from bootstack.widgets._core.kwargs import merge_kwargs
+from bootstack.widgets._core.selection_group import SelectionGroupMixin, RESERVED_OPTION_KWARGS
 from bootstack.widgets._core.options import normalize_options, option_display
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
@@ -196,6 +197,10 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
             disabled: If `True`, the option is dimmed and cannot be selected.
             localize: Translation mode for this option's label, overriding the
                 group's `localize=`. Defaults to the group setting.
+            **kwargs: Further options for the rendered button, using its public
+                parameter names. These override what `add()` derives from
+                `icon` and `disabled`. `text` is the caption — set it with
+                `label`; the group tracks its own selection.
         """
         resolved = value if value is not None else label
         add_kwargs, extras = self._option_render(icon, disabled, label)
@@ -204,7 +209,9 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
             add_kwargs["localize"] = item_localize
         if localize is not None:
             extras["localize"] = localize
-        self._internal.add(text=label, value=resolved, **add_kwargs, **kwargs)
+        add_kwargs = merge_kwargs(add_kwargs, kwargs, reserved=RESERVED_OPTION_KWARGS,
+                                  context='ToggleGroup.add()')
+        self._internal.add(text=label, value=resolved, **add_kwargs)
         self._add_option_record(label, resolved, extras)
 
     # ----- Event shorthands -----
