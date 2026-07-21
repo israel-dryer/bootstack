@@ -21,6 +21,60 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.6 STAGED (NOT yet released) — seven form/field/validation fixes
+  (PRs #362–#368; 2026-07-21).** All merged to `main` under `## [Unreleased]`;
+  **`pyproject.toml` is still `0.1.5`** — nothing is cut. Kicked off by the user
+  `bLynnb2762` reporting on the CLOSED **#358** that tristate still failed; filed
+  fresh as **#361** (different root cause). **#362:** a checkbox built by a `Form`
+  ignored `tristate` — the form passed an explicit `value=False` over the widget's
+  indeterminate default; `editor_options` also COLLIDED with the kwargs the form
+  fills (`value`/`label`/`options`) → `TypeError` from an internal class. Two value
+  bugs alongside: `TextField`/`PasswordField`/`PathField` gated the initial value on
+  **truthiness** (so `value=0` rendered empty, and a form wrote the blank back over
+  the record), and the form **stringified** non-text data (a `Decimal`/`date` became
+  `str` in `form.data` at construction — a data-integrity regression *my own first
+  fix introduced*, caught by review). **#363:** the same collision existed in
+  `MenuButton(menu_options=)`, `ButtonGroup.add`/`add_all`,
+  `RadioGroup`/`ToggleGroup.add`, `Toolbar`/`StatusBar.add_widget` → all now route
+  through **`merge_kwargs`** (`widgets/_core/kwargs.py`); see the corrected Gotcha.
+  **#364:** a placeholder is rendered by INSERTING its text, and validation read the
+  raw entry, so **`required` passed on an untouched field** (a form with a required
+  placeholder field submitted empty); `field.text` also reported the hint while
+  `value` said empty. **#365:** deleted the 27 `tests/features/*` visual scripts
+  (never collected — `testpaths` covers only `tests/cli`, `tests/widgets/public`,
+  `tests/data`). **#367 (#366):** `email`/`pattern`/`stringLength` ran on EMPTY
+  values, so an **optional** field left blank blocked `Form.validate()` with no way
+  forward — now they pass on empty (matching `range`'s existing precedent); also
+  `required` was dropped for an unrecognized `editor=` name (a typo silently let an
+  empty field submit). **#368 (#355):** a `Select` REJECTED a value not in its
+  option list, so opening a `Form`/`DataTable` editor on a record whose option had
+  been retired **raised** — while a later programmatic write was silently dropped.
+  **Root cause:** `Select` stores display TEXT and decodes the value back through
+  the option list, so the `ValueError` was guarding *decodability*, not policy. Fix
+  = register the retired value under its own coerced text (`_register_retired_value`)
+  so the decode stays total (an `int` reads back an `int`); it is never added to
+  `_records`, so the popup is unchanged. Surfaced two more: a **searchable** Select
+  committed its top match when the popup was merely opened and dismissed, and
+  validation ran against the **label** (so a rule on a decoupled list rejected valid
+  selections). Added **`Select.validate()`** (every other field had one; its own
+  `add_validation_rule` docstring already promised it). **#369 filed** — the
+  selection family disagrees on off-list values (`SelectButton` raises both ways;
+  `RadioGroup` accepts at construction, raises on assignment; `ToggleGroup` accepts
+  both; and where accepted, `value` says `'MX'` while `selection` says `None`) —
+  wants ONE family decision, not four patches. **PROCESS (the session's real
+  lesson): adversarial review caught a defect in EVERY round**, including two
+  regressions I introduced — the `Decimal`→`str` coercion, and a
+  `_get_validation_value` override that broke **`bs.TimeField`** (`TimeEntry`
+  subclasses `SelectBox`, so typed out-of-range input validated clean). Tests that
+  only assert *construction doesn't raise* are what let #358 ship twice — and I
+  repeated it, writing a test that certified a **broken** documented example
+  (`menu_options={'offset': 4}` crashes on open; the docstring now says `(4, 0)`).
+  **CHANGELOG convention (I got this wrong on four branches):** a fix commit writes
+  `## [Unreleased]`; the `Release X` commit renames it AND adds the `[X]:` link
+  definition. Memory `feedback_pause_and_ask_when_stuck` — I over-complicated #355
+  for hours (heading toward a `Select` value-model rewrite) before the maintainer
+  pointed at the ~15-line map fix; **pause and ask when a fix outgrows its issue.**
+
 - **0.1.5 PATCH SHIPPED — boolean-control state reads + Checkbox tristate (PR #360;
   2026-07-20).** `bootstack 0.1.5` is on **PyPI** + tagged **`v0.1.5`** ("boolean
   control state fixes"). **Three bugs, one root cause (user `bLynnb2762`).** `Checkbox`,
@@ -133,11 +187,12 @@ memories and git history.
   bootstack` + core widget construction never crash); `PyInstaller` is a
   packaging-time tool (`try/except` in the CLI); `tomli` is a dead fallback
   (`tomllib` is stdlib on `requires-python >=3.12`); `cycler` is guarded + ships
-  with matplotlib. **Release process note:** `bump-my-version` was NOT on PATH /
-  importable in any reachable interpreter this session (the maintainer runs it from
-  a manually-activated venv); replicated its config by hand — bumped BOTH `version`
-  (line 7) and `[tool.bumpversion] current_version` + commit `Release 0.1.1` +
-  annotated tag `v0.1.1` (`message`/`tag_message` = `Release {new_version}`).
+  with matplotlib. **Release process note (CORRECTED 2026-07-21):**
+  `bump-my-version` IS available — `.venv/Scripts/bump-my-version.exe`, v1.3.0 — so
+  the normal `bump-my-version bump patch` flow works. (The 0.1.1 session could not
+  reach it and replicated the config by hand: bump BOTH `version` (line 7) and
+  `[tool.bumpversion] current_version`, commit `Release X`, annotated tag `vX`.
+  That manual path is the fallback, not the norm.)
 - **0.1.0 STABLE SHIPPED — ship gate + theme-repaint unification + accent contrast
   (2026-06-24).** `bootstack 0.1.0` is on **PyPI** (`pip install bootstack`, no
   `--pre`) and tagged **`v0.1.0`** (stable GitHub Release, `prerelease=false`).
@@ -769,8 +824,14 @@ memories and git history.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
-> **`main` is GREEN; latest release is `0.1.5`** (tag `v0.1.5`, on PyPI,
-> 2026-07-20 — see the top "Recently completed" entries for 0.1.3/0.1.4/0.1.5).
+> **`main` is GREEN; latest RELEASE is `0.1.5`** (tag `v0.1.5`, on PyPI,
+> 2026-07-20) — but **`main` carries UNRELEASED 0.1.6 work**: seven fixes under
+> `## [Unreleased]`, `pyproject.toml` still at `0.1.5`. Cut it with
+> `bump-my-version bump patch` (it IS on PATH — see the corrected 0.1.1 note).
+> **None of it has been exercised in a real app — only tests** — and two entries
+> are documented behavior CHANGES (format rules on empty values; `Select`
+> accepting off-list values), so dogfood a form + a DataTable edit dialog first.
+> See the top "Recently completed" entry for 0.1.6 and 0.1.3/0.1.4/0.1.5 below.
 > `0.1.0` (STABLE) was released 2026-06-24 (tag `v0.1.0`). The prior `0.1.0a16`
 > pre-release (cut 2026-06-23) contained the
 > icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
@@ -1305,9 +1366,20 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 - **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column` etc.
   are NOT explicit params. Route through `self._split_layout_kwargs(kwargs)`.
 - **`**kwargs` not `**extra_kw`** — catch-all must be named `**kwargs` throughout.
-- **`**kwargs` override protection** — when merging user kwargs into `internal_kwargs`,
-  filter out reserved keys so explicit constructor params can't be silently overridden.
-  Pattern: `_RESERVED_INTERNAL_KEYS = frozenset({...})` then skip collisions.
+- **User options MERGE OVER framework kwargs; structural keys RAISE** (#363,
+  0.1.6). A widget that builds another widget for you — `Form`'s `editor_options`,
+  `MenuButton`'s `menu_options`, the `**kwargs` passthrough on `ButtonGroup.add` /
+  `RadioGroup.add` / `Toolbar.add_widget` — must route through
+  **`merge_kwargs`** (`widgets/_core/kwargs.py`): the caller's options win, and a
+  short `reserved` map (keys the widget must own — its `parent`, the command that
+  emits its events) raises `BootstackError` naming the API called and what to use
+  instead. Splatting a user dict alongside explicit kwargs raises
+  `TypeError: got multiple values for keyword argument` from an internal class the
+  caller never wrote — that was a live bug in six widgets. **Legacy exception:**
+  `MenuButton.__init__`'s `_RESERVED_INTERNAL_KEYS` still SILENTLY SKIPS collisions
+  (so `bs.MenuButton("X", command=fn)` quietly does nothing). Flipping a silent
+  no-op to a raise can break working user code, so converging it is a 0.2.0 item —
+  do NOT copy the silent-skip pattern into new code.
 - **`margin_x=` / `margin_y=`** — axis-specific external spacing. Never `padx=`/`pady=`.
 - **`.. include::` path is file-relative** — from `docs/api/`, use `../shared/widget-sizing.rst`.
 
