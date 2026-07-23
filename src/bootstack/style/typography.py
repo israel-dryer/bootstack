@@ -8,6 +8,8 @@ from tkinter import Misc, font as tkfont
 from tkinter.font import Font as TkFont
 from typing import Any, Literal, NamedTuple
 
+from bootstack._runtime.utility import _ScalingState
+
 
 # =============================================================================
 # Token model
@@ -90,12 +92,19 @@ def build_desktop_tokens(
     elif system == "darwin":
         default_ui = "SF Pro Text"
         default_mono = "Menlo"
-        # Tk's pt-to-pixel conversion uses the active scaling factor.
-        # macOS defaults to 1.0 (72 DPI baseline) vs ~1.334 on Win/Linux,
-        # so the same point size renders ~25% smaller on Mac. Bump the
-        # base to keep visual parity across platforms and align with the
-        # macOS HIG default control text size (13pt).
-        base = _clamp_base_size(base + 2)
+        # Tk's pt-to-pixel conversion uses the active scaling factor. On Tk 8.6
+        # macOS defaults to 1.0 (72 DPI baseline) vs ~1.334 on Win/Linux, so
+        # the same point size renders ~25% smaller on Mac. Bump the base to
+        # align with the macOS HIG default control text size (13pt).
+        #
+        # Tk 9 moved Aqua to a 96 DPI baseline (#375), so a "point" is no
+        # longer the same physical size and the raw bump double-counts (a
+        # `body` label rendered at 20px linespace instead of 16px). The target
+        # is a physical size, so express it in the active point unit: divide by
+        # the baseline ratio. Tk 8.6 -> 13pt (unchanged), Tk 9 -> 10pt, which
+        # is the same rendered size and matches the point size Tk 9 itself
+        # picks for TkDefaultFont.
+        base = _clamp_base_size(round((base + 2) / _ScalingState.get_baseline()))
     else:
         default_ui = "DejaVu Sans"
         default_mono = "DejaVu Sans Mono"

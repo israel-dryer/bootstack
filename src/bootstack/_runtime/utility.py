@@ -30,11 +30,18 @@ def _platform_baseline() -> float:
 
     Tk scaling is measured in pixels-per-point (72 points per inch).
     - Windows/Linux default DPI is 96  → baseline = 96/72 ≈ 1.334
-    - macOS default DPI is 72          → baseline = 72/72 = 1.0
+    - macOS default DPI is 72 on Tk 8.6 → baseline = 72/72 = 1.0
       (Retina pixel-doubling is handled by the OS, not Tk scaling)
+
+    Tk 9 changed Aqua's nominal resolution from 72 to 96 DPI, aligning it with
+    Windows/X11 (#375). The pixel grid is unchanged — only the physical-size
+    claim moved — so the baseline must key off the Tk version, not the platform
+    alone. Keying off platform alone reports ui_scale ~1.333 instead of 1.0 on
+    macOS + Tk 9 and inflates every DPI-derived measurement by a third.
     """
     import platform
-    if platform.system() == 'Darwin':
+    import tkinter
+    if platform.system() == 'Darwin' and tkinter.TkVersion < 9.0:
         return 1.0
     return 1.33398982438864281  # 96 DPI / 72
 
@@ -53,6 +60,11 @@ class _ScalingState:
     def get_scale_factor(cls) -> float:
         """Get the current global scale factor."""
         return cls._scale_factor
+
+    @classmethod
+    def get_baseline(cls) -> float:
+        """Get the platform's nominal Tk scaling (pixels per point)."""
+        return cls._baseline
 
     @classmethod
     def get_ui_scale(cls) -> float:
