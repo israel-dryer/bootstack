@@ -8,6 +8,18 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A widget detached across a theme change is recolored when you attach it
+  back.** Widgets that paint themselves — charts, gauges, and the other
+  canvas-drawn widgets — skip a theme change while they are off screen and
+  repaint when they next become visible. Returning one with `attach()` was not
+  treated as becoming visible, so a chart hidden with `detach()` across a theme
+  toggle came back with the old palette and kept it until something else forced
+  a repaint. Showing a page or expanding an accordion section already worked.
+
 ## [0.1.6] — form, field, and validation fixes
 
 ### Fixed
