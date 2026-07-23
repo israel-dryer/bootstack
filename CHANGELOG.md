@@ -8,6 +8,17 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **The interface is sized correctly on macOS with Tcl/Tk 9.** Tk 9 changed
+  the resolution macOS reports, and bootstack read that as a high-density
+  display — so on a Homebrew or conda Python, or any build linked against
+  Tk 9, the whole interface rendered about a third too large. Text, icons,
+  padding, and control sizes are all restored to their intended size, and
+  now match Tk 8.6 exactly. Windows and Linux are unaffected. (#375)
+
 ## [0.1.7] — Tcl/Tk 9 scroll support
 
 ### Fixed
