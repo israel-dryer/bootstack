@@ -21,8 +21,10 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **0.1.7 STAGED (NOT released) — Tk 9 scroll-event contract (branch
-  `fix/tk9-scroll-events`, commit `80b26b53`; 2026-07-23).** **#372** ("Scroll not
+- **0.1.7 PATCH SHIPPED — Tk 9 scroll-event contract + attach theme repaint
+  (PRs #373, #374; 2026-07-23).** `bootstack 0.1.7` is on **PyPI** + tagged
+  **`v0.1.7`** ("Tcl/Tk 9 scroll support"); verified by installing the published
+  wheel into a clean Tk 9 venv. **#372** ("Scroll not
   working on MacOS", user `cleonello`): scrolling
   worked on Python 3.13.9, not 3.14.6. **It is NOT a Python change** — `tkinter`
   is unchanged between those versions apart from docstrings, `after(**kw)`, and
@@ -52,11 +54,22 @@ memories and git history.
   (3.14.6 + Tcl/Tk 9.0.4). **⚠ The touchpad tests SKIP on Tk 8.6** — on the default
   `.venv` the file reports "15 passed, 10 skipped" and looks green while testing
   nothing about the fix. **There is no test workflow at all** (`.github/workflows/`
-  has only `docs.yml` + `release.yml`), so this can regress invisibly.
+  has only `docs.yml` + `release.yml`), so this can regress invisibly — the top
+  open item from that session.
+  **UPSTREAM: `ttkbootstrap` has the identical defect** — same code lineage, same
+  `winsys` branch in `widgets/scrolled.py` (binding 436-440, delta 546-556) and
+  `dialogs/colordropper.py:157-160`. Measured on 2.0.0 + Tk 9.0.4: a trackpad
+  gesture does nothing and ONE wheel notch jumps an 80-row `ScrolledFrame` to the
+  end (`0.0 → 0.813`). Filed as **israel-dryer/ttkbootstrap#1290** with the fix
+  shape; the #373 diff maps closely onto `scrolled.py`. **Repro gotcha:** the wheel
+  tag is only added to bindtags on mouse-enter, so synthetic events do nothing until
+  `enable_scrolling()` is called — and the content-fits guard silently returns
+  early until the scrollregion is actually computed. Both produce a convincing
+  false "dead" reading.
 
-- **0.1.6 STAGED (NOT yet released) — seven form/field/validation fixes
-  (PRs #362–#368; 2026-07-21).** All merged to `main` under `## [Unreleased]`;
-  **`pyproject.toml` is still `0.1.5`** — nothing is cut. Kicked off by the user
+- **0.1.6 PATCH SHIPPED — seven form/field/validation fixes
+  (PRs #362–#368; released 2026-07-21).** On **PyPI** + tagged **`v0.1.6`**
+  (plus #371, a `Decimal`/`value_format` fix, folded into the cut). Kicked off by the user
   `bLynnb2762` reporting on the CLOSED **#358** that tristate still failed; filed
   fresh as **#361** (different root cause). **#362:** a checkbox built by a `Form`
   ignored `tristate` — the form passed an explicit `value=False` over the widget's
@@ -857,14 +870,20 @@ memories and git history.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
-> **`main` is GREEN; latest RELEASE is `0.1.5`** (tag `v0.1.5`, on PyPI,
-> 2026-07-20) — but **`main` carries UNRELEASED 0.1.6 work**: seven fixes under
-> `## [Unreleased]`, `pyproject.toml` still at `0.1.5`. Cut it with
-> `bump-my-version bump patch` (it IS on PATH — see the corrected 0.1.1 note).
-> **None of it has been exercised in a real app — only tests** — and two entries
-> are documented behavior CHANGES (format rules on empty values; `Select`
-> accepting off-list values), so dogfood a form + a DataTable edit dialog first.
-> See the top "Recently completed" entry for 0.1.6 and 0.1.3/0.1.4/0.1.5 below.
+> **`main` is GREEN and fully released; latest RELEASE is `0.1.7`** (tag
+> `v0.1.7`, on PyPI, 2026-07-23) — nothing is staged, `## [Unreleased]` is empty,
+> `pyproject.toml` is at `0.1.7`. **`main` has SIX known-failing tests on macOS**
+> — all triaged under "Known failing tests on macOS" below; four are test defects,
+> two are order-dependent. Do NOT chase them as regressions.
+> **Release flow gotcha (bit me on 0.1.7):** `bump-my-version bump patch
+> --allow-dirty` commits **ONLY `pyproject.toml`** — it will NOT sweep the
+> CHANGELOG rename into the `Release X` commit, which ships a release whose notes
+> still say `## [Unreleased]` and breaks `release.yml`'s section extraction.
+> Either commit the rename first or `git commit --amend` + re-tag before pushing.
+> **0.1.6 caveat that still stands:** its behavior CHANGES (format rules on empty
+> values; `Select` accepting off-list values) were only ever exercised by tests,
+> never dogfooded in a real app.
+> See the top "Recently completed" entry for 0.1.7 and 0.1.3–0.1.6 below.
 > `0.1.0` (STABLE) was released 2026-06-24 (tag `v0.1.0`). The prior `0.1.0a16`
 > pre-release (cut 2026-06-23) contained the
 > icon-DPI cluster #306/#307/#309 + cross-platform `windowtype` #313 +
