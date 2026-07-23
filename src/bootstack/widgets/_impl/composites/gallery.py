@@ -20,6 +20,7 @@ from PIL import Image as PILImage, ImageDraw
 from PIL.Image import Resampling
 from PIL.ImageTk import PhotoImage
 
+from bootstack._runtime import wheel
 from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.style.style import get_style
 from bootstack.widgets._impl.composites._image_fit import (
@@ -223,6 +224,7 @@ class Gallery(Frame):
         self._start_row = 0
         self._ring_photo: PhotoImage | None = None
         self._row_h = self._th + 2 * _RING_PAD + (_CAPTION_H if caption_field else 0) + gap
+        self._touchpad = wheel.PixelAccumulator()
 
         sb_surface = getattr(self, '_surface', None)
         sb_kw = {'surface': sb_surface} if sb_surface else {}
@@ -450,20 +452,30 @@ class Gallery(Frame):
         self._update_tiles()
 
     def _bind_scroll(self, widget) -> None:
-        widget.bind("<MouseWheel>", self._on_wheel, add="+")
-        widget.bind("<Button-4>", self._on_wheel, add="+")
-        widget.bind("<Button-5>", self._on_wheel, add="+")
+        for seq in wheel.wheel_sequences(self):
+            widget.bind(seq, self._on_wheel, add="+")
+        if wheel.has_touchpad_scroll():
+            widget.bind(wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll, add="+")
 
     def _on_wheel(self, event) -> None:
-        if getattr(event, "num", None) == 4:
-            delta = 1
-        elif getattr(event, "num", None) == 5:
-            delta = -1
-        else:
-            delta = 1 if event.delta < 0 else -1
-        self._start_row += delta
+        notches = wheel.wheel_notches(self, event)
+        if not notches:
+            return "break"
+        self._start_row += -1 if notches > 0 else 1
         self._clamp()
         self._update_tiles()
+        return "break"
+
+    def _on_touchpad_scroll(self, event) -> None:
+        """Scroll by whole tile rows as a trackpad gesture accumulates pixels."""
+        _dx, dy = wheel.precise_deltas(event)
+        if not dy:
+            return "break"
+        _sx, rows = self._touchpad.add(0, dy, 1, self._row_h or 1)
+        if rows:
+            self._start_row -= rows
+            self._clamp()
+            self._update_tiles()
         return "break"
 
     def scroll_to_top(self) -> None:

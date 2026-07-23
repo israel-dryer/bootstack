@@ -5,6 +5,7 @@ from tkinter import TclError
 from typing import Any, Callable, Literal
 from typing_extensions import Unpack
 
+from bootstack._runtime import wheel
 from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets._impl.composites.list.listitem import ListItem
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
@@ -87,9 +88,8 @@ class ListView(Frame):
 
         self._accent = _user_accent or 'primary'
 
-        # Cache the windowing system so scroll bindings can dispatch
-        # platform-correctly: Aqua/Win send <MouseWheel>, X11 sends
-        # <Button-4>/<Button-5>.
+        # Cached for the platform branches elsewhere in this widget; scroll
+        # bindings resolve their own sequences through `_runtime.wheel`.
         self.winsys = self.tk.call('tk', 'windowingsystem')
 
         # Configuration
@@ -114,6 +114,7 @@ class ListView(Frame):
         self._prev_start_index = 0
         self._visible_rows = VISIBLE_ROWS
         self._row_height = ROW_HEIGHT
+        self._touchpad = wheel.PixelAccumulator()
         self._page_size = VISIBLE_ROWS + OVERSCAN_ROWS
 
         # Data source
@@ -570,15 +571,29 @@ class ListView(Frame):
     def _bind_scroll_events(self, widget) -> None:
         """Bind the platform-correct scroll-wheel events to `widget`.
 
-        On Aqua/Win the event is `<MouseWheel>` with `event.delta`
-        carrying direction and magnitude. On X11 there's no MouseWheel —
-        scroll up is `<Button-4>` and scroll down is `<Button-5>`.
+        A wheel arrives as `<MouseWheel>` everywhere except legacy X11,
+        where it is `<Button-4>`/`<Button-5>`. A trackpad or other
+        precise-delta device instead fires `<TouchpadScroll>` on Tk 8.7+.
         """
-        if self.winsys.lower() == 'x11':
-            widget.bind('<Button-4>', self._on_mousewheel, add='+')
-            widget.bind('<Button-5>', self._on_mousewheel, add='+')
-        else:
-            widget.bind('<MouseWheel>', self._on_mousewheel, add='+')
+        for seq in wheel.wheel_sequences(self):
+            widget.bind(seq, self._on_mousewheel, add='+')
+        if wheel.has_touchpad_scroll():
+            widget.bind(wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll, add='+')
+
+    def _pointer_within(self, event) -> bool:
+        """Whether the pointer is over this list or one of its descendants."""
+        widget_under_mouse = self.winfo_containing(event.x_root, event.y_root)
+        if widget_under_mouse is None:
+            return False
+        current = widget_under_mouse
+        while current is not None:
+            if current == self:
+                return True
+            try:
+                current = current.master
+            except AttributeError:
+                break
+        return False
 
     def _on_mousewheel(self, event):
         """Handle mouse wheel scrolling.
@@ -586,33 +601,32 @@ class ListView(Frame):
         Args:
             event: Tkinter mouse wheel event.
         """
-        # Check if mouse is over this widget
-        widget_under_mouse = self.winfo_containing(event.x_root, event.y_root)
-        if widget_under_mouse is None:
+        if not self._pointer_within(event):
             return
 
-        # Check if the widget under mouse is a child of this ListView
-        current = widget_under_mouse
-        is_child = False
-        while current is not None:
-            if current == self:
-                is_child = True
-                break
-            try:
-                current = current.master
-            except AttributeError:
-                break
+        notches = wheel.wheel_notches(self, event)
+        if not notches:
+            return
+        self._start_index += -1 if notches > 0 else 1
+        self._clamp_indices()
+        self._update_rows()
 
-        if not is_child:
+    def _on_touchpad_scroll(self, event):
+        """Scroll by whole rows as a trackpad gesture accumulates pixels.
+
+        Args:
+            event: Tkinter touchpad scroll event.
+        """
+        if not self._pointer_within(event):
             return
 
-        # Resolve scroll direction per platform: X11 carries it in event.num
-        # (4=up, 5=down) and has no event.delta; Aqua/Win use event.delta.
-        if self.winsys.lower() == 'x11':
-            delta = -1 if getattr(event, 'num', 0) == 4 else 1
-        else:
-            delta = -1 if event.delta > 0 else 1
-        self._start_index += delta
+        _dx, dy = wheel.precise_deltas(event)
+        if not dy:
+            return
+        _sx, rows = self._touchpad.add(0, dy, 1, self._row_height or 1)
+        if not rows:
+            return
+        self._start_index -= rows
         self._clamp_indices()
         self._update_rows()
 

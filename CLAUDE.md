@@ -21,6 +21,39 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.7 STAGED (NOT released) — Tk 9 scroll-event contract (branch
+  `fix/tk9-scroll-events`, commit `80b26b53`; 2026-07-23).** **#372** ("Scroll not
+  working on MacOS", user `cleonello`): scrolling
+  worked on Python 3.13.9, not 3.14.6. **It is NOT a Python change** — `tkinter`
+  is unchanged between those versions apart from docstrings, `after(**kw)`, and
+  `trace_variable` deprecation warnings. It is **Tcl/Tk 8.6 → 9.0** (reporter had
+  9.0.3; the python.org installer still ships **8.6.17**, which is why 3.13
+  "worked"). **Root cause, measured not inferred:** on Tk 9 + Aqua a trackpad
+  fires **only `<TouchpadScroll>`** — a probe logged **293 TouchpadScroll, ZERO
+  MouseWheel** — and every scrolling widget bound only `<MouseWheel>`. Two more
+  breaks in the same contract: Tk 9 normalizes wheel deltas to **±120** on all
+  platforms (so Aqua's `-event.delta` scrolled 120 units/notch), and X11
+  **Button-4/5 are no longer delivered to scripts** (TIP 474). **Fix:** new
+  **`_runtime/wheel.py`** (`wheel_sequences` / `wheel_notches` / `precise_deltas` /
+  `scale_num` / `PixelAccumulator`) replacing the delta branch **duplicated across
+  9 files**; bindings unconditional, X11 buttons kept only as a Tk ≤8.6 fallback
+  gated on **Tk version, not `winsys`**. Widgets copy Tk's **two** conventions:
+  *pixel* scrolling (ScrollView/TextArea/ScrolledText/Tabs) vs *accumulated whole
+  rows* (ListView/Tree/Gallery), plus a 40px/step throttle on the Spinbox/
+  NumberField steppers. **DataTable needed nothing** — Tk 9 binds TouchpadScroll on
+  the ttk Treeview class itself (verified). Incidental fix: a ScrollView notch moved
+  **10 canvas units on X11** vs 1 elsewhere; now 1 everywhere. Tests
+  **`test_scroll_events.py`** (25; 3 fail pre-fix). Verified on **Tk 9.0.4 AND
+  8.6.17** + confirmed live on a real trackpad. Full suite on Tk 9: **751 passed**,
+  only the 6 known pre-existing failures. `trace_variable`/`trace_vdelete`/
+  `trace_vinfo` (removed in Tcl 9) are **not used** anywhere — scrolling was the
+  only Tk 9 gap. Memory `reference_tk9_scroll_events`.
+  **Repro env:** `brew install python-tk@3.14` → `/opt/homebrew/opt/python@3.14/bin/python3.14`
+  (3.14.6 + Tcl/Tk 9.0.4). **⚠ The touchpad tests SKIP on Tk 8.6** — on the default
+  `.venv` the file reports "15 passed, 10 skipped" and looks green while testing
+  nothing about the fix. **There is no test workflow at all** (`.github/workflows/`
+  has only `docs.yml` + `release.yml`), so this can regress invisibly.
+
 - **0.1.6 STAGED (NOT yet released) — seven form/field/validation fixes
   (PRs #362–#368; 2026-07-21).** All merged to `main` under `## [Unreleased]`;
   **`pyproject.toml` is still `0.1.5`** — nothing is cut. Kicked off by the user
@@ -982,6 +1015,39 @@ maximized-drag re-anchors under the cursor. Memory `project_undecorated_window_c
 - **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
+
+### Known failing tests on macOS (triaged 2026-07-23 — NOT caused by the Tk 9 work)
+
+Seven failures on `main` on macOS. **Six are test defects, one is a real bug.**
+Verified by running them against unmodified `src` (identical set) — do not chase
+them as regressions.
+
+- **REAL BUG — FIXED (`fix/attach-theme-repaint`, commit `76e327b6`).**
+  `test_chart.py::test_theme_change_while_hidden_applies_on_return` reproduced in
+  isolation (not order-dependent). A theme changed while a widget was
+  **`detach()`ed** was never applied on `attach()` — facecolor stayed `#ffffff`
+  under a `#212529` theme. **Root cause:** the #338 repaint design drives
+  `apply_theme_walk(only_stale=True)` from **show-triggers**, and those existed ONLY
+  in `PageStack` (`pagestack.py:236`) and `Expander` (`expander.py:273`).
+  **`attach()` (`_core/base.py:312`) was never wired in** — the #123 detach/attach
+  feature and the #338 repaint unification never met. `Chart` correctly defines
+  `_bs_apply_theme`; it just never got walked. Platform-independent, so it was
+  failing everywhere, not only on macOS. Fix = `_recolor_on_attach()` fires the
+  stale walk at idle from **both** `attach()` exit paths (the flex branch returns
+  early — wiring only the pack/grid/place tail would have missed every
+  `Row`/`Column` child). Applies to every self-painting widget, not just `Chart`.
+- **Test defects — assume the Win/Linux menu backend, no macOS guard** (on macOS
+  the backend is `_NativeContextMenu`, which has no `_toplevel`/`_items`):
+  `test_add_toolbar.py::test_bridge_inactive_on_non_macos` (asserts
+  `not _menus_are_native()` — literally named "non_macos", never skipped ON macOS),
+  `test_overlay_container_coverage.py::test_propagate_skips_nested_toplevels`,
+  `test_select_options.py::test_selectbutton_disabled_menu_item`,
+  `test_toolbar_menu.py::test_add_menu_builds_model_and_trigger`. All want a
+  macOS skip or a backend-agnostic assertion.
+- **Order-dependent — `test_pagestack.py::test_visited_pages_stay_mapped_on_macos`
+  + `::test_return_after_many_visits_does_not_remap_on_macos`.** Both **PASS alone**
+  (`4 passed` for the file) and fail only in the full shared-root run — state
+  pollution from an earlier test, not a product bug.
 
 **Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
 framework code). Side note logged: a future `Tabs` `variant='secondary'` (top

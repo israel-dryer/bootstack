@@ -15,6 +15,7 @@ from __future__ import annotations
 from tkinter import TclError
 from typing import Any, Callable, Iterator, Literal, Optional
 
+from bootstack._runtime import wheel
 from bootstack.widgets._impl.composites.tree.treeitem import TreeItem, EMPTY
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
@@ -91,6 +92,7 @@ class TreeView(Frame):
         self._prev_start_index = 0
         self._visible_rows = VISIBLE_ROWS
         self._row_height = ROW_HEIGHT
+        self._touchpad = wheel.PixelAccumulator()
         self._page_size = VISIBLE_ROWS + OVERSCAN_ROWS
         self._rows: list[TreeItem] = []
         self._mousewheel_bound: set = set()
@@ -301,11 +303,10 @@ class TreeView(Frame):
         self._update_rows()
 
     def _bind_scroll_events(self, widget) -> None:
-        if self.winsys.lower() == "x11":
-            widget.bind("<Button-4>", self._on_mousewheel, add="+")
-            widget.bind("<Button-5>", self._on_mousewheel, add="+")
-        else:
-            widget.bind("<MouseWheel>", self._on_mousewheel, add="+")
+        for seq in wheel.wheel_sequences(self):
+            widget.bind(seq, self._on_mousewheel, add="+")
+        if wheel.has_touchpad_scroll():
+            widget.bind(wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll, add="+")
 
     def _bind_mousewheel_recursive(self, widget) -> None:
         wid = str(widget)
@@ -318,26 +319,42 @@ class TreeView(Frame):
         except Exception:
             pass
 
-    def _on_mousewheel(self, event) -> None:
+    def _pointer_within(self, event) -> bool:
+        """Whether the pointer is over this tree or one of its descendants."""
         under = self.winfo_containing(event.x_root, event.y_root)
         if under is None:
-            return
-        cur, is_child = under, False
+            return False
+        cur = under
         while cur is not None:
             if cur == self:
-                is_child = True
-                break
+                return True
             try:
                 cur = cur.master
             except AttributeError:
                 break
-        if not is_child:
+        return False
+
+    def _on_mousewheel(self, event) -> None:
+        if not self._pointer_within(event):
             return
-        if self.winsys.lower() == "x11":
-            delta = -1 if getattr(event, "num", 0) == 4 else 1
-        else:
-            delta = -1 if event.delta > 0 else 1
-        self._start_index += delta
+        notches = wheel.wheel_notches(self, event)
+        if not notches:
+            return
+        self._start_index += -1 if notches > 0 else 1
+        self._clamp_indices()
+        self._update_rows()
+
+    def _on_touchpad_scroll(self, event) -> None:
+        """Scroll by whole rows as a trackpad gesture accumulates pixels."""
+        if not self._pointer_within(event):
+            return
+        _dx, dy = wheel.precise_deltas(event)
+        if not dy:
+            return
+        _sx, rows = self._touchpad.add(0, dy, 1, self._row_height or 1)
+        if not rows:
+            return
+        self._start_index -= rows
         self._clamp_indices()
         self._update_rows()
 
