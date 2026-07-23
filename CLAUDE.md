@@ -1022,17 +1022,20 @@ Seven failures on `main` on macOS. **Six are test defects, one is a real bug.**
 Verified by running them against unmodified `src` (identical set) — do not chase
 them as regressions.
 
-- **REAL BUG — `test_chart.py::test_theme_change_while_hidden_applies_on_return`.**
-  Reproduces in isolation (not order-dependent). A theme changed while a widget is
-  **`detach()`ed** is never applied on `attach()` — facecolor stays `#ffffff` under
-  a `#212529` theme. **Root cause:** the #338 repaint design drives
-  `apply_theme_walk(only_stale=True)` from **show-triggers**, and those exist ONLY
+- **REAL BUG — FIXED (`fix/attach-theme-repaint`, commit `76e327b6`).**
+  `test_chart.py::test_theme_change_while_hidden_applies_on_return` reproduced in
+  isolation (not order-dependent). A theme changed while a widget was
+  **`detach()`ed** was never applied on `attach()` — facecolor stayed `#ffffff`
+  under a `#212529` theme. **Root cause:** the #338 repaint design drives
+  `apply_theme_walk(only_stale=True)` from **show-triggers**, and those existed ONLY
   in `PageStack` (`pagestack.py:236`) and `Expander` (`expander.py:273`).
   **`attach()` (`_core/base.py:312`) was never wired in** — the #123 detach/attach
   feature and the #338 repaint unification never met. `Chart` correctly defines
-  `_bs_apply_theme`; it just never gets walked. Platform-independent (nothing
-  macOS-specific), so it likely fails everywhere. **Fix = fire the stale walk from
-  `attach()`.** Not filed yet.
+  `_bs_apply_theme`; it just never got walked. Platform-independent, so it was
+  failing everywhere, not only on macOS. Fix = `_recolor_on_attach()` fires the
+  stale walk at idle from **both** `attach()` exit paths (the flex branch returns
+  early — wiring only the pack/grid/place tail would have missed every
+  `Row`/`Column` child). Applies to every self-painting widget, not just `Chart`.
 - **Test defects — assume the Win/Linux menu backend, no macOS guard** (on macOS
   the backend is `_NativeContextMenu`, which has no `_toplevel`/`_items`):
   `test_add_toolbar.py::test_bridge_inactive_on_non_macos` (asserts
