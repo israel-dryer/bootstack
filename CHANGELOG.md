@@ -19,7 +19,7 @@ and from 0.1.0 onward the project adheres to
   linked against Tk 9 — scrolling did nothing at all in `ScrollView`,
   `ListView`, `Tree`, `TextArea`, `CodeEditor`, `Gallery`, and the `Tabs`
   strip. Reported against Python 3.14.6 with Tcl/Tk 9.0.3; the same code runs
-  correctly on Python 3.13 only because it ships Tk 8.6.
+  correctly on Python 3.13 only because it ships Tk 8.6. (#372)
 - **A wheel notch scrolls by one step on Tk 9, not by a hundred and twenty.**
   Tk 9 normalized wheel deltas across platforms; on macOS the old reading
   scrolled a full view per notch.

@@ -22,7 +22,8 @@ Pointers only — these shipped; rationale, detail, and gotchas live in the link
 memories and git history.
 
 - **0.1.7 STAGED (NOT released) — Tk 9 scroll-event contract (branch
-  `fix/tk9-scroll-events`, commit `80b26b53`; 2026-07-23).** User report: scrolling
+  `fix/tk9-scroll-events`, commit `80b26b53`; 2026-07-23).** **#372** ("Scroll not
+  working on MacOS", user `cleonello`): scrolling
   worked on Python 3.13.9, not 3.14.6. **It is NOT a Python change** — `tkinter`
   is unchanged between those versions apart from docstrings, `after(**kw)`, and
   `trace_variable` deprecation warnings. It is **Tcl/Tk 8.6 → 9.0** (reporter had
