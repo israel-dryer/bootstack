@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.1.8] — macOS sizing on Tcl/Tk 9
 
 ### Fixed
 
@@ -289,6 +289,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.1.8]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.8
 [0.1.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.7
 [0.1.6]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.6
 [0.1.5]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.5
