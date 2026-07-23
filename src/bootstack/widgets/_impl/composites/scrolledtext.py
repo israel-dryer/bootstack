@@ -6,6 +6,7 @@ from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets.types import Master
+from bootstack._runtime import wheel
 
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
 ScrollbarVisibility = Literal['always', 'never', 'hover', 'scroll']
@@ -176,14 +177,12 @@ class ScrolledText(Frame):
 
     def _setup_scroll_tag_bindings(self):
         """Setup bindings on our custom bind tag."""
-        if self.winsys.lower() == "x11":
-            self.bind_class(self._scroll_tag, "<Button-4>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Button-5>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-Button-4>", self._on_shift_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-Button-5>", self._on_shift_mousewheel)
-        else:
-            self.bind_class(self._scroll_tag, "<MouseWheel>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-MouseWheel>", self._on_shift_mousewheel)
+        for seq in wheel.wheel_sequences(self):
+            self.bind_class(self._scroll_tag, seq, self._on_mousewheel)
+        for seq in wheel.wheel_sequences(self, shift=True):
+            self.bind_class(self._scroll_tag, seq, self._on_shift_mousewheel)
+        if wheel.has_touchpad_scroll():
+            self.bind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll)
 
     def _layout_widgets(self):
         """Layout the text widget and scrollbars."""
@@ -265,16 +264,7 @@ class ScrolledText(Frame):
                 self.after_cancel(self._hide_timer)
             self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
 
-        # Calculate delta based on platform
-        delta = 0
-        if self.winsys.lower() == "win32":
-            delta = -int(event.delta / 120)
-        elif self.winsys.lower() == "aqua":
-            delta = -event.delta
-        elif event.num == 4:
-            delta = -1
-        elif event.num == 5:
-            delta = 1
+        delta = -round(wheel.wheel_notches(self, event))
 
         # Scroll vertically
         if self._direction in ('vertical', 'both') and delta != 0:
@@ -289,20 +279,32 @@ class ScrolledText(Frame):
                 self.after_cancel(self._hide_timer)
             self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
 
-        # Calculate delta based on platform
-        delta = 0
-        if self.winsys.lower() == "win32":
-            delta = -int(event.delta / 120)
-        elif self.winsys.lower() == "aqua":
-            delta = -event.delta
-        elif event.num == 4:
-            delta = -1
-        elif event.num == 5:
-            delta = 1
+        delta = -round(wheel.wheel_notches(self, event))
 
         # Scroll horizontally
         if self._direction in ('horizontal', 'both') and delta != 0:
             self._text.xview_scroll(delta, 'units')
+
+    def _on_touchpad_scroll(self, event):
+        """Handle a precise-delta scroll gesture (trackpad).
+
+        A text widget scrolls by pixels directly, so the deltas are spent
+        as they arrive rather than accumulated into whole lines.
+        """
+        dx, dy = wheel.precise_deltas(event)
+        if not dx and not dy:
+            return
+
+        if self._scrollbar_visibility == 'scroll':
+            self._show_scrollbars()
+            if self._hide_timer:
+                self.after_cancel(self._hide_timer)
+            self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
+
+        if dy and self._direction in ('vertical', 'both'):
+            self._text.yview_scroll(wheel.scale_num(self, -dy), 'pixels')
+        if dx and self._direction in ('horizontal', 'both'):
+            self._text.xview_scroll(wheel.scale_num(self, -dx), 'pixels')
 
     def _add_scroll_binding(self, widget):
         """Add scroll bind tag to widget."""
@@ -325,14 +327,10 @@ class ScrolledText(Frame):
             self._hide_timer = None
 
         # Unbind class bindings for the scroll tag
-        if self.winsys.lower() == "x11":
-            self.unbind_class(self._scroll_tag, "<Button-4>")
-            self.unbind_class(self._scroll_tag, "<Button-5>")
-            self.unbind_class(self._scroll_tag, "<Shift-Button-4>")
-            self.unbind_class(self._scroll_tag, "<Shift-Button-5>")
-        else:
-            self.unbind_class(self._scroll_tag, "<MouseWheel>")
-            self.unbind_class(self._scroll_tag, "<Shift-MouseWheel>")
+        for seq in wheel.wheel_sequences(self) + wheel.wheel_sequences(self, shift=True):
+            self.unbind_class(self._scroll_tag, seq)
+        if wheel.has_touchpad_scroll():
+            self.unbind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL)
 
         # Call parent destroy
         super().destroy()

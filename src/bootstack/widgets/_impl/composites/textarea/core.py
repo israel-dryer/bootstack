@@ -8,6 +8,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Callable, Literal
 
+from bootstack._runtime import wheel
 from bootstack.events import TextModifiedEvent
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter, FilterChain
@@ -212,26 +213,25 @@ class _MultilineCore(tk.Frame):
     # ── mousewheel ────────────────────────────────────────────────────────
 
     def _setup_mousewheel(self) -> None:
-        if self.winsys == "x11":
-            self.bind_class(self._scroll_tag, "<Button-4>", self._on_wheel)
-            self.bind_class(self._scroll_tag, "<Button-5>", self._on_wheel)
-        else:
-            self.bind_class(self._scroll_tag, "<MouseWheel>", self._on_wheel)
+        for seq in wheel.wheel_sequences(self):
+            self.bind_class(self._scroll_tag, seq, self._on_wheel)
+        if wheel.has_touchpad_scroll():
+            self.bind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll)
         tags = list(self.text.bindtags())
         if self._scroll_tag not in tags:
             tags.insert(1, self._scroll_tag)
             self.text.bindtags(tuple(tags))
 
     def _on_wheel(self, event: tk.Event) -> None:
-        if self.winsys == "win32":
-            delta = -int(event.delta / 120)
-        elif self.winsys == "aqua":
-            delta = -event.delta
-        elif event.num == 4:
-            delta = -1
-        else:
-            delta = 1
-        self.text.yview_scroll(delta, "units")
+        delta = -round(wheel.wheel_notches(self, event))
+        if delta:
+            self.text.yview_scroll(delta, "units")
+
+    def _on_touchpad_scroll(self, event: tk.Event) -> None:
+        """Scroll by precise pixel deltas from a trackpad gesture."""
+        _dx, dy = wheel.precise_deltas(event)
+        if dy:
+            self.text.yview_scroll(wheel.scale_num(self, -dy), "pixels")
 
     # ── value / signal ────────────────────────────────────────────────────
 
@@ -486,10 +486,9 @@ class _MultilineCore(tk.Frame):
         self._unbind_signal()
         self._chain.destroy()
         try:
-            if self.winsys == "x11":
-                self.unbind_class(self._scroll_tag, "<Button-4>")
-                self.unbind_class(self._scroll_tag, "<Button-5>")
-            else:
-                self.unbind_class(self._scroll_tag, "<MouseWheel>")
+            for seq in wheel.wheel_sequences(self):
+                self.unbind_class(self._scroll_tag, seq)
+            if wheel.has_touchpad_scroll():
+                self.unbind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL)
         except Exception:
             pass

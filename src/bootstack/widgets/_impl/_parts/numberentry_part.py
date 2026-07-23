@@ -6,9 +6,13 @@ wheel support.
 """
 
 
+from bootstack._runtime import wheel
 from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl._parts.textentry_part import TextEntryPart
+
+_TOUCHPAD_STEP_PX = 40
+"""Trackpad travel, in pixels, that advances a stepper by one increment."""
 
 
 class NumberEntryPart(TextEntryPart):
@@ -111,12 +115,13 @@ class NumberEntryPart(TextEntryPart):
         self.bind('<Up>', self._handle_up_key, add=True)
         self.bind('<Down>', self._handle_down_key, add=True)
 
-        # Bind mouse wheel (Windows/macOS)
-        self.bind('<MouseWheel>', self._handle_mouse_wheel, add=True)
-
-        # Bind mouse wheel (Linux/X11)
-        self.bind('<Button-4>', self._handle_wheel_up, add=True)
-        self.bind('<Button-5>', self._handle_wheel_down, add=True)
+        # Bind wheel stepping. A wheel arrives as <MouseWheel> everywhere
+        # except legacy X11; a trackpad fires <TouchpadScroll> on Tk 8.7+.
+        for seq in wheel.wheel_sequences(self):
+            self.bind(seq, self._handle_mouse_wheel, add=True)
+        if wheel.has_touchpad_scroll():
+            self._touchpad = wheel.PixelAccumulator()
+            self.bind(wheel.TOUCHPAD_SCROLL, self._handle_touchpad_scroll, add=True)
 
         # Listen for increment/decrement events to invoke step
         self.bind('<<Increment>>', self._handle_increment_event, add=True)
@@ -137,33 +142,28 @@ class NumberEntryPart(TextEntryPart):
         return 'break'  # Prevent default behavior
 
     def _handle_mouse_wheel(self, event):
-        """Handle mouse wheel on Windows/macOS."""
+        """Handle a wheel notch by stepping the value once."""
         if not self._is_interactive():
             return 'break'
-        try:
-            delta = int(event.delta)
-        except (AttributeError, ValueError):
-            delta = 0
-
-        if delta != 0:
-            if delta > 0:
-                self.event_generate('<<Increment>>', data={'value': self._value})
-            else:
-                self.event_generate('<<Decrement>>', data={'value': self._value})
+        notches = wheel.wheel_notches(self, event)
+        if notches:
+            name = '<<Increment>>' if notches > 0 else '<<Decrement>>'
+            self.event_generate(name, data={'value': self._value})
         return 'break'
 
-    def _handle_wheel_up(self, event):
-        """Handle mouse wheel up on Linux/X11."""
-        if not self._is_interactive():
-            return 'break'
-        self.event_generate('<<Increment>>', data={'value': self._value})
-        return 'break'
+    def _handle_touchpad_scroll(self, event):
+        """Step once per `_TOUCHPAD_STEP_PX` of trackpad travel.
 
-    def _handle_wheel_down(self, event):
-        """Handle mouse wheel down on Linux/X11."""
+        A trackpad reports around sixty events a second; stepping on each
+        one would run the value away from the user.
+        """
         if not self._is_interactive():
             return 'break'
-        self.event_generate('<<Decrement>>', data={'value': self._value})
+        _dx, dy = wheel.precise_deltas(event)
+        _sx, steps = self._touchpad.add(0, dy, 1, _TOUCHPAD_STEP_PX)
+        name = '<<Increment>>' if steps > 0 else '<<Decrement>>'
+        for _ in range(abs(steps)):
+            self.event_generate(name, data={'value': self._value})
         return 'break'
 
     def _handle_increment_event(self, event):

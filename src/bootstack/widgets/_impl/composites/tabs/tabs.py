@@ -8,6 +8,7 @@ from tkinter import Variable
 from typing_extensions import Unpack
 from typing import Any, Callable, Literal, TYPE_CHECKING
 
+from bootstack._runtime import wheel
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.primitives.separator import Separator
@@ -773,12 +774,12 @@ class Tabs(Frame):
 
     def _setup_wheel_bindings(self) -> None:
         """Bind wheel scrolling along the strip axis via a private bindtag."""
-        winsys = self.tk.call('tk', 'windowingsystem')
-        if winsys == 'x11':
-            self.bind_class(self._wheel_tag, '<Button-4>', self._on_strip_wheel, add='+')
-            self.bind_class(self._wheel_tag, '<Button-5>', self._on_strip_wheel, add='+')
-        else:
-            self.bind_class(self._wheel_tag, '<MouseWheel>', self._on_strip_wheel, add='+')
+        for seq in wheel.wheel_sequences(self):
+            self.bind_class(self._wheel_tag, seq, self._on_strip_wheel, add='+')
+        if wheel.has_touchpad_scroll():
+            self.bind_class(
+                self._wheel_tag, wheel.TOUCHPAD_SCROLL, self._on_strip_touchpad, add='+'
+            )
         self._add_wheel_binding(self._tab_bar)
 
     def _add_wheel_binding(self, widget) -> None:
@@ -801,24 +802,28 @@ class Tabs(Frame):
         """Scroll the strip along its axis in response to the mouse wheel."""
         if not self._scrollable or not self._content_overflows():
             return None
-        winsys = self.tk.call('tk', 'windowingsystem')
-        if winsys == 'win32':
-            notches = -event.delta / 120
-        elif winsys == 'aqua':
-            notches = -event.delta
-        elif getattr(event, 'num', None) == 4:
-            notches = -1
-        elif getattr(event, 'num', None) == 5:
-            notches = 1
-        else:
-            notches = 0
+        notches = -wheel.wheel_notches(self, event)
         if not notches:
             return 'break'
+        return self._scroll_strip_pixels(60 * notches)
+
+    def _on_strip_touchpad(self, event) -> str | None:
+        """Scroll the strip by precise pixel deltas from a trackpad."""
+        if not self._scrollable or not self._content_overflows():
+            return None
+        dx, dy = wheel.precise_deltas(event)
+        # The strip is one-dimensional; take whichever axis the gesture used.
+        pixels = dx if abs(dx) > abs(dy) else dy
+        if not pixels:
+            return 'break'
+        return self._scroll_strip_pixels(wheel.scale_num(self, -pixels))
+
+    def _scroll_strip_pixels(self, step: float) -> str | None:
+        """Move the strip by `step` pixels along its scrolling axis."""
         content = self._content_size()
         view = self._viewport_size()
         if content <= view:
             return 'break'
-        step = 60 * notches
         lead = self._view_first() * content
         lead = max(0, min(lead + step, content - view))
         self._view_moveto(lead / content)

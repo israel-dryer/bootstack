@@ -12,6 +12,22 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **Scrolling works again on Tcl/Tk 9.** A trackpad, Magic Mouse, or Magic
+  Trackpad reports precise scroll deltas, which Tk 9 delivers as a different
+  event than a mouse wheel. Every scrolling widget listened only for the
+  wheel, so on a Mac running Tk 9 — a Homebrew or conda Python, or any build
+  linked against Tk 9 — scrolling did nothing at all in `ScrollView`,
+  `ListView`, `Tree`, `TextArea`, `CodeEditor`, `Gallery`, and the `Tabs`
+  strip. Reported against Python 3.14.6 with Tcl/Tk 9.0.3; the same code runs
+  correctly on Python 3.13 only because it ships Tk 8.6.
+- **A wheel notch scrolls by one step on Tk 9, not by a hundred and twenty.**
+  Tk 9 normalized wheel deltas across platforms; on macOS the old reading
+  scrolled a full view per notch.
+- **Wheel scrolling works on Linux with Tk 9.** Tk 9 stopped delivering the
+  X11 wheel buttons to applications, and the affected widgets listened for
+  nothing else there.
+- **A wheel notch scrolls a `ScrollView` consistently across platforms.** On
+  Linux one notch moved the view ten times as far as it did elsewhere.
 - **A widget detached across a theme change is recolored when you attach it
   back.** Widgets that paint themselves — charts, gauges, and the other
   canvas-drawn widgets — skip a theme change while they are off screen and

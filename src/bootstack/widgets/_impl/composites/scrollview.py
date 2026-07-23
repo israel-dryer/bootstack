@@ -8,6 +8,7 @@ from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets.types import Master
 from bootstack.events import ScrollEvent
+from bootstack._runtime import wheel
 
 
 class ScrollView(Frame):
@@ -74,6 +75,7 @@ class ScrollView(Frame):
 
         # Create unique bind tag for this scrollview
         self._scroll_tag = f'ScrollView_{id(self)}'
+        self._touchpad = wheel.PixelAccumulator()
 
         # Detect windowing system
         self.winsys = self.tk.call("tk", "windowingsystem")
@@ -231,14 +233,12 @@ class ScrollView(Frame):
 
     def _setup_scroll_tag_bindings(self):
         """Setup bindings on our custom bind tag."""
-        if self.winsys.lower() == "x11":
-            self.bind_class(self._scroll_tag, "<Button-4>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Button-5>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-Button-4>", self._on_shift_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-Button-5>", self._on_shift_mousewheel)
-        else:
-            self.bind_class(self._scroll_tag, "<MouseWheel>", self._on_mousewheel)
-            self.bind_class(self._scroll_tag, "<Shift-MouseWheel>", self._on_shift_mousewheel)
+        for seq in wheel.wheel_sequences(self):
+            self.bind_class(self._scroll_tag, seq, self._on_mousewheel)
+        for seq in wheel.wheel_sequences(self, shift=True):
+            self.bind_class(self._scroll_tag, seq, self._on_shift_mousewheel)
+        if wheel.has_touchpad_scroll():
+            self.bind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll)
 
     def _setup_keyboard_bindings(self) -> None:
         """Bind arrow / page / home / end keys to the canvas for keyboard scroll."""
@@ -501,16 +501,7 @@ class ScrollView(Frame):
                 self.after_cancel(self._hide_timer)
             self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
 
-        # Calculate delta based on platform
-        delta = 0
-        if self.winsys.lower() == "win32":
-            delta = -int(event.delta / 120)
-        elif self.winsys.lower() == "aqua":
-            delta = -event.delta
-        elif event.num == 4:
-            delta = -10
-        elif event.num == 5:
-            delta = 10
+        delta = -round(wheel.wheel_notches(self, event))
 
         # Scroll vertically
         if self._direction in ('vertical', 'both') and delta != 0:
@@ -538,22 +529,40 @@ class ScrollView(Frame):
                 self.after_cancel(self._hide_timer)
             self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
 
-        # Calculate delta based on platform
-        delta = 0
-        if self.winsys.lower() == "win32":
-            delta = -int(event.delta / 120)
-        elif self.winsys.lower() == "aqua":
-            delta = -event.delta
-        elif event.num == 4:
-            delta = -10
-        elif event.num == 5:
-            delta = 10
+        delta = -round(wheel.wheel_notches(self, event))
 
         # Scroll horizontally
         if self._direction in ('horizontal', 'both') and delta != 0:
             self.canvas.xview_scroll(delta, 'units')
 
         # Don't return 'break' - allow event to propagate if needed
+
+    def _on_touchpad_scroll(self, event):
+        """Handle a precise-delta scroll gesture (trackpad).
+
+        Tk reports these roughly sixty times a second in pixels, while the
+        canvas scrolls in units of a tenth of the viewport. Pixels are
+        accumulated and spent as whole units so a gesture stays smooth.
+        """
+        dx, dy = wheel.precise_deltas(event)
+        if not dx and not dy:
+            return
+
+        if self._scrollbar_visibility == 'scroll':
+            self._show_scrollbars()
+            if self._hide_timer:
+                self.after_cancel(self._hide_timer)
+            self._hide_timer = self.after(self._autohide_delay, self._hide_scrollbars)
+
+        # A canvas unit is a tenth of the viewport unless an increment is set.
+        step_x = self.canvas.winfo_width() / 10 or 1
+        step_y = self.canvas.winfo_height() / 10 or 1
+        units_x, units_y = self._touchpad.add(dx, dy, step_x, step_y)
+
+        if units_y and self._direction in ('vertical', 'both'):
+            self.canvas.yview_scroll(-units_y, 'units')
+        if units_x and self._direction in ('horizontal', 'both'):
+            self.canvas.xview_scroll(-units_x, 'units')
 
     def _add_scroll_binding(self, widget):
         """Recursively add scroll bind tag to widget and all descendants."""
@@ -750,14 +759,10 @@ class ScrollView(Frame):
             self.disable_scrolling()
 
         # Unbind class bindings for the scroll tag
-        if self.winsys.lower() == "x11":
-            self.unbind_class(self._scroll_tag, "<Button-4>")
-            self.unbind_class(self._scroll_tag, "<Button-5>")
-            self.unbind_class(self._scroll_tag, "<Shift-Button-4>")
-            self.unbind_class(self._scroll_tag, "<Shift-Button-5>")
-        else:
-            self.unbind_class(self._scroll_tag, "<MouseWheel>")
-            self.unbind_class(self._scroll_tag, "<Shift-MouseWheel>")
+        for seq in wheel.wheel_sequences(self) + wheel.wheel_sequences(self, shift=True):
+            self.unbind_class(self._scroll_tag, seq)
+        if wheel.has_touchpad_scroll():
+            self.unbind_class(self._scroll_tag, wheel.TOUCHPAD_SCROLL)
 
         # Call parent destroy
         super().destroy()

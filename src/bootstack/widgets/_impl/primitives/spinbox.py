@@ -4,6 +4,7 @@ from tkinter import ttk
 from typing import Any, TYPE_CHECKING
 from typing_extensions import Unpack
 
+from bootstack._runtime import wheel
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._impl._internal.wrapper_base import TTKWrapperBase
@@ -12,6 +13,9 @@ from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
+
+_TOUCHPAD_STEP_PX = 40
+"""Trackpad travel, in pixels, that advances a stepper by one increment."""
 
 
 class SpinboxKwargs(StyledKwargs, total=False):
@@ -71,15 +75,28 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
         # Handle mousewheel explicitly so we can return "break" and stop the
         # event from leaking to parent scroll containers. Instance bindings run
         # before class bindings in Tk's chain, so we must do the spin ourselves.
-        self.bind("<MouseWheel>", self._on_mousewheel)
-        self.bind("<Button-4>", self._on_mousewheel)
-        self.bind("<Button-5>", self._on_mousewheel)
+        for seq in wheel.wheel_sequences(self):
+            self.bind(seq, self._on_mousewheel)
+        if wheel.has_touchpad_scroll():
+            self._touchpad = wheel.PixelAccumulator()
+            self.bind(wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll)
 
     def _on_mousewheel(self, event):
-        if event.delta > 0 or event.num == 4:
-            self.event_generate("<Up>")
-        else:
-            self.event_generate("<Down>")
+        notches = wheel.wheel_notches(self, event)
+        if notches:
+            self.event_generate("<Up>" if notches > 0 else "<Down>")
+        return "break"
+
+    def _on_touchpad_scroll(self, event):
+        """Step once per `_TOUCHPAD_STEP_PX` of trackpad travel.
+
+        A trackpad reports around sixty events a second; stepping on each
+        one would run the value away from the user.
+        """
+        _dx, dy = wheel.precise_deltas(event)
+        _sx, steps = self._touchpad.add(0, dy, 1, _TOUCHPAD_STEP_PX)
+        for _ in range(abs(steps)):
+            self.event_generate("<Up>" if steps > 0 else "<Down>")
         return "break"
 
 
