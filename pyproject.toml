@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bootstack"
-version = "0.1.6"
+version = "0.1.7"
 description = "Build desktop GUI apps in pure Python and ship them as a standalone executable — built on Tk, no Tkinter boilerplate."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -114,7 +114,7 @@ where = ["src"]
 ]
 
 [tool.bumpversion]
-current_version = "0.1.6"
+current_version = "0.1.7"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<pre>a|b|rc)(?P<pre_n>\\d+))?"
 serialize = [
     "{major}.{minor}.{patch}{pre}{pre_n}",
