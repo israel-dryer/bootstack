@@ -383,3 +383,73 @@ def test_relayout_fires_no_spurious_sibling_events(app, pump):
     a.attach()
     pump()
     assert events == ["detach", "attach"]
+
+
+# --- theme repaint on re-attach ------------------------------------------
+
+
+def test_attach_recolors_after_a_theme_change_while_detached(app, pump, monkeypatch):
+    """Re-attaching triggers the stale-theme walk.
+
+    The theme walk skips off-screen widgets, so a widget detached across a
+    theme change comes back carrying the old palette. Before this was wired
+    up, `apply_theme_walk` ran only from PageStack navigation and Expander
+    expansion, never from `attach()` — a chart hidden with `detach()` across
+    a theme toggle stayed light on a dark theme.
+    """
+    from bootstack.style.style import get_style
+
+    calls: list[bool] = []
+    style = get_style()
+    original = style.apply_theme_walk
+
+    def spy(root_widget, *, only_stale):
+        calls.append(only_stale)
+        return original(root_widget, only_stale=only_stale)
+
+    monkeypatch.setattr(style, "apply_theme_walk", spy)
+
+    col = bs.Column()
+    btn = bs.Button("A", parent=col)
+    pump()
+
+    btn.detach()
+    pump()
+    calls.clear()
+
+    btn.attach()
+    pump()
+
+    assert calls, "attach() did not trigger a theme walk"
+    assert all(only_stale for only_stale in calls), (
+        "the walk must be stale-only; a full walk on every attach is wasteful"
+    )
+
+
+def test_attach_recolors_in_a_grid_placement(app, pump, monkeypatch):
+    """The trigger covers the pack/grid/place path, not just the flex one."""
+    from bootstack.style.style import get_style
+
+    calls: list[bool] = []
+    style = get_style()
+    original = style.apply_theme_walk
+    monkeypatch.setattr(
+        style,
+        "apply_theme_walk",
+        lambda root_widget, *, only_stale: (
+            calls.append(only_stale) or original(root_widget, only_stale=only_stale)
+        ),
+    )
+
+    grid = bs.Grid(columns=2)
+    btn = bs.Button("A", parent=grid, row=0, column=0)
+    pump()
+
+    btn.detach()
+    pump()
+    calls.clear()
+
+    btn.attach()
+    pump()
+
+    assert calls, "attach() in a grid placement did not trigger a theme walk"

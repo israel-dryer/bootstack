@@ -355,6 +355,7 @@ class PublicWidgetBase:
                 options.update(_flex_child_opts(self, kwargs))
             master.add_child(self._internal, options, index=index)
             placement.options = options
+            self._recolor_on_attach()
             return
 
         if kwargs:
@@ -376,6 +377,29 @@ class PublicWidgetBase:
             options.update({k: v for k, v in kwargs.items() if k in PLACE_KEYS})
             self._internal.place(in_=master, **options)
         placement.options = options
+        self._recolor_on_attach()
+
+    def _recolor_on_attach(self) -> None:
+        """Recolor after a theme change that arrived while detached.
+
+        The theme walk skips off-screen widgets, so a widget detached across a
+        theme change comes back carrying the old palette. Attaching is the
+        genuine "now visible" trigger, matching PageStack navigation and
+        Expander expansion. Deferred to idle so the widget is mapped first.
+        """
+        widget = self._internal
+
+        def _recolor() -> None:
+            from bootstack.style.style import get_style
+            try:
+                get_style().apply_theme_walk(widget, only_stale=True)
+            except tkinter.TclError:
+                pass  # destroyed between attach and the idle callback
+
+        try:
+            widget.after_idle(_recolor)
+        except tkinter.TclError:
+            pass
 
     @overload
     def on_destroy(self) -> "Stream": ...
