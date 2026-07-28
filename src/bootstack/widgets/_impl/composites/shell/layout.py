@@ -222,8 +222,6 @@ class ShellLayout(App):
         if self._show_dock:
             self._dock.pack(side="right", fill="y")
 
-    # ----- Region visibility -----
-
     # ----- Region sizing -----
 
     def set_rail_width(self, width: int) -> None:
