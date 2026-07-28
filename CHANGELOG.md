@@ -8,6 +8,27 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A misspelled mode argument now tells you, instead of quietly doing
+  something else.** Arguments that name a behavior mode — `selection_mode`,
+  `sorting_mode`, `paging_mode`, `scrollbars`, `scroll_direction`,
+  `scrollbar_visibility`, and the `mode` on `ToggleGroup` and `PathField` — are
+  read by comparing against one value, so a near miss such as
+  `selection_mode="multiple"` used to switch multi-select off without a word.
+  Passing a value outside the documented set now raises `InvalidChoiceError`
+  naming the value and listing what is accepted. Covers `DataTable`,
+  `ListView`, `Tree`, `Gallery`, `Calendar`, `DateField`, `ToggleGroup`,
+  `PathField`, `ScrollView`, `TextArea`, and `CodeEditor`. (#381)
+
+### Added
+
+- **`InvalidChoiceError`** in `bootstack.errors`, raised when an argument with
+  a closed set of values is given something outside it. It is both a
+  `BootstackError` and a `ValueError`, so either one catches it. (#381)
+
 ## [0.1.8] — macOS sizing on Tcl/Tk 9
 
 ### Fixed

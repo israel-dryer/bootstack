@@ -96,6 +96,28 @@ object, use an in-memory source instead:
    except SerializationError as err:
        print("can't persist that:", err)
 
+``InvalidChoiceError``
+~~~~~~~~~~~~~~~~~~~~~~
+
+Raised at construction when an argument that names a behavior mode is given a
+value outside its documented set. These arguments — ``selection_mode``,
+``sorting_mode``, ``scrollbars`` and their siblings — are read by comparing
+against one value, so a near-miss spelling used to select the other behavior
+silently. The message lists the values that are accepted:
+
+.. code-block:: python
+
+   from bootstack.errors import InvalidChoiceError
+
+   with bs.App() as app:
+       try:
+           bs.DataTable(rows=rows, selection_mode="multiple")   # it's 'multi'
+       except InvalidChoiceError as err:
+           print(err)   # ... Valid values: 'none', 'single', 'multi'.
+
+This one is also a built-in ``ValueError``, so ``except ValueError`` catches it
+as well.
+
 ``NavigationError``
 ~~~~~~~~~~~~~~~~~~~
 
@@ -160,6 +182,7 @@ The complete reference for every exception type lives in
 
    BootstackError
    DuplicateIdError
+   InvalidChoiceError
    NavigationError
    ParentResolutionError
    SerializationError

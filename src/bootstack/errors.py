@@ -31,6 +31,17 @@ class SerializationError(BootstackError):
     """
 
 
+class InvalidChoiceError(BootstackError, ValueError):
+    """Raised when a keyword argument is given a value outside its valid set.
+
+    Applies to arguments that name a behavior mode drawn from a closed set,
+    such as `selection_mode` or `scrollbars`. The message names the value that
+    was rejected and lists the values that are accepted.
+
+    Also a `ValueError`, so either `BootstackError` or `ValueError` catches it.
+    """
+
+
 class NavigationError(BootstackError):
     """Raised when a navigation operation references a wrong key.
 
@@ -58,6 +69,7 @@ class StyleBuilderError(BootstackError):
 __all__ = [
     "BootstackError",
     "DuplicateIdError",
+    "InvalidChoiceError",
     "NavigationError",
     "ParentResolutionError",
     "SerializationError",

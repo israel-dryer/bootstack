@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets.button import Button
 from bootstack.widgets.types import AccentToken, ButtonVariant, WidgetDensity
 
@@ -60,6 +61,7 @@ class SidebarToggle(Button):
         **kwargs: Any,
     ) -> None:
         self._shell = shell
+        validate_choice(collapse, ("compact", "hidden"), param="collapse", widget="add_sidebar_toggle")
         self._collapse = collapse
         # Default glyph follows the collapse mode: a panel for the icon rail, a
         # hamburger for full hide.

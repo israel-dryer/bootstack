@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.pathentry import PathEntry as _InternalPathEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.events import ChangeEvent, InputEvent, Subscription, ValidationEvent
@@ -85,6 +86,7 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(mode, ("open", "open_multiple", "save", "directory"), param="mode", widget="PathField")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
