@@ -37,20 +37,20 @@ def test_region_layout_construction_and_toggles():
         assert shell.dock_visible is False
 
         # Toggle each slot on.
-        shell.set_rail_visible(True)
-        shell.set_statusbar_visible(True)
-        shell.set_dock_visible(True)
+        shell.rail_visible = True
+        shell.statusbar_visible = True
+        shell.dock_visible = True
         assert shell.rail.winfo_manager() == "pack"
         assert shell.statusbar.winfo_manager() == "pack"
         assert shell.dock.winfo_manager() == "pack"
 
         # Hide the sidebar; content stays.
-        shell.set_sidebar_visible(False)
+        shell.sidebar_visible = False
         assert shell.sidebar.winfo_manager() == ""
         assert shell.content.winfo_manager() == "pack"
 
-        # Toggles are idempotent (no error, state unchanged).
-        shell.set_rail_visible(True)
+        # Assigning the value it already holds is a no-op, not an error.
+        shell.rail_visible = True
         assert shell.rail_visible is True
 
         # Width setters apply to the slot frames.

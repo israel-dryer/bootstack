@@ -424,9 +424,9 @@ class Shell(ShellLayout):
         if mode is None:
             mode = self._model.sidebar_mode
         if mode == "hidden":
-            self.set_sidebar_visible(False)
+            self.sidebar_visible = False
             return
-        self.set_sidebar_visible(True)
+        self.sidebar_visible = True
         ws = self.workspace
         compact = (
             mode == "compact"
@@ -461,7 +461,7 @@ class Shell(ShellLayout):
 
     def _sync_rail_visibility(self) -> None:
         # The rail widget is wired in step 6b; for now reflect model state only.
-        self.set_rail_visible(self._model.rail_visible)
+        self.rail_visible = self._model.rail_visible
 
     # ----- Lifecycle -----
 
