@@ -21,6 +21,77 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **0.1.8 PATCH SHIPPED — macOS sizing on Tcl/Tk 9 (PR #377 for #375;
+  2026-07-23).** `bootstack 0.1.8` is on **PyPI** + tagged **`v0.1.8`**. Tk 9
+  changed the resolution macOS reports (Aqua's **72 → 96 DPI** baseline), and
+  `detect_scale_factor()` (`winfo_fpixels('1i')/72`) read that as a high-density
+  display — so on any Tk 9-linked Python the whole UI rendered **~1/3 too
+  large**. Text, icons, padding, control sizes all restored; matches Tk 8.6
+  exactly. Win/Linux unaffected. Tests **`test_tk9_scaling_baseline.py`** (8) —
+  and note they **monkeypatch `platform.system()` + `tkinter.TkVersion`, so they
+  need no display and no Tk 9**, which is why #380 calls them the cheap CI win.
+  ⚠ **CHANGELOG/release gotcha bit this cut** — see the release-flow note under
+  "Next up".
+
+- **0.1.x session 2026-07-28 — three PRs merged/open, one issue filed.** Worked
+  the open-issue backlog. **All verified on Windows + Tk 8.6 only** (see the
+  environment note below).
+  - **#381 → PR #382 (MERGED).** A behavior-mode argument is read by comparing
+    against one literal, so `selection_mode="multiple"` silently turned
+    multi-select **off** — no error, no warning. New **`validate_choice`**
+    (`widgets/_core/choices.py`) + public **`InvalidChoiceError`**, applied to
+    `selection_mode` (DataTable/ListView/Tree/Gallery/Calendar/DateField),
+    DataTable `sorting_mode`/`paging_mode`, `mode` (ToggleGroup/PathField),
+    ScrollView `scroll_direction`/`scrollbar_visibility`, `scrollbars`
+    (TextArea/CodeEditor), sidebar-toggle `collapse`. `SELECTION_MODES =
+    get_args(SelectionMode)` so the check can't drift from the type.
+    **Two decisions worth remembering:** (1) the issue cited #367 as precedent
+    for raising on a bad `editor=` name — **that is wrong**, #367 made the
+    *fallback* safe and never raises; the real precedent is **`ValueError`**
+    (`ContextMenu(trigger=)`, RadioGroup), so `InvalidChoiceError` inherits
+    **both** `BootstackError` and `ValueError` and those older guards can migrate
+    later without breaking callers. (2) **Scope was measured, not guessed** — an
+    AST audit found **215** Literal-typed public `__init__` kwargs and a 24-case
+    probe found **17 silently accepting** garbage; a blanket sweep is wrong
+    because **`| str`-widened args (`accent`/`surface`) must NOT be guarded**
+    (`'primary[+1]'`, `'primary[500]'` aren't in the alias). Line drawn at
+    *behavior* modes. **Guards run BEFORE `_resolve_parent`** — it raises its own
+    "created outside any container" error, which buried the typo.
+  - **#332 → PR #384 (MERGED).** Not really a rename: `ShellLayout` held each
+    flag **twice** — read-only `statusbar_visible`/`rail_visible`/
+    `sidebar_visible`/`dock_visible` properties *and* a separate
+    `set_*_visible(bool)` family. Gave the existing properties setters, deleted
+    the methods. Properties (not `show_*`/`hide_*` verb pairs) because the
+    getters and every sibling region accessor already are, and callers assign
+    computed bools that verb pairs would turn back into if/else.
+    `AppShell.statusbar`'s reveal hook was a **lambda** (can't hold an
+    assignment) → named `_reveal_statusbar`. Internal only.
+  - **#379 → PR #385 (OPEN — needs the macOS run).** Six macOS failures, none a
+    product bug. New **`menu_probe`** + **`menus_are_native`** fixtures in
+    `tests/conftest.py` so the four backend-assuming tests assert the same fact
+    on both `ContextMenu` backends instead of the Windows shape (a `skipif` would
+    have *preserved* the coverage hole — those are the only tests for menu
+    construction + overlay propagation). **Key technique: `_NativeContextMenu` is
+    constructible on Windows** (a `tk.Menu` is real everywhere; only the *choice*
+    of backend is platform-specific), so `test_menu_backend_probe.py` (16) drives
+    **both backend classes directly** and the macOS branch is exercised on
+    Win/Linux. That caught a real defect in the helper: **`entrycget(i,'state')`
+    raises `TclError` on a SEPARATOR** on the native backend while the themed one
+    returns `False`. Measured: both agree count=3 and index alignment for
+    `[command, separator, command]` — only the separator's state differed.
+    **PageStack order-dependence hypothesis (UNCONFIRMED):** `shown_app` did
+    `deiconify()` + **`update_idletasks()`, which does not process the map event
+    at all** (idle callbacks only), so `winfo_ismapped()` depended on what was
+    queued ahead; now pumps `update()` until mapped (bounded 100). **The PR body
+    carries step-by-step macOS tester instructions**, including what each failure
+    mode means if PageStack still fails.
+  - **#383 FILED** — the follow-up sweep: presentation kwargs still degrading
+    silently (`density`, `Tabs.orient`, `Slider.orient`, `Gauge.variant`) **plus**
+    args that raise but leak a **raw `TclError`/`AttributeError`**
+    (`Button.icon_position`, `Label.justify`, `Scrollbar.variant`,
+    `Expander.icon_position`, `ProgressBar.mode`). Suggests sweeping **by argument
+    name**, not by widget.
+
 - **0.1.7 PATCH SHIPPED — Tk 9 scroll-event contract + attach theme repaint
   (PRs #373, #374; 2026-07-23).** `bootstack 0.1.7` is on **PyPI** + tagged
   **`v0.1.7`** ("Tcl/Tk 9 scroll support"); verified by installing the published
@@ -846,13 +917,33 @@ memories and git history.
 > **rolling line of patch releases**, not a single version: `0.1.1` pygments
 > packaging · `0.1.2` menu window-move dismiss · `0.1.3` Form `editor_options`
 > public kwargs (#354) · `0.1.4` `Select.add_validation_rule` restored (#357) ·
-> **`0.1.5` boolean-control state reads + Checkbox tristate (#360, latest — on
-> PyPI 2026-07-20)** — see the top "Recently completed" entries). Post-0.1.0
+> `0.1.5` boolean-control state reads + Checkbox tristate (#360) · `0.1.6` seven
+> form/field/validation fixes (#362–#368) · `0.1.7` Tk 9 scroll contract
+> (#373/#374) · **`0.1.8` macOS sizing on Tk 9 (#377, latest — on PyPI
+> 2026-07-23)** — see the top "Recently completed" entries). Post-0.1.0
 > release batching lives in
 > memory `project_roadmap_milestones` (0.1.x polish → 0.2.0 Timeline/Wizard →
 > 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
 >
+> **★ START HERE NEXT SESSION — #380 (CI test workflow), deferred 2026-07-28.**
+> `.github/workflows/` still has only `docs.yml` + `release.yml`, so **nothing
+> runs the suite**; every Tk 9 bug so far was found by a user or by hand. Branch
+> `ci/test-workflow` was created and deleted unused — recreate it. Plan agreed:
+> **(1)** headless `ubuntu-latest` logic job — `test_tk9_scaling_baseline.py`
+> monkeypatches `platform.system()`/`tkinter.TkVersion` so it needs **no display
+> and no Tk 9**, and would have caught #375; **(2)** an `xvfb-run` Linux job for
+> the widget suite; **(3)** fold in the `tests/widgets/*.py` never-collected gap
+> above. **DEFER the macOS/Tk 9 leg** — it is blocked on #378 (the suite cannot
+> complete on Tk 9 at all) and would be red from day one. Read the issue before
+> scoping: it carries measurements showing the naive "just run pytest" plan fails
+> (`-m "not gui"` selects 741 tests but yields **494 errors** headless — only
+> ~222 genuinely run without a display), and warns that `Treeview.bbox()` returns
+> `''` rather than erroring on an unmapped window, so geometry assertions
+> **vacuously pass** headless.
+>
 > **Open, additive items (no longer ship-blockers) — candidates for the next 0.1.x patch:**
+> - **#383** (follow-up sweep from #381 — presentation kwargs still degrade
+>   silently + raw `TclError`/`AttributeError` leaks; sweep BY ARGUMENT NAME).
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
@@ -870,16 +961,41 @@ memories and git history.
 > - **Docs-IA spin-offs #323 + #324 — DONE** (folded into User Guide; see the
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
-> **`main` is GREEN and fully released; latest RELEASE is `0.1.7`** (tag
-> `v0.1.7`, on PyPI, 2026-07-23) — nothing is staged, `## [Unreleased]` is empty,
-> `pyproject.toml` is at `0.1.7`. **`main` has SIX known-failing tests on macOS**
-> — all triaged under "Known failing tests on macOS" below; four are test defects,
-> two are order-dependent. Do NOT chase them as regressions.
+> **Latest RELEASE is `0.1.8`** (tag `v0.1.8`, on PyPI, 2026-07-23;
+> `pyproject.toml` is at `0.1.8`). **`main` now has UNRELEASED work staged** —
+> `## [Unreleased]` carries the #381 mode-guard entry (PR #382) and PR #384 is
+> merged on top; the next patch cut should sweep both.
+>
+> **`main` has SIX known-failing tests on macOS** — triaged under "Known failing
+> tests on macOS" below; four are test defects, two are order-dependent. Do NOT
+> chase them as regressions. **PR #385 is the fix and is OPEN awaiting a macOS
+> run** — once it merges, delete that section and the six-failure caveat above,
+> because the whole point is that the baseline becomes green.
+>
+> **⚠ ENVIRONMENT (2026-07-28, this machine).** The checked-in `.venv` is
+> **STALE** — it points at `C:\Users\Israel Dryer\...\Python314\python.exe` and
+> every call fails with *"Access is denied"*. Use the launcher instead:
+> **`py -3.13`** for tests (Python 3.13.7, **Tk 8.6**) and **`py -3.12`** for the
+> docs build (3.12.10 — **sphinx is installed there, NOT on 3.13**). Both are
+> editable installs of this repo. `bootstack.__version__` reports a stale
+> `0.1.0a9` from old install metadata — harmless, ignore it.
+>
+> **⚠ `tests/widgets/*.py` NEVER RUNS.** `testpaths` is `tests/cli`,
+> `tests/widgets/public`, `tests/data`, and `run_gui.py` passes those same paths
+> — so **12 files / 25 tests** directly under `tests/widgets/` (`test_shell_*`,
+> `test_icon_image_props`, `test_rebuild_regressions`, `test_toolbar_drag`) are
+> collected by nothing. All 25 **pass** when run individually (each builds its
+> own root, so they'd need `isolated` treatment). Dead coverage, same class as
+> #365. Fold into the #380 work.
 > **Release flow gotcha (bit me on 0.1.7):** `bump-my-version bump patch
 > --allow-dirty` commits **ONLY `pyproject.toml`** — it will NOT sweep the
 > CHANGELOG rename into the `Release X` commit, which ships a release whose notes
 > still say `## [Unreleased]` and breaks `release.yml`'s section extraction.
 > Either commit the rename first or `git commit --amend` + re-tag before pushing.
+> **CONFIRMED WORKING on 0.1.8** — that cut ran `docs(changelog): promote
+> Unreleased to 0.1.8` (`7c136b20`) *before* `Release 0.1.8` (`b2f37f0f`, which
+> again touched **only `pyproject.toml`**), and the `[0.1.8]:` link definition
+> landed with the rename. Keep doing it in that order.
 > **0.1.6 caveat that still stands:** its behavior CHANGES (format rules on empty
 > values; `Select` accepting off-list values) were only ever exercised by tests,
 > never dogfooded in a real app.
@@ -907,7 +1023,22 @@ memories and git history.
 > it's in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI tests via
 > `python tests/run_gui.py` (one root per process). **Never pipe a build/test command
 > to `tail`** — you capture `tail`'s exit 0 and miss real failures (bit the audit:
-> hid a failing test leg AND the broken docs build). Hold commits until the user tests;
+> hid a failing test leg AND the broken docs build). **This bites in PowerShell
+> too**: `pytest ... | Select-String ...` leaves `$LASTEXITCODE` from the
+> *pipeline*. Redirect to a file, capture `$LASTEXITCODE` on the next statement,
+> then grep the file.
+>
+> **Two techniques worth reusing (2026-07-28 session):**
+> - **Measure the surface before scoping a sweep.** An AST pass over public
+>   `__init__` signatures + a construct-with-a-bogus-value probe turned "audit the
+>   siblings" from guesswork into a table (215 kwargs, 17/24 silently accepting),
+>   which is what justified drawing the line at behavior modes in #381.
+> - **A platform-specific backend is often constructible off-platform.**
+>   `_NativeContextMenu` (macOS) is a `tk.Menu` wrapper and instantiates fine on
+>   Windows, so macOS-only helper code got real test coverage here — and that
+>   caught a `TclError`-on-separator bug that would otherwise have shipped. Ask
+>   "can I build the other platform's object directly?" before accepting
+>   "unverifiable from this box". Hold commits until the user tests;
 > per-commit approval. **Release flow:** `bump-my-version bump pre_n` → push `main` +
 > the `v*` tag → `release.yml` (PyPI + GitHub Release) → `docs.yml` deploys. There is
 > **no `development` branch** (CONTRIBUTING.md + the localization workflow target `main`).
@@ -1035,7 +1166,16 @@ maximized-drag re-anchors under the cursor. Memory `project_undecorated_window_c
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
 
-### Known failing tests on macOS (triaged 2026-07-23 — NOT caused by the Tk 9 work)
+### Known failing tests on macOS — FIX OPEN as PR #385 (issue #379)
+
+> **Status 2026-07-28:** all six below are fixed on branch `fix/macos-test-defects`
+> (**PR #385**), which is **open pending a macOS run** — they cannot be verified
+> from a Windows box, since they already pass there. The PR body carries tester
+> instructions. **When it merges, delete this whole section.** Keeping a prose
+> list of accepted failures is exactly the fragility #379 was filed about: a
+> seventh failure blends in.
+
+### (historical triage 2026-07-23 — NOT caused by the Tk 9 work)
 
 Seven failures on `main` on macOS. **Six are test defects, one is a real bug.**
 Verified by running them against unmodified `src` (identical set) — do not chase
