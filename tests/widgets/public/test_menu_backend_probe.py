@@ -73,6 +73,41 @@ def test_popup_toplevel_is_none_on_the_native_backend(app, menu_probe):
     assert menu_probe.popup_toplevel(impl) is None
 
 
+def _build_with_separator(backend_cls, app):
+    """New / separator / Quit (disabled) — the shape a File menu actually has."""
+    impl = backend_cls(master=app._tk_root)
+    impl.add_item("command", text="New")
+    impl.add_item("separator")
+    impl.add_item("command", text="Quit", disabled=True)
+    return impl
+
+
+@pytest.mark.parametrize("name,backend_cls", BACKENDS, ids=[b[0] for b in BACKENDS])
+def test_separator_counts_as_an_entry_on_both_backends(app, menu_probe, name, backend_cls):
+    # `test_add_menu_builds_model_and_trigger` asserts a count of 3 for exactly
+    # this menu, so the two backends have to agree that a separator counts.
+    impl = _build_with_separator(backend_cls, app)
+    assert menu_probe.item_count(impl) == 3
+
+
+@pytest.mark.parametrize("name,backend_cls", BACKENDS, ids=[b[0] for b in BACKENDS])
+def test_separator_does_not_shift_item_indices(app, menu_probe, name, backend_cls):
+    # Indices must mean the same thing on both, or a test reading through the
+    # probe would check a different entry depending on the platform.
+    impl = _build_with_separator(backend_cls, app)
+    assert menu_probe.item_disabled(impl, 0) is False   # New
+    assert menu_probe.item_disabled(impl, 2) is True    # Quit
+
+
+@pytest.mark.parametrize("name,backend_cls", BACKENDS, ids=[b[0] for b in BACKENDS])
+def test_separator_is_never_disabled(app, menu_probe, name, backend_cls):
+    # The native backend raises TclError when asked for a separator's state
+    # instead of reporting one. Unnormalized, this call answered on Windows and
+    # Linux and raised on macOS.
+    impl = _build_with_separator(backend_cls, app)
+    assert menu_probe.item_disabled(impl, 1) is False
+
+
 def test_empty_menu_counts_zero_on_both_backends(app, menu_probe):
     # `tk.Menu.index('end')` returns None when empty rather than -1; the probe
     # has to translate that, and getting it wrong would report 1 for an empty

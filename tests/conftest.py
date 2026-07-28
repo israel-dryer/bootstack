@@ -218,19 +218,34 @@ class MenuBackendProbe:
     @staticmethod
     def is_native(impl) -> bool:
         """Whether `impl` is the native `tk.Menu` backend (macOS)."""
-        return hasattr(impl, "_menu") and not hasattr(impl, "_items")
+        from bootstack.widgets._impl.composites.contextmenu import _NativeContextMenu
+
+        return isinstance(impl, _NativeContextMenu)
 
     def item_count(self, impl) -> int:
-        """Number of entries in the menu, separators included."""
+        """Number of entries in the menu, separators included.
+
+        Both backends count separators, so the two agree on the same menu.
+        """
         if self.is_native(impl):
+            # `tk.Menu.index('end')` is None for an empty menu, not -1.
             end = impl._menu.index("end")
             return 0 if end is None else end + 1
         return len(impl._items)
 
     def item_disabled(self, impl, index: int) -> bool:
-        """Whether the entry at `index` is disabled."""
+        """Whether the entry at `index` is disabled. A separator never is.
+
+        Asked for a separator's state the native backend raises `TclError`
+        rather than reporting one, while the themed backend answers `False`.
+        Normalized here — otherwise this helper would answer on Windows and
+        Linux and blow up on macOS, the very split it exists to remove.
+        """
         if self.is_native(impl):
-            return str(impl._menu.entrycget(index, "state")) == "disabled"
+            try:
+                return str(impl._menu.entrycget(index, "state")) == "disabled"
+            except Exception:
+                return False
         return "disabled" in list(impl._items.values())[index].state()
 
     def popup_toplevel(self, impl):
