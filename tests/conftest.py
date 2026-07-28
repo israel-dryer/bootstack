@@ -150,13 +150,24 @@ def shown_app(_session_app):
     Some tests need the root realized (deiconified) so widget geometry and
     layout pumps behave. Deiconifies the shared root for the test, then
     withdraws and scene-resets it afterward.
+
+    The root is genuinely mapped before the test runs, not merely asked to be.
+    `deiconify()` is a request the window server services on its own schedule,
+    and `update_idletasks()` does not process the resulting map event at all --
+    it only runs idle callbacks. A test asserting `winfo_ismapped()` on a child
+    therefore depended on how much work happened to be queued ahead of it, which
+    is why the macOS `PageStack` keep-mapped tests passed alone and failed in a
+    full run (#379).
     """
     from bootstack.widgets._core.context import push_container, pop_container
 
     a = _session_app
     keep = _snapshot(a)
     a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
+    for _ in range(100):
+        a._tk_root.update()
+        if a._tk_root.winfo_ismapped():
+            break
     push_container(a)
     try:
         yield a
@@ -179,3 +190,72 @@ def tmp_tk_root(app):
     ``@pytest.mark.gui``.
     """
     return app._tk_root
+
+
+# ---------------------------------------------------------------------------
+# Menu backend
+# ---------------------------------------------------------------------------
+#
+# `ContextMenu` picks its implementation from the windowing system: an
+# overrideredirect Toplevel of themed widgets everywhere, a real `tk.Menu`
+# (NSMenu) on macOS. The two expose entirely different internals -- `_items`
+# and `_toplevel` versus `_menu` -- so a test that reaches for one of them
+# passes on Windows and Linux and errors out on macOS.
+#
+# `menu_probe` reads whichever backend is in play, so a test can assert the
+# same fact on every platform instead of asserting the Windows shape and
+# skipping elsewhere (a skip would leave the macOS path untested while looking
+# covered).
+
+
+class MenuBackendProbe:
+    """Backend-agnostic introspection of a `ContextMenu` implementation.
+
+    Each method takes the backend object -- `menu._internal._impl`, or the
+    `_context_menu` a widget such as `SelectButton` builds.
+    """
+
+    @staticmethod
+    def is_native(impl) -> bool:
+        """Whether `impl` is the native `tk.Menu` backend (macOS)."""
+        return hasattr(impl, "_menu") and not hasattr(impl, "_items")
+
+    def item_count(self, impl) -> int:
+        """Number of entries in the menu, separators included."""
+        if self.is_native(impl):
+            end = impl._menu.index("end")
+            return 0 if end is None else end + 1
+        return len(impl._items)
+
+    def item_disabled(self, impl, index: int) -> bool:
+        """Whether the entry at `index` is disabled."""
+        if self.is_native(impl):
+            return str(impl._menu.entrycget(index, "state")) == "disabled"
+        return "disabled" in list(impl._items.values())[index].state()
+
+    def popup_toplevel(self, impl):
+        """The popup's own Toplevel, or `None` on the native backend.
+
+        The native menu is drawn by the window server and owns no widget tree,
+        so there is nothing for a bindtag walk to reach.
+        """
+        return getattr(impl, "_toplevel", None)
+
+
+@pytest.fixture(scope="session")
+def menu_probe() -> MenuBackendProbe:
+    """Backend-agnostic reader for whichever `ContextMenu` backend is active."""
+    return MenuBackendProbe()
+
+
+@pytest.fixture(scope="session")
+def menus_are_native(_session_app) -> bool:
+    """Whether this platform renders menus natively (macOS/aqua).
+
+    The same check `ChromeHostMixin._menus_are_native` makes, so a test asserts
+    against the platform's real behavior rather than a hardcoded expectation.
+    """
+    try:
+        return _session_app._tk_root.tk.call("tk", "windowingsystem") == "aqua"
+    except Exception:
+        return False

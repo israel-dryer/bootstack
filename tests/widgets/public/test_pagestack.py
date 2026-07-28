@@ -35,6 +35,10 @@ def test_visited_pages_stay_mapped_on_macos(shown_app):
         ps.navigate(key)
         shown_app._tk_root.update()
 
+    # A child can only report mapped if the root is. State that separately so a
+    # failure names the cause instead of reading as a PageStack bug.
+    assert shown_app._tk_root.winfo_ismapped(), "shown_app did not map the root"
+
     # None was unmapped on hide — re-showing any of them never remaps (no flash).
     assert pages["a"].winfo_ismapped()
     assert pages["b"].winfo_ismapped()
@@ -71,6 +75,7 @@ def test_return_after_many_visits_does_not_remap_on_macos(shown_app):
         ps.navigate(key)
         shown_app._tk_root.update()
 
+    assert shown_app._tk_root.winfo_ismapped(), "shown_app did not map the root"
     assert pages["a"]._bs_nav_hidden is False
     assert pages["a"].winfo_ismapped()
     assert pages["b"].winfo_ismapped()

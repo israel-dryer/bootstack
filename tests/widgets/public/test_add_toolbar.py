@@ -133,10 +133,20 @@ def test_macos_menu_aggregation_order_and_filter(app):
     assert "AggTools" not in groups
 
 
-def test_bridge_inactive_on_non_macos(app):
-    # On Windows/Linux menus render in-window — the bridge does not hide triggers.
+def test_bridge_state_matches_the_platform(app, menus_are_native):
+    # Where the menu is drawn is a platform fact, so assert against the platform
+    # rather than one of the two answers. On Windows and Linux a menu renders
+    # in-window and keeps its trigger; on macOS it is bridged to the global menu
+    # bar and the in-window trigger is hidden.
     with app.add_toolbar() as tb:
         with tb.add_menu("InWindow") as m:
             m.add_action("X", on_click=lambda: None)
-    assert not app._menus_are_native()
-    assert "InWindow" in tb._internal._menu_triggers
+
+    assert app._menus_are_native() is menus_are_native
+    triggers = tb._internal._menu_triggers
+    if menus_are_native:
+        # Bridged: the native bar shows it, so no in-window trigger is mapped.
+        trigger = triggers.get("InWindow")
+        assert trigger is None or not trigger.winfo_ismapped()
+    else:
+        assert "InWindow" in triggers

@@ -64,21 +64,47 @@ def test_propagate_is_idempotent(app):
     assert label.tk.bindtags().count(tag) == 1
 
 
-def test_propagate_skips_nested_toplevels(app):
+def _descendants(widget):
+    """Every widget under `widget`, itself excluded."""
+    for child in widget.winfo_children():
+        yield child
+        yield from _descendants(child)
+
+
+def test_propagate_skips_nested_toplevels(app, menu_probe):
+    import tkinter as tk
+
     import bootstack as bs
     from bootstack._runtime.utility import propagate_target_bindings
 
-    # A ContextMenu parented to the card creates its own Toplevel under it; the
-    # walk must not tag the popup's own widgets.
-    card, _label = _build_card_with_children(bs)
+    # The walk tags the target's own descendants so a gesture fires anywhere
+    # inside it, but must stop at a nested Toplevel -- a popup parented under
+    # the target is not part of the target.
+    card, label = _build_card_with_children(bs)
     menu = bs.ContextMenu(target=card, trigger="manual")
     menu.add_item("Edit")
     propagate_target_bindings(card.tk)
 
     tag = str(card.tk)
-    popup = menu._internal._impl._toplevel
-    frame = popup.winfo_children()[0]
-    assert tag not in frame.bindtags()
+
+    # The walk actually ran. Without this the checks below pass on a walk that
+    # did nothing at all.
+    assert tag in label.tk.bindtags()
+
+    # Nothing inside a nested Toplevel was tagged. On the themed backend that
+    # Toplevel is the menu popup; on the native backend the menu is drawn by
+    # the window server and parents no Toplevel here, so the loop finds none.
+    nested = [w for w in _descendants(card.tk) if isinstance(w, tk.Toplevel)]
+    for toplevel in nested:
+        for widget in [toplevel, *_descendants(toplevel)]:
+            assert tag not in widget.bindtags()
+
+    popup = menu_probe.popup_toplevel(menu._internal._impl)
+    if popup is not None:
+        # Themed backend: the popup parents under the target, so it must be one
+        # of the Toplevels checked above. Without this the loop could silently
+        # find nothing and the test would assert only that the walk ran.
+        assert popup in nested
     menu.destroy()
 
 
