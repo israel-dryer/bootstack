@@ -224,30 +224,6 @@ class ShellLayout(App):
 
     # ----- Region visibility -----
 
-    def set_statusbar_visible(self, visible: bool) -> None:
-        """Show or hide the bottom status band (and its full-width hairline)."""
-        if self._show_statusbar != visible:
-            self._show_statusbar = visible
-            self._relayout_window()
-
-    def set_rail_visible(self, visible: bool) -> None:
-        """Show or hide the workspace rail."""
-        if self._show_rail != visible:
-            self._show_rail = visible
-            self._relayout_body()
-
-    def set_sidebar_visible(self, visible: bool) -> None:
-        """Show or hide the sidebar slot."""
-        if self._show_sidebar != visible:
-            self._show_sidebar = visible
-            self._relayout_body()
-
-    def set_dock_visible(self, visible: bool) -> None:
-        """Show or hide the detail/inspector dock."""
-        if self._show_dock != visible:
-            self._show_dock = visible
-            self._relayout_body()
-
     # ----- Region sizing -----
 
     def set_rail_width(self, width: int) -> None:
@@ -312,24 +288,55 @@ class ShellLayout(App):
         """The detail/inspector dock slot (reserved)."""
         return self._dock
 
-    # ----- Visibility state (read-only) -----
+    # ----- Visibility state -----
+    #
+    # Read/write, rather than a getter here and a `set_*_visible(bool)` method
+    # elsewhere in the class. The region accessors above are already properties,
+    # and every caller assigns either a literal or a bool it computed — which
+    # verb pairs (`show_*`/`hide_*`, the idiom the public layer uses) would turn
+    # back into an if/else at each site. Assigning the value it already holds is
+    # a no-op, so a caller may write the flag unconditionally.
 
     @property
     def statusbar_visible(self) -> bool:
-        """Whether the status band is shown."""
+        """Whether the status band (and its full-width hairline) is shown."""
         return self._show_statusbar
+
+    @statusbar_visible.setter
+    def statusbar_visible(self, visible: bool) -> None:
+        if self._show_statusbar != visible:
+            self._show_statusbar = visible
+            self._relayout_window()
 
     @property
     def rail_visible(self) -> bool:
         """Whether the rail is shown."""
         return self._show_rail
 
+    @rail_visible.setter
+    def rail_visible(self, visible: bool) -> None:
+        if self._show_rail != visible:
+            self._show_rail = visible
+            self._relayout_body()
+
     @property
     def sidebar_visible(self) -> bool:
         """Whether the sidebar slot is shown."""
         return self._show_sidebar
 
+    @sidebar_visible.setter
+    def sidebar_visible(self, visible: bool) -> None:
+        if self._show_sidebar != visible:
+            self._show_sidebar = visible
+            self._relayout_body()
+
     @property
     def dock_visible(self) -> bool:
         """Whether the dock slot is shown."""
         return self._show_dock
+
+    @dock_visible.setter
+    def dock_visible(self, visible: bool) -> None:
+        if self._show_dock != visible:
+            self._show_dock = visible
+            self._relayout_body()

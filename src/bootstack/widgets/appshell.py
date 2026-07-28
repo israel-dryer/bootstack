@@ -479,7 +479,7 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
             # the first frame (a content-driven band shows lazily on its first
             # segment; `show_statusbar=True` means "always on").
             _ = self.statusbar
-            self._internal.set_statusbar_visible(True)
+            self._internal.statusbar_visible = True
 
     @classmethod
     def from_store(cls, store: Any, **overrides: Any):
@@ -544,8 +544,8 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
         # was passed (an empty band shouldn't linger if the new body adds no
         # segment; a content-driven band re-shows lazily on the first segment).
         try:
-            self._internal.set_statusbar_visible(
-                getattr(self, "_show_statusbar_forced", False)
+            self._internal.statusbar_visible = getattr(
+                self, "_show_statusbar_forced", False
             )
         except Exception:
             pass
@@ -719,9 +719,13 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
         if self._statusbar is None:
             self._statusbar = StatusBar(
                 _toolbar=self._internal.statusbar,
-                _show=lambda: self._internal.set_statusbar_visible(True),
+                _show=self._reveal_statusbar,
             )
         return self._statusbar
+
+    def _reveal_statusbar(self) -> None:
+        """Show the status band — called by the band itself on its first segment."""
+        self._internal.statusbar_visible = True
 
     @property
     def pages(self) -> Any:
