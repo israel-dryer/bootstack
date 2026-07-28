@@ -5,6 +5,7 @@ from typing import Any, Callable, Literal, overload, TYPE_CHECKING
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import SELECTION_MODES, validate_choice
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._impl.composites.gallery import Gallery as _InternalGallery
 from bootstack.widgets.types import AccentToken, SelectionMode, SurfaceToken, ScrollbarVariant
@@ -83,6 +84,7 @@ class Gallery(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, SELECTION_MODES, param="selection_mode", widget="Gallery")
         self._parent = self._resolve_parent(parent)
         self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)

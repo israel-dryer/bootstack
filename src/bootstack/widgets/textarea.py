@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.textarea import TextArea as _InternalTextArea
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent, ValidationEvent
 from bootstack.streams import Stream
@@ -87,6 +88,7 @@ class TextArea(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(scrollbars, ("auto", "vertical", "both", "none"), param="scrollbars", widget="TextArea")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 

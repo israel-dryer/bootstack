@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._core.base import adapt_handler
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.container import FlexContainer
 from bootstack.events import ScrollEvent, Subscription
 from bootstack.streams import Stream
@@ -57,6 +58,8 @@ class ScrollView(FlexContainer):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(scroll_direction, ("vertical", "horizontal", "both"), param="scroll_direction", widget="ScrollView")
+        validate_choice(scrollbar_visibility, ("always", "never", "hover", "scroll"), param="scrollbar_visibility", widget="ScrollView")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None

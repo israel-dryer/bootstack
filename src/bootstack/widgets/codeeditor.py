@@ -7,6 +7,7 @@ from typing import overload, Any, Callable, Iterator, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as _InternalCodeEditor
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent, ValidationEvent
 from bootstack.streams import Stream
@@ -108,6 +109,7 @@ class CodeEditor(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(scrollbars, ("both", "auto", "vertical", "none"), param="scrollbars", widget="CodeEditor")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 

@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.kwargs import merge_kwargs
 from bootstack.widgets._core.selection_group import SelectionGroupMixin, RESERVED_OPTION_KWARGS
 from bootstack.widgets._core.options import normalize_options, option_display
@@ -81,6 +82,7 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._localize = localize
+        validate_choice(mode, ("single", "multi"), param="mode", widget="ToggleGroup")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 

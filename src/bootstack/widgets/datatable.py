@@ -9,6 +9,7 @@ from bootstack.data.types import DataSourceProtocol
 from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import SELECTION_MODES, validate_choice
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets.types import (
     ColumnSpec, FormOptions, WidgetDensity, ExportScope, ExportFormat, SelectionMode,
@@ -133,6 +134,9 @@ class DataTable(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, SELECTION_MODES, param="selection_mode", widget="DataTable")
+        validate_choice(sorting_mode, ("single", "none"), param="sorting_mode", widget="DataTable")
+        validate_choice(paging_mode, ("standard", "virtual"), param="paging_mode", widget="DataTable")
         self._parent = self._resolve_parent(parent)
         self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)

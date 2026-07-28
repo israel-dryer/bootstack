@@ -77,7 +77,7 @@ MOVED = {
     "bootstack.errors": [
         "BootstackError", "UnknownEventError", "ParentResolutionError",
         "DuplicateIdError", "SerializationError", "NavigationError",
-        "ThemeError", "StyleBuilderError",
+        "ThemeError", "StyleBuilderError", "InvalidChoiceError",
     ],
     "bootstack.style": [
         "Theme", "get_theme", "get_theme_color", "get_themes",

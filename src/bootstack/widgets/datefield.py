@@ -6,6 +6,7 @@ from typing import overload, Any, Callable, Iterable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.dateentry import DateEntry as _InternalDateEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin, ValueSignalMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
@@ -95,6 +96,7 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, ("single", "range"), param="selection_mode", widget="DateField")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         if "textsignal" in kwargs:

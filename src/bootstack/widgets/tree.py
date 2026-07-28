@@ -5,6 +5,7 @@ from typing import Any, Callable, Iterator, TYPE_CHECKING, overload
 from bootstack.widgets._impl.composites.tree.treeview import TreeView as _InternalTreeView
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import SELECTION_MODES, validate_choice
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, TreeSelectionEvent
 from bootstack.streams import Stream
@@ -118,6 +119,7 @@ class Tree(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, SELECTION_MODES, param="selection_mode", widget="Tree")
         self._parent = self._resolve_parent(parent)
         self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)

@@ -4,6 +4,7 @@ from typing import Any, Callable, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.composites.list.listview import ListView as _InternalListView
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import SELECTION_MODES, validate_choice
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
@@ -83,6 +84,7 @@ class ListView(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, SELECTION_MODES, param="selection_mode", widget="ListView")
         self._parent = self._resolve_parent(parent)
         self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)

@@ -16,6 +16,9 @@ guide.
 .. autoexception:: DuplicateIdError
    :show-inheritance:
 
+.. autoexception:: InvalidChoiceError
+   :show-inheritance:
+
 .. autoexception:: NavigationError
    :show-inheritance:
 

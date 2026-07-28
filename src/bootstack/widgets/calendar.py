@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Iterable, Literal
 
 from bootstack.widgets._impl.composites.calendar import Calendar as _InternalCalendar
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.choices import validate_choice
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import DateSelectEvent, Subscription
 from bootstack.streams import Stream
@@ -66,6 +67,7 @@ class Calendar(PublicWidgetBase):
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        validate_choice(selection_mode, ("single", "range"), param="selection_mode", widget="Calendar")
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
