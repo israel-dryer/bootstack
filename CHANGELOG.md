@@ -12,6 +12,19 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **A date field can be cleared.** Setting `value` to `None` — and the field's
+  own `clear()` method, which does exactly that — silently left the previous
+  date in place, on screen and in `form.get()`. Clearing now works through
+  every path, including `Form.set({key: None})`. The same no-op affected
+  `None` on the other entry-backed fields (`TextField`, `NumberField`,
+  `PasswordField`, `PathField`, `SpinnerField`), which reached empty only when
+  given `""`; `None` and `""` now agree. (#387)
+
+- **`Form.set()` writes only the fields you name.** It walked every field and
+  blanked the ones absent from the dictionary — harmless only because blanking
+  was itself broken. A partial update such as `form.set({'date': value})` now
+  leaves the other fields, and the rest of the form data, untouched. (#387)
+
 - **A misspelled mode argument now tells you, instead of quietly doing
   something else.** Arguments that name a behavior mode — `selection_mode`,
   `sorting_mode`, `paging_mode`, `scrollbars`, `scroll_direction`,

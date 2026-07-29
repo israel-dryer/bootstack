@@ -318,9 +318,10 @@ Reading and writing values
    values = form.value        # {'name': 'Alice', 'age': 30}
    values = form.get()        # equivalent
 
-   # Write all values
+   # Write values — only the keys you pass are changed
    form.value = {"name": "Bob", "age": 25}
    form.set({"name": "Bob", "age": 25})   # equivalent
+   form.set({"age": 26})                  # writes age; name is left alone
 
    # Read / write a single field
    name = form.get_field_value("name")

@@ -7,6 +7,11 @@ from bootstack.widgets._impl.primitives.entry import Entry
 from bootstack.widgets._impl.mixins import ValidationMixin
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 
+#: Sentinel marking "no argument passed" for the combined get/set accessors below.
+#: `None` cannot serve as that sentinel — it is a real value meaning "empty", and
+#: using it to mean "get" made `value(None)` a silent no-op instead of clearing.
+_UNSET: Any = object()
+
 
 class TextEntryPart(ValidationMixin, Entry):
     """Internationalization-aware entry widget with deferred parsing and formatting.
@@ -250,16 +255,17 @@ class TextEntryPart(ValidationMixin, Entry):
         """Unbind from `<<Change>>`."""
         self.unbind('<<Change>>', bind_id)
 
-    def value(self, value=None):
+    def value(self, value=_UNSET):
         """Get or set the parsed/committed value.
 
         Args:
-            value: If provided, sets the display text and internal value with formatting
+            value: If provided, sets the display text and internal value with
+                formatting. Pass `None` to clear the field.
 
         Returns:
             Current parsed value if no argument provided, None otherwise
         """
-        if value is None:
+        if value is _UNSET:
             return self._value
         else:
             # Store the value and format it for display

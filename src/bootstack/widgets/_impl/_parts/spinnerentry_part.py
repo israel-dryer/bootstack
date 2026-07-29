@@ -13,6 +13,7 @@ from bootstack.i18n import MessageCatalog, IntlFormatter
 from bootstack.widgets._impl.primitives.spinbox import Spinbox
 from bootstack.widgets._impl.mixins import ValidationMixin
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
+from bootstack.widgets._impl._parts.textentry_part import _UNSET
 
 
 class SpinnerEntryPart(ValidationMixin, Spinbox):
@@ -307,16 +308,17 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
         """Remove callback from <<Change>> event."""
         self.unbind('<<Change>>', bind_id)
 
-    def value(self, value=None):
+    def value(self, value=_UNSET):
         """Get or set the parsed/committed value.
 
         Args:
-            value: If provided, sets the display text and internal value with formatting
+            value: If provided, sets the display text and internal value with
+                formatting. Pass `None` to clear the field.
 
         Returns:
             Current parsed value if no argument provided, None otherwise
         """
-        if value is None:
+        if value is _UNSET:
             return self._value
         else:
             # Store the value and format it for display
