@@ -269,6 +269,31 @@ class DateEntry(Field):
                 self.date_picker_button.pack_forget()
         return None
 
+    def _apply_picked(self, val) -> None:
+        """Apply a value chosen in the picker and announce it as a user commit.
+
+        Choosing a date is a commit, exactly like typing one and pressing
+        Return, so it has to emit `<<Change>>` — bound signals, `on_change`
+        handlers, and form change tracking all listen for that event. Assigning
+        `value` alone does not emit it: the event comes from the entry's own
+        change detection, which otherwise only runs on FocusOut and Return.
+
+        `_check_if_changed` also advances the entry's last-seen value, so a
+        later focus-out cannot fire a second `<<Change>>` for this same
+        selection — which hand-building the event here would allow whenever the
+        entry already held focus. It is safe to call twice: the second call
+        sees no difference and does nothing.
+
+        Range mode is left alone; `_set_range` already emits its own event.
+        """
+        if self._selection_mode == "range":
+            self.value = val
+            return
+        if isinstance(val, datetime):
+            val = val.date()
+        self.value = val
+        self._entry._check_if_changed()
+
     def _show_date_picker(self):
         """Open the calendar picker dialog.
 
@@ -336,10 +361,10 @@ class DateEntry(Field):
             result = payload.get('result') if isinstance(payload, dict) else payload
             if self._selection_mode == "range":
                 if isinstance(result, tuple) and len(result) == 2:
-                    self.value = result
+                    self._apply_picked(result)
             else:
                 if isinstance(result, (date, datetime)):
-                    self.value = result
+                    self._apply_picked(result)
 
         dialog.on_result(lambda x: _on_result(x))
         dialog.show(
@@ -366,12 +391,10 @@ class DateEntry(Field):
         selected = dialog.result
         if self._selection_mode == "range":
             if isinstance(selected, tuple) and len(selected) == 2:
-                self.value = selected
+                self._apply_picked(selected)
         else:
-            if isinstance(selected, datetime):
-                selected = selected.date()
-            if isinstance(selected, date):
-                self.value = selected
+            if isinstance(selected, (date, datetime)):
+                self._apply_picked(selected)
 
         # Return focus to the entry after dialog closes
         # Note: focus_force() is needed on Windows after override-redirect dialogs
