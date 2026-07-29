@@ -105,7 +105,11 @@ class Form(PublicWidgetBase):
         return self._internal.get()
 
     def set(self, values: Mapping[str, Any]) -> None:
-        """Set multiple field values from a dictionary."""
+        """Set multiple field values from a dictionary.
+
+        A partial update — only the keys present in `values` are written, and
+        keys naming no field are ignored.
+        """
         self._internal.set(values)
 
     def validate(self) -> bool:

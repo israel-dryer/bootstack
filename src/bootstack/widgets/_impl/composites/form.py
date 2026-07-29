@@ -509,15 +509,24 @@ class Form(Frame):
     def set(self, values: Mapping[str, Any]) -> None:
         """Set multiple field values from a dictionary.
 
+        Only the keys present in `values` are written — this is a partial
+        update, not a replacement. Keys that name no field are ignored, so a
+        whole record from a data source can be handed over even when it carries
+        columns the form does not show.
+
         Args:
             values: Dictionary mapping field keys to values.
         """
-        self._data = dict(values)
+        updates = dict(values)
+        # Merge rather than replace: a partial update must not drop the keys it
+        # doesn't mention, and must not write `None` over the fields it omits.
+        self._data.update(updates)
         self._suspend_sync = True
         try:
-            for key, item in self._items_by_key.items():
-                value = self._data.get(key)
-                self._apply_value_to_widget(key, item, value)
+            for key, value in updates.items():
+                item = self._items_by_key.get(key)
+                if item is not None:
+                    self._apply_value_to_widget(key, item, value)
         finally:
             self._suspend_sync = False
 
@@ -532,6 +541,9 @@ class Form(Frame):
 
     @configure_delegate('data')
     def _delegate_data(self, value: Mapping[str, Any] = None):
+        # Unlike `set()`, this is a whole-record write: it replaces the data and
+        # walks every field, so a key absent from `value` clears its field. That
+        # is the meaning of assigning the record wholesale.
         if value is None:
             return dict(self._collect_data())
         else:
