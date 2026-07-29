@@ -5,12 +5,21 @@ The macOS-specific tests cover the keep-mapped fix for the page-nav white flash
 PageStack keeps every visited page mapped (stacked in one grid cell) and switches
 with lift()/lower() instead of pack_forget/pack. Other platforms keep the cheaper
 one-page-mapped pack path, so these invariants are gated to Aqua.
+
+Isolated because the assertions read `winfo_ismapped()`. In the shared-root
+process every earlier test's widgets are still parented to the app body, and
+once their combined requested height exceeds the window the geometry manager
+unmaps whatever no longer fits -- the PageStack added last. That reports
+`ismapped() == 0` for reasons that have nothing to do with navigation, so these
+tests need a body they are not sharing.
 """
 from __future__ import annotations
 
 import pytest
 
 import bootstack as bs
+
+pytestmark = pytest.mark.isolated
 
 
 def _is_aqua(app) -> bool:

@@ -211,22 +211,35 @@ def tmp_tk_root(app):
 class MenuBackendProbe:
     """Backend-agnostic introspection of a `ContextMenu` implementation.
 
-    Each method takes the backend object -- `menu._internal._impl`, or the
-    `_context_menu` a widget such as `SelectButton` builds.
+    Each method takes either a backend object -- `menu._internal._impl` -- or
+    the `ContextMenu` facade holding one, such as the `_context_menu` a widget
+    like `SelectButton` builds. Both are accepted because callers reach the two
+    by different routes.
     """
 
     @staticmethod
-    def is_native(impl) -> bool:
-        """Whether `impl` is the native `tk.Menu` backend (macOS)."""
+    def _unwrap(impl):
+        """The backend behind a `ContextMenu` facade, or `impl` unchanged.
+
+        `ContextMenu` forwards unknown attributes to its backend, so a facade
+        answers `_items` on Windows and Linux and raises on macOS -- passing one
+        in unrecognized reintroduces the split this probe exists to remove.
+        """
+        return impl.__dict__.get("_impl", impl) if hasattr(impl, "__dict__") else impl
+
+    @classmethod
+    def is_native(cls, impl) -> bool:
+        """Whether `impl` is (or holds) the native `tk.Menu` backend (macOS)."""
         from bootstack.widgets._impl.composites.contextmenu import _NativeContextMenu
 
-        return isinstance(impl, _NativeContextMenu)
+        return isinstance(cls._unwrap(impl), _NativeContextMenu)
 
     def item_count(self, impl) -> int:
         """Number of entries in the menu, separators included.
 
         Both backends count separators, so the two agree on the same menu.
         """
+        impl = self._unwrap(impl)
         if self.is_native(impl):
             # `tk.Menu.index('end')` is None for an empty menu, not -1.
             end = impl._menu.index("end")
@@ -241,6 +254,7 @@ class MenuBackendProbe:
         Normalized here — otherwise this helper would answer on Windows and
         Linux and blow up on macOS, the very split it exists to remove.
         """
+        impl = self._unwrap(impl)
         if self.is_native(impl):
             try:
                 return str(impl._menu.entrycget(index, "state")) == "disabled"
@@ -254,7 +268,7 @@ class MenuBackendProbe:
         The native menu is drawn by the window server and owns no widget tree,
         so there is nothing for a bindtag walk to reach.
         """
-        return getattr(impl, "_toplevel", None)
+        return getattr(self._unwrap(impl), "_toplevel", None)
 
 
 @pytest.fixture(scope="session")
