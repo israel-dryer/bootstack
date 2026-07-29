@@ -5,12 +5,21 @@ The macOS-specific tests cover the keep-mapped fix for the page-nav white flash
 PageStack keeps every visited page mapped (stacked in one grid cell) and switches
 with lift()/lower() instead of pack_forget/pack. Other platforms keep the cheaper
 one-page-mapped pack path, so these invariants are gated to Aqua.
+
+Isolated because the assertions read `winfo_ismapped()`. In the shared-root
+process every earlier test's widgets are still parented to the app body, and
+once their combined requested height exceeds the window the geometry manager
+unmaps whatever no longer fits -- the PageStack added last. That reports
+`ismapped() == 0` for reasons that have nothing to do with navigation, so these
+tests need a body they are not sharing.
 """
 from __future__ import annotations
 
 import pytest
 
 import bootstack as bs
+
+pytestmark = pytest.mark.isolated
 
 
 def _is_aqua(app) -> bool:
@@ -34,6 +43,10 @@ def test_visited_pages_stay_mapped_on_macos(shown_app):
     for key in ("a", "b", "c"):
         ps.navigate(key)
         shown_app._tk_root.update()
+
+    # A child can only report mapped if the root is. State that separately so a
+    # failure names the cause instead of reading as a PageStack bug.
+    assert shown_app._tk_root.winfo_ismapped(), "shown_app did not map the root"
 
     # None was unmapped on hide — re-showing any of them never remaps (no flash).
     assert pages["a"].winfo_ismapped()
@@ -71,6 +84,7 @@ def test_return_after_many_visits_does_not_remap_on_macos(shown_app):
         ps.navigate(key)
         shown_app._tk_root.update()
 
+    assert shown_app._tk_root.winfo_ismapped(), "shown_app did not map the root"
     assert pages["a"]._bs_nav_hidden is False
     assert pages["a"].winfo_ismapped()
     assert pages["b"].winfo_ismapped()

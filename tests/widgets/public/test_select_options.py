@@ -368,13 +368,15 @@ def test_select_first_enabled_index_skips_leading_disabled(app):
     assert s._internal._first_enabled_index() == 1
 
 
-def test_selectbutton_disabled_menu_item(app):
+def test_selectbutton_disabled_menu_item(app, menu_probe):
     sb = bs.SelectButton(options=DISABLED_OPTS)
     backend = sb._internal._context_menu
-    items = list(getattr(backend, "_items", {}).values())
-    # item order matches option order: Small, Medium (disabled), Large
-    assert "disabled" in items[1].state()
-    assert "disabled" not in items[0].state()
+    # Item order matches option order: Small, Medium (disabled), Large. Read
+    # through the probe so this holds on the native backend too, where items are
+    # `tk.Menu` entries rather than themed widgets.
+    assert menu_probe.item_count(backend) == 3
+    assert menu_probe.item_disabled(backend, 1)
+    assert not menu_probe.item_disabled(backend, 0)
 
 
 # --------------------------------------------------------------------------

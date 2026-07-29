@@ -11,7 +11,7 @@ import pytest
 pytestmark = pytest.mark.gui
 
 
-def test_add_menu_builds_model_and_trigger(app):
+def test_add_menu_builds_model_and_trigger(app, menu_probe):
     import bootstack as bs
 
     fired: list[str] = []
@@ -31,9 +31,11 @@ def test_add_menu_builds_model_and_trigger(app):
     # An in-window dropdown trigger was rendered for the menu.
     assert "File" in tb._internal._menu_triggers
 
-    # The dropdown received the items (here: 3, incl. the separator).
+    # The dropdown received the items (here: 3, incl. the separator). Read
+    # through the probe: the themed backend keeps `_items`, the native one a
+    # `tk.Menu`, and this test asserts the count either way.
     trigger = tb._internal._menu_triggers["File"]
-    assert len(trigger.context_menu._items) == 3
+    assert menu_probe.item_count(trigger.context_menu) == 3
 
     # Item commands are wired through to the menu model.
     model.groups[0].items[0].on_click()

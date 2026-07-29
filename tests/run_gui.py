@@ -32,6 +32,7 @@ ISOLATED = [
     "tests/widgets/public/test_workbench.py",
     "tests/widgets/public/test_sidebar_toggle.py",
     "tests/widgets/public/test_tabs_overflow.py",
+    "tests/widgets/public/test_pagestack.py",
     "tests/widgets/public/test_hot_reload_app.py",
     "tests/widgets/public/test_hot_reload_shell.py",
 ]
