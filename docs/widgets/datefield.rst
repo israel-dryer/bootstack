@@ -125,13 +125,17 @@ initial value.
 Handling changes
 ~~~~~~~~~~~~~~~~
 
-``on_change()`` fires whenever the selected date changes — whether by keyboard
-input, picker selection, or ``value=`` assignment.
+``on_change()`` fires when the user commits a new date — by typing one and
+pressing Return or leaving the field, or by choosing one in the picker.
 
 .. code-block:: python
 
    df = bs.DateField(label="Appointment")
    df.on_change(lambda e: print("Selected:", e.value))
+
+Assigning ``value`` in code does not fire it, since nothing was committed. To
+observe both, bind a :class:`~bootstack.Signal` with ``signal=`` — it receives
+programmatic writes as well as user edits.
 
 Validation
 ~~~~~~~~~~

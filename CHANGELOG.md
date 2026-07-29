@@ -12,6 +12,12 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **Choosing a date from the calendar reports the change.** The picker set the
+  field but announced nothing, so a bound `Signal` kept its old date, an
+  `on_change` handler never ran, and a `Form` did not register the edit — while
+  typing the same date and pressing Return worked. Picking now behaves like any
+  other commit. Date ranges were already correct. (#388)
+
 - **A date field can be cleared.** Setting `value` to `None` — and the field's
   own `clear()` method, which does exactly that — silently left the previous
   date in place, on screen and in `form.get()`. Clearing now works through
