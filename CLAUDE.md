@@ -942,6 +942,30 @@ memories and git history.
 > **vacuously pass** headless.
 >
 > **Open, additive items (no longer ship-blockers) — candidates for the next 0.1.x patch:**
+> - **★ #392 — `Subscription.cancel()` is BROKEN (filed 2026-07-29; real product
+>   bug, highest-value item here).** Cancelling one subscription **silences every
+>   other handler on that event**. `_runtime/events.py`'s `_patched_bind` writes its
+>   own Tcl script for **virtual events** (`<<...>>` = every bootstack event) in a
+>   bare `<funcid> %d %# ...` format, but **`unbind` was never patched to match**:
+>   `Misc._unbind` strips by the prefix `if {"[<funcid> ` that stock Tkinter emits,
+>   so nothing is filtered (**the binding survives**) while `deletecommand(funcid)`
+>   still runs (**the Tcl command is deleted**). The orphan then errors on every
+>   dispatch, and since bindings use `add='+'` they are ONE concatenated script — so
+>   the error **aborts every handler after it**. Silent: no Python-level exception.
+>   Proven with public API only (`bs.Button` + two `on_click` subs → `a=0 b=0` after
+>   cancelling `a`) plus a **control** (strip the orphan line by hand → `b=1`
+>   restored) and reproduced on **stock Python 3.13.9 tkinter with no bootstack**.
+>   **58 `unbind('<<...>>', funcid)` sites** are affected (dialog result plumbing,
+>   `validation_mixin`, `compositeframe`, `meter`, `tabview`, `calendar`,
+>   `accordion`, `expander`, `pagestack`, `ThemeToggle`). **Real events
+>   (`<Configure>`/`<Unmap>`/`<Destroy>`) take `_original_bind` and are NOT
+>   affected.** Suggested fix = emit stock Tkinter's
+>   `if {"[<funcid> ...]" == "break"} break` wrapper (also restores `return "break"`
+>   propagation for virtual events, impossible today); patching `unbind` to match the
+>   custom format keeps two formats in play. **Needs a regression test — there is
+>   none.** ⚠ This **contradicts the CLAUDE.md note that 3.12.10's `unbind(seq,
+>   funcid)` removes only that funcid** — true only for *stock-format* bindings,
+>   which is why it checked out when verified against `<Configure>`.
 > - **#383** (follow-up sweep from #381 — presentation kwargs still degrade
 >   silently + raw `TclError`/`AttributeError` leaks; sweep BY ARGUMENT NAME).
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
@@ -968,11 +992,24 @@ memories and git history.
 >
 > **`main` has SIX known-failing tests on macOS** — triaged under "Known failing
 > tests on macOS" below; four are test defects, two are order-dependent. Do NOT
-> chase them as regressions. **PR #385 is the fix and is OPEN awaiting a macOS
-> run** — once it merges, delete that section and the six-failure caveat above,
-> because the whole point is that the baseline becomes green.
+> chase them as regressions. **PR #385 is the fix and is now VERIFIED GREEN on a
+> real Mac (2026-07-29)** — `run_gui.py` exit 0 on macOS 26.5.2 / Tk 8.6 / Py
+> 3.14.0, after commit `5ad14cc1` fixed four failures the branch had NOT closed.
+> It is **ready to merge**; once it does, delete that section and this
+> six-failure caveat, because the whole point is that the baseline becomes green.
 >
-> **⚠ ENVIRONMENT (2026-07-28, this machine).** The checked-in `.venv` is
+> **⚠ ENVIRONMENT — TWO MACHINES. Check which one you are on first.**
+>
+> **macOS box (2026-07-29):** repo at **`/Users/israeldryer/PycharmProjects/bootstack`**
+> (NOT the `D:\Development\bootstack` at the top of this file — that is the Windows
+> box). Here **`.venv` WORKS**: `.venv/bin/python` = **Python 3.14.0, Tk 8.6**,
+> editable install, macOS **26.5.2**. `python tests/run_gui.py` runs the full GUI
+> suite in ~2 min with a real display. `bootstack.__version__` reports `0.1.8`
+> correctly. ⚠ Tk here is **8.6, not 9** — this box does NOT exercise the Tk 9
+> paths, so the `test_scroll_events.py` touchpad tests still SKIP (see 0.1.7).
+> `python3.13` exists system-wide but does **NOT** have bootstack installed.
+>
+> **Windows box (2026-07-28):** the checked-in `.venv` is
 > **STALE** — it points at `C:\Users\Israel Dryer\...\Python314\python.exe` and
 > every call fails with *"Access is denied"*. Use the launcher instead:
 > **`py -3.13`** for tests (Python 3.13.7, **Tk 8.6**) and **`py -3.12`** for the
@@ -1038,7 +1075,27 @@ memories and git history.
 >   Windows, so macOS-only helper code got real test coverage here — and that
 >   caught a `TclError`-on-separator bug that would otherwise have shipped. Ask
 >   "can I build the other platform's object directly?" before accepting
->   "unverifiable from this box". Hold commits until the user tests;
+>   "unverifiable from this box".
+>
+> **Four techniques worth reusing (2026-07-29 macOS-verification session):**
+> - **Run the BASELINE before the fix.** Ran the six failures on `main` first, so
+>   the before/after transition was *observed* rather than assumed — and that is
+>   what made "the branch fixes only 2 of 6" a fact instead of a suspicion.
+> - **A control experiment separates causation from correlation.** For #392 it was
+>   not enough that cancelling `sub_a` silenced `sub_b`; stripping the orphaned
+>   binding line by hand and watching `sub_b` come back (`b=1`) is what proved the
+>   orphan was the cause. Do this before filing any "X breaks Y" claim.
+> - **Bisect order-dependent failures; do not theorize.** A scripted prefix-bisect
+>   over the collection order found the culprit file in 6 runs, and a **geometry
+>   probe** (printing `winfo_ismapped`/size/reqheight in the passing vs failing
+>   order) turned "state pollution" into "reqheight 1242 > window 828, so the
+>   geometry manager unmapped it". The PR's static hypothesis was wrong.
+> - **⚠ Spying on an instance attribute is USELESS if the bound method was already
+>   captured.** `self.on_destroy(self._cleanup_theme_toggle)` captures the bound
+>   method at construction, so `obj._cleanup_x = spy` set afterward never fires and
+>   reads as "cleanup never ran" — I briefly drew exactly that wrong conclusion.
+>   **Patch the CLASS attribute before constructing**, or assert on the observable
+>   side effect (here, the binding count) instead. Hold commits until the user tests;
 > per-commit approval. **Release flow:** `bump-my-version bump pre_n` → push `main` +
 > the `v*` tag → `release.yml` (PyPI + GitHub Release) → `docs.yml` deploys. There is
 > **no `development` branch** (CONTRIBUTING.md + the localization workflow target `main`).
@@ -1166,14 +1223,46 @@ maximized-drag re-anchors under the cursor. Memory `project_undecorated_window_c
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
 
-### Known failing tests on macOS — FIX OPEN as PR #385 (issue #379)
+### Known failing tests on macOS — PR #385 VERIFIED GREEN on macOS (issue #379)
 
-> **Status 2026-07-28:** all six below are fixed on branch `fix/macos-test-defects`
-> (**PR #385**), which is **open pending a macOS run** — they cannot be verified
-> from a Windows box, since they already pass there. The PR body carries tester
-> instructions. **When it merges, delete this whole section.** Keeping a prose
-> list of accepted failures is exactly the fragility #379 was filed about: a
-> seventh failure blends in.
+> **Status 2026-07-29 (verified on a real Mac):** PR #385 is **green** —
+> `python tests/run_gui.py` → all legs passed, exit 0 on **macOS 26.5.2 / Tk 8.6 /
+> Python 3.14.0**. Baseline on `main` was run FIRST and reproduced exactly the six
+> failures below, so the transition was observed, not assumed. **When #385 merges,
+> delete this whole section.** Keeping a prose list of accepted failures is exactly
+> the fragility #379 was filed about: a seventh failure blends in.
+>
+> **The branch as originally pushed was NOT green — it fixed 2 of 6.** Commit
+> `5ad14cc1` fixes the other four; details in the PR comment. Two corrections the
+> PR body still states wrongly:
+> - **`menu_probe` did not accept what its callers hand it.** Its docstring claims
+>   `SelectButton._context_menu` is the backend. Measured: it is the **`ContextMenu`
+>   facade**, so `isinstance(obj, _NativeContextMenu)` is `False`, `item_count` took
+>   the themed branch, and the facade's `__getattr__` forwarded `_items` to the
+>   native backend → `AttributeError`. Invisible on Windows because that same
+>   forwarding resolves to the themed backend and works. Fixed with
+>   `MenuBackendProbe._unwrap`.
+> - **The PageStack diagnosis was wrong.** It was NOT an unprocessed map event — the
+>   branch's own `"shown_app did not map the root"` precondition **never fires**.
+>   Bisected to cumulative widget accumulation: after `test_attach_detach.py` the
+>   shared body has 23 slaves and reqheight **1242px** vs an **828px** window, so the
+>   geometry manager unmaps what no longer fits — the PageStack, added last
+>   (`mapped=0` at 1x1; `mapped=1` at 46x20 alone). Fixed by marking the module
+>   `isolated`. The `shown_app` `update()` pump is harmless but is not what fixed it.
+>
+> **⚠ The real root cause is a HARNESS BUG, deliberately left out of #385.**
+> `conftest._region()` returns `_region_root`, which on a decorated App **is the
+> root** — content lands one level deeper in the App's `_content_frame`. So
+> `_snapshot`/`_reset_scene` treat that frame as one permanent child and **never look
+> inside it**: the scene reset has been a **no-op for content widgets for the entire
+> life of the shared-root harness**, and every test's widgets pile up all session.
+> Fixing it makes PageStack pass with **no isolation marker** and cuts the widget leg
+> **144s → 80s**. NOT included, because it exposes two latent bugs: **#392** (see
+> below) and `test_select_change_event_value_space` picking up 5 change events
+> instead of 1 with values from earlier tests (same trigger file; looks like stale
+> bindtag bindings surviving destroy while Tk **recycles widget path names** — not
+> chased down). Patch preserved at `scratchpad/leakfix.patch`; do it on its own
+> branch **after #392 lands**.
 
 ### (historical triage 2026-07-23 — NOT caused by the Tk 9 work)
 
