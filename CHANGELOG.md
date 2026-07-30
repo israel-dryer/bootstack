@@ -8,79 +8,31 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.2.0] — form and field correctness
 
-### Fixed
-
-- **Cancelling one subscription no longer silences the others.** Calling
-  `cancel()` on a `Subscription` — or letting one fall out of a `with` block —
-  stopped every *other* handler listening to that same event on that widget,
-  with nothing raised to show for it. Two `on_click` handlers, cancel the first,
-  and neither ran again. It affected every bootstack event, and so a wide range
-  of behavior that unsubscribes as part of ordinary work: dialogs returning a
-  result, field validation, meters, tab views, calendars, accordions,
-  expanders, page stacks, and the theme toggle. Cancelling now removes exactly
-  the one handler it was asked to — including when a handler cancels itself, or
-  cancels another handler for the same event, while that event is being
-  delivered, and when a replacement handler is registered immediately after a
-  cancellation. (#392)
-
-- **Adding a validation rule no longer misaligns a row of fields.** A field
-  reserves space for its message as soon as it has a rule, and the fields
-  without one sat about nine pixels lower — both inside a `Form` and in a
-  hand-built `Row`. Two separate causes: the entry row absorbed the extra height
-  a form cell gave the field and centered itself in it, and a row centered the
-  shorter fields against their taller neighbors. Input fields — including
-  `Select` — now align to the top of a row on their own, so a row of them lines
-  up whether or not each one is validated. This applies to every container that
-  lays out as a row (`Row`, `Card`, `GroupBox`, `Expander`, `Tabs`, `PageStack`,
-  `SplitView` and an AppShell page), not just `Row`. Passing `vertical_items`
-  yourself still applies to every child, fields included. (#394)
-
-### Changed
-
-- **A field stretched taller than it needs now keeps its entry under its label.**
-  Where a field shares a grid row or a `'stretch'` cross axis with a taller
-  widget, the extra height used to be inserted *between* the label and the input,
-  leaving the input floating below its own caption; it now collects beneath the
-  field instead. Affects layouts that pair a field with something taller, such as
-  a `bs.Grid` row holding a field beside a multi-line `TextArea`. (#394)
-
-- **Choosing a date from the calendar reports the change.** The picker set the
-  field but announced nothing, so a bound `Signal` kept its old date, an
-  `on_change` handler never ran, and a `Form` did not register the edit — while
-  typing the same date and pressing Return worked. Picking now behaves like any
-  other commit. Date ranges were already correct. (#388)
-
-- **A date field can be cleared.** Setting `value` to `None` — and the field's
-  own `clear()` method, which does exactly that — silently left the previous
-  date in place, on screen and in `form.get()`. Clearing now works through
-  every path, including `Form.set({key: None})`. The same no-op affected
-  `None` on the other entry-backed fields (`TextField`, `NumberField`,
-  `PasswordField`, `PathField`, `SpinnerField`), which reached empty only when
-  given `""`; `None` and `""` now agree. (#387)
-
-- **`Form.set()` writes only the fields you name.** It walked every field and
-  blanked the ones absent from the dictionary — harmless only because blanking
-  was itself broken. A partial update such as `form.set({'date': value})` now
-  leaves the other fields, and the rest of the form data, untouched. (#387)
-
-- **A misspelled mode argument now tells you, instead of quietly doing
-  something else.** Arguments that name a behavior mode — `selection_mode`,
-  `sorting_mode`, `paging_mode`, `scrollbars`, `scroll_direction`,
-  `scrollbar_visibility`, and the `mode` on `ToggleGroup` and `PathField` — are
-  read by comparing against one value, so a near miss such as
-  `selection_mode="multiple"` used to switch multi-select off without a word.
-  Passing a value outside the documented set now raises `InvalidChoiceError`
-  naming the value and listing what is accepted. Covers `DataTable`,
-  `ListView`, `Tree`, `Gallery`, `Calendar`, `DateField`, `ToggleGroup`,
-  `PathField`, `ScrollView`, `TextArea`, and `CodeEditor`. (#381)
+This is the first minor release since `0.1.0`, and it carries one change that is not backward compatible: an argument naming a behavior mode now raises on a value outside its documented set, where it used to degrade quietly. See **Changed**.
 
 ### Added
 
-- **`InvalidChoiceError`** in `bootstack.errors`, raised when an argument with
-  a closed set of values is given something outside it. It is both a
-  `BootstackError` and a `ValueError`, so either one catches it. (#381)
+- **`InvalidChoiceError`** in `bootstack.errors`, raised when an argument with a closed set of values is given something outside it. It is both a `BootstackError` and a `ValueError`, so either one catches it. (#381)
+
+### Changed
+
+- **A misspelled mode argument now tells you, instead of quietly doing something else.** Arguments that name a behavior mode — `selection_mode`, `sorting_mode`, `paging_mode`, `scrollbars`, `scroll_direction`, `scrollbar_visibility`, and the `mode` on `ToggleGroup` and `PathField` — are read by comparing against one value, so a near miss such as `selection_mode="multiple"` used to switch multi-select off without a word. Passing a value outside the documented set now raises `InvalidChoiceError` naming the value and listing what is accepted. Covers `DataTable`, `ListView`, `Tree`, `Gallery`, `Calendar`, `DateField`, `ToggleGroup`, `PathField`, `ScrollView`, `TextArea`, and `CodeEditor`. (#381)
+
+- **A field stretched taller than it needs now keeps its entry under its label.** Where a field shares a grid row or a `'stretch'` cross axis with a taller widget, the extra height used to be inserted *between* the label and the input, leaving the input floating below its own caption; it now collects beneath the field instead. Affects layouts that pair a field with something taller, such as a `bs.Grid` row holding a field beside a multi-line `TextArea`. (#394)
+
+### Fixed
+
+- **Cancelling one subscription no longer silences the others.** Calling `cancel()` on a `Subscription` — or letting one fall out of a `with` block — stopped every *other* handler listening to that same event on that widget, with nothing raised to show for it. Two `on_click` handlers, cancel the first, and neither ran again. It affected every bootstack event, and so a wide range of behavior that unsubscribes as part of ordinary work: dialogs returning a result, field validation, meters, tab views, calendars, accordions, expanders, page stacks, and the theme toggle. Cancelling now removes exactly the one handler it was asked to. That holds in the cases hardest to get right too: a handler that cancels itself, a handler that cancels another handler while the same event is being delivered, and a replacement handler registered immediately after a cancellation. (#392)
+
+- **Adding a validation rule no longer misaligns a row of fields.** A field reserves space for its message as soon as it has a rule, and the fields without one sat about nine pixels lower — both inside a `Form` and in a hand-built `Row`. Two separate causes: the entry row absorbed the extra height a form cell gave the field and centered itself in it, and a row centered the shorter fields against their taller neighbors. Input fields — including `Select` — now align to the top of a row on their own, so a row of them lines up whether or not each one is validated. This applies to every container that lays out as a row (`Row`, `Card`, `GroupBox`, `Expander`, `Tabs`, `PageStack`, `SplitView` and an AppShell page), not just `Row`. Passing `vertical_items` yourself still applies to every child, fields included. (#394)
+
+- **Choosing a date from the calendar reports the change.** The picker set the field but announced nothing, so a bound `Signal` kept its old date, an `on_change` handler never ran, and a `Form` did not register the edit — while typing the same date and pressing Return worked. Picking now behaves like any other commit. Date ranges were already correct. (#388)
+
+- **A date field can be cleared.** Setting `value` to `None` — and the field's own `clear()` method, which does exactly that — silently left the previous date in place, on screen and in `form.get()`. Clearing now works through every path, including `Form.set({key: None})`. The same no-op affected `None` on the other entry-backed fields (`TextField`, `NumberField`, `PasswordField`, `PathField`, `SpinnerField`), which reached empty only when given `""`; `None` and `""` now agree. (#387)
+
+- **`Form.set()` writes only the fields you name.** It walked every field and blanked the ones absent from the dictionary — harmless only because blanking was itself broken. A partial update such as `form.set({'date': value})` now leaves the other fields, and the rest of the form data, untouched. (#387)
 
 ## [0.1.8] — macOS sizing on Tcl/Tk 9
 
@@ -363,6 +315,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.2.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.2.0
 [0.1.8]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.8
 [0.1.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.7
 [0.1.6]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.6
