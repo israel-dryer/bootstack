@@ -230,12 +230,34 @@ def _patched_bind(
             # Register wrapper function with tkinter
             name = self._register(wrapper)
 
-            # Build command with all substitutions including %d for data GUID
+            # Build the binding script. Its exact shape is load-bearing, and
+            # this must stay byte-for-byte what stock `Misc._bind` emits:
+            #
+            #   * Removing a single handler works by matching the line prefix
+            #     `if {"[<funcid> ` — note the TRAILING SPACE, which means the
+            #     substitution list below must never be empty. A script in any
+            #     other shape is invisible to the matcher, so the handler
+            #     survives while its command is deleted, leaving an orphan that
+            #     aborts every handler after it. All handlers for an event share
+            #     ONE concatenated script, so that took out every handler
+            #     registered after the cancelled one (#392).
+            #   * The `if {...} == "break"` test is what lets a handler return
+            #     'break' to stop the remaining handlers for that event.
+            #
+            # (The trailing newline only separates this line from the next
+            # handler's; Tk inserts its own separator when appending a `+`
+            # script. It is kept to match stock exactly.)
+            #
+            # The substitution list carries %d (our data token) ahead of the
+            # standard values; its order must match `wrapper`'s parameters.
             # Substitution codes: https://tcl.tk/man/tcl8.6/TkCmd/bind.htm
-            cmd = f'{name} %d %# %b %h %w %k %s %t %x %y %X %Y %A %K %N %T %E %D'
+            subst = '%d %# %b %h %w %k %s %t %x %y %X %Y %A %K %N %T %E %D'
+            cmd = '%sif {"[%s %s]" == "break"} break\n' % (
+                '+' if add else '', name, subst
+            )
 
             # Bind to widget
-            self.tk.call('bind', self._w, sequence, cmd if not add else '+' + cmd)
+            self.tk.call('bind', self._w, sequence, cmd)
 
             return name
         else:
