@@ -12,6 +12,19 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **Cancelling one subscription no longer silences the others.** Calling
+  `cancel()` on a `Subscription` — or letting one fall out of a `with` block —
+  stopped every *other* handler listening to that same event on that widget,
+  with nothing raised to show for it. Two `on_click` handlers, cancel the first,
+  and neither ran again. It affected every bootstack event, and so a wide range
+  of behavior that unsubscribes as part of ordinary work: dialogs returning a
+  result, field validation, meters, tab views, calendars, accordions,
+  expanders, page stacks, and the theme toggle. Cancelling now removes exactly
+  the one handler it was asked to — including when a handler cancels itself, or
+  cancels another handler for the same event, while that event is being
+  delivered, and when a replacement handler is registered immediately after a
+  cancellation. (#392)
+
 - **Adding a validation rule no longer misaligns a row of fields.** A field
   reserves space for its message as soon as it has a rule, and the fields
   without one sat about nine pixels lower — both inside a `Form` and in a

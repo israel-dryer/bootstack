@@ -32,6 +32,7 @@ Note:
     applied globally and affect all tkinter widgets in the application.
 """
 
+import itertools
 import tkinter as tk
 import uuid
 import weakref
@@ -43,9 +44,35 @@ from typing import Any, Callable, Optional, Union
 _event_data_cache: OrderedDict[str, Any] = OrderedDict()
 _MAX_CACHE_SIZE = 100  # Prevent unbounded growth
 
+# Serial number used to give every registered handler a unique name. See
+# `_unique_name` for why the stock naming scheme is not safe here.
+_binding_seq = itertools.count()
+
+
+def _unique_name(prefix: str) -> str:
+    """Return a handler name that can never collide with a previous one.
+
+    Tkinter names the Tcl command behind a binding `repr(id(f)) + f.__name__`,
+    where `f` is a bound method created for that registration alone. Nothing
+    else refers to it, so releasing the command frees the method and CPython is
+    free to hand the very same address to the next one — measured at 498 out of
+    499 consecutive bind/cancel/bind cycles. Every wrapper registered here has
+    the same `__name__`, so the whole name would repeat with it.
+
+    That is harmless while removals delete the command immediately, but
+    `_patched_unbind` defers the deletion to the next idle point. A repeated
+    name means a binding created in the meantime inherits the name a deletion is
+    already pending on, and that deletion then takes out a live handler — the
+    #392 failure again, on a new trigger. A serial number in the name keeps the
+    two apart no matter what the allocator does.
+    """
+    return '%s%d' % (prefix, next(_binding_seq))
+
+
 # Store original tkinter methods before patching
 _original_event_generate: Callable = tk.Misc.event_generate
 _original_bind: Callable = tk.Misc.bind
+_original_unbind: Callable = tk.Misc.unbind
 
 
 def _patched_event_generate(
@@ -219,23 +246,60 @@ def _patched_bind(
                 # Attach custom data (don't pop yet - multiple handlers may need it)
                 if data_guid and data_guid in _event_data_cache:
                     event.data = _event_data_cache[data_guid]
-                    # Schedule cleanup after all handlers have run
-                    widget.after_idle(lambda: _event_data_cache.pop(data_guid, None))
+                    # Schedule cleanup after all handlers have run. On the root,
+                    # not on `widget`: deferred work owned by a widget is torn
+                    # down with it, so a handler that destroys its own widget
+                    # would leave this callback pointing at a command destroy()
+                    # had already swept — a silent background error. The root
+                    # outlives every widget. (Same rule as `_patched_unbind`.)
+                    try:
+                        widget._root().after_idle(
+                            lambda: _event_data_cache.pop(data_guid, None)
+                        )
+                    except (tk.TclError, AttributeError):
+                        # No event loop left to defer onto; the LRU cap reclaims
+                        # the entry instead.
+                        pass
                 else:
                     # Data might have been evicted from cache already
                     event.data = None
 
                 return func(event)
 
-            # Register wrapper function with tkinter
+            # Register wrapper function with tkinter. The name tkinter builds
+            # ends with the function's `__name__`, so making that unique is
+            # enough to keep a deferred deletion off a later binding.
+            wrapper.__name__ = _unique_name('bsvirtual')
             name = self._register(wrapper)
 
-            # Build command with all substitutions including %d for data GUID
+            # Build the binding script. Its exact shape is load-bearing, and
+            # this must stay byte-for-byte what stock `Misc._bind` emits:
+            #
+            #   * Removing a single handler works by matching the line prefix
+            #     `if {"[<funcid> ` — note the TRAILING SPACE, which means the
+            #     substitution list below must never be empty. A script in any
+            #     other shape is invisible to the matcher, so the handler
+            #     survives while its command is deleted, leaving an orphan that
+            #     aborts every handler after it. All handlers for an event share
+            #     ONE concatenated script, so that took out every handler
+            #     registered after the cancelled one (#392).
+            #   * The `if {...} == "break"` test is what lets a handler return
+            #     'break' to stop the remaining handlers for that event.
+            #
+            # (The trailing newline only separates this line from the next
+            # handler's; Tk inserts its own separator when appending a `+`
+            # script. It is kept to match stock exactly.)
+            #
+            # The substitution list carries %d (our data token) ahead of the
+            # standard values; its order must match `wrapper`'s parameters.
             # Substitution codes: https://tcl.tk/man/tcl8.6/TkCmd/bind.htm
-            cmd = f'{name} %d %# %b %h %w %k %s %t %x %y %X %Y %A %K %N %T %E %D'
+            subst = '%d %# %b %h %w %k %s %t %x %y %X %Y %A %K %N %T %E %D'
+            cmd = '%sif {"[%s %s]" == "break"} break\n' % (
+                '+' if add else '', name, subst
+            )
 
             # Bind to widget
-            self.tk.call('bind', self._w, sequence, cmd if not add else '+' + cmd)
+            self.tk.call('bind', self._w, sequence, cmd)
 
             return name
         else:
@@ -246,10 +310,90 @@ def _patched_bind(
                     event.data = None
                 return func(event)
 
+            # Real events are removed by the same patched `unbind`, so they need
+            # the same protection from a recycled name. See `_unique_name`.
+            regular_wrapper.__name__ = _unique_name('bsregular')
             return _original_bind(self, sequence, regular_wrapper, add)
 
     # No function or sequence provided, pass through to original
     return _original_bind(self, sequence, func, add)
+
+
+def _patched_unbind(
+    self: tk.Misc,
+    sequence: str,
+    funcid: Optional[str] = None
+) -> None:
+    """Enhanced unbind that cannot disturb the other handlers for an event.
+
+    Stock tkinter removes one handler in two steps: rewrite the binding script
+    without that handler's line, then delete the Tcl command behind it. The
+    rewrite is correct, but the deletion is immediate — and all handlers for an
+    event share ONE script, so if the removal happens *while that script is
+    running* (a handler cancelling another handler's subscription), execution
+    later reaches the deleted command and the whole script aborts. Every handler
+    after the cancelled one is skipped for that dispatch, and the error surfaces
+    nowhere Python can see it.
+
+    This version neutralizes the command in place instead, then deletes it once
+    the current dispatch has finished. An already-running script then evaluates
+    a harmless no-op where the cancelled handler used to be and carries on to
+    the handlers after it.
+
+    Args:
+        self: The widget instance (automatically provided)
+        sequence: Event sequence the handler was bound to
+        funcid: Identifier returned by `bind`. When omitted, every handler for
+            the sequence is removed and the original implementation is used.
+    """
+    if funcid is None:
+        # Removing everything replaces the whole script, so there is no
+        # surviving line that could reference a deleted command.
+        return _original_unbind(self, sequence)
+
+    what = ('bind', self._w, sequence)
+    try:
+        script = self.tk.call(what)
+        lines = str(script).split('\n')
+        # Must match what `_patched_bind` emits (and stock `Misc._bind`).
+        prefix = 'if {"[%s ' % funcid
+        keep = [line for line in lines if not line.startswith(prefix)]
+        if len(keep) == len(lines):
+            # This funcid is not bound to this widget and sequence, so it is
+            # not ours to delete — the live binding may be somewhere else, and
+            # deleting its command would orphan it. Leave everything alone.
+            return
+        remaining = '\n'.join(keep)
+        self.tk.call(*what, remaining if remaining.strip() else '')
+        # Replace the command rather than deleting it, so an in-flight copy of
+        # the concatenated script has something harmless to call.
+        self.tk.createcommand(funcid, lambda *args: '')
+    except tk.TclError:
+        return
+
+    def _delete_command() -> None:
+        try:
+            self.deletecommand(funcid)
+        except (tk.TclError, AttributeError):
+            # Already swept, most likely because the widget was destroyed
+            # before the interpreter went idle. `AttributeError` is that same
+            # case seen from the other side: destroy() clears the widget's
+            # command bookkeeping, which `deletecommand` then cannot update.
+            pass
+
+    try:
+        # Deliberately scheduled on the root, not on `self`. Deferred work owned
+        # by a widget is torn down with it, and destroying a widget between the
+        # cancellation and the next idle point would leave the pending callback
+        # referring to a command that destroy() had already deleted — a silent
+        # error of exactly the kind this function exists to avoid. The root
+        # outlives every widget, and when the root itself goes the pending
+        # callback goes with it, which is equally fine: there is nothing left to
+        # clean up.
+        self._root().after_idle(_delete_command)
+    except (tk.TclError, AttributeError):
+        # No event loop left to defer onto; nothing can be mid-dispatch either.
+        _delete_command()
 
 
 def cleanup_event_cache() -> None:
@@ -342,9 +486,10 @@ def get_cache_size() -> int:
 def install_enhanced_events() -> None:
     """Install the enhanced event system by patching tkinter methods.
 
-    This function applies monkey patches to tkinter's Misc class,
-    replacing event_generate and bind with enhanced versions that
-    support passing custom data through virtual events.
+    This function applies monkey patches to tkinter's Misc class, replacing
+    event_generate and bind with enhanced versions that support passing custom
+    data through virtual events, and unbind with a version that cannot disturb
+    the other handlers for an event while one is being removed.
 
     The patches are applied globally and affect all tkinter widgets
     in the application. This function is called automatically when
@@ -364,6 +509,7 @@ def install_enhanced_events() -> None:
     """
     tk.Misc.event_generate = _patched_event_generate
     tk.Misc.bind = _patched_bind
+    tk.Misc.unbind = _patched_unbind
 
 
 def uninstall_enhanced_events() -> None:
@@ -387,6 +533,7 @@ def uninstall_enhanced_events() -> None:
     """
     tk.Misc.event_generate = _original_event_generate
     tk.Misc.bind = _original_bind
+    tk.Misc.unbind = _original_unbind
     cleanup_event_cache()
 
 
