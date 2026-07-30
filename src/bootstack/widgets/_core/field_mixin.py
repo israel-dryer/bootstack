@@ -23,6 +23,13 @@ class FieldAddonMixin:
     #: field wrappers override it (`'number'`, `'date'`, `'time'`).
     _VALIDATION_KIND: str = "text"
 
+    #: Cross-axis alignment a field contributes when the author set none. A
+    #: field that shows a validation message is taller than one that doesn't, so
+    #: centering them in a Row leaves the shorter ones sitting low; top-aligning
+    #: lines their labels and entries up instead. Soft — an explicit `vertical`
+    #: on the field or `vertical_items` on the container still wins (#394).
+    _flex_vertical_default: str = "top"
+
     _ADDON_TYPES = {
         "button":  "bootstack.widgets._impl.primitives.button::Button",
         "label":   "bootstack.widgets._impl.primitives.label::Label",

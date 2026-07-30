@@ -223,7 +223,13 @@ class Field(EntryMixin, Frame):
         if label:
             self._label_lbl.pack(side='top', fill='x', padx=(4, 0))
 
-        self._field.pack(side='top', fill='x', expand=True)
+        # No vertical expand: when a field is given more height than it needs —
+        # a form grid stretches every cell to the tallest field in the row — the
+        # slack must collect BELOW the stack, not inside the entry row. With
+        # expand=True the entry row absorbed it and centered itself, so a field
+        # without a reserved message row sat ~half a message lower than its
+        # validated neighbors (#394).
+        self._field.pack(side='top', fill='x')
         self._entry.pack(side='left', fill='x', expand=True, padx=(0, 6) if kind == "spinbox" else 0, pady=0)
 
         self._entry.bind('<<StateChanged>>', self._sync_addon_state, add=True)

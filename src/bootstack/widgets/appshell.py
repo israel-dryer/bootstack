@@ -16,7 +16,7 @@ from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
-    _expand_margin,
+    resolve_layout_items, _expand_margin,
 )
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
@@ -80,10 +80,9 @@ class Page:
 
         # Page content fills the content area, so a column stretches its children
         # across the width by default (a standalone Column centers them).
-        if horizontal_items is None:
-            horizontal_items = "stretch" if layout in ("grid", "column") else "left"
-        if vertical_items is None:
-            vertical_items = "stretch" if layout == "grid" else "center" if layout == "row" else "top"
+        horizontal_items, vertical_items = resolve_layout_items(
+            layout, horizontal_items, vertical_items, column_horizontal="stretch",
+        )
         self._layout = layout
         self._horizontal_items = horizontal_items
         self._vertical_items = vertical_items

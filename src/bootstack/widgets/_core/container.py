@@ -255,17 +255,74 @@ def grid_sticky(horizontal: str | None, vertical: str | None) -> str:
     return sticky
 
 
+def resolve_layout_items(
+    layout: str,
+    horizontal_items: str | None,
+    vertical_items: str | None,
+    *,
+    column_horizontal: str | None = None,
+) -> tuple[str | None, str | None]:
+    """Fill in a multi-mode container's unset `*_items` for its layout mode.
+
+    Containers that can lay out as a column, a row, or a grid (`Card`, `GroupBox`,
+    `Expander`, `Tabs`, `PageStack`, `SplitView`, the AppShell page) take
+    `horizontal_items`/`vertical_items` as `None`-means-unset and need a default
+    that depends on the mode.
+
+    A **grid** gets concrete values, because the grid engine has no notion of an
+    unset axis — cells stretch unless told otherwise. A **column** or **row**
+    keeps `None` and lets `FlexFrame` resolve it: the engine's own defaults are
+    exactly what these containers used to hard-code (the stacking axis starts at
+    its leading edge, the cross axis centers), and leaving the cross axis unset is
+    what allows a child to contribute its own default — which is how a row of
+    input fields stays aligned whether or not each field carries a validation
+    message (#394). Pre-resolving to `'center'` here silently suppressed that.
+
+    Args:
+        layout: The container's layout mode — `'column'`, `'row'` or `'grid'`.
+        horizontal_items: The x-axis value as given, or None if unset.
+        vertical_items: The y-axis value as given, or None if unset.
+        column_horizontal: Cross-axis override for column mode, for a container
+            whose column should not center — the AppShell page stretches instead.
+            Defaults to None (use the engine default).
+
+    Returns:
+        The pair to hand the layout frame. Either element may be None in column or
+        row mode, meaning "unset — let the engine decide"; both are concrete for a
+        grid. The None is only ever passed to `FlexFrame`; the grid path
+        (`_merge_layout_options`) runs solely in grid mode, where both are set.
+    """
+    if layout == "grid":
+        return (horizontal_items or "stretch", vertical_items or "stretch")
+    if layout == "column" and horizontal_items is None:
+        horizontal_items = column_horizontal
+    return (horizontal_items, vertical_items)
+
+
 def _flex_child_opts(child: PublicWidgetBase, layout_kw: dict) -> dict:
     """Build the FlexFrame per-child opts dict from resolved layout kwargs.
 
     Expects `_expand_margin` to have already converted margins to padx/pady.
     Carries spacer metadata when `child` is a `Spacer` (duck-typed to avoid a
     circular import).
+
+    A widget may also declare its own preferred cross-axis alignment via a
+    `_flex_horizontal_default` / `_flex_vertical_default` class attribute (same
+    duck-typing). That is a *soft* default: it applies only when neither the
+    child nor the container was given an explicit alignment, so it can never
+    override an instruction the author actually wrote. The field family uses it
+    to sit top-aligned in a Row instead of centering, since a field carrying a
+    validation message is taller than one that isn't (#394).
     """
     opts: dict[str, Any] = {}
     for key in ("grow", "horizontal", "vertical", "padx", "pady"):
         if key in layout_kw:
             opts[key] = layout_kw[key]
+    for axis in ("horizontal", "vertical"):
+        if axis not in opts:
+            declared = getattr(child, f"_flex_{axis}_default", None)
+            if declared is not None:
+                opts[f"_{axis}_default"] = declared
     if getattr(child, "_is_spacer", False):
         opts["_spacer"] = True
         opts["_spacer_size"] = getattr(child, "_spacer_size", None)
