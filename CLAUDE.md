@@ -1041,22 +1041,38 @@ memories and git history.
 > under SemVer; the **0.1.0 (stable) milestone is CLOSED**. **#149 is DONE** — all
 > its folded items shipped (`text=<Signal>` guard + `cli/run.py` via PR #334;
 > `__version__` is dynamic; CHANGELOG via #335). `bootstack.dev` stays
-> **PROVISIONAL** (excluded from the freeze). The active milestone is **0.1.x —
-> Widget polish** (`gh` milestone #2 — RENAMED 2026-06-25 from "0.1.1"; it is a
-> **rolling line of patch releases**, not a single version: `0.1.1` pygments
-> packaging · `0.1.2` menu window-move dismiss · `0.1.3` Form `editor_options`
-> public kwargs (#354) · `0.1.4` `Select.add_validation_rule` restored (#357) ·
-> `0.1.5` boolean-control state reads + Checkbox tristate (#360) · `0.1.6` seven
-> form/field/validation fixes (#362–#368) · `0.1.7` Tk 9 scroll contract
-> (#373/#374) · **`0.1.8` macOS sizing on Tk 9 (#377, latest — on PyPI
-> 2026-07-23)** — see the top "Recently completed" entries). Post-0.1.0
-> release batching lives in
-> memory `project_roadmap_milestones` (0.1.x polish → 0.2.0 Timeline/Wizard →
-> 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
+> **PROVISIONAL** (excluded from the freeze). The `0.1.x` line was a **rolling
+> series of patch releases**: `0.1.1` pygments packaging · `0.1.2` menu
+> window-move dismiss · `0.1.3` Form `editor_options` public kwargs (#354) ·
+> `0.1.4` `Select.add_validation_rule` restored (#357) · `0.1.5` boolean-control
+> state reads + Checkbox tristate (#360) · `0.1.6` seven form/field/validation
+> fixes (#362–#368) · `0.1.7` Tk 9 scroll contract (#373/#374) · **`0.1.8` macOS
+> sizing on Tk 9 (#377 — on PyPI 2026-07-23, the LATEST RELEASE)** — see the top
+> "Recently completed" entries.
 >
-> **★ START HERE NEXT SESSION (2026-07-29 handoff, session 3) — #394 SHIPPED
-> (PR #395); #392 IS THE LIVE ITEM.** `main` is green on Windows, has **no open
-> PRs**, and the working tree is clean apart from this file. Order of value:
+> **⏭ THE ACTIVE TARGET IS `0.2.0` (decided 2026-07-29).** Milestone **`0.2.0 —
+> Form and field correctness`** (`gh` milestone **#6**). **A minor, not a patch,
+> and that was a deliberate maintainer call** — the project committed to SemVer
+> from 0.1.0 and two merged changes are not backward compatible (#381 raises where
+> it used to accept; #387 made `configure(data=)` genuinely clear absent keys).
+> Content: merged **#332, #379, #381, #387, #388, #394** plus **#389, #390, #392**
+> to finish. **Every themed milestone shifted OUT one minor** and the rolling
+> patch line was renamed:
+> `0.2.x — Widget polish` (#2, was `0.1.x`) · `0.3.0 — Guided flows` (#3,
+> Timeline/Wizard) · `0.4.0 — Power-user interactions` (#4, DropZone/command
+> palette) · `0.5.0 — Structured editing` (#5, color-swatch/PropertyInspector).
+> **Full mapping + the reasoning: memory `project_roadmap_milestones`** (which now
+> exists — CLAUDE.md had been pointing at a dangling link, and the old inline
+> roadmap "0.2.0 Timeline/Wizard → 0.3.0 palette/DropZone" is OBSOLETE).
+> **#369 and #383 are deliberately un-milestoned:** both would raise where the
+> framework currently accepts, so they cannot ride the `0.2.x` patch line and need
+> a minor of their own. #352 and #328 are also homeless.
+>
+> **★ START HERE NEXT SESSION (2026-07-29 handoff, session 3) — FINISH THE THREE
+> OPEN `0.2.0` ITEMS, THEN CUT THE RELEASE.** `main` is green on Windows, has **no
+> open PRs**, and the working tree is clean. The plan agreed with the maintainer:
+> land #392/#390/#389, then release **0.2.0** (milestones are already renumbered —
+> see the block above). Order of value:
 > 1. **#392 — `Subscription.cancel()` is BROKEN** (detailed below). A real
 >    product bug that silently kills unrelated handlers, 58 affected call sites,
 >    and **no regression test exists**. Highest value on the board. It also gates
