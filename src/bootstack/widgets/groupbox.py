@@ -8,7 +8,7 @@ from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     PublicContainer, GRID_KEYS, place_flex_child, grid_sticky,
-    _reject_legacy_child_kwargs,
+    resolve_layout_items, _reject_legacy_child_kwargs,
 )
 from bootstack.widgets.types import (
     AccentToken, Padding, LayoutKind, AutoFlow, LocalizeMode,
@@ -82,16 +82,9 @@ class GroupBox(PublicContainer):
         # One horizontal_items/vertical_items pair serves both modes; the sensible
         # default differs — grid cells fill (stretch), stacked children sit at the
         # leading edge (left/top).
-        if horizontal_items is None:
-            horizontal_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "column" else "left"
-            )
-        if vertical_items is None:
-            vertical_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "row" else "top"
-            )
+        horizontal_items, vertical_items = resolve_layout_items(
+            layout, horizontal_items, vertical_items
+        )
 
         tk_master = self._parent._child_master() if self._parent else None
 

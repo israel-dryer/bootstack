@@ -51,8 +51,8 @@ class FlexFrame(Frame):
         master: Master = None,
         *,
         direction: str = "horizontal",
-        horizontal_items: str = "left",
-        vertical_items: str = "top",
+        horizontal_items: str | None = "left",
+        vertical_items: str | None = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -74,11 +74,15 @@ class FlexFrame(Frame):
             horizontal_items: How children are positioned on the x axis. For a
                 Row (horizontal stacks) this arranges the group
                 (`left`/`center`/`right`/`space-*`); for a Column it aligns each
-                child (`left`/`center`/`right`/`stretch`). Defaults to `'left'`.
+                child (`left`/`center`/`right`/`stretch`). `None` means unset —
+                the stacking axis then starts at its leading edge and the cross
+                axis centers, and on the cross axis a child may contribute its
+                own default. Defaults to `'left'`.
             vertical_items: How children are positioned on the y axis. For a
                 Column (vertical stacks) this arranges the group
                 (`top`/`center`/`bottom`/`space-*`); for a Row it aligns each
-                child (`top`/`center`/`bottom`/`stretch`). Defaults to `'top'`.
+                child (`top`/`center`/`bottom`/`stretch`). `None` means unset,
+                as for `horizontal_items`. Defaults to `'top'`.
             grow_items: When True, every content child grows equally (uniform)
                 to share the main axis. Defaults to False.
             weights: Positional shorthand for per-child `grow` —
@@ -130,6 +134,8 @@ class FlexFrame(Frame):
         else:
             value = self._vertical_items
             start, end = "top", "bottom"
+        if value is None:
+            return "start"  # unset: children stack from the leading edge
         if value == start:
             return "start"
         if value == end:
@@ -137,8 +143,41 @@ class FlexFrame(Frame):
         return value  # center, space-between, space-around, space-evenly
 
     def _cross_default(self) -> str:
-        """The cross-axis (non-stacking) container alignment value."""
-        return self._vertical_items if self._row_dir else self._horizontal_items
+        """The cross-axis (non-stacking) container alignment value.
+
+        `None` means the author never said — the cross axis then centers, which
+        is the framework-wide default (see the layout redesign).
+        """
+        value = self._vertical_items if self._row_dir else self._horizontal_items
+        return "center" if value is None else value
+
+    def _cross_is_unset(self) -> bool:
+        """True when no container-level cross-axis alignment was given.
+
+        Only then may a child contribute its own default (see `_resolve_cross`);
+        an alignment the author actually wrote always wins.
+        """
+        value = self._vertical_items if self._row_dir else self._horizontal_items
+        return value is None
+
+    def _resolve_cross(self, opts: dict[str, Any]) -> str:
+        """The cross-axis alignment to use for one child, most specific first.
+
+        Precedence: the child's own explicit `vertical`/`horizontal` kwarg, then
+        the container's `*_items` when the author set one, then a default the
+        child *itself* declares, and finally the framework default. The
+        child-declared step is what lets a field family opt out of centering
+        without overriding an instruction the author wrote (#394).
+        """
+        cross_key = "vertical" if self._row_dir else "horizontal"
+        value = opts.get(cross_key)
+        if value is not None:
+            return value
+        if self._cross_is_unset():
+            declared = opts.get(f"_{cross_key}_default")
+            if declared is not None:
+                return declared
+        return self._cross_default()
 
     def _cross_sticky(self, value: str) -> str:
         """Map a cross-axis edge value to Tk sticky chars for this direction."""
@@ -239,9 +278,7 @@ class FlexFrame(Frame):
         cross_cfg(0, weight=1)        # cross track fills so alignment has room
         main_cfg(idx, weight=0)
 
-        cross_key = "vertical" if row_dir else "horizontal"
-        cross_val = opts.get(cross_key) or self._cross_default()
-        sticky = self._cross_sticky(cross_val)
+        sticky = self._cross_sticky(self._resolve_cross(opts))
 
         main_axis = "padx" if row_dir else "pady"
         cross_axis = "pady" if row_dir else "padx"
@@ -273,11 +310,34 @@ class FlexFrame(Frame):
         self._gap = value
         self._relayout()
 
+    def _resolved_items(self, axis: str) -> str:
+        """The effective `*_items` value for a screen axis, never `None`.
+
+        An axis the author left unset is stored as `None`; the public property
+        must still read as a real alignment, so resolve it the same way the
+        planner does — the stacking axis starts at its leading edge, the cross
+        axis centers.
+
+        Note this getter resolves while the setter stores verbatim, so feeding a
+        read straight back into `configure()` records an explicit alignment and
+        an unset axis cannot be restored (the configure protocol reads `None` as
+        "get", not as "unset"). Accepted: treating an explicit `configure()` as
+        an instruction is the correct reading, and nothing in the framework does
+        that round trip.
+        """
+        is_main = (axis == "horizontal") == self._row_dir
+        if is_main:
+            value = self._horizontal_items if axis == "horizontal" else self._vertical_items
+            if value is not None:
+                return value
+            return "left" if axis == "horizontal" else "top"
+        return self._cross_default()
+
     @configure_delegate('horizontal_items')
     def _delegate_horizontal_items(self, value=None) -> str:
         """Get or set how children are positioned on the x axis."""
         if value is None:
-            return self._horizontal_items
+            return self._resolved_items("horizontal")
         self._horizontal_items = value
         self._relayout()
 
@@ -285,7 +345,7 @@ class FlexFrame(Frame):
     def _delegate_vertical_items(self, value=None) -> str:
         """Get or set how children are positioned on the y axis."""
         if value is None:
-            return self._vertical_items
+            return self._resolved_items("vertical")
         self._vertical_items = value
         self._relayout()
 
@@ -414,13 +474,12 @@ class FlexFrame(Frame):
 
             # Cross-axis sticky from the child's cross alignment (+ main-axis
             # stretch when growing). The cross axis is vertical for a Row and
-            # horizontal for a Column, so the relevant per-child key flips.
-            cross_key = "vertical" if row_dir else "horizontal"
-            cross_val = o.get(cross_key) or self._cross_default()
+            # horizontal for a Column, so the relevant per-child key flips —
+            # `_resolve_cross` owns that and the precedence rules.
             sticky = ""
             if grows:
                 sticky += "ew" if row_dir else "ns"
-            sticky += self._cross_sticky(cross_val)
+            sticky += self._cross_sticky(self._resolve_cross(o))
 
             # Gap (leading, between content only) + per-child margins.
             main_axis = "padx" if row_dir else "pady"

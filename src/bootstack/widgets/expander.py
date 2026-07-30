@@ -9,7 +9,7 @@ from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     PublicContainer, GRID_KEYS, grid_sticky, place_flex_child,
-    _reject_legacy_child_kwargs, _expand_margin,
+    resolve_layout_items, _reject_legacy_child_kwargs, _expand_margin,
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.context import push_container, pop_container
@@ -107,16 +107,9 @@ class Expander(PublicContainer):
         layout_kw = self._split_layout_kwargs(kwargs)
         layout_kw.setdefault("horizontal", "stretch")
 
-        if horizontal_items is None:
-            horizontal_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "column" else "left"
-            )
-        if vertical_items is None:
-            vertical_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "row" else "top"
-            )
+        horizontal_items, vertical_items = resolve_layout_items(
+            layout, horizontal_items, vertical_items
+        )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -253,16 +246,9 @@ class AccordionSection:
         self._key = key
         self._layout = layout
 
-        if horizontal_items is None:
-            horizontal_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "column" else "left"
-            )
-        if vertical_items is None:
-            vertical_items = (
-                "stretch" if layout == "grid"
-                else "center" if layout == "row" else "top"
-            )
+        horizontal_items, vertical_items = resolve_layout_items(
+            layout, horizontal_items, vertical_items
+        )
 
         content = internal_expander._content_frame
         if layout in ("column", "row"):

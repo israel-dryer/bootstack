@@ -12,6 +12,27 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **Adding a validation rule no longer misaligns a row of fields.** A field
+  reserves space for its message as soon as it has a rule, and the fields
+  without one sat about nine pixels lower — both inside a `Form` and in a
+  hand-built `Row`. Two separate causes: the entry row absorbed the extra height
+  a form cell gave the field and centered itself in it, and a row centered the
+  shorter fields against their taller neighbors. Input fields — including
+  `Select` — now align to the top of a row on their own, so a row of them lines
+  up whether or not each one is validated. This applies to every container that
+  lays out as a row (`Row`, `Card`, `GroupBox`, `Expander`, `Tabs`, `PageStack`,
+  `SplitView` and an AppShell page), not just `Row`. Passing `vertical_items`
+  yourself still applies to every child, fields included. (#394)
+
+### Changed
+
+- **A field stretched taller than it needs now keeps its entry under its label.**
+  Where a field shares a grid row or a `'stretch'` cross axis with a taller
+  widget, the extra height used to be inserted *between* the label and the input,
+  leaving the input floating below its own caption; it now collects beneath the
+  field instead. Affects layouts that pair a field with something taller, such as
+  a `bs.Grid` row holding a field beside a multi-line `TextArea`. (#394)
+
 - **Choosing a date from the calendar reports the change.** The picker set the
   field but announced nothing, so a bound `Signal` kept its old date, an
   `on_change` handler never ran, and a `Form` did not register the edit — while

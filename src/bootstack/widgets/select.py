@@ -79,6 +79,13 @@ class Select(PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    #: Same soft cross-axis default the field family declares on
+    #: `FieldAddonMixin`. Select is the one Field-backed widget that does not
+    #: inherit that mixin, but it grows a validation-message row identically, so
+    #: without this a Select sat low beside the fields it shares a Row with
+    #: (#394).
+    _flex_vertical_default: str = "top"
+
     def __init__(
         self,
         options: list[Option] | None = None,

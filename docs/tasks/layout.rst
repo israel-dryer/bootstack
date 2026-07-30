@@ -237,6 +237,12 @@ A handful of behaviors trip people up the first time:
   set ``horizontal_items="stretch"``; to left-align, ``horizontal_items="left"``.
   The *stacking* axis still starts at the top/left — use ``horizontal_items`` /
   ``vertical_items`` or a ``Spacer`` to move the whole group.
+- **Input fields top-align in a Row instead.** A field grows taller the moment it
+  carries a validation rule, because it reserves a row for the message. Centering
+  would then drop its unvalidated neighbors by half a message row, so fields ask
+  for ``'top'`` on their own and a row of them lines up regardless of which ones
+  are validated. Passing ``vertical_items`` yourself applies to every child,
+  fields included.
 - **Data and canvas widgets collapse without `grow`.** A ``ListView`` or
   ``Tree`` with no ``grow``/``stretch`` shrinks to nothing — give it
   ``grow=True`` (and ``horizontal="stretch"`` in a Column).

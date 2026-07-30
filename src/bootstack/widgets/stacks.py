@@ -18,8 +18,8 @@ class _FlexBase(FlexContainer):
         self,
         *,
         parent: Any = None,
-        horizontal_items: str = "left",
-        vertical_items: str = "top",
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -33,6 +33,12 @@ class _FlexBase(FlexContainer):
         # Shared implementation for Row/Column. Each subclass declares its own
         # __init__ so Sphinx renders the (axis-specific) params and value types
         # per class.
+        #
+        # Both axes default to None — "the author did not say" — rather than to
+        # the effective value, so the engine can tell a written alignment from an
+        # absent one and let a child contribute its own cross-axis default
+        # (#394). FlexFrame resolves None: stacking axis to its leading edge,
+        # cross axis to center, which reproduces the documented defaults.
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
@@ -84,7 +90,10 @@ class Row(_FlexBase):
             no effect once any child grows. Defaults to `'left'`.
         vertical_items: Vertical alignment of children — `'top'`, `'center'`,
             `'bottom'`, or `'stretch'` (fill the row's height). Override per child
-            with `vertical`. Defaults to `'center'`.
+            with `vertical`. Defaults to `'center'`, except that input fields
+            align to the top on their own so a row of fields lines up whether or
+            not each one carries a validation message; setting this explicitly
+            applies to every child, fields included.
         grow_items: When `True`, every child grows equally to fill the row.
             Defaults to `False`.
         weights: Explicit per-child width weights (e.g. `[1, 2, 1]`) — shorthand
@@ -114,8 +123,8 @@ class Row(_FlexBase):
         self,
         *,
         parent: Any = None,
-        horizontal_items: HArrange = "left",
-        vertical_items: VAlign = "center",
+        horizontal_items: HArrange | None = None,
+        vertical_items: VAlign | None = None,
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -187,8 +196,8 @@ class Column(_FlexBase):
         self,
         *,
         parent: Any = None,
-        horizontal_items: HAlign = "center",
-        vertical_items: VArrange = "top",
+        horizontal_items: HAlign | None = None,
+        vertical_items: VArrange | None = None,
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
