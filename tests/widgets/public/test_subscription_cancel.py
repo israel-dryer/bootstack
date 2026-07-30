@@ -16,6 +16,13 @@ Only virtual events (`<<...>>` — every bootstack event) took the custom path;
 real events like `<Configure>` go through stock `bind` and were never affected.
 
 Emitting stock Tkinter's script shape fixes cancellation.
+
+Matching the script shape is only half of it. Stock `unbind` also deletes the Tcl
+command behind a handler the moment it is asked to, and the copy of the script Tk
+is currently running is not the one the removal rewrites — so cancelling *from
+inside a handler for the same event* hit the deleted command further down and
+aborted the remainder of that dispatch, just as silently. `unbind` is patched to
+neutralize the command in place and delete it once the dispatch has finished.
 """
 from __future__ import annotations
 
@@ -126,3 +133,149 @@ def test_a_surviving_handler_still_receives_its_payload(shown_app):
     shown_app._tk_root.update()
 
     assert seen == [9.0]
+
+
+# --- Cancelling from inside a handler for the same event ----------------
+#
+# All handlers for an event share one script, and the copy Tk is running is not
+# the one a cancellation rewrites. Removing a handler mid-dispatch therefore has
+# to leave something callable behind where it used to be, or the rest of that
+# dispatch is skipped with nothing raised to show for it.
+
+def test_cancelling_a_later_handler_from_inside_one_spares_the_rest(app):
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0, "c": 0}
+
+    def cancel_b(event):
+        calls["a"] += 1
+        sub_b.cancel()
+
+    button.on_click(cancel_b)
+    sub_b = button.on_click(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    button.on_click(lambda e: calls.__setitem__("c", calls["c"] + 1))
+    app._tk_root.update_idletasks()
+
+    _fire(app, button)
+
+    # `b` is cancelled before it is reached, so it must not run; `c` is behind
+    # it in the same script and must still run.
+    assert calls == {"a": 1, "b": 0, "c": 1}
+
+
+def test_cancelling_the_last_handler_from_inside_one_spares_the_middle(app):
+    # Guards the mirror error: a fix that let the whole dispatch continue by
+    # skipping the *rest* of the script would pass the test above.
+    #
+    # PASSES PRE-FIX ON PURPOSE — with nothing bound after the cancelled
+    # handler there was nothing left for the aborted dispatch to swallow. Not a
+    # dud; it fails if a fix ever over-reaches in the other direction.
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0, "c": 0}
+
+    def cancel_c(event):
+        calls["a"] += 1
+        sub_c.cancel()
+
+    button.on_click(cancel_c)
+    button.on_click(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    sub_c = button.on_click(lambda e: calls.__setitem__("c", calls["c"] + 1))
+    app._tk_root.update_idletasks()
+
+    _fire(app, button)
+
+    assert calls == {"a": 1, "b": 1, "c": 0}
+
+
+def test_a_handler_can_cancel_its_own_subscription(app):
+    # The unsubscribe-on-first-result shape. The handler is mid-flight when its
+    # own binding goes away, so this is the case most likely to misbehave.
+    #
+    # PASSES PRE-FIX ON PURPOSE — a handler's own line has already been
+    # evaluated by the time it runs, so this case was never broken. It is here
+    # to catch a cancellation fix that breaks it.
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0}
+
+    def once(event):
+        calls["a"] += 1
+        sub_a.cancel()
+
+    sub_a = button.on_click(once)
+    button.on_click(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    app._tk_root.update_idletasks()
+
+    _fire(app, button)
+    assert calls == {"a": 1, "b": 1}, "the handler behind it still runs"
+
+    calls.update(a=0, b=0)
+    _fire(app, button)
+    assert calls == {"a": 0, "b": 1}, "and it really is unsubscribed"
+
+
+def test_cancelling_mid_dispatch_does_not_leak_the_binding(app):
+    # The deferred cleanup must actually happen, not just be postponed forever.
+    #
+    # PASSES PRE-FIX ON PURPOSE — the old code deleted the command immediately
+    # (which is exactly what caused the abort). This guards the cost of deferring
+    # it: postponed must not mean skipped.
+    button = bs.Button("go")
+    calls = {"a": 0}
+
+    def cancel_self(event):
+        calls["a"] += 1
+        sub_a.cancel()
+
+    sub_a = button.on_click(cancel_self)
+    app._tk_root.update_idletasks()
+
+    _fire(app, button)
+    app._tk_root.update_idletasks()
+    app._tk_root.update()
+
+    bind_id = sub_a._bind_id
+    registered = app._tk_root.tk.call("info", "commands", bind_id)
+    assert not registered, f"{bind_id} outlived the dispatch that cancelled it"
+
+
+def test_unbinding_a_foreign_funcid_leaves_the_real_binding_alone(app):
+    # A funcid unbound from the wrong widget used to delete the command behind
+    # the still-live binding, orphaning it. Removing nothing must delete nothing.
+    button = bs.Button("go")
+    other = bs.Button("other")
+    calls = {"a": 0}
+    sub_a = button.on_click(lambda e: calls.__setitem__("a", calls["a"] + 1))
+    app._tk_root.update_idletasks()
+
+    other._internal.unbind(sub_a._sequence, sub_a._bind_id)
+    app._tk_root.update_idletasks()
+    app._tk_root.update()
+
+    _fire(app, button)
+    assert calls == {"a": 1}
+
+
+def test_cancelling_then_destroying_the_widget_is_quiet(app):
+    # Cleaning up the removed handler is deferred to the next idle point, so it
+    # must be owned by something that outlives the widget being cleaned up.
+    # Cancel-then-destroy is an ordinary teardown order, and getting this wrong
+    # leaves a pending callback pointing at an already-swept command.
+    #
+    # The failure is invisible to Python — it surfaces only as a background
+    # error inside the interpreter — so this reads that channel directly. There
+    # is no public surface that reports it.
+    root = app._tk_root
+    seen: list = []
+    root.tk.createcommand("bgerror", lambda *a: seen.append(a[0] if a else ""))
+    try:
+        button = bs.Button("go")
+        sub = button.on_click(lambda e: None)
+        root.update_idletasks()
+
+        sub.cancel()
+        button.destroy()
+        root.update_idletasks()
+        root.update()
+
+        assert seen == []
+    finally:
+        root.deletecommand("bgerror")

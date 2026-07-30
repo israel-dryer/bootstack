@@ -46,6 +46,7 @@ _MAX_CACHE_SIZE = 100  # Prevent unbounded growth
 # Store original tkinter methods before patching
 _original_event_generate: Callable = tk.Misc.event_generate
 _original_bind: Callable = tk.Misc.bind
+_original_unbind: Callable = tk.Misc.unbind
 
 
 def _patched_event_generate(
@@ -274,6 +275,83 @@ def _patched_bind(
     return _original_bind(self, sequence, func, add)
 
 
+def _patched_unbind(
+    self: tk.Misc,
+    sequence: str,
+    funcid: Optional[str] = None
+) -> None:
+    """Enhanced unbind that cannot disturb the other handlers for an event.
+
+    Stock tkinter removes one handler in two steps: rewrite the binding script
+    without that handler's line, then delete the Tcl command behind it. The
+    rewrite is correct, but the deletion is immediate — and all handlers for an
+    event share ONE script, so if the removal happens *while that script is
+    running* (a handler cancelling another handler's subscription), execution
+    later reaches the deleted command and the whole script aborts. Every handler
+    after the cancelled one is skipped for that dispatch, and the error surfaces
+    nowhere Python can see it.
+
+    This version neutralizes the command in place instead, then deletes it once
+    the current dispatch has finished. An already-running script then evaluates
+    a harmless no-op where the cancelled handler used to be and carries on to
+    the handlers after it.
+
+    Args:
+        self: The widget instance (automatically provided)
+        sequence: Event sequence the handler was bound to
+        funcid: Identifier returned by `bind`. When omitted, every handler for
+            the sequence is removed and the original implementation is used.
+    """
+    if funcid is None:
+        # Removing everything replaces the whole script, so there is no
+        # surviving line that could reference a deleted command.
+        return _original_unbind(self, sequence)
+
+    what = ('bind', self._w, sequence)
+    try:
+        script = self.tk.call(what)
+        lines = str(script).split('\n')
+        # Must match what `_patched_bind` emits (and stock `Misc._bind`).
+        prefix = 'if {"[%s ' % funcid
+        keep = [line for line in lines if not line.startswith(prefix)]
+        if len(keep) == len(lines):
+            # This funcid is not bound to this widget and sequence, so it is
+            # not ours to delete — the live binding may be somewhere else, and
+            # deleting its command would orphan it. Leave everything alone.
+            return
+        remaining = '\n'.join(keep)
+        self.tk.call(*what, remaining if remaining.strip() else '')
+        # Replace the command rather than deleting it, so an in-flight copy of
+        # the concatenated script has something harmless to call.
+        self.tk.createcommand(funcid, lambda *args: '')
+    except tk.TclError:
+        return
+
+    def _delete_command() -> None:
+        try:
+            self.deletecommand(funcid)
+        except (tk.TclError, AttributeError):
+            # Already swept, most likely because the widget was destroyed
+            # before the interpreter went idle. `AttributeError` is that same
+            # case seen from the other side: destroy() clears the widget's
+            # command bookkeeping, which `deletecommand` then cannot update.
+            pass
+
+    try:
+        # Deliberately scheduled on the root, not on `self`. Deferred work owned
+        # by a widget is torn down with it, and destroying a widget between the
+        # cancellation and the next idle point would leave the pending callback
+        # referring to a command that destroy() had already deleted — a silent
+        # error of exactly the kind this function exists to avoid. The root
+        # outlives every widget, and when the root itself goes the pending
+        # callback goes with it, which is equally fine: there is nothing left to
+        # clean up.
+        self._root().after_idle(_delete_command)
+    except (tk.TclError, AttributeError):
+        # No event loop left to defer onto; nothing can be mid-dispatch either.
+        _delete_command()
+
+
 def cleanup_event_cache() -> None:
     """Manually clear the entire event data cache.
 
@@ -364,9 +442,10 @@ def get_cache_size() -> int:
 def install_enhanced_events() -> None:
     """Install the enhanced event system by patching tkinter methods.
 
-    This function applies monkey patches to tkinter's Misc class,
-    replacing event_generate and bind with enhanced versions that
-    support passing custom data through virtual events.
+    This function applies monkey patches to tkinter's Misc class, replacing
+    event_generate and bind with enhanced versions that support passing custom
+    data through virtual events, and unbind with a version that cannot disturb
+    the other handlers for an event while one is being removed.
 
     The patches are applied globally and affect all tkinter widgets
     in the application. This function is called automatically when
@@ -386,6 +465,7 @@ def install_enhanced_events() -> None:
     """
     tk.Misc.event_generate = _patched_event_generate
     tk.Misc.bind = _patched_bind
+    tk.Misc.unbind = _patched_unbind
 
 
 def uninstall_enhanced_events() -> None:
@@ -409,6 +489,7 @@ def uninstall_enhanced_events() -> None:
     """
     tk.Misc.event_generate = _original_event_generate
     tk.Misc.bind = _original_bind
+    tk.Misc.unbind = _original_unbind
     cleanup_event_cache()
 
 
