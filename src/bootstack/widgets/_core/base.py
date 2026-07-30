@@ -13,20 +13,30 @@ if TYPE_CHECKING:
     from bootstack.streams import Stream
 
 
-def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
+def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], None]:
     """Wrap a public handler so it receives a bootstack event, not a raw one.
 
     Data-carrying events (emitted with `data=<payload>`) deliver the payload
     object directly — the handler argument *is* the payload. Native/context
     events carry no payload, so the raw toolkit event is curated into a clean
     :class:`~bootstack.events.Event` first.
+
+    A handler's return value is deliberately discarded. The underlying toolkit
+    treats one particular return value as "stop the remaining handlers for this
+    event", which would make any handler that happens to return that value drop
+    its siblings — silently, and with nothing in the public API to explain it.
+    Suppressing later handlers is a capability worth designing on purpose rather
+    than inheriting, so nothing is promised here. Handlers bound internally do
+    not pass through this wrapper and are unaffected.
     """
 
-    def _wrapped(raw: Any) -> Any:
+    def _wrapped(raw: Any) -> None:
         payload = getattr(raw, "data", None)
         if payload is not None:
-            return handler(payload)
-        return handler(Event._from_tk(raw))
+            handler(payload)
+        else:
+            handler(Event._from_tk(raw))
+        return None
 
     return _wrapped
 

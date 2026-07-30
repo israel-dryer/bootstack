@@ -15,7 +15,9 @@ handler registered after the cancelled one.
 Only virtual events (`<<...>>` — every bootstack event) took the custom path;
 real events like `<Configure>` go through stock `bind` and were never affected.
 
-Emitting stock Tkinter's script shape fixes cancellation.
+Emitting stock Tkinter's script shape fixes cancellation. It also makes handler
+return values significant, which is NOT wanted on the public surface — see
+`test_a_handler_return_value_cannot_suppress_the_others`.
 
 Matching the script shape is only half of it. Stock `unbind` also deletes the Tcl
 command behind a handler the moment it is asked to, and the copy of the script Tk
@@ -279,3 +281,56 @@ def test_cancelling_then_destroying_the_widget_is_quiet(app):
         assert seen == []
     finally:
         root.deletecommand("bgerror")
+
+
+# --- A handler's return value must stay inert ---------------------------
+
+def test_a_handler_return_value_cannot_suppress_the_others(app):
+    # Matching the toolkit's script shape made handler return values
+    # significant, where they had been discarded before. One particular string
+    # means "stop the remaining handlers", so a handler that merely computed it
+    # by accident would silently drop its siblings.
+    #
+    # `adapt_handler` discards public handlers' return values so that cannot
+    # happen. Suppressing later handlers is a feature to design deliberately,
+    # not to inherit from the toolkit — see the docstring there.
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0}
+
+    def returns_break(event):
+        calls["a"] += 1
+        return "break"
+
+    button.on_click(returns_break)
+    button.on_click(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    app._tk_root.update_idletasks()
+
+    _fire(app, button)
+
+    assert calls == {"a": 1, "b": 1}
+
+
+def test_a_return_value_is_inert_on_the_payload_path_too(shown_app):
+    # `adapt_handler` has two arms — payload events and curated native events.
+    # The test above covers the native arm; this one covers the payload arm.
+    #
+    # A widget whose `on()` and `emit()` agree on their target is required here:
+    # on the field wrappers they do not, so `field.emit(...)` never reaches a
+    # handler registered by `field.on_change(...)` and this would pass
+    # vacuously (#396). `shown_app`, not `app`, because a generated event is not
+    # delivered to this composite while its window is unmapped.
+    slider = bs.Slider(value=5, min_value=0, max_value=10)
+    calls = {"a": 0, "b": 0}
+
+    def returns_break(event):
+        calls["a"] += 1
+        return "break"
+
+    slider.on_change(returns_break)
+    slider.on_change(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    shown_app._tk_root.update()
+
+    slider.emit("change", data=bs.events.SliderEvent(value=7.0))
+    shown_app._tk_root.update()
+
+    assert calls == {"a": 1, "b": 1}
