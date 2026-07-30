@@ -21,6 +21,134 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **#394 → PR #395 (MERGED 2026-07-29) — a validation rule misaligned a row of
+  fields.** Reporter `bLynnb2762` on 0.1.8/Windows: adding `required` to two of
+  four fields in a row left the other two sitting **9px lower**. **It was TWO bugs
+  under one report** — that split is the whole finding, don't re-derive it.
+  - **(a) In a `Form`.** `_build_items` grids every cell `sticky='nsew'`, so all
+    cells were **already** stretched to the tallest field — the cells were never
+    the problem. Inside the `Field` composite the entry row was packed
+    **`expand=True`**, so it absorbed the slack and **centered itself in it**,
+    putting the extra height *between the label and its own input*. Fix = drop
+    that one `expand=True` (`field.py`) so slack collects below the stack. ⚠ The
+    reporter's own diagnosis (a `vertical_items` knob on `GroupItem`) was **wrong**
+    and so was the first read here — **the Form needed no new alignment knob.**
+  - **(b) In a row-mode container.** Different mechanism: the field frames keep
+    their **natural** heights (61 vs 80) and the cross-axis default (`center`)
+    dropped the shorter ones; (a) does nothing here. Fix (maintainer's call) =
+    field widgets contribute **`vertical='top'` as a SOFT default**. Precedence,
+    most specific first: child's explicit `vertical=` → container's explicit
+    `vertical_items=` → **child-declared default (only when the container's cross
+    axis is unset)** → framework `center`. **That gate is the whole trap:** a
+    widget default must never silently beat an argument the author wrote (cf.
+    #381). To express "unset", `Row`/`Column` moved to `*_items: ... | None = None`
+    resolved inside `FlexFrame` — **the `None`-means-unset convention `Card`/
+    `GroupBox`/`Expander`/the AppShell page already used**, so this aligned
+    `Row`/`Column` with four existing containers rather than inventing anything.
+    `None` resolves to exactly what was hard-coded (stacking axis → leading edge,
+    cross axis → center), so non-field layouts are unchanged. One
+    **`_resolve_cross()`** owns precedence at **BOTH** call sites — `_relayout`
+    **and** the O(1) `_grid_appended_plain` append path; covering only one would
+    make alignment depend on whether a relayout happened to run.
+  - **Scope widened by `/code-review`, which caught two gaps that left the fix
+    half-effective.** (1) **Every row-mode container except `Row`** pre-resolved
+    its own unset default to `'center'`, suppressing the field default — measured
+    `Card(layout="row")` `[248, 257, 248]`, the identical 9px. Since
+    `Card(layout="row")` around a form row is common this would have **shipped
+    visibly unfixed**; eight copies of that block collapsed into one
+    **`resolve_layout_items()`** (`_core/container.py`) — grid mode still gets
+    concrete values (the grid engine has no "unset"), column/row pass it through.
+    (2) **`bs.Select`** is the ONE `Field`-backed public widget outside
+    `FieldAddonMixin` (its `SelectBox` subclasses `Field`) and has had
+    `add_validation_rule` since #357, so it sat low beside real fields (562 vs
+    553) — it carries `_flex_vertical_default` directly.
+  - **⚠ TWO CORRECTIONS to earlier notes.** (i) The prior handoff claimed
+    **`bs.Grid` has the same bug** — **it does not.** `Grid` defaults **both** axes
+    to `stretch`, so its cells align once the entry stops centering in the slack
+    (measured). There was never a Grid decision to make. (ii) A review finding
+    claimed the docstrings contradict the signature by stating the effective
+    default while rendering `| None = None` — **that is the house style**
+    (`card.py:33` already reads that way), so it was left alone.
+  - **Known asymmetry, accepted:** `Row()` and `Row(vertical_items='center')` now
+    behave **differently** even though the docs call `center` the default — an
+    author who writes the default out explicitly gets centered fields. Deliberate
+    (the alternative is ignoring an explicit argument) but it is a trap, and it is
+    the strongest argument against the soft-default approach if it is ever
+    revisited. Also **CHANGELOG `### Changed`:** where a field shares a grid row
+    or a `'stretch'` cross axis with a **taller** widget the entry moved from
+    centered to under its label (measured 59px → 19px in a 142px cell) — an
+    improvement (the input no longer floats below its own caption) but a real
+    visual change. Doc screenshot scenes were checked: they pair fields with
+    *shorter* siblings, so none needed regenerating.
+  - Tests **`test_field_row_alignment.py`** (14) — #394 had none. **5 fail pre-fix
+    BEHAVIORALLY** (`entries misaligned across the row: {180, 189}`), not with an
+    `AttributeError`, and each geometry assertion carries a precondition proving
+    the rule really grew the field so it cannot pass vacuously. Suite **893 passed,
+    exit 0**; clean `-W` docs build. **The geometry probes were far more decisive
+    than reading the layout code**, which is tangled across FlexFrame / GridFrame /
+    raw pack — rebuild one rather than reading, if this area comes up again (the
+    scratch probes and the reporter-repro demo were deleted once #394 shipped;
+    they were for visual validation only). Two rules that mattered: a
+    within-process measurement is required — `winfo_rooty()` is **not** comparable
+    across two runs (different window positions), so compare siblings in one run or
+    measure the entry's offset *inside* the field frame; and pair any alignment
+    assertion with a precondition proving the rule really grew the field, or it can
+    pass vacuously. Memory `reference_geometry_probe_same_process`.
+  - **Process gotcha that bit here:** a bulk `pathlib` rewrite of 6 files
+    **flipped CRLF→LF** (repo is `core.autocrlf=true`) — same class as the `sed -i`
+    trap in `reference_autocrlf_sed_gotcha`. Caught from the `git diff` warning and
+    restored; prefer the Edit tool, and if scripting, write bytes.
+
+- **0.1.x session 2026-07-29 — discussion #386 triaged into four issues, two
+  fixed and merged, plus #385.** User `bLynnb2762` filed **discussion #386** as an
+  *idea* ("let me reset a `DateField` to `None`"); investigation found **two real
+  bugs underneath it**, both now on `main`, and split the rest into a feature and
+  a design question. **All Windows + Tk 8.6.**
+  - **#387 → PR #391 (MERGED).** `DateField.value = None` **and its own public
+    `clear()`** were silent no-ops — the date stayed on screen and in
+    `form.get()`. **Root cause: `TextEntryPart.value()` (`_parts/textentry_part.py`)
+    is a combined getter/setter using `None` as its "no argument" sentinel**, so
+    `value(None)` called the *getter*. The set branch already handled `None`
+    correctly — which is exactly why the `.value = ''` workaround worked, same code
+    path. Fix = a module-level **`_UNSET`** sentinel (also in `spinnerentry_part.py`,
+    which carries its own copy). Verified no caller passed `None` expecting a get.
+    Affected **every** field on `TextEntryPart`; it surfaced on `DateField` only
+    because that is the one whose `clear()` passes `None` (the others pass `""` and
+    worked by accident). `TimeField` was immune — `TimeEntry` subclasses `SelectBox`.
+    ⚠ **The landmine:** `Form.set()` looped **all** items applying
+    `_data.get(key)` = `None` for absent keys, harmless ONLY because that write was
+    discarded — so **fixing the sentinel alone would have turned every partial
+    `form.set()` into a destructive overwrite**, including the reporter's own code.
+    `set()` now writes only the keys given and **merges** into `_data` instead of
+    replacing (which also fixed a latent bug: partial updates used to *drop* the
+    unmentioned keys from `_data`). Deliberate: `configure(data=)` stays a
+    whole-record write, so absent keys now genuinely clear.
+  - **#388 → PR #393 (MERGED).** Choosing a date in the picker emitted **no
+    `<<Change>>`** — a bound `Signal` stayed stale, `on_change` never ran, `Form`
+    never registered the edit, while typing the same date and pressing Return
+    worked. `_show_date_picker` assigned `value` directly; that event comes only
+    from `_check_if_changed()` on FocusOut/Return. **Range mode was already correct**
+    (`_set_range` emits) — single mode was the outlier. Fix = both call sites route
+    through **`_apply_picked`**, which assigns then calls the entry's **existing**
+    `_check_if_changed()`. Reusing it (not hand-building a `ChangeEvent`) is what
+    makes it safe: it advances `_prev_changed_value`, so a later focus-out cannot
+    re-announce the same pick, and the double application (dialog callback + the
+    post-`show()` fallback) is inert on the second pass. Also corrected the
+    DateField docs, which claimed `on_change` fires on a `value=` assignment — it
+    does not, by design.
+  - **#389 FILED** — `Form.reset()` (construction-time values) and `Form.clear()`
+    (`None`). **Maintainer decision: they are DIFFERENT verbs** — reset = originals,
+    clear = none. Both justified: `reset()` is **not user-implementable** (after an
+    edit, `get()` no longer knows the original), `clear()` is the data-entry case.
+    Slider clears to `min_value` (it has no null state, and that is already the
+    de-facto seeding behavior). Needs an `__init__` snapshot because `set()`
+    destroys `_data`; both must clear validation state.
+  - **#390 FILED (design, needs a decision)** — see the signal-emptiness entry
+    under "Next up".
+  - **#385 MERGED** — validated on Windows first (869 passed, exit 0, with `main`
+    merged in). Its `test_menu_backend_probe.py` runs **16 tests, zero skips** here.
+  - **#383** got the `Slider.value = None` → raw `TypeError` case added to its sweep.
+
 - **0.1.8 PATCH SHIPPED — macOS sizing on Tcl/Tk 9 (PR #377 for #375;
   2026-07-23).** `bootstack 0.1.8` is on **PyPI** + tagged **`v0.1.8`**. Tk 9
   changed the resolution macOS reports (Aqua's **72 → 96 DPI** baseline), and
@@ -66,7 +194,8 @@ memories and git history.
     computed bools that verb pairs would turn back into if/else.
     `AppShell.statusbar`'s reveal hook was a **lambda** (can't hold an
     assignment) → named `_reveal_statusbar`. Internal only.
-  - **#379 → PR #385 (OPEN — needs the macOS run).** Six macOS failures, none a
+  - **#379 → PR #385 (MERGED 2026-07-29, after a macOS run AND a Windows
+    re-validation).** Six macOS failures, none a
     product bug. New **`menu_probe`** + **`menus_are_native`** fixtures in
     `tests/conftest.py` so the four backend-assuming tests assert the same fact
     on both `ContextMenu` backends instead of the Windows shape (a `skipif` would
@@ -925,7 +1054,50 @@ memories and git history.
 > memory `project_roadmap_milestones` (0.1.x polish → 0.2.0 Timeline/Wizard →
 > 0.3.0 palette/DropZone → 0.4.0 swatch/PropertyInspector).
 >
-> **★ START HERE NEXT SESSION — #380 (CI test workflow), deferred 2026-07-28.**
+> **★ START HERE NEXT SESSION (2026-07-29 handoff, session 3) — #394 SHIPPED
+> (PR #395); #392 IS THE LIVE ITEM.** `main` is green on Windows, has **no open
+> PRs**, and the working tree is clean apart from this file. Order of value:
+> 1. **#392 — `Subscription.cancel()` is BROKEN** (detailed below). A real
+>    product bug that silently kills unrelated handlers, 58 affected call sites,
+>    and **no regression test exists**. Highest value on the board. It also gates
+>    the harness leak-fix (see #379-harness below).
+> 2. **#390 — decide whether signals should model emptiness at all** (design; the
+>    four sub-decisions and a recommendation on each are below). It is the gate on
+>    #389 shipping *whole*: without it, `Form.clear()` works but leaves a bound
+>    `Signal` stale. **If the answer is no, close #390** and ship #389 with the
+>    limitation documented.
+> 3. **#389 — `Form.reset()` / `Form.clear()`.** Unblocked (its dependency #387
+>    merged), design fully settled, implementation sketch on the issue.
+>
+> Then the standing items: **#380 (CI)**, **#383 (kwarg sweep)**, and the
+> harness leak-fix.
+>
+> **Loose ends left by the #394 session (small, none blocking):**
+> - **`show_grid=True` is silently accepted on `Row` and does nothing.** It is not
+>   a kwarg anywhere in `src/`, but it is swallowed into the layout kwargs without
+>   error — the #394 reporter used it *while trying to diagnose the bug* and got no
+>   feedback. Textbook **#383** material (silently degrading kwargs); fold it in.
+> - **If the #394 precedence rule ever needs documenting or demoing, don't use a
+>   row of centered fields.** A `Row(vertical_items='center')` holding only fields
+>   is the bug on purpose — the maintainer rightly noted nobody would write it. The
+>   realistic case for the override is a **mixed-content** row, e.g.
+>   `bs.Avatar(size=64)` beside a field, where top-aligning pins the field's *label*
+>   to the avatar's top and centering is what you actually want.
+>
+> **#379 harness leak-fix — NOT in #385, do it after #392.** The real root cause
+> of the order-dependence was found and deliberately left out: `conftest._region()`
+> returns `_region_root`, which on a decorated App **is the root**, so
+> `_snapshot`/`_reset_scene` never look inside the App's `_content_frame` — **the
+> scene reset has been a no-op for content widgets for the entire life of the
+> shared-root harness**, and every test's widgets pile up all session. Fixing it
+> makes PageStack pass with no `isolated` marker and cuts the widget leg
+> **144s → 80s**. It is held back because it exposes **#392** and a second latent
+> bug (`test_select_change_event_value_space` picking up 5 change events from
+> earlier tests — looks like stale bindtag bindings surviving destroy while Tk
+> recycles widget path names; not chased down). Patch preserved at
+> `scratchpad/leakfix.patch`; own branch, after #392 lands.
+>
+> **#380 (CI test workflow), deferred 2026-07-28.**
 > `.github/workflows/` still has only `docs.yml` + `release.yml`, so **nothing
 > runs the suite**; every Tk 9 bug so far was found by a user or by hand. Branch
 > `ci/test-workflow` was created and deleted unused — recreate it. Plan agreed:
@@ -966,8 +1138,52 @@ memories and git history.
 >   none.** ⚠ This **contradicts the CLAUDE.md note that 3.12.10's `unbind(seq,
 >   funcid)` removes only that funcid** — true only for *stock-format* bindings,
 >   which is why it checked out when verified against `<Configure>`.
+> - **★ #390 — signals cannot represent an empty value (DESIGN, needs your call;
+>   filed 2026-07-29 from #386).** `Signal.set(None)` raises unconditionally
+>   (`signal.py:248` — strictly monomorphic, type inferred from the seed), so a
+>   signal bound to a field can never reflect that field being empty; it silently
+>   keeps its last value. **Four decisions, in order:** (1) **do it at all?** — the
+>   alternative is documenting that signals don't model emptiness and letting
+>   `Form.clear()` leave them stale; (2) **declared or automatic?** — recommend
+>   **declared** (`Signal(v, nullable=True)`), because automatic-by-mode cannot
+>   cover `int` and isn't safe to lean on: `Signal(0)` is Python-authoritative only
+>   *while unrealized*, so the moment anything touches `.var`, `__call__` starts
+>   reading the IntVar and a stored `None` is lost; (3) **what happens to a
+>   non-nullable signal asked to go empty?** — recommend a public `Signal.nullable`
+>   so `ValueSignalMixin` skips rather than crashing `Form.clear()`; (4) **what does
+>   `map()` do over a nullable signal?** — it calls the transform unconditionally
+>   and infers the derived type from the first result (`signal.py:295, 302`), so a
+>   `None` source breaks the **documented** Date/Time pattern (typed `signal=` plus
+>   a `.map()`-derived text signal); short-circuiting needs the derived signal to be
+>   nullable, which the inference can't express. **No existing code is at risk
+>   either way** — `set(None)` raises today, so nothing can currently receive it.
+>   **THE KEY MEASURED FINDING (don't re-derive it):** the dividing line is
+>   **attached-vs-not, not object-vs-native**. `NumberField(signal=)` and
+>   `DateField(signal=)` are **unrealized** — `ValueSignalMixin` syncs via
+>   `subscribe()` + `on_change` in pure Python and never touches `.var`, and the
+>   widget's own `textvariable` is a *different* signal. So **for a number field's
+>   value signal there is no IntVar at all.** `Checkbox(signal=)` and
+>   `TextField(textsignal=)` **are** the widget's `variable`/`textvariable` — there
+>   the var is live and rendered, and `None` either raises (`IntVar`) or **silently
+>   corrupts**: `StringVar.set(None)` stores the literal `'None'`, the widget
+>   displays `None`, `sig()` returns the 4-character string, and every subscriber
+>   gets it. That last measurement is why a blanket guard relaxation must not ship.
+>   **Per-type "empty" values were considered and rejected** — `empty(int) = 0`
+>   contradicts the shipped `NumberField.clear()` decision ("`None`, not `0`, so a
+>   cleared required field still reads as blank"), `empty(bool) = False` collapses
+>   tristate (0.1.5 / #358), `date` has no empty value only a **sentinel**
+>   indistinguishable from data, and it makes emptiness type-dependent at every call
+>   site. The framework already runs both models in separate channels — `value` is
+>   `None` when empty, `text` is `''` — and keeping them separate is what stops
+>   either leaking into the other.
+> - **#389 — `Form.reset()` / `Form.clear()`** (filed 2026-07-29; unblocked now
+>   that #387 merged). Design settled — see the session entry at the top and the
+>   issue body, which carries the implementation sketch.
 > - **#383** (follow-up sweep from #381 — presentation kwargs still degrade
 >   silently + raw `TclError`/`AttributeError` leaks; sweep BY ARGUMENT NAME).
+>   **Added 2026-07-29: `Slider.value = None` leaks a raw
+>   `TypeError: float() argument must be...`** — reachable from user code via
+>   `form.set({'slider_key': None})`.
 > - **#208** (DataTable: persist selection by record id across search/sort/page).
 > - **#192** — color-swatch Select control (decision-gated; lock shape/naming first).
 > - **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
@@ -986,17 +1202,41 @@ memories and git history.
 >   "Recently completed" entry). The docs navbar is now **3 pillars**.
 >
 > **Latest RELEASE is `0.1.8`** (tag `v0.1.8`, on PyPI, 2026-07-23;
-> `pyproject.toml` is at `0.1.8`). **`main` now has UNRELEASED work staged** —
-> `## [Unreleased]` carries the #381 mode-guard entry (PR #382) and PR #384 is
-> merged on top; the next patch cut should sweep both.
+> `pyproject.toml` is at `0.1.8`). **`main` has a GROWING `## [Unreleased]`
+> section** — the #381 mode guard (PR #382), PR #384 on top, then #387/#388/#393
+> and **#394/#395 (which also added the first `### Changed` entry)**. The next
+> patch cut must sweep all of them, and note the release-flow gotcha below:
+> promote `## [Unreleased]` to the version in its OWN commit *before*
+> `bump-my-version`, which touches only `pyproject.toml`.
 >
-> **`main` has SIX known-failing tests on macOS** — triaged under "Known failing
-> tests on macOS" below; four are test defects, two are order-dependent. Do NOT
-> chase them as regressions. **PR #385 is the fix and is now VERIFIED GREEN on a
-> real Mac (2026-07-29)** — `run_gui.py` exit 0 on macOS 26.5.2 / Tk 8.6 / Py
-> 3.14.0, after commit `5ad14cc1` fixed four failures the branch had NOT closed.
-> It is **ready to merge**; once it does, delete that section and this
-> six-failure caveat, because the whole point is that the baseline becomes green.
+> **⚠ BEFORE CUTTING THE NEXT RELEASE — decide patch vs minor.** The staged work is
+> not purely additive, so `0.1.9` is a judgment call, not automatic:
+> - **#381 raises where it used to accept.** `selection_mode="multiple"` (invalid)
+>   silently gave single-select before and now throws `InvalidChoiceError`. Code
+>   that was quietly wrong starts failing loudly. Defensible as a fix, but it *is*
+>   a behavior break for a working-ish program.
+> - **#387 changed `configure(data=)` semantics** — it stays a whole-record write,
+>   so keys absent from the mapping now genuinely CLEAR rather than being ignored.
+>   `set()` is the merge path. A caller relying on the old accidental no-op loses data.
+> - **#394 moves pixels** in any layout pairing a field with a taller widget on a
+>   stretch axis (`### Changed`), plus the `Row()` vs `Row(vertical_items='center')`
+>   asymmetry.
+> - **VERIFIED SAFE (2026-07-29):** clearing a **signal-bound** field after #387
+>   does **not** raise — `Signal.set(None)` is never reached, so there is no new
+>   crash path. It leaves the signal **stale** (`DateField` → `None` while the
+>   signal still held `date(2026,1,1)`; `NumberField` → `None`, signal still `5`;
+>   `TextField` correctly went to `''`). That is the **#390** gap, a known
+>   limitation rather than a regression — but it means the #386 reporter's flow
+>   (clear a field, read the bound signal) is only half-served until #390/#389
+>   land. Document the limitation in the release notes if shipping before them.
+>
+> **`main` is GREEN (2026-07-29).** #385 merged, so the six known-failing macOS
+> tests are gone and that section has been deleted — as intended, since keeping a
+> prose list of accepted failures is the fragility #379 was filed about. macOS:
+> `run_gui.py` exit 0 on macOS 26.5.2 / Tk 8.6 / Py 3.14.0 (**as of #385 — macOS
+> has NOT been re-run since #393/#394 landed**; neither touches platform-specific
+> paths). Windows after #395: **893 passed, exit 0**, all legs. **A failing test is
+> a real signal — treat any red as a regression.**
 >
 > **⚠ ENVIRONMENT — TWO MACHINES. Check which one you are on first.**
 >
@@ -1009,12 +1249,21 @@ memories and git history.
 > paths, so the `test_scroll_events.py` touchpad tests still SKIP (see 0.1.7).
 > `python3.13` exists system-wide but does **NOT** have bootstack installed.
 >
-> **Windows box (2026-07-28):** the checked-in `.venv` is
+> **Windows box (CORRECTED 2026-07-29):** the checked-in `.venv` is
 > **STALE** — it points at `C:\Users\Israel Dryer\...\Python314\python.exe` and
-> every call fails with *"Access is denied"*. Use the launcher instead:
-> **`py -3.13`** for tests (Python 3.13.7, **Tk 8.6**) and **`py -3.12`** for the
-> docs build (3.12.10 — **sphinx is installed there, NOT on 3.13**). Both are
-> editable installs of this repo. `bootstack.__version__` reports a stale
+> every call fails with *"Access is denied"*. Use the launcher instead.
+> **⚠ Use `py -3.12` for BOTH tests and docs.** The previous note said `py -3.13`
+> for tests; that is **wrong and wastes a cycle** — **pytest is installed ONLY on
+> 3.12** (9.0.3), and `py -3.13 tests/run_gui.py` fails every leg with
+> *"No module named pytest"* while still printing a plausible-looking harness
+> summary. 3.13 and 3.14 have neither pytest nor the docs deps. `py -3.13` (3.13.7,
+> Tk 8.6) is still fine for **running demo scripts**, which is all it is good for.
+> **`myst-parser` was missing** and the docs build died with
+> `ExtensionError: Could not import extension myst_parser` before reading a file —
+> installed 2026-07-29 (`py -3.12 -m pip install myst-parser`), so
+> `py -3.12 -m sphinx -b html docs docs/_build/html -W --keep-going` now works. It
+> is a declared dep in both `docs/requirements.txt` and the `docs` extra; it was
+> simply absent from this interpreter. `bootstack.__version__` reports a stale
 > `0.1.0a9` from old install metadata — harmless, ignore it.
 >
 > **⚠ `tests/widgets/*.py` NEVER RUNS.** `testpaths` is `tests/cli`,
@@ -1095,7 +1344,29 @@ memories and git history.
 >   method at construction, so `obj._cleanup_x = spy` set afterward never fires and
 >   reads as "cleanup never ran" — I briefly drew exactly that wrong conclusion.
 >   **Patch the CLASS attribute before constructing**, or assert on the observable
->   side effect (here, the binding count) instead. Hold commits until the user tests;
+>   side effect (here, the binding count) instead.
+>
+> **Three techniques worth reusing (2026-07-29 discussion-#386 session):**
+> - **A test that fails pre-fix with `AttributeError` proves nothing.** My first
+>   nine #388 tests drove the new `_apply_picked` helper directly, so they failed
+>   before the fix only because the method did not exist — they would have passed
+>   even if `_show_date_picker` never called it. Added a tenth that **stubs
+>   `DateDialog`** (a tiny class with `on_result`/`show`/`result`) and runs the real
+>   method, which fails *behaviorally*: `assert [] == [date(2026, 7, 29)]` with the
+>   value correctly applied. **Ask what a test would catch, not just whether it goes
+>   red.** Stubbing the dialog is the cheap way to drive a gesture-gated path.
+> - **Before fixing a silent no-op, find what is LEANING on it.** `Form.set()`
+>   applied `None` to every field absent from the mapping and only worked because
+>   that write was discarded — so repairing the no-op alone would have turned every
+>   partial `form.set()` into a destructive overwrite. Grep for who depends on the
+>   broken behavior *before* fixing it; a no-op that has been shipped for a while is
+>   load-bearing somewhere.
+> - **Prefer re-entering an existing routine over re-emitting an event by hand.**
+>   The #388 fix calls the entry's own `_check_if_changed()` rather than building a
+>   `ChangeEvent`, which gets the `_prev_changed_value` bookkeeping for free — so no
+>   duplicate event on a later focus-out, and the double application from two call
+>   sites is inert. Hand-rolling would have been correct-looking and subtly wrong.
+> Hold commits until the user tests;
 > per-commit approval. **Release flow:** `bump-my-version bump pre_n` → push `main` +
 > the `v*` tag → `release.yml` (PyPI + GitHub Release) → `docs.yml` deploys. There is
 > **no `development` branch** (CONTRIBUTING.md + the localization workflow target `main`).
@@ -1222,80 +1493,6 @@ maximized-drag re-anchors under the cursor. Memory `project_undecorated_window_c
 - **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
-
-### Known failing tests on macOS — PR #385 VERIFIED GREEN on macOS (issue #379)
-
-> **Status 2026-07-29 (verified on a real Mac):** PR #385 is **green** —
-> `python tests/run_gui.py` → all legs passed, exit 0 on **macOS 26.5.2 / Tk 8.6 /
-> Python 3.14.0**. Baseline on `main` was run FIRST and reproduced exactly the six
-> failures below, so the transition was observed, not assumed. **When #385 merges,
-> delete this whole section.** Keeping a prose list of accepted failures is exactly
-> the fragility #379 was filed about: a seventh failure blends in.
->
-> **The branch as originally pushed was NOT green — it fixed 2 of 6.** Commit
-> `5ad14cc1` fixes the other four; details in the PR comment. Two corrections the
-> PR body still states wrongly:
-> - **`menu_probe` did not accept what its callers hand it.** Its docstring claims
->   `SelectButton._context_menu` is the backend. Measured: it is the **`ContextMenu`
->   facade**, so `isinstance(obj, _NativeContextMenu)` is `False`, `item_count` took
->   the themed branch, and the facade's `__getattr__` forwarded `_items` to the
->   native backend → `AttributeError`. Invisible on Windows because that same
->   forwarding resolves to the themed backend and works. Fixed with
->   `MenuBackendProbe._unwrap`.
-> - **The PageStack diagnosis was wrong.** It was NOT an unprocessed map event — the
->   branch's own `"shown_app did not map the root"` precondition **never fires**.
->   Bisected to cumulative widget accumulation: after `test_attach_detach.py` the
->   shared body has 23 slaves and reqheight **1242px** vs an **828px** window, so the
->   geometry manager unmaps what no longer fits — the PageStack, added last
->   (`mapped=0` at 1x1; `mapped=1` at 46x20 alone). Fixed by marking the module
->   `isolated`. The `shown_app` `update()` pump is harmless but is not what fixed it.
->
-> **⚠ The real root cause is a HARNESS BUG, deliberately left out of #385.**
-> `conftest._region()` returns `_region_root`, which on a decorated App **is the
-> root** — content lands one level deeper in the App's `_content_frame`. So
-> `_snapshot`/`_reset_scene` treat that frame as one permanent child and **never look
-> inside it**: the scene reset has been a **no-op for content widgets for the entire
-> life of the shared-root harness**, and every test's widgets pile up all session.
-> Fixing it makes PageStack pass with **no isolation marker** and cuts the widget leg
-> **144s → 80s**. NOT included, because it exposes two latent bugs: **#392** (see
-> below) and `test_select_change_event_value_space` picking up 5 change events
-> instead of 1 with values from earlier tests (same trigger file; looks like stale
-> bindtag bindings surviving destroy while Tk **recycles widget path names** — not
-> chased down). Patch preserved at `scratchpad/leakfix.patch`; do it on its own
-> branch **after #392 lands**.
-
-### (historical triage 2026-07-23 — NOT caused by the Tk 9 work)
-
-Seven failures on `main` on macOS. **Six are test defects, one is a real bug.**
-Verified by running them against unmodified `src` (identical set) — do not chase
-them as regressions.
-
-- **REAL BUG — FIXED (`fix/attach-theme-repaint`, commit `76e327b6`).**
-  `test_chart.py::test_theme_change_while_hidden_applies_on_return` reproduced in
-  isolation (not order-dependent). A theme changed while a widget was
-  **`detach()`ed** was never applied on `attach()` — facecolor stayed `#ffffff`
-  under a `#212529` theme. **Root cause:** the #338 repaint design drives
-  `apply_theme_walk(only_stale=True)` from **show-triggers**, and those existed ONLY
-  in `PageStack` (`pagestack.py:236`) and `Expander` (`expander.py:273`).
-  **`attach()` (`_core/base.py:312`) was never wired in** — the #123 detach/attach
-  feature and the #338 repaint unification never met. `Chart` correctly defines
-  `_bs_apply_theme`; it just never got walked. Platform-independent, so it was
-  failing everywhere, not only on macOS. Fix = `_recolor_on_attach()` fires the
-  stale walk at idle from **both** `attach()` exit paths (the flex branch returns
-  early — wiring only the pack/grid/place tail would have missed every
-  `Row`/`Column` child). Applies to every self-painting widget, not just `Chart`.
-- **Test defects — assume the Win/Linux menu backend, no macOS guard** (on macOS
-  the backend is `_NativeContextMenu`, which has no `_toplevel`/`_items`):
-  `test_add_toolbar.py::test_bridge_inactive_on_non_macos` (asserts
-  `not _menus_are_native()` — literally named "non_macos", never skipped ON macOS),
-  `test_overlay_container_coverage.py::test_propagate_skips_nested_toplevels`,
-  `test_select_options.py::test_selectbutton_disabled_menu_item`,
-  `test_toolbar_menu.py::test_add_menu_builds_model_and_trigger`. All want a
-  macOS skip or a backend-agnostic assertion.
-- **Order-dependent — `test_pagestack.py::test_visited_pages_stay_mapped_on_macos`
-  + `::test_return_after_many_visits_does_not_remap_on_macos`.** Both **PASS alone**
-  (`4 passed` for the file) and fail only in the full shared-root run — state
-  pollution from an earlier test, not a product bug.
 
 **Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
 framework code). Side note logged: a future `Tabs` `variant='secondary'` (top
