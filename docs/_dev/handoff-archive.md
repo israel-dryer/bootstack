@@ -16,6 +16,82 @@ by issue and PR number, so `grep` for `#392` / `PR #385` / a widget name.
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **#392 → PR #402 (MERGED 2026-07-30, shipped in 0.2.0) — `Subscription.cancel()`
+  silenced every other handler on that event.** Four logical changes, four commits.
+  Reviewed twice; the second review found a critical hole the first missed.
+  - **Root cause (settled — do not re-derive).** `_patched_bind` wrote its own Tcl
+    script for **virtual events** (`<<...>>` = every bootstack event) as a bare
+    `<funcid> %d %# ...`, but `unbind` was never patched to match. `Misc._unbind`
+    filters lines by the prefix `if {"[<funcid> ` that stock `_bind` emits, so
+    nothing was filtered (**the binding survived**) while `deletecommand(funcid)`
+    still ran (**the command was deleted**). The orphan errored on every dispatch,
+    and because bindings use `add='+'` they are ONE concatenated script — so the
+    error **aborted every handler after it**. Silent: no Python exception. Fix =
+    emit stock's exact `if {"[<funcid> ...]" == "break"} break\n` shape, keeping
+    `%d`. **Real events took `_original_bind` and were never affected.**
+  - **Change 2 — mid-dispatch cancel.** Stock `unbind` deletes the command
+    immediately, and the copy of the script Tk is *running* is not the one a
+    removal rewrites, so cancelling from inside a handler for the same event
+    aborted the remainder. **Inherited stock behavior, reproduced on raw
+    `tkinter`** — not a regression from change 1. `_patched_unbind` neutralizes the
+    command in place and deletes it at the next idle point. Two deliberate
+    behaviors: (i) when the funcid is **not found** it deletes **nothing** (stock
+    deletes anyway, orphaning whatever is still bound — audited all ~95 `unbind`
+    sites in `src/`, no caller depended on the old behavior, two are improved);
+    (ii) the deferred delete is scheduled on the **root**, never the widget.
+  - **Change 3 — `return 'break'` inert on the public surface.** Change 1 made
+    handler return values significant where they had been discarded. `adapt_handler`
+    (`widgets/_core/base.py`) now returns `None`. No CHANGELOG entry — never
+    documented or reachable before, so nothing changed from a user's view. ⚠
+    **CORRECTION to the first review: "internal handlers are unaffected" was
+    WRONG.** They bypass `adapt_handler`, which is exactly why
+    `numberentry_part.py:169,175` still return a live `'break'` into the stock
+    script shape → filed **#401**.
+  - **★ Change 4 — unique binding names (the critical hole).** `Misc._register`
+    names a command `repr(id(f)) + f.__name__` where `f` is a bound method created
+    for that registration alone; releasing the command frees it and CPython hands
+    back the same address — **498/499** consecutive bind/cancel/bind cycles gave an
+    *identical* funcid, and every wrapper shared the `__name__` `wrapper`. Harmless
+    while deletes are immediate; NOT harmless once change 2 defers them: a binding
+    made in that window inherits a name a deletion is already pending on, and the
+    delete removes a **live** handler — #392's symptom on a new trigger,
+    interpreter-wide. Fix = serialized `__name__` (`_unique_name`), applied to the
+    real-event wrapper too. Measured 498/499 → **0/499**. Full detail in memory
+    `reference_tkinter_funcid_recycling`.
+  - ⚠ **The second review's headline claim was itself half wrong.** It reported the
+    collision as a NEW regression ("stashed, b/c run"); the stashed baseline fails
+    **identically** — pre-fix it is just #392. **Verify the baseline claim, not only
+    the failure claim**; it decided whether this was a ship-blocker.
+  - ⚠ **The failure is NONDETERMINISTIC** (allocator-dependent), so behavioral tests
+    pass on a broken build by luck — 1 of 3 caught it on the first pre-fix run. The
+    reliable guard is **structural**:
+    `test_a_cancelled_handlers_name_is_never_reused` asserts 50 cancel/rebind cycles
+    give 50 distinct `_bind_id`s (fails `1 == 50` every time). Deliberate exception
+    to "test public paths" — the public symptom is a coin flip. **General rule: when
+    a symptom is allocator- or timing-dependent, assert the invariant.**
+  - ⚠ **Defer widget cleanup on the ROOT, never the widget** — `widget.after_idle(cb)`
+    makes `cb` a command owned by that widget, so destroying it fires an orphan.
+    Guard against `TclError` **and `AttributeError`** (`destroy()` nulls
+    `_tclCommands`). Also fixed the same class at the data-cache cleanup
+    (`events.py`, pre-existing). This class of bug has **no public observable** —
+    read the interpreter's **background-error channel**
+    (`root.tk.createcommand('bgerror', ...)`), which is what caught it.
+  - **Filed, not fixed:** #397 dialog `off_*` target drift · #398
+    `on_visibility_alpha` never unbinds · #399 not-found guard leaks the command ·
+    #400 `except TclError` spans three operations · #401 above. All `0.2.x`.
+  - **Portability (measured, don't re-litigate):** Tk bind substitution codes are
+    identical in 8.6 and 9.0; `%d` carries virtual-event `user_data` since Tk 8.5
+    (TIP 165). `Misc._subst_format`/`_bind`/`_unbind` are byte-identical across
+    CPython 3.12/3.13/3.14. ⚠ Neither box has Tk 9 — that half is source-based, NOT
+    executed. Memory `reference_tk_bind_substitutions_86_vs_9`.
+  - ⚠ **#396 confirmed twice while writing these tests** — a payload test on
+    `bs.TextField` **passed vacuously** (`emit()` hits `self._internal`, `on_change`
+    binds the inner entry). **Any test pairing `emit()` with `on_*()` must use a
+    widget where the two agree** (`bs.Slider`, `bs.Button`) until #396 lands.
+  - Probes kept in `development/`: `probe_392_funcid_recycling.py` (census / repro /
+    cross-widget / idle-gap / unique-name control), `probe_392_datacache_afteridle.py`,
+    `probe_392_shortcut_rebind.py`, `verify_392_*.py`, `scan_392_break_handlers.py`.
+
 - **#394 → PR #395 (MERGED 2026-07-29) — a validation rule misaligned a row of
   fields.** Reporter `bLynnb2762` on 0.1.8/Windows: adding `required` to two of
   four fields in a row left the other two sitting **9px lower**. **It was TWO bugs
