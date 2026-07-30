@@ -88,18 +88,36 @@ on the maintainer's test pass, nothing else. Remaining after that: #389, #390.**
 Every themed milestone shifted OUT one
 minor —
 `0.2.x — Widget polish` (#2) · `0.3.0 — Guided flows` (#3) ·
-`0.4.0 — Power-user interactions` (#4) · `0.5.0 — Structured editing` (#5).
+`0.4.0 — Power-user interactions` (#4) · `0.5.0 — Structured editing` (#5) ·
+**`0.6.0 — Argument and value strictness` (#7, NEW 2026-07-30)**.
 Mapping + reasoning: memory `project_roadmap_milestones`.
+
+**✅ EVERY open issue is milestoned as of 2026-07-30 — keep it that way.** An
+unmilestoned backlog makes the milestone feature worthless (maintainer's call).
+`0.6.0` was created to home the changes that RAISE where the framework currently
+accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
+*after* the themed minors deliberately so nothing had to be renumbered a second
+time. Check with:
+`gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 ### ★ START HERE — the #392 branch is REVIEWED; maintainer test pass, then #390 / #389, then cut 0.2.0
 
-0. **`fix/392-subscription-cancel` is DONE and REVIEWED — it needs the
+0. **`fix/392-subscription-cancel` is DONE and REVIEWED TWICE — it needs the
    maintainer's hands-on test pass and a commit split, not more analysis.**
-   Reviewed 2026-07-30 (`/code-review` + a follow-up pass); all four findings are
-   dispositioned below. **906 passed**, exit 0, clean `-W` docs build. Everything
-   is **UNCOMMITTED**; nothing staged.
+   Reviewed 2026-07-30 (`/code-review` + a follow-up pass), then **re-reviewed
+   the same day, which found a CRITICAL hole the first pass missed — now fixed**
+   (change 4 below). **911 passed**, exit 0, clean `-W` docs build. Everything is
+   **UNCOMMITTED**; nothing staged.
 
-   **THREE logical changes on the branch — split into three commits:**
+   ⚠ **The second review's headline claim was itself half wrong, and checking it
+   mattered.** It reported the funcid collision as a NEW regression, "with the
+   diff stashed b/c run". Measured: the stashed baseline fails **identically**
+   (`{'a':0,'b':0,'c':0}` + the same bgerror) — pre-fix this is just #392. So the
+   accurate framing is *the branch failed to fix one case*, not *the branch broke
+   something*. That distinction decided whether it was a ship-blocker. **Verify
+   the baseline claim, not just the failure claim.**
+
+   **FOUR logical changes on the branch — split into four commits:**
    1. **The #392 fix itself** — `_runtime/events.py` `_patched_bind` emits stock's
       exact script shape. Root cause below.
    2. **Mid-dispatch cancel** — NEW `_patched_unbind` (`events.py:271`), wired
@@ -114,13 +132,58 @@ Mapping + reasoning: memory `project_roadmap_milestones`.
    3. **`return 'break'` neutralized on the public surface** —
       `adapt_handler` (`widgets/_core/base.py:16`) discards public handlers'
       return values. See (a).
+   4. **Unique handler names + root-scheduled cache cleanup** (`events.py`) —
+      the fix for the critical hole. Keep it its OWN commit so it can be
+      reverted independently of 1–3. Root cause below.
 
    Files: `CHANGELOG.md`, `src/bootstack/_runtime/events.py`,
    `src/bootstack/widgets/_core/base.py`,
-   `tests/widgets/public/test_subscription_cancel.py` (NEW, **14 tests**).
+   `tests/widgets/public/test_subscription_cancel.py` (NEW, **18 tests** = 13
+   from the first pass + 5 from the second; the earlier "14" here was wrong).
    Untracked by convention, do NOT commit: `development/verify_392_*.py` (2),
    `development/scan_392_break_handlers.py`,
-   `development/probe_392_unbind_gaps.py`.
+   `development/probe_392_unbind_gaps.py`,
+   `development/probe_392_funcid_recycling.py`,
+   `development/probe_392_datacache_afteridle.py`,
+   `development/probe_392_shortcut_rebind.py`.
+
+   **★ ROOT CAUSE OF CHANGE 4 (settled, measured — do not re-derive).** Tkinter's
+   `Misc._register` names a binding's Tcl command `repr(id(f)) + f.__name__`,
+   where `f` is a bound method created for that one registration. Nothing else
+   references it, so releasing the command frees the method and CPython hands the
+   **same address** to the next one — measured **498/499** consecutive
+   bind/cancel/bind cycles produced an *identical* funcid, and every wrapper here
+   shared the `__name__` `wrapper`. Harmless while removals delete immediately;
+   NOT harmless once change 2 defers the delete to the next idle point. A binding
+   created in that window inherits a name a deletion is already pending on, and
+   that deletion then removes a **live** handler — #392's exact symptom on a new
+   trigger, interpreter-wide (a cancel on widget A killed a later bind on widget
+   B). Fix: give each wrapper a serialized `__name__` (`_unique_name`), which
+   keeps ALL of stock's registration and `_tclCommands` bookkeeping. Applied to
+   **both** wrappers — the real-event `regular_wrapper` too, since real events
+   are removed by the same patched `unbind`. Also fixed alongside: the data-cache
+   cleanup used `widget.after_idle` (`events.py:224`, **pre-existing**, violating
+   the root-not-widget rule the branch's own comment states) → `_root()`.
+   Measured before → after: collisions 498/499 → **0/499**; cancel-then-resubscribe
+   `{'a':0,'b':0,'c':0}` + bgerror → **`{'a':0,'b':1,'c':1}` clean**;
+   destroy-in-handler bgerror → **clean**; the teardown
+   `TclError: can't delete Tcl command` is gone. Probes:
+   `development/probe_392_funcid_recycling.py` (census / repro / cross-widget /
+   idle-gap / unique-name control), `probe_392_datacache_afteridle.py`,
+   `probe_392_shortcut_rebind.py`.
+
+   ⚠ **The failure is NONDETERMINISTIC, which shaped the tests.** Whether a reused
+   name actually swallows a handler depends on when the allocator returns the
+   address, so a *behavioral* test can pass on a broken build by luck — on the
+   first pre-fix run only 1 of 3 new behavioral tests failed. The reliable guard
+   is **structural**: `test_a_cancelled_handlers_name_is_never_reused` asserts 50
+   cancel/rebind cycles yield 50 distinct `_bind_id`s (fails `1 == 50` pre-fix,
+   every time). It reads a private attribute on purpose — a deliberate exception
+   to "test public paths", because the public symptom is a coin flip. **General
+   lesson: when a bug's public symptom is allocator- or timing-dependent, assert
+   the invariant, not the symptom.** `test_a_real_event_survives_a_cancel_and_
+   resubscribe_too` **PASSES PRE-FIX ON PURPOSE** (annotated in place) — it is the
+   only coverage of the real-event wrapper.
 
    **Review findings and their disposition — all four settled, don't reopen
    without new evidence:**
@@ -129,12 +192,19 @@ Mapping + reasoning: memory `project_roadmap_milestones`.
    *computed* the string `'break'` would silently drop its siblings. `return
    'break'` is also a quintessential Tk wart, and this project's whole premise is
    that Tk is invisible — so adopting it (undocumented, but pinned by a test) was
-   the worst of both worlds. `adapt_handler` now returns `None`. **Internal
-   handlers are unaffected** — they bind through `self.bind(...)` and never pass
-   through `adapt_handler`, which is used at public `on()` boundaries only (the 12
-   retargeting wrappers + `base.py:214,223`). The AST scan still holds: of 26
-   `return 'break'` functions in `src/`, only `numberentry_part.py:127-128` bind to
-   a `<<...>>` sequence, and both are internal. **No CHANGELOG entry — the
+   the worst of both worlds. `adapt_handler` now returns `None`. Internal
+   handlers do NOT pass through it — they bind through `self.bind(...)`, and
+   `adapt_handler` is used at public `on()` boundaries only (the 12 retargeting
+   wrappers + `base.py:214,223`). The AST scan still holds: of 26 `return 'break'`
+   functions in `src/`, only `numberentry_part.py:127-128` bind to a `<<...>>`
+   sequence, and both are internal. ⚠ **CORRECTION (second review): "internal
+   handlers are unaffected" was WRONG.** Bypassing `adapt_handler` is exactly why
+   those two still return a live `'break'` into the stock script shape, so on a
+   non-interactive field they abort the rest of that dispatch — and
+   `NumberEntryPart.on_increment` (`:335`) binds the same sequence behind them, so
+   the seam is real. Inert today (no caller; `increment` is not in the public event
+   registry; colorchooser's `<<Increment>>` binds are on `ttk.Spinbox`, a different
+   widget). **Filed as #401**, not fixed here. **No CHANGELOG entry — the
    behavior was never documented or reachable before this branch, so from a user's
    view nothing changed** (explicit maintainer call). If suppressing later
    handlers is ever wanted, it needs a native design (`event.stop()`), not an
@@ -152,6 +222,14 @@ Mapping + reasoning: memory `project_roadmap_milestones`.
    `datedialog.py:436` · `query.py:308` · `colorchooser.py:573` (which also uses
    the opposite precedence). Latent — nothing in-repo calls these. `_patched_unbind`
    already downgraded it from silent-catastrophe to silent-no-op.
+   (e) **Second review, remaining items — all FILED, none fixed here.** #399
+   `_patched_unbind`'s not-found guard leaks the Tcl command + closure forever
+   (the guard is right; the leak is its cost — reached via #397's drift and via
+   wholesale-unbind-then-cancel). #400 the single `except tk.TclError: return`
+   spans three operations, so a mid-sequence failure either strands the command
+   or reports a removal that did not happen — and `Subscription.cancel()` sets
+   `_cancelled = True` regardless. #401 above. **All three milestoned `0.2.x`**,
+   same as #397/#398.
 
    **⚠ `_patched_unbind` also changed one thing framework-wide, on purpose:** when
    the funcid is **not found** in that widget's script it now deletes **nothing**
@@ -202,8 +280,8 @@ Mapping + reasoning: memory `project_roadmap_milestones`.
    never run on either box. Issue also records two adjacent pre-existing shapes:
    `textarea/sidebar.py:49` removes **every** `<<Change>>` handler on the shared
    text widget including a user's, and `visual_focus.py:199` the same for root
-   `<Tab>`. **#397 and #398 are both UNMILESTONED — needs the maintainer's call**
-   (`0.2.x — Widget polish` looks right for both; internal-only, no compat break).
+   `<Tab>`. **#397 and #398 are both milestoned `0.2.x — Widget polish`**
+   (internal-only, no compat break).
 
    **Root cause of #392 (settled, do not re-derive).** `_patched_bind` wrote its own Tcl
    script for **virtual events** (`<<...>>` = every bootstack event) as a bare
@@ -228,7 +306,7 @@ Mapping + reasoning: memory `project_roadmap_milestones`.
    | after | `a=1 b=1 c=1` | `a=1 b=0 c=1` | `a=0 b=0 c=1` |
 
    **Verification already done — reproduce only if you distrust it:** full suite
-   `py -3.12 tests/run_gui.py` **exit 0**, main leg **906 passed** (893 + the 13
+   `py -3.12 tests/run_gui.py` **exit 0**, main leg **911 passed** (893 + the 18
    new), 18 legs, zero failures. Clean `-W` docs build succeeded warning-free
    (CHANGELOG is in the docs via `docs/release-notes.rst` — a CHANGELOG edit
    ALWAYS needs a docs build).
@@ -377,9 +455,12 @@ leak-fix.
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
   `selection` says `None`). Wants ONE family decision, not four patches.
-- **#369 and #383 are deliberately un-milestoned** — both would raise where the
-  framework currently accepts, so they cannot ride the `0.2.x` patch line and need
-  a minor of their own. #352 and #328 are also homeless.
+- **#369 and #383 are milestoned `0.6.0 — Argument and value strictness`** — both
+  would raise where the framework currently accepts, so they cannot ride the
+  `0.2.x` patch line and needed a minor of their own. `0.6.0` was created for
+  exactly this and placed AFTER the themed minors so nothing was renumbered
+  again. #352 → `0.5.0 — Structured editing`; #328 → `0.2.x` (follows the
+  hot-reload umbrella #322).
 - **#208** — DataTable: persist selection by record id across search/sort/page.
 - **#192** — color-swatch `Select` control (decision-gated; lock shape/naming with
   the maintainer first). A `Select`-style dropdown rendering color swatches inline,
@@ -539,6 +620,21 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
   goes the pending callback goes with it. Guard the callback against both `TclError`
   **and `AttributeError`** — `destroy()` sets `_tclCommands` to `None`, which
   `deletecommand` then cannot update. Cost a real defect in the #392 follow-up.
+- **⚠ Tkinter binding names are recycled — never let a deferred cleanup hold one.**
+  `Misc._register` names a command `repr(id(bound_method)) + func.__name__`, and
+  that bound method exists only for the registration, so releasing the command
+  frees the address for immediate reuse: **498/499** consecutive bind/cancel/bind
+  cycles returned the *identical* name. Anything that postpones a
+  `deletecommand` can therefore delete a *different, live* binding. If you defer
+  cleanup keyed on a tkinter callback name, make the name unique first (a serial
+  in `func.__name__` is enough and keeps stock's bookkeeping). Cost a critical
+  defect in #392's own fix. Memory `reference_tkinter_funcid_recycling`.
+- **⚠ When a symptom is allocator- or timing-dependent, assert the INVARIANT, not
+  the symptom.** The above fails only when the allocator happens to hand the
+  address back, so behavioral tests passed on a broken build — 1 of 3 caught it
+  on the first pre-fix run. A structural test (50 cancel/rebind cycles → 50
+  distinct ids) fails every time. Worth breaking "test public paths" for; say why
+  in the test.
 - **⚠ A bulk `pathlib` rewrite flips CRLF→LF** (repo is `core.autocrlf=true`) —
   same class as the `sed -i` trap. Prefer the Edit tool; if scripting, write bytes.
   Memory `reference_autocrlf_sed_gotcha`.
