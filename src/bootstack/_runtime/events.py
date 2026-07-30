@@ -32,6 +32,7 @@ Note:
     applied globally and affect all tkinter widgets in the application.
 """
 
+import itertools
 import tkinter as tk
 import uuid
 import weakref
@@ -42,6 +43,31 @@ from typing import Any, Callable, Optional, Union
 # Global storage for event data with LRU cache behavior
 _event_data_cache: OrderedDict[str, Any] = OrderedDict()
 _MAX_CACHE_SIZE = 100  # Prevent unbounded growth
+
+# Serial number used to give every registered handler a unique name. See
+# `_unique_name` for why the stock naming scheme is not safe here.
+_binding_seq = itertools.count()
+
+
+def _unique_name(prefix: str) -> str:
+    """Return a handler name that can never collide with a previous one.
+
+    Tkinter names the Tcl command behind a binding `repr(id(f)) + f.__name__`,
+    where `f` is a bound method created for that registration alone. Nothing
+    else refers to it, so releasing the command frees the method and CPython is
+    free to hand the very same address to the next one — measured at 498 out of
+    499 consecutive bind/cancel/bind cycles. Every wrapper registered here has
+    the same `__name__`, so the whole name would repeat with it.
+
+    That is harmless while removals delete the command immediately, but
+    `_patched_unbind` defers the deletion to the next idle point. A repeated
+    name means a binding created in the meantime inherits the name a deletion is
+    already pending on, and that deletion then takes out a live handler — the
+    #392 failure again, on a new trigger. A serial number in the name keeps the
+    two apart no matter what the allocator does.
+    """
+    return '%s%d' % (prefix, next(_binding_seq))
+
 
 # Store original tkinter methods before patching
 _original_event_generate: Callable = tk.Misc.event_generate
@@ -220,15 +246,30 @@ def _patched_bind(
                 # Attach custom data (don't pop yet - multiple handlers may need it)
                 if data_guid and data_guid in _event_data_cache:
                     event.data = _event_data_cache[data_guid]
-                    # Schedule cleanup after all handlers have run
-                    widget.after_idle(lambda: _event_data_cache.pop(data_guid, None))
+                    # Schedule cleanup after all handlers have run. On the root,
+                    # not on `widget`: deferred work owned by a widget is torn
+                    # down with it, so a handler that destroys its own widget
+                    # would leave this callback pointing at a command destroy()
+                    # had already swept — a silent background error. The root
+                    # outlives every widget. (Same rule as `_patched_unbind`.)
+                    try:
+                        widget._root().after_idle(
+                            lambda: _event_data_cache.pop(data_guid, None)
+                        )
+                    except (tk.TclError, AttributeError):
+                        # No event loop left to defer onto; the LRU cap reclaims
+                        # the entry instead.
+                        pass
                 else:
                     # Data might have been evicted from cache already
                     event.data = None
 
                 return func(event)
 
-            # Register wrapper function with tkinter
+            # Register wrapper function with tkinter. The name tkinter builds
+            # ends with the function's `__name__`, so making that unique is
+            # enough to keep a deferred deletion off a later binding.
+            wrapper.__name__ = _unique_name('bsvirtual')
             name = self._register(wrapper)
 
             # Build the binding script. Its exact shape is load-bearing, and
@@ -269,6 +310,9 @@ def _patched_bind(
                     event.data = None
                 return func(event)
 
+            # Real events are removed by the same patched `unbind`, so they need
+            # the same protection from a recycled name. See `_unique_name`.
+            regular_wrapper.__name__ = _unique_name('bsregular')
             return _original_bind(self, sequence, regular_wrapper, add)
 
     # No function or sequence provided, pass through to original

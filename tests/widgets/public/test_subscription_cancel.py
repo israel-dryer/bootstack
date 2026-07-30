@@ -283,6 +283,145 @@ def test_cancelling_then_destroying_the_widget_is_quiet(app):
         root.deletecommand("bgerror")
 
 
+# --- Subscribing again in the same turn as a cancellation ---------------
+#
+# Deferring the cleanup means a handler's name outlives the handler itself for a
+# moment. Tkinter builds that name from the address of a bound method created for
+# that registration alone, and cancelling releases the last reference to it — so
+# the next registration is handed the very same address, and with it the same
+# name. The pending deletion would then remove a binding made after it, silently.
+# `_unique_name` is what keeps the two apart.
+
+
+def test_a_cancelled_handlers_name_is_never_reused(app):
+    # The deterministic guard for the three tests below. Whether a reused name
+    # actually swallows a handler depends on when the allocator hands the same
+    # address back, which varies with whatever else the process is doing — so
+    # the behavioral tests can pass on a broken build by luck. This one cannot:
+    # it asserts the invariant that makes the failure impossible in the first
+    # place. Measured on the stock naming scheme, 498 of 499 consecutive cycles
+    # reused the name.
+    button = bs.Button("go")
+    names = []
+    for _ in range(50):
+        sub = button.on_click(lambda e: None)
+        names.append(sub._bind_id)
+        sub.cancel()
+    app._tk_root.update_idletasks()
+
+    assert len(set(names)) == len(names), "a handler name was reused after cancel"
+
+
+def test_subscribing_again_right_after_a_cancel_keeps_the_new_handlers(app):
+    # Swapping a handler — cancel, then register the replacement — is the whole
+    # point of holding a subscription, and it happens well inside one turn of
+    # the event loop. There must be no idle point between the two here: that gap
+    # is exactly what this is guarding against needing.
+    #
+    # This is the user-visible contract, but it is a best-effort detector: it
+    # only fails on a broken build when the allocator happens to hand back the
+    # cancelled handler's address. `test_a_cancelled_handlers_name_is_never_reused`
+    # is the guard that always fails.
+    root = app._tk_root
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0, "c": 0}
+
+    sub_a = button.on_click(lambda e: calls.__setitem__("a", calls["a"] + 1))
+    root.update_idletasks()
+    _fire(app, button)
+    assert calls == {"a": 1, "b": 0, "c": 0}, "precondition: the first handler is live"
+
+    calls.update(a=0)
+    sub_a.cancel()
+    button.on_click(lambda e: calls.__setitem__("b", calls["b"] + 1))
+    button.on_click(lambda e: calls.__setitem__("c", calls["c"] + 1))
+    root.update_idletasks()  # the deferred cleanup lands here
+
+    _fire(app, button)
+
+    assert calls == {"a": 0, "b": 1, "c": 1}
+
+
+def test_subscribing_again_right_after_a_cancel_is_quiet(app):
+    # The companion failure has no return value to inspect: reusing a name the
+    # pending cleanup still refers to leaves a binding pointing at a deleted
+    # command, which Tk reports on its background-error channel and nowhere
+    # Python can see. Read that channel directly.
+    root = app._tk_root
+    seen: list = []
+    root.tk.createcommand("bgerror", lambda *a: seen.append(a[0] if a else ""))
+    try:
+        button = bs.Button("go")
+        sub = button.on_click(lambda e: None)
+        root.update_idletasks()
+
+        sub.cancel()
+        button.on_click(lambda e: None)
+        root.update_idletasks()
+        _fire(app, button)
+
+        assert seen == []
+    finally:
+        root.deletecommand("bgerror")
+
+
+def test_a_real_event_survives_a_cancel_and_resubscribe_too(app):
+    # Real events (`hover` is `<Enter>`) take the stock binding path, but they
+    # are removed by the same patched `unbind`, so they need the same protection.
+    # The virtual-event tests above bind a different wrapper and would not cover
+    # this one.
+    #
+    # PASSES PRE-FIX ON PURPOSE — measured: the address reuse that breaks the
+    # virtual path did not happen to land here. Not a dud; it is the only
+    # coverage of the real-event wrapper, and it fails if that path regresses
+    # outright.
+    root = app._tk_root
+    button = bs.Button("go")
+    calls = {"a": 0, "b": 0}
+
+    sub_a = button.on("hover", lambda e: calls.__setitem__("a", calls["a"] + 1))
+    root.update_idletasks()
+    button.emit("hover")
+    root.update()
+    assert calls == {"a": 1, "b": 0}, "precondition: the first handler is live"
+
+    calls.update(a=0)
+    sub_a.cancel()
+    button.on("hover", lambda e: calls.__setitem__("b", calls["b"] + 1))
+    root.update_idletasks()
+
+    button.emit("hover")
+    root.update()
+
+    assert calls == {"a": 0, "b": 1}
+
+
+def test_a_handler_that_destroys_its_own_widget_is_quiet(app):
+    # A payload event caches its data and clears the entry once every handler
+    # has run. That cleanup is deferred, so it must be owned by something that
+    # outlives the widget — a handler destroying its own widget (a dialog
+    # dismissing itself, a page tearing down) is ordinary, and getting it wrong
+    # leaves a pending callback on a command destroy() already swept.
+    #
+    # Invisible to Python, like the teardown case above: read the background
+    # channel.
+    root = app._tk_root
+    seen: list = []
+    root.tk.createcommand("bgerror", lambda *a: seen.append(a[0] if a else ""))
+    try:
+        button = bs.Button("go")
+        button.on_click(lambda e: button.destroy())
+        root.update_idletasks()
+
+        button.emit("click", data={"payload": 1})
+        root.update()
+        root.update_idletasks()
+
+        assert seen == []
+    finally:
+        root.deletecommand("bgerror")
+
+
 # --- A handler's return value must stay inert ---------------------------
 
 def test_a_handler_return_value_cannot_suppress_the_others(app):
