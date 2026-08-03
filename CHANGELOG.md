@@ -16,6 +16,8 @@ and from 0.1.0 onward the project adheres to
 
 - **A disabled or read-only number field no longer suppresses other handlers for the same event.** Its internal increment and decrement handlers declined to step the value by returning the toolkit's "stop the remaining handlers" signal, which since 0.2.0 is honored — so dispatching an increment on a non-interactive field silently dropped every handler after it. The field still refuses to step; it no longer speaks for anyone else. (#401)
 
+- **A window's transparency setup no longer keeps re-running.** On X11, alpha is applied once the window becomes visible and the binding that does it is meant to remove itself afterward. It was removing nothing, so it re-applied on every later visibility change. (#398)
+
 ## [0.2.0] — form and field correctness
 
 This is the first minor release since `0.1.0`, and it carries one change that is not backward compatible: an argument naming a behavior mode now raises on a value outside its documented set, where it used to degrade quietly. See **Changed**.
