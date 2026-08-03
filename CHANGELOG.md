@@ -14,6 +14,8 @@ and from 0.1.0 onward the project adheres to
 
 - **Typing a lowercase `b` no longer collapses an `AppShell` sidebar.** The sidebar toggle is documented as Ctrl-B (Cmd-B on macOS), but off macOS it also fired on a bare `b` typed into any field — including a `TextField`, `PasswordField`, `TextArea` or `CodeEditor` — on a machine with NumLock switched on. Windows reports NumLock using the same modifier bit that the shortcut's macOS half was registered under, so an unmodified keystroke matched it. The macOS shortcut is now registered only on macOS. An uppercase `B` was never affected, which is what made the behavior look intermittent. (#403)
 
+- **A disabled or read-only number field no longer suppresses other handlers for the same event.** Its internal increment and decrement handlers declined to step the value by returning the toolkit's "stop the remaining handlers" signal, which since 0.2.0 is honored — so dispatching an increment on a non-interactive field silently dropped every handler after it. The field still refuses to step; it no longer speaks for anyone else. (#401)
+
 ## [0.2.0] — form and field correctness
 
 This is the first minor release since `0.1.0`, and it carries one change that is not backward compatible: an argument naming a behavior mode now raises on a value outside its documented set, where it used to degrade quietly. See **Changed**.
