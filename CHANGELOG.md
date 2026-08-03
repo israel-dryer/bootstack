@@ -20,6 +20,8 @@ and from 0.1.0 onward the project adheres to
 
 - **A cancellation that fails no longer reports success.** `Subscription.cancelled` became `True` even when the underlying removal raised, so a subscription that was still delivering events described itself as cancelled. Relatedly, an internal removal that failed partway could leave a handler bound while reporting that it had been removed, or strand the resources behind one that had. (#400)
 
+- **An unbind that matches nothing is now reported under `BOOTSTACK_DEBUG`.** Declining to release resources it cannot prove are unused is the safe behavior, but it was silent, so the drift that caused it was invisible. (#399)
+
 ## [0.2.0] — form and field correctness
 
 This is the first minor release since `0.1.0`, and it carries one change that is not backward compatible: an argument naming a behavior mode now raises on a value outside its documented set, where it used to degrade quietly. See **Changed**.

@@ -368,6 +368,24 @@ def _patched_unbind(
         # This funcid is not bound to this widget and sequence, so it is
         # not ours to delete — the live binding may be somewhere else, and
         # deleting its command would orphan it. Leave everything alone.
+        #
+        # Correct, but it means the command and its closure survive for the
+        # life of the interpreter, invisibly. Surface it in development so the
+        # drift that produced it can be found (#399).
+        #
+        # Reported, not warned. This runs inside event dispatch and on the
+        # teardown path behind `Subscription.cancel()` and its `__exit__`, both
+        # documented as safe to call on a dead or already-removed handler. A
+        # `warnings.warn` here becomes an exception out of both under
+        # `-W error`, which is a worse outcome than the leak it describes.
+        from bootstack._runtime.utility import debug_log
+        debug_log(
+            f"unbind({sequence!r}, {funcid!r}) on {self._w!r} matched no "
+            "binding, so its Tcl command cannot safely be released and will "
+            "leak. The usual cause is an unbind that targeted a different "
+            "widget than the bind did; hold the Subscription that bind() "
+            "returned instead of re-deriving the target."
+        )
         return
 
     remaining = '\n'.join(keep)
