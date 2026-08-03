@@ -18,6 +18,8 @@ and from 0.1.0 onward the project adheres to
 
 - **A window's transparency setup no longer keeps re-running.** On X11, alpha is applied once the window becomes visible and the binding that does it is meant to remove itself afterward. It was removing nothing, so it re-applied on every later visibility change. (#398)
 
+- **A cancellation that fails no longer reports success.** `Subscription.cancelled` became `True` even when the underlying removal raised, so a subscription that was still delivering events described itself as cancelled. Relatedly, an internal removal that failed partway could leave a handler bound while reporting that it had been removed, or strand the resources behind one that had. (#400)
+
 ## [0.2.0] — form and field correctness
 
 This is the first minor release since `0.1.0`, and it carries one change that is not backward compatible: an argument naming a behavior mode now raises on a value outside its documented set, where it used to degrade quietly. See **Changed**.
