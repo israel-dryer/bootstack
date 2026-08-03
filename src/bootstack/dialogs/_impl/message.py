@@ -10,7 +10,10 @@ from bootstack.widgets._impl.primitives import Frame, Label
 from bootstack._core.images import _ImageService
 from bootstack.constants import *
 from bootstack.i18n import MessageCatalog
-from .dialog import ButtonRole, Dialog, DialogButton
+from bootstack.events import Subscription
+from .dialog import (
+    DIALOG_RESULT, ButtonRole, Dialog, DialogButton, emit_dialog_result, result_target,
+)
 
 ttk = SimpleNamespace(Frame=Frame, Label=Label)
 
@@ -198,23 +201,17 @@ class MessageDialog:
             position: x and y coordinates to position the dialog. If None, centers on parent.
         """
         self._dialog.show(position=position, modal=True)
-        target = self._dialog.toplevel or self._master
-        if target:
-            payload = {"result": self._dialog.result, "confirmed": self._dialog.result is not None}
-            try:
-                target.event_generate("<<DialogResult>>", data=payload)
-            except Exception:
-                try:
-                    target.event_generate("<<DialogResult>>")
-                except Exception:
-                    pass
+        emit_dialog_result(
+            result_target(self._dialog, self._master),
+            {"result": self._dialog.result, "confirmed": self._dialog.result is not None},
+        )
 
     @property
     def result(self) -> Any:
         """The dialog result value (the text of the button pressed)."""
         return self._dialog.result
 
-    def on_dialog_result(self, callback: Callable[[Any], None]) -> Optional[str]:
+    def on_dialog_result(self, callback: Callable[[Any], None]) -> "Optional[Subscription]":
         """Bind a callback fired when the dialog produces a result.
 
         The callback receives `event.data["result"]` when available.
@@ -223,23 +220,22 @@ class MessageDialog:
             callback: Callable that receives the result payload.
 
         Returns:
-            Binding identifier for use with `off_dialog_result`.
+            A `Subscription`, or `None` if there is no widget to bind to.
+            Cancel it with `.cancel()`.
         """
-        target = self._dialog.toplevel or self._master
+        target = result_target(self._dialog, self._master)
         if target is None:
             return None
 
         def handler(event):
             callback(getattr(event, "data", None))
 
-        return target.bind("<<DialogResult>>", handler, add="+")
-
-    def off_dialog_result(self, funcid: str) -> None:
-        """Unbind a previously bound dialog result callback."""
-        target = self._dialog.toplevel or self._master
-        if target is None:
-            return
-        target.unbind("<<DialogResult>>", funcid)
+        # The Subscription remembers the widget it bound to. Resolving the
+        # target a second time to unbind would not: `_dialog.toplevel` is None
+        # until show(), so subscribing before and cancelling after resolved to
+        # two different widgets and the removal silently matched nothing (#397).
+        bind_id = target.bind(DIALOG_RESULT, handler, add="+")
+        return Subscription(target, DIALOG_RESULT, bind_id)
 
 
 class MessageBox:

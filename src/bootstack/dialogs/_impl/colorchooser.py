@@ -15,7 +15,10 @@ from PIL import ImageColor
 from bootstack.constants import *
 from bootstack._core import colorutils
 from bootstack._core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
-from bootstack.dialogs._impl.dialog import Dialog
+from bootstack.events import Subscription
+from bootstack.dialogs._impl.dialog import (
+    DIALOG_RESULT, Dialog, emit_dialog_result, result_target,
+)
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style, get_theme_color
@@ -554,35 +557,28 @@ class ColorChooserDialog:
         if not self._emitted_result:
             self._emit_result(confirmed=self.result is not None)
 
-    def on_dialog_result(self, callback: Callable[[Any], None]) -> Optional[str]:
-        """Bind a callback fired when the dialog produces a result."""
-        target = self._master or self._dialog.toplevel
+    def on_dialog_result(self, callback: Callable[[Any], None]) -> "Optional[Subscription]":
+        """Bind a callback fired when the dialog produces a result.
+
+        Returns:
+            A `Subscription`, or `None` if there is no widget to bind to.
+            Cancel it with `.cancel()`.
+        """
+        target = result_target(self._dialog, self._master)
         if target is None:
             return None
 
         def handler(event):
             callback(getattr(event, "data", None))
 
-        return target.bind("<<DialogResult>>", handler, add="+")
-
-    def off_dialog_result(self, funcid: str) -> None:
-        """Unbind a previously bound dialog result callback."""
-        target = self._master or self._dialog.toplevel
-        if target is None:
-            return
-        target.unbind("<<DialogResult>>", funcid)
+        # The Subscription remembers the widget it bound to — see #397.
+        bind_id = target.bind(DIALOG_RESULT, handler, add="+")
+        return Subscription(target, DIALOG_RESULT, bind_id)
 
     # helpers ------------------------------------------------------------------
     def _emit_result(self, confirmed: bool) -> None:
-        payload = {"result": self.result, "confirmed": confirmed}
-        target = self._master or self._dialog.toplevel
-        if not target:
-            return
-        try:
-            target.event_generate("<<DialogResult>>", data=payload)
-        except Exception:
-            try:
-                target.event_generate("<<DialogResult>>")
-            except Exception:
-                pass
+        emit_dialog_result(
+            result_target(self._dialog, self._master),
+            {"result": self.result, "confirmed": confirmed},
+        )
         self._emitted_result = True

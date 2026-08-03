@@ -18,6 +18,8 @@ and from 0.1.0 onward the project adheres to
 
 - **A window's transparency setup no longer keeps re-running.** On X11, alpha is applied once the window becomes visible and the binding that does it is meant to remove itself afterward. It was removing nothing, so it re-applied on every later visibility change. (#398)
 
+- **A dialog result now reaches the callbacks waiting for it, and unsubscribing removes the right handler.** The internal dialog helpers worked out which widget to act on separately at each step. A dialog's window does not exist until it is shown and is gone once it closes, so subscribing before and cancelling after resolved to two different widgets and the cancellation quietly did nothing — and the result itself was announced on the window that had just been dismissed, where nothing could receive it and the resulting error was discarded. Announcing and listening now share one target that outlives the dialog, and the binder returns a `Subscription` that remembers what it bound to. (#397)
+
 - **A cancellation that fails no longer reports success.** `Subscription.cancelled` became `True` even when the underlying removal raised, so a subscription that was still delivering events described itself as cancelled. Relatedly, an internal removal that failed partway could leave a handler bound while reporting that it had been removed, or strand the resources behind one that had. (#400)
 
 - **An unbind that matches nothing is now reported under `BOOTSTACK_DEBUG`.** Declining to release resources it cannot prove are unused is the safe behavior, but it was silent, so the drift that caused it was invisible. (#399)
