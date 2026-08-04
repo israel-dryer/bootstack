@@ -100,9 +100,13 @@ class Shell(ShellLayout):
         self._build_nav_region()
 
         # Ctrl/Cmd-B toggles sidebar visibility (the hamburger action).
+        # Bind Command only on macOS: elsewhere Tk resolves "Command" to Mod1,
+        # which is the NumLock bit on Windows and Alt on X11, so an unguarded
+        # <Command-b> fires on a bare "b" whenever NumLock is on (#403).
         if self._collapsible:
             self.bind("<Control-b>", self._on_toggle_shortcut, add="+")
-            self.bind("<Command-b>", self._on_toggle_shortcut, add="+")
+            if self.winsys == "aqua":
+                self.bind("<Command-b>", self._on_toggle_shortcut, add="+")
 
     def _build_nav_region(self) -> None:
         """Build the sidebar/content decks and rail switcher, and wire the model.
