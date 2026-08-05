@@ -8,21 +8,17 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.2.1] — event and shortcut correctness
 
 ### Fixed
 
-- **Typing a lowercase `b` no longer collapses an `AppShell` sidebar.** The sidebar toggle is documented as Ctrl-B (Cmd-B on macOS), but off macOS it also fired on a bare `b` typed into any field — including a `TextField`, `PasswordField`, `TextArea` or `CodeEditor` — on a machine with NumLock switched on. Windows reports NumLock using the same modifier bit that the shortcut's macOS half was registered under, so an unmodified keystroke matched it. The macOS shortcut is now registered only on macOS. An uppercase `B` was never affected, which is what made the behavior look intermittent. (#403)
+- **Typing a lowercase `b` no longer collapses an `AppShell` sidebar.** The sidebar toggle is documented as Ctrl+B (Cmd+B on macOS), but off macOS it also fired on a bare `b` typed into any field — including a `TextField`, `PasswordField`, `TextArea` or `CodeEditor` — on a machine with NumLock switched on. Windows reports NumLock using the same modifier bit that the shortcut's macOS half was registered under, so an unmodified keystroke matched it. The macOS shortcut is now registered only on macOS. An uppercase `B` was never affected, which is what made the behavior look intermittent. (#403)
 
 - **A `Command+` or `Option+` shortcut now binds the key its own menu label promises.** Off macOS these were the last two modifier names left unmapped, so `Shortcut(pattern="Command+S")` produced an accelerator reading *Ctrl+S* beside a binding that listened for something else entirely — and on Windows that something else was satisfied by NumLock, so the shortcut fired on an unmodified `s`. `Option+K` had the same shape. Both now resolve to Ctrl and Alt off macOS, matching what has always been displayed, and keep their own meanings on macOS. This is the same trap as #403, closed once at the shared modifier map rather than at another call site. (#405)
 
 - **`emit()` now reaches the handlers registered with the matching `on_*()`.** On the field widgets — `TextField`, `PasswordField`, `PathField`, `NumberField`, `SpinnerField`, `DateField`, `TimeField`, `Select`, `TextArea`, `CodeEditor` — the text-editing events belong to the entry inside the field, and registering a handler correctly listened there while `emit()` fired on the field's outer frame. So `field.emit("change", data=...)` never reached `field.on_change(...)`, contradicting `emit()`'s own documentation that the two take the same event name. Both now resolve the target through one shared seam, so they cannot disagree. `emit()` is documented more plainly at the same time: it announces the framework's own events, and the names that stand for a real input event instead — `click`, `focus`, `blur`, `submit` — are not a way to notify listeners. (#396)
 
-- **A disabled or read-only number field no longer suppresses other handlers for the same event.** Its internal increment and decrement handlers declined to step the value by returning the toolkit's "stop the remaining handlers" signal, which since 0.2.0 is honored — so dispatching an increment on a non-interactive field silently dropped every handler after it. The field still refuses to step; it no longer speaks for anyone else. (#401)
-
 - **A window's transparency setup no longer keeps re-running.** On X11, alpha is applied once the window becomes visible and the binding that does it is meant to remove itself afterward. It was removing nothing, so it re-applied on every later visibility change. (#398)
-
-- **A dialog result now reaches the callbacks waiting for it, and unsubscribing removes the right handler.** The internal dialog helpers worked out which widget to act on separately at each step. A dialog's window does not exist until it is shown and is gone once it closes, so subscribing before and cancelling after resolved to two different widgets and the cancellation quietly did nothing — and the result itself was announced on the window that had just been dismissed, where nothing could receive it and the resulting error was discarded. Announcing and listening now share one target that outlives the dialog, and the binder returns a `Subscription` that remembers what it bound to. (#397)
 
 - **A cancellation that fails no longer reports success.** `Subscription.cancelled` became `True` even when the underlying removal raised, so a subscription that was still delivering events described itself as cancelled. Relatedly, an internal removal that failed partway could leave a handler bound while reporting that it had been removed, or strand the resources behind one that had. (#400)
 
@@ -335,6 +331,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.2.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.2.1
 [0.2.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.2.0
 [0.1.8]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.8
 [0.1.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.1.7
