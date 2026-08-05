@@ -57,13 +57,21 @@ _WIN_NAMES = {
 }
 
 # Tkinter binding modifiers
+#
+# `command` and `option` are platform-mapped for the same reason `mod` and `alt`
+# are. Off macOS the toolkit resolves the words "Command" and "Option" to its
+# generic Mod1 and Mod2 slots, and Windows reports NumLock as Mod1 — so a
+# `Command+S` binding fired on a bare `s` for anyone with NumLock switched on,
+# while the menu beside it read "Ctrl+S". Naming the modifier the display has
+# always claimed keeps the two from disagreeing (#405, and the same trap as
+# #403).
 _BINDING_MODIFIERS = {
     'mod': 'Command' if IS_MAC else 'Control',
-    'command': 'Command',
+    'command': 'Command' if IS_MAC else 'Control',
     'ctrl': 'Control',
     'control': 'Control',
     'alt': 'Option' if IS_MAC else 'Alt',
-    'option': 'Option',
+    'option': 'Option' if IS_MAC else 'Alt',
     'shift': 'Shift',
 }
 
