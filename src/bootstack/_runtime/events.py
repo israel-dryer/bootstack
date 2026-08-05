@@ -354,22 +354,56 @@ def _patched_unbind(
     what = ('bind', self._w, sequence)
     try:
         script = self.tk.call(what)
-        lines = str(script).split('\n')
-        # Must match what `_patched_bind` emits (and stock `Misc._bind`).
-        prefix = 'if {"[%s ' % funcid
-        keep = [line for line in lines if not line.startswith(prefix)]
-        if len(keep) == len(lines):
-            # This funcid is not bound to this widget and sequence, so it is
-            # not ours to delete — the live binding may be somewhere else, and
-            # deleting its command would orphan it. Leave everything alone.
-            return
-        remaining = '\n'.join(keep)
-        self.tk.call(*what, remaining if remaining.strip() else '')
+    except tk.TclError:
+        # Reading the script is the one step whose failure is expected: the
+        # widget is gone, and its bindings and commands went with it. Nothing
+        # to remove and nothing to leak.
+        return
+
+    lines = str(script).split('\n')
+    # Must match what `_patched_bind` emits (and stock `Misc._bind`).
+    prefix = 'if {"[%s ' % funcid
+    keep = [line for line in lines if not line.startswith(prefix)]
+    if len(keep) == len(lines):
+        # This funcid is not bound to this widget and sequence, so it is
+        # not ours to delete — the live binding may be somewhere else, and
+        # deleting its command would orphan it. Leave everything alone.
+        #
+        # Correct, but it means the command and its closure survive for the
+        # life of the interpreter, invisibly. Surface it in development so the
+        # drift that produced it can be found (#399).
+        #
+        # Reported, not warned. This runs inside event dispatch and on the
+        # teardown path behind `Subscription.cancel()` and its `__exit__`, both
+        # documented as safe to call on a dead or already-removed handler. A
+        # `warnings.warn` here becomes an exception out of both under
+        # `-W error`, which is a worse outcome than the leak it describes.
+        from bootstack._runtime.utility import debug_log
+        debug_log(
+            f"unbind({sequence!r}, {funcid!r}) on {self._w!r} matched no "
+            "binding, so its Tcl command cannot safely be released and will "
+            "leak. The usual cause is an unbind that targeted a different "
+            "widget than the bind did; hold the Subscription that bind() "
+            "returned instead of re-deriving the target."
+        )
+        return
+
+    remaining = '\n'.join(keep)
+    # Deliberately NOT guarded: if the rewrite fails the handler is still bound
+    # and still firing, and swallowing that would report a successful
+    # cancellation for a live handler — a silent wrong answer (#400).
+    self.tk.call(*what, remaining if remaining.strip() else '')
+
+    try:
         # Replace the command rather than deleting it, so an in-flight copy of
         # the concatenated script has something harmless to call.
         self.tk.createcommand(funcid, lambda *args: '')
     except tk.TclError:
-        return
+        # The binding line is already gone, so the handler is genuinely removed
+        # and an in-flight script would find the original command rather than a
+        # deleted one. Fall through to the deferred delete instead of returning,
+        # which would strand the command forever (#400).
+        pass
 
     def _delete_command() -> None:
         try:

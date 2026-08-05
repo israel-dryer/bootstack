@@ -166,16 +166,21 @@ class NumberEntryPart(TextEntryPart):
             self.event_generate(name, data={'value': self._value})
         return 'break'
 
+    # These two are bound to virtual events, where 'break' means "skip the
+    # remaining handlers for this dispatch". Not stepping a non-interactive
+    # field is the whole intent; silencing everyone else's handler is not, so
+    # they return None (#401). Suppression, if ever wanted, needs a designed
+    # API rather than the toolkit idiom leaking through.
     def _handle_increment_event(self, event):
         """Handle <<Increment>> event by stepping up."""
         if not self._is_interactive():
-            return 'break'
+            return None
         self.step(+1)
 
     def _handle_decrement_event(self, event):
         """Handle <<Decrement>> event by stepping down."""
         if not self._is_interactive():
-            return 'break'
+            return None
         self.step(-1)
 
     def _increment_decimals(self) -> int:

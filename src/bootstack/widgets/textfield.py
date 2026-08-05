@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textentry import TextEntry as _InternalTextEntry
-from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
-from bootstack.widgets._core.events import resolve_event, register_widget_events
+from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.events import ChangeEvent, InputEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
@@ -144,37 +144,11 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def _entry_widget(self) -> tkinter.Misc:
         return self._internal._entry
 
-    @overload
-    def on(self, event: str) -> Stream: ...
-    @overload
-    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
-        """Register a callback for an event by name.
-
-        A generic, string-keyed escape hatch — prefer the typed `on_*`
-        shorthands (e.g. `on_change`), which carry the precise payload type.
-        Called with no handler, returns a composable `Stream`; with a handler,
-        binds it and returns a `Subscription`.
-
-        Args:
-            event: Event name (for example `'change'` or `'focus'`).
-            handler: Called with the event payload. Omit to get a composable
-                :class:`~bootstack.streams.Stream` instead.
-
-        Returns:
-            A cancellable :class:`~bootstack.events.Subscription` when a handler
-            is given, otherwise a :class:`~bootstack.streams.Stream`.
-        """
-        sequence = resolve_event(self, str(event))
-        target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-        if handler is None:
-            def _source(h):
-                t = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-                bid = t.bind(sequence, adapt_handler(h), add="+")
-                return Subscription(t, sequence, bid)
-            return Stream(self._internal, _source=_source)
-        bid = target.bind(sequence, adapt_handler(handler), add="+")
-        return Subscription(target, sequence, bid)
+    def _event_target(self, sequence: str) -> tkinter.Misc:
+        """Route the text-editing events to the inner entry, not the frame."""
+        if sequence in _INNER_ENTRY_SEQUENCES:
+            return self._entry_widget()
+        return self._internal
 
     # ----- Properties -----
 

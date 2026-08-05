@@ -16,7 +16,10 @@ ttk = SimpleNamespace(
 )
 from bootstack.i18n import MessageCatalog
 from bootstack.dialogs._impl.datedialog import DateDialog
-from bootstack.dialogs._impl.dialog import Dialog, DialogButton
+from bootstack.events import Subscription
+from bootstack.dialogs._impl.dialog import (
+    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, result_target,
+)
 from bootstack.dialogs._impl.fontdialog import FontDialog
 from bootstack.dialogs._impl.message import MessageBox
 from bootstack.widgets._impl.composites.textentry import TextEntry
@@ -264,23 +267,17 @@ class QueryDialog:
             position: x and y coordinates to position the dialog. If None, centers on parent.
         """
         self._dialog.show(position=position, modal=True)
-        target = self._dialog.toplevel or self._master
-        if target:
-            payload = {"result": self._dialog.result, "confirmed": self._dialog.result is not None}
-            try:
-                target.event_generate("<<DialogResult>>", data=payload)
-            except Exception:
-                try:
-                    target.event_generate("<<DialogResult>>")
-                except Exception:
-                    pass
+        emit_dialog_result(
+            result_target(self._dialog, self._master),
+            {"result": self._dialog.result, "confirmed": self._dialog.result is not None},
+        )
 
     @property
     def result(self) -> Any:
         """The dialog result value."""
         return self._dialog.result
 
-    def on_dialog_result(self, callback: Callable[[Any], None]) -> Optional[str]:
+    def on_dialog_result(self, callback: Callable[[Any], None]) -> "Optional[Subscription]":
         """Bind a callback fired when the dialog produces a result.
 
         The callback receives `event.data["result"]` when available.
@@ -289,23 +286,19 @@ class QueryDialog:
             callback: Callable that receives the result payload.
 
         Returns:
-            Binding identifier for use with `off_dialog_result`.
+            A `Subscription`, or `None` if there is no widget to bind to.
+            Cancel it with `.cancel()`.
         """
-        target = self._dialog.toplevel or self._master
+        target = result_target(self._dialog, self._master)
         if target is None:
             return None
 
         def handler(event):
             callback(getattr(event, "data", None))
 
-        return target.bind("<<DialogResult>>", handler, add="+")
-
-    def off_dialog_result(self, funcid: str) -> None:
-        """Unbind a previously bound dialog result callback."""
-        target = self._dialog.toplevel or self._master
-        if target is None:
-            return
-        target.unbind("<<DialogResult>>", funcid)
+        # The Subscription remembers the widget it bound to — see #397.
+        bind_id = target.bind(DIALOG_RESULT, handler, add="+")
+        return Subscription(target, DIALOG_RESULT, bind_id)
 
 
 class QueryBox:

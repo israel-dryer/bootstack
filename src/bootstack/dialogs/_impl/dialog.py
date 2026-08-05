@@ -127,6 +127,58 @@ class ShowOptions(TypedDict, total=False):
     auto_flip: Union[bool, Literal['vertical', 'horizontal']]
 
 
+# --- Dialog result delivery -------------------------------------------------
+
+DIALOG_RESULT = "<<DialogResult>>"
+
+
+def result_target(dialog: "Dialog", master: Optional[tkinter.Misc]) -> Optional[tkinter.Misc]:
+    """The widget `<<DialogResult>>` is bound on and fired from.
+
+    Binding and firing both route through here so the two cannot resolve
+    differently. That mattered: `Dialog.toplevel` is `None` before `show()`
+    and a *destroyed* widget after it, because nothing resets `_toplevel`
+    when the modal wait ends. A target derived from it is therefore never
+    live at both ends — subscribers bound to the master while the result
+    fired at a dead toplevel, where `event_generate` raised and the error
+    was swallowed (#397).
+
+    `master` comes first for that reason: it outlives the dialog.
+
+    Args:
+        dialog: The dialog producing the result.
+        master: The dialog's master widget, if it has one.
+
+    Returns:
+        A live widget, or `None` when there is nothing left to fire on.
+    """
+    if master is not None:
+        return master
+    top = dialog.toplevel
+    if top is not None and top.winfo_exists():
+        return top
+    return None
+
+
+def emit_dialog_result(target: Optional[tkinter.Misc], payload: dict) -> None:
+    """Fire `<<DialogResult>>` on `target` with `payload` attached.
+
+    Args:
+        target: The widget from `result_target`, or `None` to do nothing.
+        payload: Mapping with `result` and `confirmed` keys.
+    """
+    if target is None:
+        return
+    try:
+        target.event_generate(DIALOG_RESULT, data=payload)
+    except tkinter.TclError:
+        # `result_target` hands back a live widget, so reaching here means it
+        # was destroyed in between. Nothing can receive the result; surface it
+        # in development rather than letting it vanish the way it used to.
+        from bootstack._runtime.utility import debug_log_exception
+        debug_log_exception(f"could not deliver {DIALOG_RESULT}")
+
+
 # --- Dialog ----------------------------------------------------------------
 
 class Dialog:

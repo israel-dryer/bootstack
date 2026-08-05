@@ -7,13 +7,13 @@ from bootstack.widgets._impl.composites.tabs.tabview import TabView as _Internal
 from bootstack.events import TabChangeEvent, TabCloseEvent, TabRef
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
-from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import (
     GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
     resolve_layout_items, _expand_margin,
 )
 from bootstack.widgets._core.context import push_container, pop_container
-from bootstack.widgets._core.events import register_widget_events, resolve_event
+from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack._core import NavigationError
 from bootstack.streams import Stream
@@ -214,25 +214,6 @@ class Tabs(PublicWidgetBase):
         self._pages: dict[str, TabPage] = {}
         self._internal = _InternalTabView(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
-
-    # ----- Event routing -----
-
-    @overload
-    def on(self, event: str) -> Stream: ...
-    @overload
-    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
-        """Bind `handler` to `event` and return a `Subscription`."""
-        sequence = resolve_event(self, str(event))
-
-        if handler is None:
-            def _source(h):
-                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
-                return Subscription(self._internal, sequence, bid)
-            return Stream(self._internal, _source=_source)
-
-        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
-        return Subscription(self._internal, sequence, bind_id)
 
     # ----- Tab management -----
 

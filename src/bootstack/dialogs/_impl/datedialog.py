@@ -14,7 +14,10 @@ from tkinter import Widget
 
 from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
-from bootstack.dialogs._impl.dialog import Dialog, DialogButton
+from bootstack.events import Subscription
+from bootstack.dialogs._impl.dialog import (
+    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, result_target,
+)
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets._impl.composites.calendar import Calendar
 
@@ -404,7 +407,7 @@ class DateDialog:
         """The selected date (single mode) or `(start, end)` tuple (range mode), or None if cancelled."""
         return self._dialog.result
 
-    def on_result(self, callback: Callable[[date], None]) -> Optional[str]:
+    def on_result(self, callback: Callable[[date], None]) -> Optional[Subscription]:
         """Bind a callback fired when a result is produced.
 
         The callback receives `event.data["result"]` (a `datetime.date`).
@@ -413,38 +416,23 @@ class DateDialog:
             callback: Callable that receives the selected `datetime.date`.
 
         Returns:
-            The Tk binding identifier, which can be used with `off_result`.
+            A `Subscription`, or `None` if there is no widget to bind to.
+            Cancel it with `.cancel()`.
         """
-        target = self._dialog.toplevel or self._master
+        target = result_target(self._dialog, self._master)
         if target is None:
             return None
 
         def handler(event: tkinter.Event) -> None:
             callback(getattr(event, "data", None))
 
-        return target.bind("<<DialogResult>>", handler, add="+")
-
-    def off_result(self, funcid: str) -> None:
-        """Unbind a previously bound `on_result` callback.
-
-        Args:
-            funcid: Binding identifier returned by `on_result`.
-        """
-        target = self._dialog.toplevel or self._master
-        if target is None:
-            return
-        target.unbind("<<DialogResult>>", funcid)
+        # The Subscription remembers the widget it bound to — see #397.
+        bind_id = target.bind(DIALOG_RESULT, handler, add="+")
+        return Subscription(target, DIALOG_RESULT, bind_id)
 
     def _emit_result(self, value: date, confirmed: bool) -> None:
         """Emit a virtual Tk event with the dialog result."""
-        target = self._dialog.toplevel or self._master
-        if not target:
-            return
-        payload = {"result": value, "confirmed": confirmed}
-        try:
-            target.event_generate("<<DialogResult>>", data=payload)
-        except Exception:
-            try:
-                target.event_generate("<<DialogResult>>")
-            except Exception:
-                pass
+        emit_dialog_result(
+            result_target(self._dialog, self._master),
+            {"result": value, "confirmed": confirmed},
+        )

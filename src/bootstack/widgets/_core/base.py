@@ -188,6 +188,26 @@ class PublicWidgetBase:
 
     # ----- on() — overloaded -------------------------------------------------
 
+    def _event_target(self, sequence: str) -> Any:
+        """The widget that carries `sequence` for this composite.
+
+        A composite is often a frame wrapping the control the user actually
+        interacts with, and some events belong to that inner control rather
+        than to the frame. Overriding this is how such a widget redirects
+        those events.
+
+        `on()` routes every sequence through here, so a listener is always
+        attached where the event is actually produced. `emit()` routes only
+        framework events (`<<Name>>`) through here — see `emit()` for why.
+
+        Args:
+            sequence: The resolved event sequence (e.g. `'<<Change>>'`).
+
+        Returns:
+            The widget to bind on and generate from.
+        """
+        return self._internal
+
     @overload
     def on(self, event: str) -> "Stream": ...
     @overload
@@ -219,19 +239,18 @@ class PublicWidgetBase:
             `Subscription` when a handler is provided; `Stream` otherwise.
         """
         sequence = resolve_event(self, str(event))
+        target = self._event_target(sequence)
 
         if handler is not None:
-            bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
-            return Subscription(self._internal, sequence, bind_id)
+            bind_id = target.bind(sequence, adapt_handler(handler), add="+")
+            return Subscription(target, sequence, bind_id)
 
         # No handler — return a lazy Stream.
         from bootstack.streams import Stream
 
-        widget = self._internal
-
         def _source(downstream: Callable[[Any], Any]) -> Subscription:
-            bind_id = widget.bind(sequence, adapt_handler(downstream), add="+")
-            return Subscription(widget, sequence, bind_id)
+            bind_id = target.bind(sequence, adapt_handler(downstream), add="+")
+            return Subscription(target, sequence, bind_id)
 
         return Stream(self._internal, _source=_source)
 
@@ -242,13 +261,23 @@ class PublicWidgetBase:
         listeners, and the generic counterpart to the `on_*()` shorthands for
         firing events that have no dedicated method.
 
+        It is meant for the framework's own events — `'change'`, `'select'`,
+        `'input'` and the rest of the data-carrying names. A handler registered
+        through `on()` or an `on_<event>()` shorthand receives what is emitted.
+
+        Names that map onto a native event instead (`'click'`, `'focus'`,
+        `'blur'`, `'submit'`, …) are a different matter: emitting one asks the
+        toolkit to deliver a real input event, which carries no payload and can
+        reach handlers the widget installed for its own use. Emitting those is
+        not a way to notify listeners, and a listener bound through `on()` may
+        not see it. Drive the widget through its properties and methods instead.
+
         Args:
             event: The event name, unprefixed — the same name you pass to `on()`
                 or an `on_<event>()` shorthand (e.g. `'change'`, `'select'`).
-            data: The payload delivered to handlers. For a data-carrying event,
-                pass the matching payload dataclass from `bootstack.events` — the
-                same object an `on_<event>()` handler receives. Leave as None for
-                native events (click, hover, focus, …), which carry no payload.
+            data: The payload delivered to handlers. Pass the matching payload
+                dataclass from `bootstack.events` — the same object an
+                `on_<event>()` handler receives.
 
         Example:
             .. code-block:: python
@@ -256,7 +285,18 @@ class PublicWidgetBase:
                widget.emit("change", data=bs.events.ChangeEvent(value=new_value))
         """
         sequence = resolve_event(self, str(event))
-        self._internal.event_generate(sequence, data=data)
+
+        # Only framework events are retargeted. A composite redirects a native
+        # sequence to the inner control because that is where the toolkit
+        # delivers it and where a listener belongs — but generating one there
+        # would run the widget's own handlers for it, turning a notification
+        # into a keystroke the user never made (#396).
+        if sequence.startswith("<<"):
+            target = self._event_target(sequence)
+        else:
+            target = self._internal
+
+        target.event_generate(sequence, data=data)
 
     # ----- Lifecycle --------------------------------------------------------
 

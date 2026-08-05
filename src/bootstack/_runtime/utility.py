@@ -344,6 +344,28 @@ def _debug_enabled() -> bool:
     return str(os.environ.get("BOOTSTACK_DEBUG", "")).lower() in {"1", "true", "yes"}
 
 
+def debug_log(message: str) -> None:
+    """Print a diagnostic message if debug is enabled.
+
+    For reporting a condition that has no exception behind it. Use
+    `debug_log_exception` when there is one.
+
+    Never raises, and deliberately does not use `warnings.warn`: these fire from
+    inside event dispatch and teardown, where a warning filter set to `error`
+    would turn a diagnostic into a failure on a path documented as safe.
+
+    Args:
+        message: The text to print.
+    """
+    if not _debug_enabled():
+        return
+    try:
+        print(f"bootstack DEBUG: {message}")
+    except Exception:
+        # Never raise from debug logging
+        pass
+
+
 def debug_log_exception(message: str = "") -> None:
     """Print the current exception traceback if debug is enabled.
 
