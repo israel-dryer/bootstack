@@ -1235,9 +1235,20 @@ All `on_*()` shorthands use `@overload`: no-arg → `Stream`, with handler → `
 **What the handler receives** (the redesign):
 - **Data events** (`change`, `input`, `select`, validation, …) → the typed
   payload dataclass, **unpacked**: `on_change(lambda e: e.value)`. Payloads live
-  in `bootstack.events` (the catalog) — `bs.events.ChangeEvent`, `SliderEvent`,
-  etc. Namespaced there ONLY, not top-level. ListView item events are the
-  exception: a plain record `dict` (`e["field"]`).
+  in `bootstack.events` (the catalog) — `from bootstack.events import ChangeEvent`,
+  `SliderEvent`, etc. Namespaced there ONLY, not top-level. ⚠ **Write the submodule
+  import, NOT `bs.events.ChangeEvent`** — `events` is absent from `bootstack.__all__`,
+  and `bs.events` resolves only because widget code imports the submodule
+  transitively. This line used to teach the `bs.events.X` spelling: it was written
+  2026-06-05, three days before `637b2407` (`refactor(api)!: scope framework
+  primitives into submodules`, the PR #104 curation) made it stale, and it then
+  seeded the same spelling into `docs/reference/events.rst` and
+  `PublicWidgetBase.emit`'s docstring (both fixed on PR #414). ⚠ **`tests/test_public_surface.py`
+  does NOT guard this** — it gates the curated top-level *name set* and that each
+  moved symbol is importable from its submodule; it never asserts a submodule is
+  unreachable as a `bs.*` attribute, which is why the drift went uncaught for two
+  months. ListView item events are the exception: a plain record `dict`
+  (`e["field"]`).
 - **Native events** (`click`, `hover`, `focus`, `blur`, `resize`, key, scroll) →
   a curated, Tk-free `Event`: `widget`, `x/y/x_root/y_root`, `width/height`,
   `delta`, modifier bools `ctrl/shift/alt/meta`, clean `key/char`, `time`.
