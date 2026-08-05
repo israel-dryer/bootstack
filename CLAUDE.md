@@ -71,16 +71,23 @@ on the next statement, then grep the file.
 
 **Released:** `0.2.0` on PyPI, tag `v0.2.0` (2026-07-30); `pyproject.toml` is at
 `0.2.0`. **`main` is GREEN** (Windows 2026-08-04, **992 passed** — 867 widgets/CLI
-+ 125 data + every isolated leg — exit 0) with **no open PRs**. The tree is clean
-apart from untracked `development/` probes. A failing test is a real signal —
-treat any red as a regression.
++ 125 data + every isolated leg — exit 0). The tree is clean apart from untracked
+`development/` probes. A failing test is a real signal — treat any red as a
+regression.
 
-**⚠ ONE BRANCH IS IN FLIGHT: `fix/event-cleanup-392-followups`** — see START HERE.
-It is **pushed** (2026-08-04) after spending a day local-only. Two other remote
-branches exist, `cleanup/shell-visibility-idiom` and `fix/literal-mode-guards`;
-both are **stale leftovers whose content already shipped in 0.2.0** (#332, #381)
-and are not ancestors of `main` only because those PRs were squash-merged. They
-can be deleted. Twelve local branches have `: gone` upstreams and need `-D`.
+**⚠ TWO PRs ARE OPEN, both green, neither merged — `0.2.1` is written and
+waiting.** **PR #410** (`fix/event-cleanup-392-followups`, tip `7d7a8c10`) and
+**PR #411** (`fix/command-option-modifiers-405`, tip `4bb06cec`). **See START HERE
+for the one review job that gates them.** Both were opened 2026-08-05 and have
+**zero GitHub reviews**.
+
+Two other remote branches exist, `cleanup/shell-visibility-idiom` and
+`fix/literal-mode-guards`; both are **stale leftovers whose content already
+shipped in 0.2.0** (#332, #381) and are not ancestors of `main` only because those
+PRs were squash-merged. They can be deleted. Twelve local branches have `: gone`
+upstreams and need `-D`. Three `backup/*` refs guard the #392-cluster rewrites —
+`backup/392-cluster-pre-review-fixes`, `backup/392-cluster-pre-rebase`,
+`backup/397-pre-amend` — all deletable once `0.2.1` ships.
 
 **Merged since 0.2.0, unreleased:** **#403** (a bare `b` collapsed the AppShell
 sidebar — `<Command-b>` resolves to `Mod1`, which is NumLock on Windows; PR #404)
@@ -118,15 +125,53 @@ accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
 time. Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — ship `0.2.1`: the #392-review cluster
+### ★ START HERE — `0.2.1` is BUILT. Two PRs are open and waiting on ONE review job.
 
-**The next release is `0.2.1`, and most of it is already built.** Contents:
+**Everything in `0.2.1` is written, green, and pushed. Nothing is merged.**
+
+**⏭ NEXT SESSION, IN THIS ORDER:**
+
+1. **Review `7e204801` (#401) and `6520597b` (#397) with fresh eyes.** ⚠ **This is
+   the only outstanding work, and it is deliberately scoped.** Every *recorded*
+   finding on PR #410 is closed, but those two commits rest **entirely on the
+   earlier whole-branch review** — and that pass is documented below as having got
+   **three things materially wrong about #397 specifically** (see "What the
+   whole-branch review got WRONG"). A reviewer wrong three times on a commit is
+   weak evidence that same commit is clean. The other four commits were reviewed
+   and fixed on 2026-08-05 and need nothing. **Do not re-review the whole branch**
+   — read `git show 7e204801` and `git show 6520597b` as complete units.
+2. **Merge PR #410, then PR #411** (or the reverse — see the CHANGELOG note).
+3. **Cut `0.2.1`** per Release flow: promote `## [Unreleased]` in its OWN commit
+   first, *then* `bump-my-version bump patch`.
+4. **Delete the three `backup/*` refs** and the stale `: gone` locals.
 
 | Piece | Where | State |
 |---|---|---|
 | #403 sidebar shortcut + #406 its test coverage | **merged to `main`** | done, in `## [Unreleased]` |
-| **#396, #397, #398, #399, #400, #401** — the whole #392-review cluster | branch `fix/event-cleanup-392-followups` | **built, reviewed, green — READY TO MERGE** |
-| #405 `Shortcuts` `Command`/`Option` map | not started | small; optional for 0.2.1 |
+| **#396, #397, #398, #399, #400, #401** — the #392-review cluster | **PR #410**, branch `fix/event-cleanup-392-followups` (tip `7d7a8c10`) | green; **awaiting the #401/#397 review above** |
+| **#405** `Shortcuts` `Command`/`Option` map | **PR #411**, branch `fix/command-option-modifiers-405` (tip `4bb06cec`) | green; **nothing outstanding** |
+
+⚠ **Both PRs add to the same `### Fixed` block under `## [Unreleased]`**, so
+whichever merges second will hit a trivial CHANGELOG conflict. **There is no
+source overlap** — take both bullets.
+
+⚠ **PR #410 and #411 have ZERO GitHub reviews.** They were opened 2026-08-05.
+"Reviewed" below means an agent pass, not an approval on the PR.
+
+**#405 (PR #411) — what shipped.** `_BINDING_MODIFIERS` guarded only `mod`/`alt`;
+`command`/`option` mapped to the toolkit words on every platform while `_WIN_NAMES`
+had always displayed them as `Ctrl`/`Alt`. Off macOS Tk resolves those words to
+**Mod1/Mod2**, and Windows reports NumLock as Mod1 — so `Shortcut(pattern="Command+S")`
+displayed *Ctrl+S* and fired on a bare `s`. Fixed per the issue's resolution 1
+(map them as displayed) because it is a **pure fix** and rides the patch line;
+resolution 2 (raise off macOS) would raise where the framework accepts and belongs
+in `0.6.0` with #369/#383. **Measured, not assumed:** bound alone, `<Command-s>`
+catches a plain `s` with Mod1 and `<Option-k>` a plain `k` with Mod2 — those two
+controls pass before AND after by design, so the rest of the file cannot decay into
+string comparison. 8 failed pre-fix → 13 passed. The three raw `<Command-*>` binds
+left in `src/` (shell toggle, code-editor find/replace, macOS close) were each
+checked and are **already guarded on `winsys == "aqua"`** — the shared map was the
+last hole, so no call-site follow-up is owed.
 
 **Branch `fix/event-cleanup-392-followups`** — **6 commits, pushed (`7d7a8c10`,
 2026-08-05), and the review is COMPLETE: all three outstanding items are
@@ -377,15 +422,9 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
   unmapped-window gotcha above. **On `main` (pre-merge) the old warning still
   applies.**
 
-- **#405 — `Shortcuts` maps `Command`/`Option` to Tk modifiers off macOS.** The
-  same NumLock trap as #403, still reachable through the PUBLIC API because #403
-  patched one call site instead of the shared map. `_BINDING_MODIFIERS`
-  (`_runtime/shortcuts.py:60`) guards `'mod'` and `'alt'` with `if IS_MAC` but
-  leaves `'command'` and `'option'` unconditional, while `_WIN_NAMES` maps both to
-  `Ctrl`/`Alt`. Measured: `Shortcut(pattern='Command+S').binding == '<Command-s>'`
-  while `.display == 'Ctrl+S'` — so the menu says *Ctrl+S* and the binding fires on
-  a bare `s` with NumLock on. Two resolutions on the issue; the recommended one
-  (map them like the display already claims) is patch-safe and could ride `0.2.1`.
+- ~~**#405 — `Shortcuts` maps `Command`/`Option` to Tk modifiers off macOS**~~ —
+  **BUILT and green on PR #411**, riding `0.2.1`. Details in START HERE. Nothing
+  outstanding on it.
 
 - **#376 — DataTable cell padding ignored on Tcl/Tk 9** (checkbox flush to the row
   edge, columns collide). Open in `0.2.x`, **unverifiable on either box** — the
@@ -537,6 +576,26 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
   event-system change stashed, so confirm that with `git stash` before blaming
   your own diff. Cost real time during #392. Memory
   `reference_virtual_event_needs_mapped_window`.
+- **⚠ `shown_app` is NOT enough — a widget packed into the shared root may still be
+  UNMAPPED.** The `shown_app` root is mapped, but `pack()`ing a raw frame into it
+  competes with the App's own geometry management, and **once earlier tests have
+  filled the root the frame does not get mapped at all** — so synthesized key
+  events are dropped exactly as above. The tell is a test that **passes alone and
+  fails in the suite** (#405 cost a full suite run here). Worse, it fails as a
+  *false negative about the thing under test* — the #405 control read "the trap is
+  gone" when the trap was fine and the window was not. **Build a real event target
+  in its own `Toplevel`** (`geometry(...)`, `deiconify()`, `update()`,
+  `focus_force()`), and **assert `winfo_ismapped()` as a precondition** so a repeat
+  cannot be silent. Same family as the "pair a geometry assertion with a
+  precondition" rule.
+- **⚠ Never `warnings.warn` from inside a Tk dispatch or a teardown path — use
+  `debug_log`.** `_runtime/utility.py` has **`debug_log(message)`** (added by #399)
+  beside `debug_log_exception`; both honor `BOOTSTACK_DEBUG` and **never raise**.
+  A `warnings.warn(..., RuntimeWarning)` measurably escapes `Subscription.cancel()`
+  and its `__exit__` under `-W error`, turning a diagnostic into a failure on two
+  paths documented as safe to call on an already-dead handler. A diagnostic that
+  can fail the program it is diagnosing is not one. Use `debug_log` when there is
+  no exception to log; `debug_log_exception` when there is.
 - **Run the BASELINE before the fix**, so a before/after transition is *observed*
   rather than assumed. That is what turned "the branch fixes only 2 of 6" from a
   suspicion into a fact.
@@ -613,7 +672,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
-| **0.2.1** | **IN PROGRESS** — see START HERE. #403/#404 sidebar shortcut + #406 its test coverage (both on `main`) · #396–#401 the #392-review cluster (branch `fix/event-cleanup-392-followups`, tip `7d7a8c10` — built, reviewed, green, **ready to merge**) · optionally #405 |
+| **0.2.1** | **BUILT, NOT MERGED** — see START HERE. #403/#404 sidebar shortcut + #406 its test coverage (both on `main`) · #396–#401 the #392-review cluster (**PR #410**, tip `7d7a8c10`) · #405 `Command`/`Option` modifier map (**PR #411**, tip `4bb06cec`). Gated on one review job: #401 and #397 have not been re-read. |
 | **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
 | **0.1.8** | macOS sizing on Tcl/Tk 9 (Aqua 72→96 DPI baseline broke `detect_scale_factor()`) |
 | **0.1.7** | Tk 9 scroll-event contract (`<TouchpadScroll>`, ±120 deltas, X11 TIP 474) + attach theme repaint |
