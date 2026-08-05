@@ -130,12 +130,28 @@ interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
 strictness` is using the **old** numbers.
 
 **THE RULE, which is the part worth keeping: numbered milestones are RELEASES;
-unnumbered milestones are WORKSTREAMS that do not map to a release.** Membership in
-a numbered one is decided by compatibility *and* readiness, and the title names what
+unnumbered milestones hold work NOT YET ASSIGNED to a release.** Membership in a
+numbered one is decided by compatibility *and* readiness, and the title names what
 actually ships. Nothing gets a number until its order is real. This replaced an
 accidental mix in which `0.2.x`/`0.6.0` were compatibility buckets wearing subject
 names while `0.3.0`–`0.5.0` were subject themes wearing version numbers — which is
 how three of five `0.3.0 — Guided flows` issues came to be form/signal work.
+
+⚠ **The unnumbered half was first written as "workstreams that do not map to a
+release." That was wrong** — most of it maps to a release, just an undetermined
+one. Each unnumbered milestone says *why* it has no number: Tk 9 is blocked on
+hardware, hot reload is outside the SemVer freeze, test confidence rides any patch,
+additions ride any minor.
+
+⚠ **The patch line is BUG FIXES ONLY.** The project committed to SemVer at `0.1.0`,
+so **adding public surface is a MINOR even when nothing breaks** — someone upgrading
+`0.2.1 → 0.2.2` should be able to assume no new API arrived. An audit on 2026-08-05
+found **three of the patch line's four issues were additions** (#352 a whole new
+widget, #317 and #208 additive), which is why `Additions awaiting a minor` exists.
+⚠ **The trap to avoid repeating:** the milestone had *already* been renamed away
+from "Fixes and small additions" to stop that creep, while its description still
+said "fixes and small additions" — so the rename changed nothing. **Fix the
+description, not just the title.**
 
 | Order | Milestone | Open |
 |---|---|---|
@@ -147,7 +163,8 @@ how three of five `0.3.0 — Guided flows` issues came to be form/signal work.
 | 6 | **`0.7.0 — Structured editing`** — #192, #314 | 2 |
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
-| — | **`0.2.x — Patch line`** (rolling) — #207, #208, #317, #352 | 4 |
+| — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
+| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207 | 1 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -219,13 +236,23 @@ silence is the one real cost of how #409 shipped.
 
 **⚠ #415/#416 came from discussion #413** (a user asking for `PathField` in a
 `Form`). Both were filed 2026-08-05 with a probe at
-`development/probe_413_pathfield_value.py`. The measured finding worth not
-re-deriving: **10 of the 12 public field-family widgets are `Form` editors — the
-two that are not are `PathField` and `TimeField`** — and an unknown `editor=` name
-**silently builds a `TextField`** (`_impl/composites/form.py:774`). `DateField`
-being an editor while `TimeField` is not is what makes this drift rather than a
-design boundary. **A reply to #413 is still UNSENT** — draft it before closing the
-loop with the reporter, and settle `open_multiple` (see #416) first.
+`development/probe_413_pathfield_value.py`; **the maintainer replied on #413 the
+same day, so that loop is closed.** The measured finding worth not re-deriving:
+**10 of the 12 public field-family widgets are `Form` editors — the two that are
+not are `PathField` and `TimeField`** — and an unknown `editor=` name **silently
+builds a `TextField`** (`_impl/composites/form.py:774`). `DateField` being an
+editor while `TimeField` is not is what makes this drift rather than a design
+boundary.
+
+**⚠ `open_multiple` is DECIDED — `PathField.value` returns `tuple[Path, ...]` in
+that mode**, a single `Path`/`None` otherwise (maintainer, 2026-08-05). #416's body
+still presents it as an open question with two options; **the decision lives in a
+comment on the issue**, not the body. The rejected option was a second property
+holding the tuple — one concept, two names. The mode-dependent return type is a
+known cost, accepted: `open_multiple` selects a different kind of thing, and the
+current `', '` join it replaces is already lossy. Still open at implementation
+time: whether an unselected `open_multiple` field returns `()` or `None` (lean
+`()`).
 
 **⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
 `tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those
