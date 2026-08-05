@@ -123,24 +123,48 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: none chosen — see START HERE for the candidates.** Milestones:
-`0.2.x — Fixes and small additions` (#2, **renamed 2026-07-30** from
-"Widget polish", which described only 4 of its 14 issues) · `0.3.0 — Guided flows`
-(#3) · `0.4.0 — Power-user interactions` (#4) · `0.5.0 — Structured editing` (#5) ·
-`0.6.0 — Argument and value strictness` (#7, new 2026-07-30).
-Mapping + reasoning: memory `project_roadmap_milestones`.
+**⏭ ACTIVE TARGET: none chosen — see START HERE.** ⚠ **The milestones were
+RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
+before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
+interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
+strictness` is using the **old** numbers.
 
-**✅ EVERY open issue is milestoned — re-verified 2026-08-05 after PR #414, 0
-unmilestoned.** An unmilestoned backlog makes the milestone feature worthless
-(maintainer's call). Open counts that day (**22** total): `0.2.x` **9** ·
-`0.3.0` **5** · `0.4.0` 2 · `0.5.0` 3 · `0.6.0` 3 — #409 closed out of `0.2.x` and
-#412 opened into `0.3.0`, so the total is unchanged.
+**THE RULE, which is the part worth keeping: numbered milestones are RELEASES;
+unnumbered milestones are WORKSTREAMS that do not map to a release.** Membership in
+a numbered one is decided by compatibility *and* readiness, and the title names what
+actually ships. Nothing gets a number until its order is real. This replaced an
+accidental mix in which `0.2.x`/`0.6.0` were compatibility buckets wearing subject
+names while `0.3.0`–`0.5.0` were subject themes wearing version numbers — which is
+how three of five `0.3.0 — Guided flows` issues came to be form/signal work.
+
+| Order | Milestone | Open |
+|---|---|---|
+| 1 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
+| 2 | **`0.3.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
+| 3 | **`0.4.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
+| 4 | **`0.5.0 — Guided flows`** — #311, #312 | 2 |
+| 5 | **`0.6.0 — Power-user interactions`** — #315, #316 | 2 |
+| 6 | **`0.7.0 — Structured editing`** — #192, #314 | 2 |
+| — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
+| — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
+| — | **`0.2.x — Patch line`** (rolling) — #207, #208, #317, #352 | 4 |
+
+Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
+the suite, so every release is a gamble, and #407 makes that automation cheaper
+before you buy it); **breaks batched, not dribbled** (#383/#369/#408/#416 in ONE
+minor = one migration for users instead of four); then near-ready API, then new
+widgets. ⚠ **Numbers past `0.4.0` are ordering hints, not commitments** — they
+assume three minors land in that sequence, which nobody knows. Retitling is cheap;
+that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
+`test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
+Reasoning also in memory `project_roadmap_milestones`.
+
+**✅ EVERY open issue is milestoned — re-verified 2026-08-05 after the restructure,
+0 unmilestoned.** An unmilestoned backlog makes the milestone feature worthless
+(maintainer's call). **24** open that day, per the table above.
 ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
-`0.6.0` was created to home the changes that RAISE where the framework currently
-accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
-*after* the themed minors deliberately so nothing had to be renumbered a second
-time. Check with:
+Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 ### ★ START HERE — nothing in flight. Pick the next target.
@@ -167,24 +191,41 @@ will bite again:
 **⚠ `## [Unreleased]` is STILL ABSENT** — #409 was docs-only, so it deliberately
 did not re-create the section. The next **code** fix does.
 
-**⏭ The realistic next targets, in the order worth taking them:**
+**⏭ The next targets, in milestone order (see the table above for why).**
 
-1. **#390 — should signals model emptiness at all? (DESIGN — `0.3.0`.)** **Take this
-   first.** It needs a DECISION, not more analysis — the write-up below is complete
-   and the maintainer is actively evaluating (discussion #386). Cheapest item on the
-   board and the largest unblock: it gates #389 shipping *whole*.
-2. **#389 — `Form.reset()` / `Form.clear()`** (`0.3.0`), unblocked and designed.
-3. **#407 — the harness leak-fix.** Still the best-understood piece of open work in
-   this file: root cause known, payoff measured (widget leg **144s → 80s**), and its
-   old blocker (#392) shipped in `0.2.0`. The patch itself is LOST and must be
-   re-derived from the recorded root cause.
-4. **#380 — CI.** Nothing runs the suite on push; every Tk 9 bug so far was found
-   by a user or by hand. Largest of the four; read the issue before scoping.
-5. **#412 — promote `register_widget_events()` to public API** (`0.3.0`, filed
-   2026-08-05). Small and well-scoped: publish an existing internal front door so
-   composite authors get a documented bare-name path *while keeping the typo guard*.
-   Until it lands, `docs/reference/events.rst` stays **deliberately silent on custom
-   events** — that silence is the one real cost of how #409 shipped.
+**#390 is the exception to the order and can be taken at ANY time — it is a
+DECISION, not work.** Should signals model emptiness at all? (`0.4.0`.) The
+write-up below is complete and the maintainer is actively evaluating (discussion
+#386); it needs an answer, not more analysis. Cheapest item on the board and the
+largest unblock, since it gates #389 shipping *whole*. **Do not re-derive it.**
+
+Otherwise, first substantial work is the **`Test and release confidence`**
+workstream, in this order:
+
+1. **#407 — the harness scene reset.** Best-understood open work in this file: root
+   cause known, payoff measured (widget leg **144s → 80s**), and it makes PageStack
+   pass with no `isolated` marker. Its old blocker (#392) shipped in `0.2.0`. ⚠ The
+   patch itself is LOST and must be re-derived from the recorded root cause below.
+2. **#380 — CI.** Nothing runs the suite on push; every Tk 9 bug so far was found by
+   a user or by hand. Take it *after* #407 so the automation is cheaper and the suite
+   it automates actually passes. Largest item here; read the issue before scoping.
+
+Then `0.3.0 — Strictness and value types` as one batch (#383, #369, #408, #416),
+then `0.4.0` (#389 behind #390, #412, #415). **#412** is small and well-scoped:
+publish an existing internal front door so composite authors get a documented
+bare-name path *while keeping the typo guard*. Until it lands,
+`docs/reference/events.rst` stays **deliberately silent on custom events** — that
+silence is the one real cost of how #409 shipped.
+
+**⚠ #415/#416 came from discussion #413** (a user asking for `PathField` in a
+`Form`). Both were filed 2026-08-05 with a probe at
+`development/probe_413_pathfield_value.py`. The measured finding worth not
+re-deriving: **10 of the 12 public field-family widgets are `Form` editors — the
+two that are not are `PathField` and `TimeField`** — and an unknown `editor=` name
+**silently builds a `TextField`** (`_impl/composites/form.py:774`). `DateField`
+being an editor while `TimeField` is not is what makes this drift rather than a
+design boundary. **A reply to #413 is still UNSENT** — draft it before closing the
+loop with the reporter, and settle `open_multiple` (see #416) first.
 
 **⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
 `tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those
