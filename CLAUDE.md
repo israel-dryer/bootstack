@@ -76,20 +76,27 @@ shared-root widgets+CLI, **125 passed / 4 skipped** data, and every isolated leg
 The tree is clean apart from untracked `development/` probes. A failing test is a
 real signal — treat any red as a regression.
 
-**⏭ IN FLIGHT: `docs/custom-events-409` (commit `78e06636`, pushed, no PR) —
-awaiting code review. See START HERE.** Both `0.2.1` PRs are merged: **#410** (the #392-review
-cluster, merged as a **merge commit** so its six one-per-issue commits landed
-individually — the granularity was the deliverable) and **#411** (#405). All eight
-issues are closed. Every `backup/*` ref and all twelve `: gone` locals were
+**⏭ NOTHING IS IN FLIGHT.** No open PRs, no unpushed branches, tree clean but for
+untracked `development/` probes. **#409 shipped 2026-08-05 via PR #414** (merge
+commit `d428f6be`) — docs-only, unreleased, and it left **#412** open on purpose;
+full entry in the archive, summary under START HERE. Both `0.2.1` PRs are merged:
+**#410** (the #392-review cluster, merged as a **merge commit** so its six
+one-per-issue commits landed individually — the granularity was the deliverable)
+and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-⚠ **Four remote branches survive and are NOT ancestors of `main`** —
-`cleanup/shell-visibility-idiom`, `fix/literal-mode-guards`,
-`fix/394-field-row-alignment`, `fix/403-test-coverage`. All four shipped already
-(#332, #381, #394, #406); they read as unmerged only because those PRs were
-**squash-merged**. Deletable — confirm with the maintainer first. ⚠ **Do NOT sweep
-`docs/custom-events-409` in with them** — that fifth non-ancestor is genuinely
-unmerged work awaiting review (see START HERE), not squash-merge residue.
+⚠ **Seven remote branches survive — all deletable, confirm with the maintainer
+first.** Verified 2026-08-05 with `git merge-base --is-ancestor <branch>
+origin/main`, not by reading. **Three are merged ancestors of `main`** and are
+unambiguously safe: `docs/custom-events-409` (PR #414),
+`fix/command-option-modifiers-405` (PR #411), `fix/event-cleanup-392-followups`
+(PR #410). **Four are NOT ancestors** — `cleanup/shell-visibility-idiom`,
+`fix/literal-mode-guards`, `fix/394-field-row-alignment`, `fix/403-test-coverage` —
+but all four shipped already (#332, #381, #394, #406); they read as unmerged only
+because those PRs were **squash-merged**. ⚠ **Non-ancestor ≠ unmerged.** Check the
+issue/PR state before concluding a branch holds live work — and re-run the
+ancestry loop rather than trusting this list, which goes stale the moment a branch
+is deleted.
 
 **`0.2.1` shipped `#396, #398, #399, #400, #403, #405`** in the release notes,
 plus **#397 and #401**, which are fixed and merged but **deliberately absent from
@@ -119,10 +126,12 @@ in any layout pairing a field with a taller widget on a stretch axis.
 `0.6.0 — Argument and value strictness` (#7, new 2026-07-30).
 Mapping + reasoning: memory `project_roadmap_milestones`.
 
-**✅ EVERY open issue is milestoned — re-verified 2026-08-05, 0 unmilestoned.** An
-unmilestoned backlog makes the milestone feature worthless (maintainer's call).
-Open counts that day (**22** total): `0.2.x` **10** · `0.3.0` 4 · `0.4.0` 2 ·
-`0.5.0` 3 · `0.6.0` 3. ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
+**✅ EVERY open issue is milestoned — re-verified 2026-08-05 after PR #414, 0
+unmilestoned.** An unmilestoned backlog makes the milestone feature worthless
+(maintainer's call). Open counts that day (**22** total): `0.2.x` **9** ·
+`0.3.0` **5** · `0.4.0` 2 · `0.5.0` 3 · `0.6.0` 3 — #409 closed out of `0.2.x` and
+#412 opened into `0.3.0`, so the total is unchanged.
+⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 `0.6.0` was created to home the changes that RAISE where the framework currently
 accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
@@ -130,80 +139,48 @@ accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
 time. Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — IN FLIGHT: review `docs/custom-events-409` (#409). Then pick the next target.
+### ★ START HERE — nothing in flight. Pick the next target.
 
-**⏭ THE NEXT SESSION'S JOB IS A CODE REVIEW of one pushed commit.** Branch
-`docs/custom-events-409`, commit **`78e06636`**, pushed 2026-08-05, **no PR
-opened** (deliberate — the maintainer wanted to read it first). One file,
-**+12/−15, `docs/reference/events.rst` only**. Verified before commit: clean
-`sphinx -W` build from a removed `_build` (zero warnings), the
-`UnknownEventError` xref resolves to its autodoc home, and
-`py -3.12 development/probe_409_custom_events.py` is green (7 checks, exit 0).
-**Nothing has merged to `main`** — `main` still carries the phantom section.
+**⏭ NO ACTIVE WORK.** `main` is clean, `0.2.1` is released, #409 merged 2026-08-05
+via PR #414. The next session picks from the list below and starts fresh.
 
-**What #409 was, and the correction that matters more than the fix.** `events.rst`
-claimed *"any name that isn't a built-in event is treated as a custom event"* and
-showed `on("row_imported")` / `emit("row_imported")`. Both raise
-`UnknownEventError`. The issue framed this as *"documents a feature that was never
-built"* — **that framing is WRONG and this session's first summary repeated it.**
-Custom events **work today, two ways, both re-verified**: a **literal virtual
-sequence** on any stock widget (`on("<<RowImported>>")` / `emit(..., data={...})`
-delivers the dict intact), and a **bare name on a class that called
-`register_widget_events()`** (internal, `widgets/_core/events.py`). What is absent
-is *only* the bare-name-on-a-**stock**-widget spelling, because `resolve_event()`
-has no fallback branch. **Do not re-derive this — run the probe.**
+**#409 is DONE (PR #414) — full entry in `docs/_dev/handoff-archive.md`.** Two
+things from it are worth carrying here because they are invisible in the diff and
+will bite again:
 
-**Why the section was deleted rather than the fallback built (maintainer's call).**
-The fallback is ~one line (`return f"<<{name}>>"`), but it is **the same line that
-makes `on("chnage", …)` raise today**. Building it trades a framework-wide typo
-guard for a handler that binds fine and silently never fires — a direct reversal of
-the strictness direction that earned `0.6.0` (#369/#383). The probe's **check B is
-the control** that proves this is a tradeoff and not a pure bug; without it check A
-reads as a gap.
+- ⚠ **`emit()` and `on()` take the same names but NOT always the same target.**
+  `emit()` consults the `_event_target()` seam **only for `<<Virtual>>` sequences**;
+  the native-mapped names (`click`/`focus`/`blur`/`submit`) fire on `_internal`, so
+  `field.emit("submit")` on a retargeting composite reaches nothing bound through
+  `on()` — silently. Documented in both `PublicWidgetBase.emit`'s docstring and
+  `docs/reference/events.rst` now; it was only in the docstring before.
+- ⚠ **`resolve_event()`'s error is process-wide, not per-widget.** `all_known` is a
+  union of `GLOBAL_EVENT_MAP` and **every** `_CLASS_EVENT_MAPS` entry, so a `Button`
+  typo is reported alongside `cursor_move`/`export`/`item_drag_start`. Narrowing it
+  is folded into **#412**, not done. Don't write docs claiming the error lists what
+  *that* widget knows — the branch shipped that sentence and the review caught it.
 
-**⚠ OPEN, NOT RESOLVED — decide during the review.** The commit says
-`Closes #409`, but a real follow-up is unfiled: **promote `register_widget_events()`
-(or a wrapper) to public API**, which would give composite authors a documented
-bare-name path *while keeping the typo guard*. That is closer to "publish an
-existing internal front door" than to new design — much smaller than the "declared
-custom events" 0.3.0 item this session first estimated. **If it is wanted, file it
-as its own issue; the rewritten docs deliberately stay silent on custom events
-until it exists**, which is the one real cost of shipping this as-is.
+**⚠ `## [Unreleased]` is STILL ABSENT** — #409 was docs-only, so it deliberately
+did not re-create the section. The next **code** fix does.
 
-**Reviewer, look hardest at these three judgment calls** (all deliberate, all
-arguable, none forced by the issue):
-1. **Silence.** The section no longer mentions custom events at all, so a composite
-   author reading it has no sanctioned path — the working literal-sequence spelling
-   is undocumented on purpose (no-Tk-in-docs).
-2. **`bs.events.ChangeEvent` → `from bootstack.events import ChangeEvent`.** Payloads
-   are not in the curated top-level namespace; `bs.events` resolved only incidentally
-   because something imports the submodule. Verify that reading.
-3. **Placeholder `widget` → `field`.** `change` is a per-class event, so
-   `emit("change")` genuinely does not work on an arbitrary widget — the old example
-   was wrong in a second, quieter way.
+**⏭ The realistic next targets, in the order worth taking them:**
 
-**No CHANGELOG entry, deliberate** — docs-only, no package behavior change, so a
-reader scanning *"was I affected?"* gets nothing actionable. That leaves
-`## [Unreleased]` still absent; the next **code** fix re-creates it. Overrule if you
-disagree — it is a one-line add.
-
-**`0.2.1` went out 2026-08-05** (PyPI + tag `v0.2.1` + GitHub Release + docs
-deploy, all four green). It closed the whole #392-review cluster. Apart from the
-branch above there is no half-finished work: no open PRs, no other unpushed
-branches, no `backup/*` refs, tree clean but for untracked `development/` probes.
-
-**⏭ After the review lands, the realistic next targets:**
-
-1. **#390 — should signals model emptiness at all? (DESIGN — `0.3.0`.)** It needs a
-   DECISION, not more analysis — the write-up below is complete. Gates #389
-   shipping whole.
+1. **#390 — should signals model emptiness at all? (DESIGN — `0.3.0`.)** **Take this
+   first.** It needs a DECISION, not more analysis — the write-up below is complete
+   and the maintainer is actively evaluating (discussion #386). Cheapest item on the
+   board and the largest unblock: it gates #389 shipping *whole*.
 2. **#389 — `Form.reset()` / `Form.clear()`** (`0.3.0`), unblocked and designed.
 3. **#407 — the harness leak-fix.** Still the best-understood piece of open work in
    this file: root cause known, payoff measured (widget leg **144s → 80s**), and its
    old blocker (#392) shipped in `0.2.0`. The patch itself is LOST and must be
    re-derived from the recorded root cause.
 4. **#380 — CI.** Nothing runs the suite on push; every Tk 9 bug so far was found
-   by a user or by hand.
+   by a user or by hand. Largest of the four; read the issue before scoping.
+5. **#412 — promote `register_widget_events()` to public API** (`0.3.0`, filed
+   2026-08-05). Small and well-scoped: publish an existing internal front door so
+   composite authors get a documented bare-name path *while keeping the typo guard*.
+   Until it lands, `docs/reference/events.rst` stays **deliberately silent on custom
+   events** — that silence is the one real cost of how #409 shipped.
 
 **⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
 `tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those

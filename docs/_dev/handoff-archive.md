@@ -16,6 +16,62 @@ by issue and PR number, so `grep` for `#392` / `PR #385` / a widget name.
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **#409 → PR #414 (MERGED 2026-08-05, unreleased) — `events.rst` documented a
+  custom-event spelling that raises.** Docs-only plus one docstring; **no CHANGELOG
+  entry, deliberate** (nothing in the package changed, so a reader scanning "was I
+  affected?" gets nothing actionable), which is why `## [Unreleased]` is still
+  absent. Follow-up left open as **#412**.
+  - **⚠ The framing correction matters more than the fix — do not re-derive it, run
+    `development/probe_409_custom_events.py`.** The issue said the docs "document a
+    feature that was never built," and the first session summary repeated that.
+    **It is wrong.** Custom events work today, **two ways**: a **literal virtual
+    sequence** on any stock widget (`on("<<RowImported>>")` / `emit(..., data={...})`
+    delivers the dict intact), and a **bare name on a class that called
+    `register_widget_events()`** (internal, `widgets/_core/events.py`). Absent is
+    *only* the bare-name-on-a-**stock**-widget spelling, because `resolve_event()`
+    has no fallback branch. Memory `feedback_dont_inherit_issue_framing`.
+  - **Why the section was deleted rather than the fallback built.** The fallback is
+    ~one line (`return f"<<{name}>>"`) — but it is **the same line that makes
+    `on("chnage", …)` raise**, so building it trades a framework-wide typo guard for
+    a handler that binds fine and silently never fires. Direct reversal of the
+    strictness direction that earned `0.6.0` (#369/#383). The probe's **check B is
+    the control** proving this is a tradeoff and not a pure bug; without it check A
+    reads as a gap.
+  - **The code review found two FALSE claims in the replacement prose** (fixed in
+    `ac132ac3`), both settled by running code rather than reading it. (i) *"both are
+    limited to the events a widget actually publishes"* — false in **both**
+    directions: every `GLOBAL_EVENT_MAP` name resolves on **every** widget
+    (`bs.Label(...).on("submit", h)` is accepted though Label never emits one), and
+    `resolve_event()` passes any literal `<...>`/`<<...>>` string through unchanged.
+    It is a **known-name** check, not a *publishes* check. (ii) *"listing the ones
+    that widget knows"* — false: `all_known` is a **process-wide union** of
+    `GLOBAL_EVENT_MAP` and every `_CLASS_EVENT_MAPS` entry, so a `Button` typo is
+    reported alongside `cursor_move`/`export`/`item_drag_start`. That sentence
+    carried the justification for keeping the guard, so it was the one that most
+    needed to be true. **Narrowing `all_known` to the widget's own MRO maps plus the
+    global map is folded into #412, not done.**
+  - **⚠ `emit()` and `on()` take the same names but not always the same target.**
+    `emit()` consults `_event_target()` **only for `<<Virtual>>` sequences**;
+    native-mapped names (`click`/`focus`/`blur`/`submit`) fire on `_internal`, so
+    `field.emit("submit")` on a retargeting composite reaches nothing bound through
+    `on()`. `PublicWidgetBase.emit`'s docstring already documented this; the guide
+    did not — which left the published guide **less accurate than the source it
+    documents**. Both say it now.
+  - **⚠ The `bs.events.X` spelling was stale for two months and NO guard could have
+    caught it.** `637b2407` (2026-06-08, the PR #104 curation) scoped framework
+    primitives into submodules. `docs/reference/events.rst` and `CLAUDE.md` carried
+    `bs.events.ChangeEvent` from 2026-06-05 — correct when written, stale three days
+    later — and `PublicWidgetBase.emit`'s docstring **acquired** it at 20:06 on
+    2026-06-08, roughly **nineteen hours *after*** the refactor, copied from the
+    already-stale `events.rst`. Nothing ever broke because `bs.events` resolves
+    **transitively** (widget code imports the payloads, so the submodule lands in
+    `sys.modules` and becomes a package attribute). And
+    `tests/test_public_surface.py` gates the curated top-level **name set** plus each
+    moved symbol's importability from its submodule — it **never asserts a submodule
+    is unreachable as a `bs.*` attribute**, so this class of curated-namespace drift
+    is outside the guard's reach rather than missed by it. Swept in `c08fa1a3`
+    (CLAUDE.md) + PR #414 (docs + docstring).
+
 - **#392 → PR #402 (MERGED 2026-07-30, shipped in 0.2.0) — `Subscription.cancel()`
   silenced every other handler on that event.** Four logical changes, four commits.
   Reviewed twice; the second review found a critical hole the first missed.
