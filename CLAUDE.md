@@ -244,15 +244,18 @@ builds a `TextField`** (`_impl/composites/form.py:774`). `DateField` being an
 editor while `TimeField` is not is what makes this drift rather than a design
 boundary.
 
-**⚠ `open_multiple` is DECIDED — `PathField.value` returns `tuple[Path, ...]` in
-that mode**, a single `Path`/`None` otherwise (maintainer, 2026-08-05). #416's body
-still presents it as an open question with two options; **the decision lives in a
+**⚠ `open_multiple` is FULLY DECIDED (maintainer, 2026-08-05) — nothing left to
+settle before implementing #416.** The contract: **`open_multiple` → `tuple[Path,
+...]`, empty `()`; every other mode → `Path | None`, empty `None`.** #416's body
+still presents this as an open question with two options; **the decision lives in a
 comment on the issue**, not the body. The rejected option was a second property
-holding the tuple — one concept, two names. The mode-dependent return type is a
-known cost, accepted: `open_multiple` selects a different kind of thing, and the
-current `', '` join it replaces is already lossy. Still open at implementation
-time: whether an unselected `open_multiple` field returns `()` or `None` (lean
-`()`).
+holding the tuple — one concept, two names. Two costs accepted deliberately: the
+return type depends on a construction argument (`open_multiple` selects a different
+*kind* of thing, and the `', '` join it replaces is already lossy), and **`()`
+rather than `None` when empty is a deliberate exception to the framework's
+`None`-when-empty convention** — the type stays stable so callers iterate without a
+guard, and for a multi-select "nothing selected" and "an empty selection" are the
+same state.
 
 **⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
 `tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those
