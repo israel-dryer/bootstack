@@ -85,18 +85,22 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-⚠ **Seven remote branches survive — all deletable, confirm with the maintainer
-first.** Verified 2026-08-05 with `git merge-base --is-ancestor <branch>
-origin/main`, not by reading. **Three are merged ancestors of `main`** and are
-unambiguously safe: `docs/custom-events-409` (PR #414),
-`fix/command-option-modifiers-405` (PR #411), `fix/event-cleanup-392-followups`
-(PR #410). **Four are NOT ancestors** — `cleanup/shell-visibility-idiom`,
-`fix/literal-mode-guards`, `fix/394-field-row-alignment`, `fix/403-test-coverage` —
-but all four shipped already (#332, #381, #394, #406); they read as unmerged only
-because those PRs were **squash-merged**. ⚠ **Non-ancestor ≠ unmerged.** Check the
-issue/PR state before concluding a branch holds live work — and re-run the
-ancestry loop rather than trusting this list, which goes stale the moment a branch
-is deleted.
+**✅ BRANCHES ARE CLEAN — `main` is the ONLY branch, local or remote** (swept
+2026-08-05, maintainer-approved). All seven survivors were deleted together with
+their `: gone` locals: three merged ancestors (`docs/custom-events-409` PR #414,
+`fix/command-option-modifiers-405` PR #411, `fix/event-cleanup-392-followups`
+PR #410) and four squash-merge leftovers (`cleanup/shell-visibility-idiom` PR #384,
+`fix/literal-mode-guards` PR #382, `fix/394-field-row-alignment` PR #395,
+`fix/403-test-coverage` PR #406). Head SHAs are in the deleting commit's message if
+one ever needs resurrecting; GitHub also keeps each PR's head SHA.
+
+⚠ **The method matters more than the result, because this recurs every release.**
+**Non-ancestor ≠ unmerged.** Four of the seven were not ancestors of `main` purely
+because their PRs were **squash-merged**, and an earlier handoff nearly read that
+as live work. Verify with two commands, never by reading this file:
+`git merge-base --is-ancestor origin/<branch> origin/main` for ancestry, then
+`gh pr list --head <branch> --state all --json number,state,mergedAt` — a MERGED PR
+is what makes a non-ancestor safe to delete. Record the head SHAs before deleting.
 
 **`0.2.1` shipped `#396, #398, #399, #400, #403, #405`** in the release notes,
 plus **#397 and #401**, which are fixed and merged but **deliberately absent from
