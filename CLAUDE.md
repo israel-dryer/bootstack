@@ -69,32 +69,35 @@ on the next statement, then grep the file.
 
 ## Current state
 
-**Released:** `0.2.0` on PyPI, tag `v0.2.0` (2026-07-30); `pyproject.toml` is at
-`0.2.0`. **`main` is GREEN** (Windows 2026-08-04, **992 passed** — 867 widgets/CLI
-+ 125 data + every isolated leg — exit 0). The tree is clean apart from untracked
-`development/` probes. A failing test is a real signal — treat any red as a
-regression.
+**Released:** `0.2.1` on PyPI, tag `v0.2.1` (2026-08-05); `pyproject.toml` is at
+`0.2.1`. Build, PyPI publish, GitHub Release and the docs deploy all ran green.
+**`main` is GREEN** (Windows 2026-08-05, exit 0 — **919 passed / 14 skipped**
+shared-root widgets+CLI, **125 passed / 4 skipped** data, and every isolated leg).
+The tree is clean apart from untracked `development/` probes. A failing test is a
+real signal — treat any red as a regression.
 
-**⚠ TWO PRs ARE OPEN, both green, neither merged — `0.2.1` is written and
-waiting.** **PR #410** (`fix/event-cleanup-392-followups`, tip `7d7a8c10`) and
-**PR #411** (`fix/command-option-modifiers-405`, tip `4bb06cec`). **See START HERE
-for the one review job that gates them.** Both were opened 2026-08-05 and have
-**zero GitHub reviews**.
+**Nothing is in flight.** Both `0.2.1` PRs are merged: **#410** (the #392-review
+cluster, merged as a **merge commit** so its six one-per-issue commits landed
+individually — the granularity was the deliverable) and **#411** (#405). All eight
+issues are closed. Every `backup/*` ref and all twelve `: gone` locals were
+deleted after the release.
 
-Two other remote branches exist, `cleanup/shell-visibility-idiom` and
-`fix/literal-mode-guards`; both are **stale leftovers whose content already
-shipped in 0.2.0** (#332, #381) and are not ancestors of `main` only because those
-PRs were squash-merged. They can be deleted. Twelve local branches have `: gone`
-upstreams and need `-D`. Three `backup/*` refs guard the #392-cluster rewrites —
-`backup/392-cluster-pre-review-fixes`, `backup/392-cluster-pre-rebase`,
-`backup/397-pre-amend` — all deletable once `0.2.1` ships.
+⚠ **Four remote branches survive and are NOT ancestors of `main`** —
+`cleanup/shell-visibility-idiom`, `fix/literal-mode-guards`,
+`fix/394-field-row-alignment`, `fix/403-test-coverage`. All four shipped already
+(#332, #381, #394, #406); they read as unmerged only because those PRs were
+**squash-merged**. Deletable — confirm with the maintainer first.
 
-**Merged since 0.2.0, unreleased:** **#403** (a bare `b` collapsed the AppShell
-sidebar — `<Command-b>` resolves to `Mod1`, which is NumLock on Windows; PR #404)
-and **#406** (its regression tests ran in no leg of the suite — the module was
-marked `isolated` but never added to `run_gui.py`'s `ISOLATED` list). Both are in
-`## [Unreleased]`. Root cause + the vacuous-assertion trap: memory
-`reference_command_modifier_is_numlock_off_mac`.
+**`0.2.1` shipped `#396, #398, #399, #400, #403, #405`** in the release notes,
+plus **#397 and #401**, which are fixed and merged but **deliberately absent from
+the CHANGELOG**. Neither was reachable from public API, so listing them handed a
+reader scanning for upgrade risk a false positive — the same call made for #387 in
+`0.2.0`. Verified, not assumed: `MessageDialog`/`QueryDialog`/`DateDialog` are
+absent from `bootstack.dialogs.__all__` and the public verbs return their result
+directly, while the one public dialog class (`ColorChooserDialog`) was the case
+that was already correct; and `on("increment")` raises `UnknownEventError` with no
+`on_increment` shorthand. **Both remain fully documented in their own commit
+messages** (`a93a47a4`, `7e204801`) — that is where the root causes live now.
 
 **0.2.0 shipped `#332, #379, #381, #387, #388, #392, #394`.** It was **a minor,
 not a patch**, and that was a deliberate maintainer call: the project committed to
@@ -106,18 +109,17 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: `0.2.1`** — see START HERE for its contents and the three
-decisions it still needs. Milestones:
+**⏭ ACTIVE TARGET: none chosen — see START HERE for the candidates.** Milestones:
 `0.2.x — Fixes and small additions` (#2, **renamed 2026-07-30** from
 "Widget polish", which described only 4 of its 14 issues) · `0.3.0 — Guided flows`
 (#3) · `0.4.0 — Power-user interactions` (#4) · `0.5.0 — Structured editing` (#5) ·
 `0.6.0 — Argument and value strictness` (#7, new 2026-07-30).
 Mapping + reasoning: memory `project_roadmap_milestones`.
 
-**✅ EVERY open issue is milestoned — re-verified 2026-08-04, 0 unmilestoned.** An
+**✅ EVERY open issue is milestoned — re-verified 2026-08-05, 0 unmilestoned.** An
 unmilestoned backlog makes the milestone feature worthless (maintainer's call).
-Open counts that day: `0.2.x` **17** · `0.3.0` 4 · `0.4.0` 2 · `0.5.0` 3 ·
-`0.6.0` 3. ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
+Open counts that day (**22** total): `0.2.x` **10** · `0.3.0` 4 · `0.4.0` 2 ·
+`0.5.0` 3 · `0.6.0` 3. ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 `0.6.0` was created to home the changes that RAISE where the framework currently
 accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
@@ -125,185 +127,64 @@ accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
 time. Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — `0.2.1` is BUILT. Two PRs are open and waiting on ONE review job.
+### ★ START HERE — `0.2.1` is SHIPPED. Nothing is in flight; pick the next target.
 
-**Everything in `0.2.1` is written, green, and pushed. Nothing is merged.**
+**`0.2.1` went out 2026-08-05** (PyPI + tag `v0.2.1` + GitHub Release + docs
+deploy, all four green). It closed the whole #392-review cluster. There is no
+half-finished work anywhere: no open PRs, no unpushed branches, no `backup/*`
+refs, clean tree.
 
-**⏭ NEXT SESSION, IN THIS ORDER:**
+**⏭ The realistic next targets, in the order they make sense:**
 
-1. **Review `7e204801` (#401) and `6520597b` (#397) with fresh eyes.** ⚠ **This is
-   the only outstanding work, and it is deliberately scoped.** Every *recorded*
-   finding on PR #410 is closed, but those two commits rest **entirely on the
-   earlier whole-branch review** — and that pass is documented below as having got
-   **three things materially wrong about #397 specifically** (see "What the
-   whole-branch review got WRONG"). A reviewer wrong three times on a commit is
-   weak evidence that same commit is clean. The other four commits were reviewed
-   and fixed on 2026-08-05 and need nothing. **Do not re-review the whole branch**
-   — read `git show 7e204801` and `git show 6520597b` as complete units.
-2. **Merge PR #410, then PR #411** (or the reverse — see the CHANGELOG note).
-3. **Cut `0.2.1`** per Release flow: promote `## [Unreleased]` in its OWN commit
-   first, *then* `bump-my-version bump patch`.
-4. **Delete the three `backup/*` refs** and the stale `: gone` locals.
+1. **#390 — should signals model emptiness at all? (DESIGN — `0.3.0`.)** It needs a
+   DECISION, not more analysis — the write-up below is complete. Gates #389
+   shipping whole.
+2. **#389 — `Form.reset()` / `Form.clear()`** (`0.3.0`), unblocked and designed.
+3. **#407 — the harness leak-fix.** Still the best-understood piece of open work in
+   this file: root cause known, payoff measured (widget leg **144s → 80s**), and its
+   old blocker (#392) shipped in `0.2.0`. The patch itself is LOST and must be
+   re-derived from the recorded root cause.
+4. **#380 — CI.** Nothing runs the suite on push; every Tk 9 bug so far was found
+   by a user or by hand.
 
-| Piece | Where | State |
-|---|---|---|
-| #403 sidebar shortcut + #406 its test coverage | **merged to `main`** | done, in `## [Unreleased]` |
-| **#396, #397, #398, #399, #400, #401** — the #392-review cluster | **PR #410**, branch `fix/event-cleanup-392-followups` (tip `7d7a8c10`) | green; **awaiting the #401/#397 review above** |
-| **#405** `Shortcuts` `Command`/`Option` map | **PR #411**, branch `fix/command-option-modifiers-405` (tip `4bb06cec`) | green; **nothing outstanding** |
+**⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
+`tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those
+never runs**: (a) the 12 files / 25 tests directly under `tests/widgets/`, and
+(b) **`tests/test_public_surface.py`** — the guard for the curated public namespace
+(PR #104), which the widget-review standard lists as a verify step. Run by hand at
+the `0.2.1` tag: **166 passed**. It is green; it is just never run by `run_gui.py`.
 
-⚠ **Both PRs add to the same `### Fixed` block under `## [Unreleased]`**, so
-whichever merges second will hit a trivial CHANGELOG conflict. **There is no
-source overlap** — take both bullets.
+**⚠ What THIS FILE got wrong about the cluster — the pattern is the lesson.** The
+2026-08-05 review re-read `7e204801` (#401) and #397 (then `6520597b`, shipped as
+`a93a47a4` after the timer fix was folded in) precisely because
+an earlier whole-branch pass had already been wrong three times about #397. That
+re-read found two more defects, so the running count is **four** — and one of them
+was in this file:
 
-⚠ **PR #410 and #411 have ZERO GitHub reviews.** They were opened 2026-08-05.
-"Reviewed" below means an agent pass, not an approval on the PR.
+- **This file claimed "the branch no longer touches `CLAUDE.md` at all." It did.**
+  The `docs(claude):` *commits* had been dropped, but the CLAUDE.md edits were
+  folded into the #396 commit instead — a 252-line rewrite descending from
+  `e23207b4`, i.e. `main`'s **pre-cluster** handoff. Merging #410 would have applied
+  84 insertions against 168 deletions to `main`'s handoff, silently reverting three
+  `docs(claude):` commits. Caught by diffing `main...HEAD -- CLAUDE.md`, not by
+  reading. **Run that diff before merging any branch.** The rule it protects still
+  holds: handoff state lives on `main` only.
+- **The #397 end-to-end test leaked a 10s `after` timer** on the shared root, and
+  its module is not in `ISOLATED` — so the timer fired during a later test and
+  destroyed an unrelated `Toplevel`. **The test passed either way**, which is what
+  made it invisible. Measured 1 leaked timer → 0. A test that schedules a hang guard
+  must cancel it in a `finally`.
 
-**#405 (PR #411) — what shipped.** `_BINDING_MODIFIERS` guarded only `mod`/`alt`;
-`command`/`option` mapped to the toolkit words on every platform while `_WIN_NAMES`
-had always displayed them as `Ctrl`/`Alt`. Off macOS Tk resolves those words to
-**Mod1/Mod2**, and Windows reports NumLock as Mod1 — so `Shortcut(pattern="Command+S")`
-displayed *Ctrl+S* and fired on a bare `s`. Fixed per the issue's resolution 1
-(map them as displayed) because it is a **pure fix** and rides the patch line;
-resolution 2 (raise off macOS) would raise where the framework accepts and belongs
-in `0.6.0` with #369/#383. **Measured, not assumed:** bound alone, `<Command-s>`
-catches a plain `s` with Mod1 and `<Option-k>` a plain `k` with Mod2 — those two
-controls pass before AND after by design, so the rest of the file cannot decay into
-string comparison. 8 failed pre-fix → 13 passed. The three raw `<Command-*>` binds
-left in `src/` (shell toggle, code-editor find/replace, macOS close) were each
-checked and are **already guarded on `winsys == "aqua"`** — the shared map was the
-last hole, so no call-site follow-up is owed.
-
-**Branch `fix/event-cleanup-392-followups`** — **6 commits, pushed (`7d7a8c10`,
-2026-08-05), and the review is COMPLETE: all three outstanding items are
-implemented, each with an observed before/after transition.** Suite green on the
-pushed tip: **950 passed / 13 skipped shared-root, 123 in data, every isolated leg
-green, exit 0** (`py -3.12 tests/run_gui.py`). Clean `-W` docs build passes.
-
-⚠ **Run the suite through `tests/run_gui.py`, never a raw `pytest tests/…`.** A
-single-process run of `tests/cli tests/widgets/public tests/data` reports **15
-failed / 4 errors — and does so IDENTICALLY on `main`** (measured as a control,
-2026-08-05). That is the one-root-per-process problem (#150), not a regression.
-Anyone who greps for red without running the control will chase a ghost.
-
-**⚠ The maintainer wants these reviewed ONE AT A TIME.** The branch is
-deliberately structured for it — **one commit per issue, each carrying its own fix
-+ its own test file + its own CHANGELOG bullet**, so `git show <sha>` is a complete
-review unit. **Do not squash or reorder** — the granularity IS the deliverable.
-Amending a commit *in place* to fold in review findings is fine and is how all
-three items below landed. Review oldest-first:
-
-| Commit | Issue | Status |
-|---|---|---|
-| `7e204801` | **#401** `'break'` on a non-interactive field aborted the dispatch | nothing outstanding |
-| `381457ca` | **#398** `on_visibility_alpha` passed a funcid where a sequence goes | ✅ one-shot decided + ordering fixed |
-| `cb9988aa` | **#400** failed cancellation reported success | ✅ resolved against #399 |
-| `e6d45b54` | **#399** unmatched unbind → report under `BOOTSTACK_DEBUG` | ✅ no longer throws under `-W error` |
-| `6520597b` | **#397** dialog result fired at a **destroyed** widget | ✅ reviewed, fixed, amended |
-| `7d7a8c10` | **#396** `emit()`/`on()` → one `_event_target()` seam | ✅ `emit()` restricted to virtual |
-
-⚠ **Shas were rewritten AGAIN on 2026-08-05** to fold the review findings in
-place — every sha in an older note is stale, including the 2026-08-04 set.
-`backup/392-cluster-pre-review-fixes` (local) holds the pre-review tip
-(`4a6a7c39`); `backup/392-cluster-pre-rebase` and `backup/397-pre-amend` are the
-older two. Delete all three once the cluster ships.
-
-⚠ **The two `docs(claude):` commits are GONE, and the branch no longer touches
-`CLAUDE.md` at all.** That is deliberate and worth keeping. The branch's copy
-descended from `e23207b4`, so merging it would have **reverted `main`'s current
-handoff** (`e42710e1`) — 52 insertions against 186 deletions, silently. Handoff
-state lives on `main` only: a feature branch that edits this file is both a merge
-hazard and a way to make its own state invisible from `main`, which is exactly
-what hid this cluster for a day.
-
-**The three items the review left open — ALL DONE (2026-08-05):**
-
-1. **#396 — `emit()` retargeting is now restricted to VIRTUAL sequences.**
-   `_INNER_ENTRY_SEQUENCES` holds four *real* Tk sequences (`<Return>`,
-   `<KeyRelease>`, `<FocusIn>`, `<FocusOut>`) and `_TEXTFIELD_EVENTS` maps
-   `submit`/`focus`/`blur` onto them, so sharing the seam wholesale stopped
-   `emit()` being a notification and made it *drive the widget*. Measured 2/5 →
-   5/5: on-branch `emit("focus")` cleared a `TextField`'s placeholder outright and
-   `emit("blur")` ran the commit path, publishing a `ChangeEvent` for an edit
-   nobody made. Now gated on `sequence.startswith('<<')`. **`on()` still routes
-   everything through the seam and must** — a listener belongs where the toolkit
-   delivers the event; only *generation* is restricted. Also dropped the `Event`
-   import in `select.py` orphaned by the deleted `on()` override, and rewrote the
-   docstrings that implied `on()`/`emit()` symmetry for native events.
-   ⚠ **Re-confirms that the `'' → None` empty-field note below is NOT
-   placeholder-specific** — a field with no placeholder measured identically.
-2. **#399 + #400 — the "contradiction" was NARROWER than the review recorded.**
-   ⚠ **Do not re-open it on the original grounds.** Measured: on the
-   unmatched-funcid path `cancelled` does read `True`, **and that is the correct
-   answer.** Once #397 stopped the target drifting, the only reachable producer is
-   a wholesale `unbind(sequence)` followed by a per-funcid `cancel()` — the
-   handler is already unreachable and no later `cancel()` could ever match, so
-   anything but `cancelled` would be wrong *and permanently so*. What was actually
-   wrong is that the comment asserted a general invariant that path does not
-   satisfy; it now states what `cancel()` really enforces and names the one case
-   it cannot distinguish. **The real defect was `warnings.warn(RuntimeWarning)`**,
-   which measurably escaped both `cancel()` and `__exit__` under `-W error`
-   (1/4 → 4/4), raising out of two documented-safe teardown paths and leaving
-   `cancelled` reading `False`. It now reports through a new **`debug_log()`** in
-   `_runtime/utility.py`, beside `debug_log_exception`. **Standing rule: any new
-   diagnostic that can fire inside a Tk dispatch or on a teardown path uses
-   `debug_log`, never `warnings.warn`** — a diagnostic that can fail the program
-   it is diagnosing is not one.
-3. **#398 — X11 one-shot decided: no guard needed; the ORDERING was the real fix.**
-   A `winfo_viewable()` guard would only restate what the event already proves —
-   X11 reports visibility solely for a window already on screen, and opacity is a
-   property of the window, not of how much of it is uncovered. So arriving
-   obscured costs nothing. The one failure a retry *could* help is the alpha
-   request itself raising, so **alpha is now applied BEFORE the binding is
-   released**; the previous order threw the retry away first. Pinned by
-   `test_alpha_is_applied_before_the_binding_is_released`, which fails
-   behaviorally on the old order.
-
-**Then cut 0.2.1** per the Release flow section: promote `## [Unreleased]` in its
-OWN commit first, then `bump-my-version bump patch`. The `## [Unreleased]` section
-already holds seven entries (#403 + the cluster's six) and is correctly ordered
-with the #403 bullet first.
-
-**⚠ What the whole-branch review got WRONG — do not re-inherit these:**
-
-- It reported the dialog defect as bind/emit **target drift** (the #396 class).
-  It is not. `Dialog._toplevel` is **never reset to `None`**, so after a modal
-  `show()` returns, `toplevel or _master` picks a **destroyed** widget;
-  `event_generate` raised and a bare `except Exception: pass` ate it. Binding both
-  sides to the same widget would NOT have fixed it — the target must be *alive*.
-- It called `colorchooser`'s `_master or toplevel` the suspicious odd one out.
-  **It was the only CORRECT ordering.** The three that agreed with each other were
-  the three that were broken.
-- Severity was overstated as a shipped public break. `MessageBox`, `QueryBox`,
-  `MessageDialog`, `DateDialog` are **absent from `bootstack.dialogs.__all__`**,
-  so `on_result=` is not publicly reachable — same category as the #387
-  `configure(data=)` finding. The one internal consumer, `DateEntry`, has an
-  explicit `dialog.result` fallback and was unaffected.
-
-**#397 — what shipped (`e3ee4d44`).** One seam in `dialogs/_impl/dialog.py`,
-`result_target(dialog, master)` + `emit_dialog_result(target, payload)`, used by
-all four dialogs for both binding and firing; `master` wins because it outlives
-the dialog. The swallow-everything fallback is now a narrow `TclError` catch
-reporting under `BOOTSTACK_DEBUG`. Known and unchanged: two dialogs sharing a
-master deliver to each other's subscribers (already true pre-fix).
-
-**Found while probing the cluster — now FILED, do NOT fold into this branch:**
-**#408** (`0.6.0`) `emit()` silently drops the payload for the thirteen public
-event names that map to *real* Tk sequences — gated at `_runtime/events.py:152`;
-raising is the honest end state, hence a minor. **#409** (`0.2.x`)
-`docs/reference/events.rst:477-486` documents a custom-event feature that **does
-not exist** (`resolve_event` has no custom-name path; both `on()` and `emit()`
-raise `UnknownEventError`) — build it or rewrite the section. Still unfiled and
-minor: an empty `TextField` reports `''` before first focus and `None` after —
-lazy-init inconsistency plus a spurious `ChangeEvent` for a field the user only
-tabbed through; wants one place that defines the empty contract.
-
-⚠ **NOT a placeholder bug — a mid-session misattribution, corrected.** The
-`'' → None` transition above is not placeholder-specific: a plain `bs.TextField()`
-with no placeholder does exactly the same thing, measured side by side. **#364's
-invariant HOLDS** and the placeholder is not a churn area. Run the no-placeholder
-control before blaming the placeholder for anything.
-
----
+**⚠ A probe that finds nothing must be proven able to find something.** The #401
+completeness check (an AST scan for handlers bound to a virtual sequence that
+return `'break'`) reported **zero hits** — because `ast.parse` was choking on a
+**UTF-8 BOM** and a bare `except Exception: continue` swallowed it, silently
+skipping every file. Reading `utf-8-sig` and re-running against the pre-fix commit
+as a control reproduced exactly the two known handlers, which is the only thing
+that made the post-fix zero mean anything. **Always run the control.** The same
+session produced a second vacuity: a probe set `field.readonly = True` on a public
+widget — a plain Python object — so the bogus attribute stuck silently and the field
+kept stepping. The property is **`read_only`**.
 
 #392 is DONE and merged — its full root-cause writeup, the four-commit breakdown,
 and every gotcha moved to **`docs/_dev/handoff-archive.md`** (grep `#392`). **Read
@@ -404,27 +285,21 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
 
 ### Open, additive items (not ship-blockers)
 
-- ~~**#396 / #397 / #398 / #399 / #400 / #401**~~ — the whole #392-review cluster
-  is **BUILT AND REVIEWED** on branch `fix/event-cleanup-392-followups` and is the
-  body of `0.2.1`. See START HERE. ⚠ **The old warning here — "any test pairing
-  `emit()` with `on_*()` must use a widget where the two agree" — is OBSOLETE on
-  that branch.** `on()` resolves through **one seam**,
+- ~~**#396 / #397 / #398 / #399 / #400 / #401 / #405**~~ — **ALL CLOSED, SHIPPED in
+  `0.2.1`.** The event-target facts are worth keeping, because they are invisible in
+  the diff. `on()` resolves through **one seam**,
   `PublicWidgetBase._event_target(sequence)` (`widgets/_core/base.py`); the ten
   retargeting wrappers override only that (~5 lines each) and their duplicated
   `on()` overrides are gone (−262 lines). **`tabs.py` never retargeted at all** —
-  the issue over-counted at eleven; its `on()` was a byte-for-byte copy of the
-  base and was simply deleted. ⚠ **`emit()` consults the seam only for `<<Virtual>>`
+  the issue over-counted at eleven; its `on()` was a byte-for-byte copy of the base
+  and was simply deleted. ⚠ **`emit()` consults the seam ONLY for `<<Virtual>>`
   sequences** — for the public names that map onto real Tk sequences
   (`submit`/`focus`/`blur`/`click`) it fires on `_internal`, because generating one
   at the inner entry *drives* the widget instead of notifying about it. Regression
-  coverage: `tests/widgets/public/test_event_target_seam.py`.
-  ⚠ The `Slider` control test needs **`shown_app`, not `app`** — see the
-  unmapped-window gotcha above. **On `main` (pre-merge) the old warning still
-  applies.**
-
-- ~~**#405 — `Shortcuts` maps `Command`/`Option` to Tk modifiers off macOS**~~ —
-  **BUILT and green on PR #411**, riding `0.2.1`. Details in START HERE. Nothing
-  outstanding on it.
+  coverage: `tests/widgets/public/test_event_target_seam.py`. ⚠ The `Slider` control
+  test needs **`shown_app`, not `app`** — see the unmapped-window gotcha above.
+  **The old warning that a test pairing `emit()` with `on_*()` must pick a widget
+  where the two agree is now OBSOLETE everywhere** — they cannot disagree.
 
 - **#376 — DataTable cell padding ignored on Tcl/Tk 9** (checkbox flush to the row
   edge, columns collide). Open in `0.2.x`, **unverifiable on either box** — the
@@ -485,15 +360,36 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
 
 ## Release flow
 
-`bump-my-version` IS available — `.venv/Scripts/bump-my-version.exe`, v1.3.0.
-`bump-my-version bump patch` → push `main` + the `v*` tag → `release.yml` (PyPI +
-GitHub Release) → `docs.yml` deploys. There is **no `development` branch**
-(CONTRIBUTING.md + the localization workflow target `main`).
+**⚠ Use `py -3.12 -m bumpversion`, NOT the `.venv` shim.** This file used to point
+at `.venv/Scripts/bump-my-version.exe` — that shim is part of the **stale `.venv`**
+and dies with *"Access is denied"* on its `Python314` path, like everything else in
+there. Installed on 3.12 (2026-08-05, **v1.5.0**). ⚠ **The import name is
+`bumpversion`, not `bump_my_version`** — probing the wrong one reports "no module"
+on an interpreter that has it perfectly well, which cost a wrong conclusion during
+the `0.2.1` release.
+
+`py -3.12 -m bumpversion bump patch` → push `main` + the `v*` tag → `release.yml`
+(PyPI + GitHub Release) → `docs.yml` deploys. `release.yml` fires on `v*` tags
+only. There is **no `development` branch** (CONTRIBUTING.md + the localization
+workflow target `main`).
 
 **CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
-commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` EXISTS
-again** — re-created by #403 and now holding **seven** `### Fixed` entries (#403
-on `main`; #396–#401 on the cluster branch). Promoting it becomes `0.2.1`.
+commit renames it AND adds the `[X]:` link definition. **There is no
+`## [Unreleased]` section right now** — `0.2.1` consumed it. The next fix to land
+re-creates it.
+
+**⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
+#397 and #401 because no public API could reach either defect; `0.2.0` did the same
+for #387. A CHANGELOG is read by someone asking "was I affected?", so an entry for
+an unreachable defect is a false positive. Check `__all__` and the public event
+registry before writing the bullet — and say so in the commit message, since that
+is where the omitted work stays documented.
+
+**⚠ Verify the rendered release notes BEFORE tagging** — the extraction is scriptable:
+`py -3.12 -c "import sys; sys.path.insert(0,'.github/scripts'); from release_notes import extract; print(extract('X.Y.Z', open('CHANGELOG.md',encoding='utf-8').read())[0])"`.
+The **title** comes from the descriptive suffix after `## [X.Y.Z] —`, so a section
+promoted without one ships a release titled bare `X.Y.Z`. Confirm the body starts
+at `### Fixed` and that no bottom link definitions leaked in.
 
 **⚠ Write CHANGELOG entries ONE PARAGRAPH PER LINE — do not hard-wrap them.**
 `.github/scripts/release_notes.py` lifts a version's section verbatim into the
@@ -672,7 +568,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
-| **0.2.1** | **BUILT, NOT MERGED** — see START HERE. #403/#404 sidebar shortcut + #406 its test coverage (both on `main`) · #396–#401 the #392-review cluster (**PR #410**, tip `7d7a8c10`) · #405 `Command`/`Option` modifier map (**PR #411**, tip `4bb06cec`). Gated on one review job: #401 and #397 have not been re-read. |
+| **0.2.1** | SHIPPED 2026-08-05 (PyPI + tag `v0.2.1`), titled *event and shortcut correctness*. #403/#404 sidebar shortcut + #406 its test coverage · #405 `Command`/`Option` modifier map (PR #411) · the #392-review cluster (PR #410, merged as a **merge commit** to keep its six one-per-issue commits): #396 `emit()`/`on()` share one `_event_target()` seam · #398 `on_visibility_alpha` self-unbind · #399 unmatched-unbind report under `BOOTSTACK_DEBUG` · #400 failed cancellation no longer reports success · **#397** dialog result fired at a destroyed widget and **#401** `'break'` from a non-interactive field — both fixed and merged but **absent from the CHANGELOG**, being unreachable from public API (root causes live in `a93a47a4` / `7e204801`) |
 | **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
 | **0.1.8** | macOS sizing on Tcl/Tk 9 (Aqua 72→96 DPI baseline broke `detect_scale_factor()`) |
 | **0.1.7** | Tk 9 scroll-event contract (`<TouchpadScroll>`, ±120 deltas, X11 TIP 474) + attach theme repaint |
