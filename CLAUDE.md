@@ -76,7 +76,8 @@ shared-root widgets+CLI, **125 passed / 4 skipped** data, and every isolated leg
 The tree is clean apart from untracked `development/` probes. A failing test is a
 real signal — treat any red as a regression.
 
-**Nothing is in flight.** Both `0.2.1` PRs are merged: **#410** (the #392-review
+**⏭ IN FLIGHT: `docs/custom-events-409` (commit `78e06636`, pushed, no PR) —
+awaiting code review. See START HERE.** Both `0.2.1` PRs are merged: **#410** (the #392-review
 cluster, merged as a **merge commit** so its six one-per-issue commits landed
 individually — the granularity was the deliverable) and **#411** (#405). All eight
 issues are closed. Every `backup/*` ref and all twelve `: gone` locals were
@@ -86,7 +87,9 @@ deleted after the release.
 `cleanup/shell-visibility-idiom`, `fix/literal-mode-guards`,
 `fix/394-field-row-alignment`, `fix/403-test-coverage`. All four shipped already
 (#332, #381, #394, #406); they read as unmerged only because those PRs were
-**squash-merged**. Deletable — confirm with the maintainer first.
+**squash-merged**. Deletable — confirm with the maintainer first. ⚠ **Do NOT sweep
+`docs/custom-events-409` in with them** — that fifth non-ancestor is genuinely
+unmerged work awaiting review (see START HERE), not squash-merge residue.
 
 **`0.2.1` shipped `#396, #398, #399, #400, #403, #405`** in the release notes,
 plus **#397 and #401**, which are fixed and merged but **deliberately absent from
@@ -127,14 +130,69 @@ accepts (#383, #369): they cannot ride the `0.2.x` patch line, and it was placed
 time. Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — `0.2.1` is SHIPPED. Nothing is in flight; pick the next target.
+### ★ START HERE — IN FLIGHT: review `docs/custom-events-409` (#409). Then pick the next target.
+
+**⏭ THE NEXT SESSION'S JOB IS A CODE REVIEW of one pushed commit.** Branch
+`docs/custom-events-409`, commit **`78e06636`**, pushed 2026-08-05, **no PR
+opened** (deliberate — the maintainer wanted to read it first). One file,
+**+12/−15, `docs/reference/events.rst` only**. Verified before commit: clean
+`sphinx -W` build from a removed `_build` (zero warnings), the
+`UnknownEventError` xref resolves to its autodoc home, and
+`py -3.12 development/probe_409_custom_events.py` is green (7 checks, exit 0).
+**Nothing has merged to `main`** — `main` still carries the phantom section.
+
+**What #409 was, and the correction that matters more than the fix.** `events.rst`
+claimed *"any name that isn't a built-in event is treated as a custom event"* and
+showed `on("row_imported")` / `emit("row_imported")`. Both raise
+`UnknownEventError`. The issue framed this as *"documents a feature that was never
+built"* — **that framing is WRONG and this session's first summary repeated it.**
+Custom events **work today, two ways, both re-verified**: a **literal virtual
+sequence** on any stock widget (`on("<<RowImported>>")` / `emit(..., data={...})`
+delivers the dict intact), and a **bare name on a class that called
+`register_widget_events()`** (internal, `widgets/_core/events.py`). What is absent
+is *only* the bare-name-on-a-**stock**-widget spelling, because `resolve_event()`
+has no fallback branch. **Do not re-derive this — run the probe.**
+
+**Why the section was deleted rather than the fallback built (maintainer's call).**
+The fallback is ~one line (`return f"<<{name}>>"`), but it is **the same line that
+makes `on("chnage", …)` raise today**. Building it trades a framework-wide typo
+guard for a handler that binds fine and silently never fires — a direct reversal of
+the strictness direction that earned `0.6.0` (#369/#383). The probe's **check B is
+the control** that proves this is a tradeoff and not a pure bug; without it check A
+reads as a gap.
+
+**⚠ OPEN, NOT RESOLVED — decide during the review.** The commit says
+`Closes #409`, but a real follow-up is unfiled: **promote `register_widget_events()`
+(or a wrapper) to public API**, which would give composite authors a documented
+bare-name path *while keeping the typo guard*. That is closer to "publish an
+existing internal front door" than to new design — much smaller than the "declared
+custom events" 0.3.0 item this session first estimated. **If it is wanted, file it
+as its own issue; the rewritten docs deliberately stay silent on custom events
+until it exists**, which is the one real cost of shipping this as-is.
+
+**Reviewer, look hardest at these three judgment calls** (all deliberate, all
+arguable, none forced by the issue):
+1. **Silence.** The section no longer mentions custom events at all, so a composite
+   author reading it has no sanctioned path — the working literal-sequence spelling
+   is undocumented on purpose (no-Tk-in-docs).
+2. **`bs.events.ChangeEvent` → `from bootstack.events import ChangeEvent`.** Payloads
+   are not in the curated top-level namespace; `bs.events` resolved only incidentally
+   because something imports the submodule. Verify that reading.
+3. **Placeholder `widget` → `field`.** `change` is a per-class event, so
+   `emit("change")` genuinely does not work on an arbitrary widget — the old example
+   was wrong in a second, quieter way.
+
+**No CHANGELOG entry, deliberate** — docs-only, no package behavior change, so a
+reader scanning *"was I affected?"* gets nothing actionable. That leaves
+`## [Unreleased]` still absent; the next **code** fix re-creates it. Overrule if you
+disagree — it is a one-line add.
 
 **`0.2.1` went out 2026-08-05** (PyPI + tag `v0.2.1` + GitHub Release + docs
-deploy, all four green). It closed the whole #392-review cluster. There is no
-half-finished work anywhere: no open PRs, no unpushed branches, no `backup/*`
-refs, clean tree.
+deploy, all four green). It closed the whole #392-review cluster. Apart from the
+branch above there is no half-finished work: no open PRs, no other unpushed
+branches, no `backup/*` refs, tree clean but for untracked `development/` probes.
 
-**⏭ The realistic next targets, in the order they make sense:**
+**⏭ After the review lands, the realistic next targets:**
 
 1. **#390 — should signals model emptiness at all? (DESIGN — `0.3.0`.)** It needs a
    DECISION, not more analysis — the write-up below is complete. Gates #389
