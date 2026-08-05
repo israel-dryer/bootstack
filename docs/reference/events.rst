@@ -469,28 +469,25 @@ Around ordinary synchronous code the event loop never pumps, so the handler
 would never fire before the block exits — use ``with`` only when something
 inside it processes events.
 
-Emitting your own events
+Emitting events yourself
 ------------------------
 
-Use ``emit()`` to fire an event yourself, optionally with a payload — this is how
-a composite widget surfaces its own high-level activity to listeners. Any name
-that isn't a built-in event is treated as a **custom event**, and its handlers
-receive whatever you pass as ``data``. A plain dict is the natural choice:
+Use ``emit()`` to fire an event as though the widget had produced it — this is how
+a composite surfaces activity from one of its parts to handlers bound on the whole.
+Pass the event's matching payload from :mod:`bootstack.events`, the same object an
+``on_<event>()`` handler would receive:
 
 .. code-block:: python
 
-   # A handler bound by name...
-   widget.on("row_imported", lambda e: print(e["row"], e["source"]))
+   from bootstack.events import ChangeEvent
 
-   # ...fires when you emit that event with a payload.
-   widget.emit("row_imported", data={"row": 42, "source": "clipboard"})
+   field.emit("change", data=ChangeEvent(value=new_value))
 
-For a built-in event, pass its matching payload from :mod:`bootstack.events`
-instead — the same object an ``on_<event>()`` handler would receive:
-
-.. code-block:: python
-
-   widget.emit("change", data=bs.events.ChangeEvent(value=new_value))
+``emit()`` takes the same names as ``on()``, and both are limited to the events a
+widget actually publishes. An unrecognized name raises
+:class:`~bootstack.errors.UnknownEventError` listing the ones that widget knows, so
+a misspelling fails at the call instead of leaving behind a handler that quietly
+never runs.
 
 See also
 --------
