@@ -125,70 +125,93 @@ time. Check with:
 | Piece | Where | State |
 |---|---|---|
 | #403 sidebar shortcut + #406 its test coverage | **merged to `main`** | done, in `## [Unreleased]` |
-| **#396, #397, #398, #399, #400, #401** — the whole #392-review cluster | branch `fix/event-cleanup-392-followups` | **built + green**, 3 items outstanding |
+| **#396, #397, #398, #399, #400, #401** — the whole #392-review cluster | branch `fix/event-cleanup-392-followups` | **built, reviewed, green — READY TO MERGE** |
 | #405 `Shortcuts` `Command`/`Option` map | not started | small; optional for 0.2.1 |
 
-**Branch `fix/event-cleanup-392-followups`** — 8 commits, **pushed**, rebased onto
-`main` 2026-08-04 (only `CHANGELOG.md` conflicted; no source conflicts with
-#403/#406). **Suite green after the rebase: 901 passed / 14 skipped in the
-shared-root leg, 125 in data, every isolated leg green, exit 0.**
+**Branch `fix/event-cleanup-392-followups`** — **6 commits, pushed (`7d7a8c10`,
+2026-08-05), and the review is COMPLETE: all three outstanding items are
+implemented, each with an observed before/after transition.** Suite green on the
+pushed tip: **950 passed / 13 skipped shared-root, 123 in data, every isolated leg
+green, exit 0** (`py -3.12 tests/run_gui.py`). Clean `-W` docs build passes.
+
+⚠ **Run the suite through `tests/run_gui.py`, never a raw `pytest tests/…`.** A
+single-process run of `tests/cli tests/widgets/public tests/data` reports **15
+failed / 4 errors — and does so IDENTICALLY on `main`** (measured as a control,
+2026-08-05). That is the one-root-per-process problem (#150), not a regression.
+Anyone who greps for red without running the control will chase a ghost.
 
 **⚠ The maintainer wants these reviewed ONE AT A TIME.** The branch is
 deliberately structured for it — **one commit per issue, each carrying its own fix
 + its own test file + its own CHANGELOG bullet**, so `git show <sha>` is a complete
 review unit. **Do not squash or reorder** — the granularity IS the deliverable.
-Amending a commit *in place* to fold in review findings is fine and is what was
-done for #397. Review oldest-first:
+Amending a commit *in place* to fold in review findings is fine and is how all
+three items below landed. Review oldest-first:
 
 | Commit | Issue | Status |
 |---|---|---|
 | `7e204801` | **#401** `'break'` on a non-interactive field aborted the dispatch | nothing outstanding |
-| `27bce631` | **#398** `on_visibility_alpha` passed a funcid where a sequence goes | ⚠ decide the X11 one-shot (below) |
-| `2efc26cf` | **#400** failed cancellation reported success | ⚠ contradicts #399 (below) |
-| `8d9ac1a9` | **#399** unmatched unbind → warn under `BOOTSTACK_DEBUG` | ⚠ contradicts #400; `warnings.warn` under `-W error` |
-| `e3ee4d44` | **#397** dialog result fired at a **destroyed** widget | ✅ reviewed, fixed, amended |
-| `ffeb4be2` | **#396** `emit()`/`on()` → one `_event_target()` seam | ⚠ restrict `emit()` to virtual (below) |
+| `381457ca` | **#398** `on_visibility_alpha` passed a funcid where a sequence goes | ✅ one-shot decided + ordering fixed |
+| `cb9988aa` | **#400** failed cancellation reported success | ✅ resolved against #399 |
+| `e6d45b54` | **#399** unmatched unbind → report under `BOOTSTACK_DEBUG` | ✅ no longer throws under `-W error` |
+| `6520597b` | **#397** dialog result fired at a **destroyed** widget | ✅ reviewed, fixed, amended |
+| `7d7a8c10` | **#396** `emit()`/`on()` → one `_event_target()` seam | ✅ `emit()` restricted to virtual |
 
-⚠ **Shas were rewritten by the 2026-08-04 rebase** — any sha in an older note is
-stale. `backup/392-cluster-pre-rebase` (local) holds the pre-rebase tip and
-`backup/397-pre-amend` the pre-amend one; patch files are in this session's
-scratchpad. Delete all three once the cluster ships.
+⚠ **Shas were rewritten AGAIN on 2026-08-05** to fold the review findings in
+place — every sha in an older note is stale, including the 2026-08-04 set.
+`backup/392-cluster-pre-review-fixes` (local) holds the pre-review tip
+(`4a6a7c39`); `backup/392-cluster-pre-rebase` and `backup/397-pre-amend` are the
+older two. Delete all three once the cluster ships.
 
-⚠ **The branch's last two commits (`8b6de32f`, `4a6a7c39`) are `docs(claude):`
-handoff commits whose content is now SUPERSEDED by this section.** They were
-written when the branch was local-only, which is exactly why this state was
-invisible from `main` for a day. **Drop them when the cluster merges** rather than
-resolving the conflict.
+⚠ **The two `docs(claude):` commits are GONE, and the branch no longer touches
+`CLAUDE.md` at all.** That is deliberate and worth keeping. The branch's copy
+descended from `e23207b4`, so merging it would have **reverted `main`'s current
+handoff** (`e42710e1`) — 52 insertions against 186 deletions, silently. Handoff
+state lives on `main` only: a feature branch that edits this file is both a merge
+hazard and a way to make its own state invisible from `main`, which is exactly
+what hid this cluster for a day.
 
-**The three outstanding items — all measured, none started:**
+**The three items the review left open — ALL DONE (2026-08-05):**
 
-1. **#396 (`ffeb4be2`) — restrict `emit()` retargeting to VIRTUAL sequences.**
-   Decision made, not implemented. `_INNER_ENTRY_SEQUENCES` contains four *real*
-   Tk sequences (`<Return>`, `<KeyRelease>`, `<FocusIn>`, `<FocusOut>`), and
-   `_TEXTFIELD_EVENTS` maps the public names `submit`/`focus`/`blur` onto them —
-   so routing `emit()` through `_event_target()` stopped it being a notification
-   and made it *drive the widget*. Measured on a `TextField(placeholder=…)`:
-   pre-#396 `emit("focus")`/`emit("blur")` were inert; on-branch `emit("focus")`
-   hides the placeholder and `emit("blur")` runs `_handle_focus_out`, committing
-   and firing a spurious `ChangeEvent`. Fix = consult `_event_target()` only when
-   `sequence.startswith('<<')`; that configuration was measured fully inert while
-   keeping #396's real bug (`emit("change")` not reaching `on_change`) fixed. Also
-   in this commit: drop the now-unused `Event` import at `select.py:14`, and fix
-   the `emit()`/`_event_target()` docstrings that imply `on()`/`emit()` symmetry
-   for native events.
-2. **#399 + #400 (`8d9ac1a9`, `2efc26cf`) — they contradict each other.** #399's
-   unmatched-funcid path `return`s **without raising**, so `cancel()` falls
-   through and sets `_cancelled = True` for a removal that provably did nothing —
-   exactly the invariant #400's message claims to enforce. Fix them together.
-   Also `warnings.warn(..., RuntimeWarning)` at `_runtime/events.py:378` fires
-   from inside a Tk dispatch, so `-W error` turns a debug-only no-op unbind into
-   an exception out of `Subscription.cancel()`/`__exit__`, both documented as safe
-   teardown.
-3. **#398 (`27bce631`) — X11 alpha is now genuinely one-shot** where the inert
-   unbind used to give it retries. If the first `<Visibility>` arrives obscured,
-   alpha never lands and there is no second chance. **Unverifiable on either box**
-   (Windows + macOS/Tk 8.6). Either guard on `winfo_viewable()` or ship with a
-   note — but decide it, don't leave it silent.
+1. **#396 — `emit()` retargeting is now restricted to VIRTUAL sequences.**
+   `_INNER_ENTRY_SEQUENCES` holds four *real* Tk sequences (`<Return>`,
+   `<KeyRelease>`, `<FocusIn>`, `<FocusOut>`) and `_TEXTFIELD_EVENTS` maps
+   `submit`/`focus`/`blur` onto them, so sharing the seam wholesale stopped
+   `emit()` being a notification and made it *drive the widget*. Measured 2/5 →
+   5/5: on-branch `emit("focus")` cleared a `TextField`'s placeholder outright and
+   `emit("blur")` ran the commit path, publishing a `ChangeEvent` for an edit
+   nobody made. Now gated on `sequence.startswith('<<')`. **`on()` still routes
+   everything through the seam and must** — a listener belongs where the toolkit
+   delivers the event; only *generation* is restricted. Also dropped the `Event`
+   import in `select.py` orphaned by the deleted `on()` override, and rewrote the
+   docstrings that implied `on()`/`emit()` symmetry for native events.
+   ⚠ **Re-confirms that the `'' → None` empty-field note below is NOT
+   placeholder-specific** — a field with no placeholder measured identically.
+2. **#399 + #400 — the "contradiction" was NARROWER than the review recorded.**
+   ⚠ **Do not re-open it on the original grounds.** Measured: on the
+   unmatched-funcid path `cancelled` does read `True`, **and that is the correct
+   answer.** Once #397 stopped the target drifting, the only reachable producer is
+   a wholesale `unbind(sequence)` followed by a per-funcid `cancel()` — the
+   handler is already unreachable and no later `cancel()` could ever match, so
+   anything but `cancelled` would be wrong *and permanently so*. What was actually
+   wrong is that the comment asserted a general invariant that path does not
+   satisfy; it now states what `cancel()` really enforces and names the one case
+   it cannot distinguish. **The real defect was `warnings.warn(RuntimeWarning)`**,
+   which measurably escaped both `cancel()` and `__exit__` under `-W error`
+   (1/4 → 4/4), raising out of two documented-safe teardown paths and leaving
+   `cancelled` reading `False`. It now reports through a new **`debug_log()`** in
+   `_runtime/utility.py`, beside `debug_log_exception`. **Standing rule: any new
+   diagnostic that can fire inside a Tk dispatch or on a teardown path uses
+   `debug_log`, never `warnings.warn`** — a diagnostic that can fail the program
+   it is diagnosing is not one.
+3. **#398 — X11 one-shot decided: no guard needed; the ORDERING was the real fix.**
+   A `winfo_viewable()` guard would only restate what the event already proves —
+   X11 reports visibility solely for a window already on screen, and opacity is a
+   property of the window, not of how much of it is uncovered. So arriving
+   obscured costs nothing. The one failure a retry *could* help is the alpha
+   request itself raising, so **alpha is now applied BEFORE the binding is
+   released**; the previous order threw the retry away first. Pinned by
+   `test_alpha_is_applied_before_the_binding_is_released`, which fails
+   behaviorally on the old order.
 
 **Then cut 0.2.1** per the Release flow section: promote `## [Unreleased]` in its
 OWN commit first, then `bump-my-version bump patch`. The `## [Unreleased]` section
@@ -337,17 +360,19 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
 ### Open, additive items (not ship-blockers)
 
 - ~~**#396 / #397 / #398 / #399 / #400 / #401**~~ — the whole #392-review cluster
-  is **BUILT** on branch `fix/event-cleanup-392-followups` and is the body of
-  `0.2.1`. See START HERE. ⚠ **The old warning here — "any test pairing `emit()`
-  with `on_*()` must use a widget where the two agree" — is OBSOLETE on that
-  branch.** `emit()` and `on()` now both resolve through **one seam**,
+  is **BUILT AND REVIEWED** on branch `fix/event-cleanup-392-followups` and is the
+  body of `0.2.1`. See START HERE. ⚠ **The old warning here — "any test pairing
+  `emit()` with `on_*()` must use a widget where the two agree" — is OBSOLETE on
+  that branch.** `on()` resolves through **one seam**,
   `PublicWidgetBase._event_target(sequence)` (`widgets/_core/base.py`); the ten
   retargeting wrappers override only that (~5 lines each) and their duplicated
   `on()` overrides are gone (−262 lines). **`tabs.py` never retargeted at all** —
   the issue over-counted at eleven; its `on()` was a byte-for-byte copy of the
-  base and was simply deleted. Regression coverage:
-  `tests/widgets/public/test_event_target_seam.py` (32 tests; **25 fail with the
-  src fix stashed**, the 5 that pass pre-fix are the deliberate controls).
+  base and was simply deleted. ⚠ **`emit()` consults the seam only for `<<Virtual>>`
+  sequences** — for the public names that map onto real Tk sequences
+  (`submit`/`focus`/`blur`/`click`) it fires on `_internal`, because generating one
+  at the inner entry *drives* the widget instead of notifying about it. Regression
+  coverage: `tests/widgets/public/test_event_target_seam.py`.
   ⚠ The `Slider` control test needs **`shown_app`, not `app`** — see the
   unmapped-window gotcha above. **On `main` (pre-merge) the old warning still
   applies.**
@@ -588,7 +613,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
-| **0.2.1** | **IN PROGRESS** — see START HERE. #403/#404 sidebar shortcut + #406 its test coverage (both on `main`) · #396–#401 the #392-review cluster (branch `fix/event-cleanup-392-followups`, built + green, 3 items outstanding) · optionally #405 |
+| **0.2.1** | **IN PROGRESS** — see START HERE. #403/#404 sidebar shortcut + #406 its test coverage (both on `main`) · #396–#401 the #392-review cluster (branch `fix/event-cleanup-392-followups`, tip `7d7a8c10` — built, reviewed, green, **ready to merge**) · optionally #405 |
 | **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
 | **0.1.8** | macOS sizing on Tcl/Tk 9 (Aqua 72→96 DPI baseline broke `detect_scale_factor()`) |
 | **0.1.7** | Tk 9 scroll-event contract (`<TouchpadScroll>`, ±120 deltas, X11 TIP 474) + attach theme repaint |
