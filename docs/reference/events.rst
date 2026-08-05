@@ -483,11 +483,16 @@ Pass the event's matching payload from :mod:`bootstack.events`, the same object 
 
    field.emit("change", data=ChangeEvent(value=new_value))
 
-``emit()`` takes the same names as ``on()``, and both are limited to the events a
-widget actually publishes. An unrecognized name raises
-:class:`~bootstack.errors.UnknownEventError` listing the ones that widget knows, so
-a misspelling fails at the call instead of leaving behind a handler that quietly
-never runs.
+``emit()`` takes the same names as ``on()``. An unrecognized name raises
+:class:`~bootstack.errors.UnknownEventError`, so a misspelling fails at the call
+instead of leaving behind a handler that quietly never runs.
+
+Reserve ``emit()`` for the data-carrying events — ``change``, ``select``, ``input``
+and the rest. Names that stand for a real interaction (``click``, ``focus``,
+``blur``, ``submit``) are a different matter: emitting one asks the toolkit to
+deliver an actual input event, which carries no payload and drives the widget
+rather than notifying about it, so a handler bound through ``on()`` may not see it
+at all. To make one of those happen, use the widget's own properties and methods.
 
 See also
 --------

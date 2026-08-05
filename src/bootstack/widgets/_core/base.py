@@ -282,7 +282,9 @@ class PublicWidgetBase:
         Example:
             .. code-block:: python
 
-               widget.emit("change", data=bs.events.ChangeEvent(value=new_value))
+               from bootstack.events import ChangeEvent
+
+               field.emit("change", data=ChangeEvent(value=new_value))
         """
         sequence = resolve_event(self, str(event))
 
