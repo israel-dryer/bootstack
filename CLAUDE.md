@@ -71,14 +71,21 @@ on the next statement, then grep the file.
 
 **Released:** `0.2.1` on PyPI, tag `v0.2.1` (2026-08-05); `pyproject.toml` is at
 `0.2.1`. Build, PyPI publish, GitHub Release and the docs deploy all ran green.
-**`main` is GREEN** (Windows 2026-08-05, exit 0 — **919 passed / 14 skipped**
-shared-root widgets+CLI, **125 passed / 4 skipped** data, and every isolated leg).
-The tree is clean apart from untracked `development/` probes. A failing test is a
-real signal — treat any red as a regression.
+**`main` is GREEN.** ⚠ **The counts this file used to carry (`919 passed / 14
+skipped`) were STALE** and produced a phantom "46-test gap" that a whole session
+flagged as unexplained. Measured 2026-08-06: `main` collects **976** shared-root
+widgets+CLI tests (`-m "not isolated"`), the `fix/datatable-double-click-417` branch
+**979**. Branch run: exit 0, **966 passed / 13 skipped** widgets+CLI, **123 passed /
+6 skipped** data, every isolated leg. The tree is clean apart from untracked
+`development/` probes. A failing test is a real signal — treat any red as a
+regression. **When you record a count here, record the DATE and the COMMIT** — a
+bare number silently rots into a fake regression signal.
 
-**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — one commit (`aeffa27d`),
-**local only, never pushed, no PR**. Awaiting maintainer review of the diff; that
-review IS the next session's task (see START HERE). Nothing else is open.
+**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — **two** commits (`aeffa27d`
+then `638b24e3`), **local only, never pushed, no PR**, and **one commit behind
+`main`**. Reviewed by an agent 2026-08-06, which found and fixed a real defect
+(`638b24e3`); **the maintainer's own `/code-review` has NOT run yet and is the next
+session's task**, after which `0.2.2` cuts. See START HERE. Nothing else is open.
 **#409 shipped 2026-08-05 via PR #414** (merge
 commit `d428f6be`) — docs-only, unreleased, and it left **#412** open on purpose;
 full entry in the archive, summary under START HERE. Both `0.2.1` PRs are merged:
@@ -128,8 +135,8 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: reviewing the #417 fix branch — see START HERE.** No milestone
-target is chosen beyond it. ⚠ **The milestones were
+**⏭ ACTIVE TARGET: `/code-review` on the #417 branch, then cut `0.2.2` — see START
+HERE.** No milestone target is chosen beyond it. ⚠ **The milestones were
 RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
 before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
 interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
@@ -171,7 +178,7 @@ description, not just the title.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207 | 1 |
-| — | **UNMILESTONED** — #417 (fixed on a branch, awaiting review; see START HERE) | 1 |
+| — | **UNMILESTONED** — #417 (fixed on a branch, awaiting `/code-review`) · #418 (filed 2026-08-06, unfixed) | 2 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -183,73 +190,164 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ ONE ISSUE IS UNMILESTONED: #417**, filed by an external user 2026-08-06 and not
-yet triaged; it has its own row in the table above. **25** open as of 2026-08-06.
-It is a bug fix on public API, so `0.2.x — Patch line` is the fit, but **the
-maintainer has not made that call** — do not assign it unasked. An unmilestoned
-backlog makes the milestone feature worthless (maintainer's call), so this is a
-real deviation, not a bookkeeping nit.
+**⚠ TWO ISSUES ARE UNMILESTONED: #417 and #418** — both DataTable row-event bugs,
+both with their own row in the table above. **26** open as of 2026-08-06 (verified
+against `gh`, not counted by hand). #417 came from an external user; #418 was filed
+by us while reviewing #417's fix. Both are bug fixes on public API, so `0.2.x —
+Patch line` is the fit, but **the maintainer has not made that call** — do not
+assign either unasked. An unmilestoned backlog makes the milestone feature
+worthless (maintainer's call), so this is a real deviation, not a bookkeeping nit.
 ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — review the #417 diff on `fix/datatable-double-click-417`.
+### ★ START HERE — run `/code-review`, then cut `0.2.2`.
 
-**⏭ THE TASK IS A REVIEW, not new work.** One commit `aeffa27d` on
-`fix/datatable-double-click-417` (local only, unpushed, no PR). Read it with
-`git diff main...fix/datatable-double-click-417`. The maintainer has NOT reviewed
-it yet and has NOT approved pushing, opening a PR, milestoning #417, or replying to
-the reporter — **ask before any of those**; every one is outward-facing.
+**⏭ THE TASK IS `/code-review` ON `fix/datatable-double-click-417`, THEN THE
+RELEASE.** The maintainer wants the review first and has said "we can proceed after
+the review." `0.2.2` is expected **the morning of 2026-08-06** and the reporter has
+been told so publicly (see below), so this is time-boxed.
+
+**⚠ YOU CANNOT LAUNCH THE REVIEW.** `/code-review` is `disable-model-invocation` —
+the `Skill` tool refuses it with *"reserved for explicit user invocation"*, and the
+skill instructions forbid replicating its workflow by other means. **Ask the
+maintainer to run `/code-review` themselves.** Do not work around this.
+
+**Two commits, local only, never pushed, no PR:**
+
+| SHA | What |
+|---|---|
+| `aeffa27d` | the #417 fix — `<Double-1>` bound unconditionally |
+| `638b24e3` | the group-header guard found while reviewing `aeffa27d` |
+
+⚠ **Review target is `git diff main` and the branch is ONE COMMIT BEHIND `main`**
+(`fbc0b235`, a handoff commit). Verified safe: `git diff main...HEAD -- CLAUDE.md`
+is **empty**, so the branch does not revert the handoff — this is the trap that
+nearly bit #410, and it was checked, not assumed. **Rebase before opening a PR.**
 
 **What the fix is.** `DataTable.on_row_double_click` never fired unless the table
 was also built with `allow_edit=True`: `tableview.py` installed the `<Double-1>`
 binding inside `if self._editing['updating']`, so on a read-only table the public
 event had nothing behind it, while `on_row_click`/`on_row_right_click` — bound on
-separate ungated paths — kept working. That asymmetry is what made it read as a
-broken event rather than an absent binding. The gate was never needed:
+separate ungated paths — kept working. The gate was never needed:
 `_on_row_double_click` emits `<<RowDoubleClick>>` first and only then gates the edit
 dialog, so the binding moved out of the `if` and editing behavior is unchanged.
-Verified on a full Windows suite run, exit 0 (**965 passed / 13 skipped**
-shared-root leg — note that is 46 higher than the 919 this file records for the
-`0.2.1` baseline; the branch adds only 2 tests, so **the gap predates it and was not
-chased down**).
+`638b24e3` then fixes what that exposed — see the review findings below.
 
-**Three things a reviewer should actually check, because they are the soft spots:**
+**⚠ WHAT THE 2026-08-06 REVIEW ALREADY ESTABLISHED. Do not re-derive any of it;
+spend the review's effort elsewhere.**
+
+- **Both original tests fail pre-fix BEHAVIORALLY**, not with `AttributeError`
+  (`assert 0 == 1` on the event count; `assert []` on the binding), with their
+  `bbox() != ''` preconditions passing first.
+- **Full suite green:** `py -3.12 tests/run_gui.py` exit 0, **966 passed / 13
+  skipped** shared-root, every isolated leg.
+- **NOT order-dependent.** The suite was re-run with `test_datatable.py` forced to
+  collect **LAST**, after ~950 tests have filled the shared root — the exact failure
+  mode this file warns about. Exit 0, all 16 datatable tests pass. Plugin kept at
+  `development/reorder_datatable_last.py`.
+- **The 46-test gap is STALE BOOKKEEPING, not a mystery.** `--collect-only
+  -m "not isolated"`: `main` **976**, branch **978** — exactly +2. The `919` figure
+  this file used to record for `0.2.1` was simply out of date. **Fixed above.**
+- **The guard cannot over-reject.** All four `self._tree.insert` sites were
+  enumerated: the three that insert data rows each write `_row_map[iid] = rec` on
+  the very next line, and the fourth is the group parent — the one row deliberately
+  absent from `_row_map`.
+- **Docs needed no change.** `docs/widgets/datatable.rst:401` already said a
+  double-click *"also"* opens the edit dialog with `allow_edit`, which only holds if
+  the event fires either way — so this was a code defect against documented behavior.
+
+**⚠ THE FINDING THAT `638b24e3` FIXES, because it generalizes.** Binding
+`<Double-1>` unconditionally made a latent defect reachable on *every* grouped
+table. `_on_row_double_click` guarded only `if not iid` — but **a group header IS a
+real tree item that `identify_row()` resolves**, and `_render_grouped`
+(`tableview.py:~3363`) deliberately keeps group parents out of `_row_map`. So the
+handler fell through to `rec = {}` and emitted `RowEvent(record={}, id=None)`; a
+handler doing the documented `e.record["name"]` raises `KeyError` inside the Tk
+dispatch. `_on_row_click_event` has **always** had the correct guard
+(`if not iid or iid not in self._row_map`). **The lesson: membership in `_row_map`,
+not mere existence of an iid, is what distinguishes a row from a header** — and
+`DataTable.group_by()` is public, so this was reachable, not theoretical.
+
+**Three soft spots a reviewer should actually probe:**
 
 - ⚠ **Tk REJECTS `event_generate("<Double-1>")`** — `TclError: Double, Triple, or
   Quadruple modifier not allowed`. `Double` is a binding *pattern*, not an event
   type; the binding machinery derives the match from consecutive presses close in
-  time and position, so **two presses is the only way to synthesize one**. Both the
-  test and `development/probe_417_datatable_double_click.py` do that, and the probe
-  carries a hand-bound `<Double-Button-1>` control on the same widget so a zero-hit
-  reading cannot be confused with a probe that simply cannot click. **The first
-  version of that probe measured its own control** — it read the binding table
-  *after* installing the control binding, so it reported "bound" in both arms. If
-  you re-derive any of this, keep the ordering.
-- **The behavioral test is the fragile one.** `test_row_double_click_fires_without_editing`
-  needs the row mapped and hit-testable in the shared root, which this file records
-  as not guaranteed — it asserts `bbox() != ''` and `identify_row()` as preconditions
-  so it cannot pass vacuously, but it is still the test most likely to go flaky in a
-  reordered suite. `test_row_double_click_bound_regardless_of_editing` exists as the
-  geometry-free invariant and is the one that fails deterministically.
-- **The probe stubs `_open_form_dialog` and the row menu.** Both block the loop
+  time and position, so **two presses is the only way to synthesize one**.
+- ⚠ **The handler is NOT recoverable from `tree.bind("<Double-1>")`.** Stock tkinter
+  names a command `id(bound_method) + func.__name__`, so `"_on_row_double_click" in
+  script` *looks* like a clean geometry-free assertion — **it fails**. bootstack
+  substitutes a serial (measured: `2877737059456bsregular31`), which is #392's
+  funcid-recycling fix doing its job. This was tried, disproved by its own control,
+  and the affected test's docstring corrected to stop over-claiming. `test_row_double_click_bound_regardless_of_editing`
+  therefore proves only that *some* `<Double-*>` sequence is bound — it is a cheap
+  canary, **not** the deterministic net it once claimed to be. The behavioral tests
+  are what prove the wiring.
+- **Probes must stub `_open_form_dialog` AND the row menu.** Both block the loop
   forever when driven synthetically (modal `wait_window` / menu grab) — an earlier
-  run hung for two minutes before that was found. Neither is under test.
+  run hung for two minutes before that was found.
 
-**Already checked, so don't redo it:** the docs needed no change —
-`docs/widgets/datatable.rst:401` already said a double-click *"also"* opens the edit
-dialog with `allow_edit`, which only holds if the event fires either way, so this
-was a code defect against documented behavior. And the same gated-binding shape does
-exist for `on_row_right_click` (bound only when `context_menus != "none"`), but
-`context_menus` is **not exposed on the public `DataTable`** and defaults to `'all'`,
-so it is unreachable from public API — same call made for #397/#401. Nothing filed.
+**⚠ ONE JUDGMENT CALL LEFT OPEN, flagged to the maintainer and undecided.** The
+second CHANGELOG bullet cites `(#417)`, but that defect **predates** #417 and was
+reachable on `0.2.1` via `allow_edit=True` + `group_by()` (where the same
+double-click additionally opened a spurious **New Record** dialog — `_open_form_dialog({})`
+takes the falsy path and titles itself "New Record"). It arguably deserves its own
+issue number the way #418 did. **No strong view was formed; decide it in review.**
 
-**⚠ The branch re-creates `## [Unreleased]`** in the CHANGELOG (it is absent on
-`main`, consumed by `0.2.1`). If the review rejects the branch, that section goes
-with it and the next code fix must re-create it again.
+**⚠ `## [Unreleased]` NOW EXISTS on the branch** with **two** `### Fixed` bullets.
+It is still absent on `main`. If the review rejects the branch, the section goes
+with it.
 
-Everything below is the backlog to pick from **once #417 is settled.**
+### After the review — the `0.2.2` release, in this order
+
+1. **Rebase the branch onto `main`** (it is one commit behind).
+2. Push, PR, merge.
+3. **Promote `## [Unreleased]` → `## [0.2.2] — <suffix>` IN ITS OWN COMMIT**, and add
+   the `[0.2.2]:` link definition at the bottom. ⚠ `bump-my-version` commits **only
+   `pyproject.toml`**, so a promotion folded into the bump ships a release whose
+   notes still read `[Unreleased]` and breaks `release.yml`'s extraction.
+   ⚠ **The release TITLE comes from the suffix after `## [0.2.2] —`** — promoting
+   without one ships a release titled bare `0.2.2`. Suggested but **not agreed**:
+   *"DataTable row events"*. Verify the rendered notes before tagging with the
+   `release_notes.extract` one-liner under **Release flow**.
+4. `py -3.12 -m bumpversion bump patch`, push `main` + the `v0.2.2` tag.
+5. **Comment on #417 that it is on PyPI** — this was promised publicly (below).
+
+**⏭ OPEN QUESTION FOR THE MAINTAINER: does #418 ride along in `0.2.2`?** Raised,
+not answered. It is the identical one-line guard in the same file, currently
+unfixed, and **live in `0.2.1`**. Fixing it now means one patch instead of two;
+against that, it is a second behavior change going out on release morning.
+
+### Outward-facing actions ALREADY TAKEN 2026-08-06 — do not repeat
+
+- **Replied to the #417 reporter** (`bLynnb2762`), maintainer-approved wording:
+  [comment 5202947523](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5202947523).
+  ⚠ **It names `0.2.2` and says "later this morning", and promises a follow-up
+  comment once it is on PyPI.** That promise is step 5 above.
+- **Filed #418** — `on_row_right_click` fires with `record={} id=None` on a group
+  header. Labeled `bug`, **deliberately UNMILESTONED** (the maintainer's call, not
+  ours). Same missing guard as `638b24e3`, but on `_on_row_context`
+  (`tableview.py:~1694`), under a comment that *claims* to exclude group headers and
+  does not. **Live on `main` today** — right-click needs no unusual configuration.
+- **Commented on #383** with the `context_menus` finding.
+  ⚠ **This CORRECTS what this file used to say.** The old text claimed
+  `context_menus` is "not exposed on the public `DataTable`". Measured truth:
+  `docs/widgets/datatable.rst:566-573` **documents it as a `bs.DataTable` argument**,
+  it is absent from `datatable.py`, and passing it constructs fine while
+  `impl._context_menus` stays `'all'` — **silently swallowed**, all four values
+  inert. The *conclusion* (the right-click gate is unreachable) survives; the premise
+  did not. ⚠ Wiring it through is **not purely additive** — `context_menus="none"`
+  would also silence the public `on_row_right_click` (`tableview.py:1159`).
+
+**Four probes are UNTRACKED in `development/`** — `probe_417_group_header_double_click.py`,
+`probe_417_context_menus_reachable.py`, `probe_417_row_event_guards.py`, and
+`reorder_datatable_last.py`. Each carries a control. **They are cited by #418 and by
+the #383 comment, so commit them** (this file's own standing lesson: an artifact
+only survives if it is IN THE REPO).
+
+Everything below is the backlog to pick from **once `0.2.2` is out.**
 
 **#409 is DONE (PR #414) — full entry in `docs/_dev/handoff-archive.md`.** Two
 things from it are worth carrying here because they are invisible in the diff and
@@ -268,8 +366,8 @@ will bite again:
   *that* widget knows — the branch shipped that sentence and the review caught it.
 
 **⚠ `## [Unreleased]` is ABSENT ON `main`** — #409 was docs-only, so it deliberately
-did not re-create the section. The in-flight #417 branch **does** re-create it, so
-this resolves itself if that branch lands and reopens if it does not.
+did not re-create the section. The in-flight #417 branch **does** re-create it (two
+bullets), so this resolves itself when that branch lands and reopens if it does not.
 
 **⏭ The next targets, in milestone order (see the table above for why).**
 
@@ -547,9 +645,10 @@ only. There is **no `development` branch** (CONTRIBUTING.md + the localization
 workflow target `main`).
 
 **CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
-commit renames it AND adds the `[X]:` link definition. **There is no
-`## [Unreleased]` section right now** — `0.2.1` consumed it. The next fix to land
-re-creates it.
+commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` is absent
+on `main`** (`0.2.1` consumed it) **but PRESENT on the `fix/datatable-double-click-417`
+branch**, carrying two `### Fixed` bullets. Promoting it to `## [0.2.2] — <suffix>`
+is step 3 of the release sequence under START HERE.
 
 **⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
 #397 and #401 because no public API could reach either defect; `0.2.0` did the same
@@ -667,7 +766,21 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
   no exception to log; `debug_log_exception` when there is.
 - **Run the BASELINE before the fix**, so a before/after transition is *observed*
   rather than assumed. That is what turned "the branch fixes only 2 of 6" from a
-  suspicion into a fact.
+  suspicion into a fact. ⚠ **On a branch, "baseline" means CHECK OUT `main`** — a
+  #417 probe read zero on both arms until it turned out to be running against
+  `main` the whole time. Print the branch, or `git checkout` it deliberately.
+- **⚠ To prove a fix does not over-reject, ENUMERATE THE PRODUCERS, don't reason
+  about the consumer.** #417's guard tightened `if not iid` to
+  `if not iid or iid not in self._row_map`. Arguing from the handler could not
+  settle whether some legitimate row is missing from `_row_map`; grepping all four
+  `self._tree.insert` sites settled it in one command — three write
+  `_row_map[iid] = rec` on the very next line, the fourth is the group parent. **A
+  guard's safety is a property of who fills the collection, not of who reads it.**
+- **⚠ A stale METRIC in this file becomes a phantom regression signal.** A recorded
+  `919 passed` went unrevised while `main` grew to 976 collected, so the next
+  session read the difference as an unexplained 46-test gap in a branch that added
+  2. `--collect-only -q` on both refs settled it in seconds. **Record the date and
+  commit beside any count, or don't record it.**
 - **A control experiment separates causation from correlation.** For #392 it was
   not enough that cancelling `sub_a` silenced `sub_b`; stripping the orphaned
   binding line by hand and watching `sub_b` come back is what proved the cause. Do
