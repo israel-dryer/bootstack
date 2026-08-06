@@ -2863,6 +2863,21 @@ class TableView(Frame):
         """
         return self._selection_markers_active()
 
+    def _take_click_focus(self, iid) -> None:
+        """Give the body keyboard focus, and point it at the clicked row.
+
+        Both branches that call this answer the click themselves and stop it,
+        which also stops the built-in handling that would otherwise have done
+        this. Without it a click leaves the keyboard aimed somewhere else, so
+        the row the user just clicked is not the row the arrow keys move from.
+        """
+        try:
+            self._tree.focus_set()
+            if iid:
+                self._tree.focus(iid)
+        except Exception:
+            pass
+
     def _on_header_click(self, event):
         """Handle left-click: header sorting, or toggle-select with checkboxes."""
         # A left-click on the tree dismisses an open context menu. Do it
@@ -2891,6 +2906,7 @@ class TableView(Frame):
         # fall through to normal selection below.
         iid = self._tree.identify_row(event.y)
         if iid and self._tree.get_children(iid):
+            self._take_click_focus(iid)
             self._toggle_group_open(iid)
             return "break"
 
@@ -2899,6 +2915,7 @@ class TableView(Frame):
         # and "break" suppresses ttk's default replace-the-selection behavior.
         if self._toggle_select_active():
             iid = self._tree.identify_row(event.y)
+            self._take_click_focus(iid)
             if iid:
                 if iid in self._tree.selection():
                     self._tree.selection_remove(iid)
