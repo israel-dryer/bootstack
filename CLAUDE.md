@@ -69,38 +69,39 @@ on the next statement, then grep the file.
 
 ## Current state
 
-**Released:** `0.2.1` on PyPI, tag `v0.2.1` (2026-08-05); `pyproject.toml` is at
-`0.2.1`. Build, PyPI publish, GitHub Release and the docs deploy all ran green.
+**Released:** **`0.2.2` on PyPI, tag `v0.2.2` (2026-08-06)** — published **manually
+with `twine`**, not by `release.yml`, because GitHub Actions was in a major outage
+all afternoon. See START HERE for exactly what that means for next time.
+Previous: `0.2.1` (2026-08-05).
+
 **`main` is GREEN.** ⚠ **The counts this file used to carry (`919 passed / 14
 skipped`) were STALE** and produced a phantom "46-test gap" that a whole session
 flagged as unexplained. **When you record a count here, record the DATE and the
 COMMIT** — a bare number silently rots into a fake regression signal. Measured
-2026-08-06, full `py -3.12 tests/run_gui.py`, exit 0 on both:
+2026-08-06 on `fix/datatable-click-focus-421` at `fa735f99` (the content `main`
+now carries), full `py -3.12 tests/run_gui.py`, **exit 0, all legs passed**:
 
-| ref | commit | widgets+CLI | data |
-|---|---|---|---|
-| `fix/datatable-double-click-417` | `f7405d97` | **971 passed / 13 skipped** | 123 / 6 |
-| `fix/datatable-click-focus-421` | `ff814b85` | **973 passed / 13 skipped** | 123 / 6 |
+| leg | result |
+|---|---|
+| widgets+CLI, shared root | **930 passed / 14 skipped** (+ 49 passed across the isolated legs) |
+| data | **125 passed / 4 skipped** |
 
-Every isolated leg passed on both. The `+2` is exactly #421's two new tests. A
-failing test is a real signal — treat any red as a regression.
+⚠ **This does NOT match the `973 / 13` and `123 / 6` this file used to record for
+the same content, and the difference is NOT a regression.** `--collect-only -q`
+settled it in seconds: 994 → 995 collected across the fix (exactly the one new
+test it adds), and `tests/data` collects 129 either way — the same 129 the old
+`123 / 6` summed to, just split differently between passed and skipped. **The old
+figure was mis-recorded, not stale.** Sum the legs yourself rather than trusting
+either number; `run_gui.py` prints no aggregate.
 
-**⏭ IN FLIGHT: TWO STACKED BRANCHES, both LOCAL ONLY, never pushed, no PR.**
-`origin` still has only `main`, so the usual ancestry commands report nothing for
-either — that is not "already merged", it is "never left this box". Deleting
-either destroys the work.
-
-- **`fix/datatable-double-click-417`** (head `f7405d97`, **8 commits**) — carries
-  **#417, #418, #419, #420**. Behind `main` by the handoff commits; **rebase before
-  opening a PR**. `git diff main...HEAD -- CLAUDE.md` is **empty** (verified, not
-  assumed — this is the trap that nearly bit #410). **Reviewed 2026-08-06 and every
-  finding is handled**; record committed at `development/review-417-double-click.md`.
-- **`fix/datatable-click-focus-421`** (head `6c18d34e`, **3 commits**, stacked on the
-  above) — carries **#421** plus the review record. **REVIEWED 2026-08-06 — verdict
-  ship-ready, with three findings still TO APPLY; see START HERE.** ⚠ The suite count
-  above was measured at `ff814b85`, one commit earlier — but the review re-ran the full
-  suite at the head `6c18d34e` and got the **same** 973 / 13 and 123 / 6, so the count
-  is now confirmed at the head, not inferred.
+**✅ BOTH IN-FLIGHT BRANCHES ARE MERGED AND DELETED (2026-08-06).**
+`fix/datatable-double-click-417` went in as **PR #423** (merge commit `1ab5cda7`) and
+`fix/datatable-click-focus-421` as **PR #424** (merge commit `734d515b`). Both were
+**merge commits, not squashes**, deliberately — the one-commit-per-issue granularity
+was the deliverable, same call made for #410. Both were verified as genuine ancestors
+of `origin/main` with MERGED PRs, then **deleted local and remote after `0.2.2` hit
+PyPI**. Head SHAs if either ever needs resurrecting: **`278d579a`** (417) and
+**`fa735f99`** (421).
 
 ⚠ **A worktree was used for #421 and has been REMOVED**; the branch itself lives in
 the repo normally. Do not go looking for a checkout under `scratchpad/`.
@@ -112,11 +113,10 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-**BRANCHES: `main` plus the one in-flight branch above.** ⚠ `fix/datatable-double-click-417`
-is **unpushed**, so `origin` still has only `main` — the two ancestry commands below
-report nothing for it. Do not read that as "already merged"; it has never left this
-box, and deleting it would destroy the work. It was swept clean on 2026-08-05
-(maintainer-approved) and all seven survivors were deleted together with
+**BRANCHES: `main` ONLY, local and remote** — verified 2026-08-06 after the `0.2.2`
+release (`git branch -a` shows `main` plus `origin/main`). Nothing is in flight.
+An earlier sweep on 2026-08-05
+(maintainer-approved) deleted all seven survivors together with
 their `: gone` locals: three merged ancestors (`docs/custom-events-409` PR #414,
 `fix/command-option-modifiers-405` PR #411, `fix/event-cleanup-392-followups`
 PR #410) and four squash-merge leftovers (`cleanup/shell-visibility-idiom` PR #384,
@@ -153,9 +153,10 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: apply the three #421 review findings, then cut `0.2.2` — see START
-HERE.** Both branches are reviewed; nothing is waiting on a review agent. No milestone
-target is chosen beyond the release. ⚠ **The milestones were
+**⏭ NO ACTIVE TARGET — `0.2.2` shipped 2026-08-06 and nothing is in flight.** Pick
+from the table below; the standing recommendation is the unnumbered
+`Test and release confidence` workstream (**#407** then **#380**), and **#390** is a
+decision that can be taken at any time. ⚠ **The milestones were
 RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
 before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
 interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
@@ -220,26 +221,112 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — apply the three #421 review findings, then cut `0.2.2`.
+### ★ START HERE — `0.2.2` IS SHIPPED. Pick the next target from the milestone table.
 
-**✅ THE REVIEW IS DONE (2026-08-06). `/code-review` passed `fix/datatable-click-focus-421`
-— verdict SHIP-READY — but returned three findings, and the maintainer decided all
-three get FIXED ON THAT BRANCH before `0.2.2` ships.** Full record committed at
-**`development/review-421-click-focus.md`**; the fix list is under
-*What is left to do* below.
+**`0.2.2` went out 2026-08-06 ~20:15 UTC and every post-release step is done.**
+Nothing about this release is outstanding. The next piece of work is a fresh choice
+from the milestone table above — see "The next targets" below for the standing
+recommendation (`Test and release confidence`: #407 then #380).
 
-**⚠ THE WORK STAYS ON THE WINDOWS BOX.** The session that received the review ran out
-of budget and stopped there. A move to the macOS box was briefly considered and
-**dropped** — the maintainer is continuing on this machine, so nothing was pushed and
-nothing needs to be fetched. Do not go looking for these branches on the other box.
+Verified, not assumed:
 
-**⚠ BOTH BRANCHES ARE STILL LOCAL-ONLY, AND SO ARE FOUR+ `main` COMMITS.** `origin` has
-only `main` at **`04218191`**, while local `main` is at **`04f99af9`** or later —
-several unpushed `docs(claude):` commits — and neither feature branch exists remotely
-at all. The usual ancestry commands therefore report nothing for either branch; that is
-**not** "already merged", it is "never left this box". **Deleting either destroys the
-work, and so does losing this machine.** The push is step 2 of the release sequence
-below and has not happened yet.
+- **PyPI** — `0.2.2` live, wheel + sdist. Proved with an actual
+  `pip download --no-deps bootstack==0.2.2`, not just the upload output.
+  ⚠ The **`/pypi/bootstack/json` summary endpoint lagged and still said `0.2.1`
+  minutes after a successful upload** — it is CDN-cached. Use
+  `/pypi/bootstack/<version>/json` (returns 200) or a real `pip download`. Do not
+  read a stale summary as a failed upload and re-upload.
+- **GitHub Release** — [`v0.2.2`](https://github.com/israel-dryer/bootstack/releases/tag/v0.2.2),
+  titled `0.2.2 — DataTable group headers and row events`, both artifacts attached,
+  not a draft, not a prerelease.
+- **Docs** — deployed, `http://bootstack.org/` returns 200 (run `31127618821`).
+- **Issues** — #417, #418, #419, #420, #421 all CLOSED; **#422 deliberately still
+  OPEN** (macOS right-click coverage). The "it's live" comment is posted on #417
+  ([5208863289](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5208863289)).
+- **Branches** — both deleted, local and remote. `main` is the only branch.
+
+#### ⚠ THE PART THAT MATTERS NEXT TIME: this release was published BY HAND
+
+`release.yml` **never ran successfully for `v0.2.2`.** GitHub Actions was in a
+**major outage** all afternoon (incident opened 15:22 UTC, still *investigating* at
+19:43 UTC — "capacity remains constrained and jobs may still be delayed or fail").
+Two tag-triggered runs died without publishing anything:
+
+| run | what happened |
+|---|---|
+| `31115122262` | failed twice; `Failed to resolve action download info: Service Unavailable` — GitHub could not hand the runner its actions. Bound to a tag object that no longer exists. |
+| `31121469892` | `Build distribution` sat **queued 15 minutes then was CANCELLED**; publish + release **skipped**. A rerun re-queued and never started. |
+
+⚠ **`gh run` reported this run inconsistently** — `gh run cancel` said *"Cannot cancel
+a workflow run that is completed"* while `gh run view` said `queued`, repeatedly. Under
+an Actions outage the run state itself is unreliable; **check PyPI, not the run**, to
+decide whether anything was published.
+
+**So it was published manually**, which worked cleanly and is the fallback to reuse:
+
+1. `git worktree add <scratchpad>/rel-X.Y.Z vX.Y.Z` — build from a **pristine checkout
+   of the tag**, never from the working tree. This repo has ~60 untracked files in
+   `development/`; building in place risks them landing in the sdist. (Verified they
+   did not: sdist top level is `src`, `tests`, `LICENSE`, `NOTICE`, `MANIFEST.in`,
+   `PKG-INFO`, `README.md`, `pyproject.toml`, `setup.cfg`.)
+2. `py -3.12 -m pip install --upgrade build twine` (neither was installed).
+3. `py -3.12 -m build`, then **`py -3.12 -m twine check dist/*`** — both PASSED.
+4. `py -3.12 -m twine upload --config-file D:/Development/bootstack/.pypirc --non-interactive dist/*`
+5. `gh release create vX.Y.Z dist/* --title "<from release_notes.py>" --notes-file RELEASE_NOTES.md --generate-notes`
+6. `git worktree remove <path> --force`
+
+⚠ **`twine.exe` is NOT on PATH** — always `py -3.12 -m twine`.
+
+⚠ **The token lives at `D:\Development\bootstack\.pypirc`** (repo root, **not**
+`~/.pypirc`, which does not exist). It is `[pypi]` + `username = __token__` + a
+179-char `pypi-AgEI…` token. It is **gitignored at `.gitignore:29` (`/.pypirc`) and
+untracked** — verified, safe. Because it is not in the home directory, **twine needs
+`--config-file` explicitly** or it will not find it.
+
+⚠ **A manual publish SKIPS THE DOCS DEPLOY.** `docs.yml` triggers on
+`workflow_run` of **"Release" completing successfully** — no successful Release run
+means no docs, silently. Its three runs that day all read `completed/skipped`, which
+looks like a no-op but meant the site was still serving `0.2.1`. Fix is one command:
+**`gh workflow run docs.yml --ref main`** (the workflow has a `workflow_dispatch`
+trigger and its `if:` explicitly allows it). It succeeded in ~2 minutes even mid-outage.
+
+⚠ **`release.yml` publishes via OIDC trusted publishing**
+(`pypa/gh-action-pypi-publish` + `id-token: write`), so there is **no token in CI** —
+the local `.pypirc` is the only credential path for a manual publish, and CI's path
+cannot be reproduced locally.
+
+⚠ **If run `31121469892` ever does execute**, its publish step will fail with *file
+already exists*. **That is expected and harmless** — PyPI already has the correct
+artifacts. Do not "fix" it by re-uploading or burning a version.
+
+#### ⚠ The CHANGELOG said the wrong thing about click order — FIXED at `931edd89`
+
+The `0.2.2` notes claimed a double-click runs `on_row_click` twice **before**
+`on_row_double_click`. **It does not.** `on_row_click` rides `<ButtonRelease-1>` while
+`<Double-1>` is a **ButtonPress** pattern, so the double lands *between* the clicks.
+Measured, with a control:
+
+```
+claimed:  ['click', 'click', 'double']
+actual:   ['click', 'double', 'click']      <- same shape as Win32's DOWN, UP, DBLCLK, UP
+```
+
+It matters practically: **one `on_row_click` fires AFTER the double-click handler has
+already run**, so a click handler that moves the selection lands after the double-click
+opened a dialog. The earlier session measured *counts* (2 clicks + 1 double) and never
+checked *order*; the wrong ordering survived a rewrite of that same line hours earlier.
+
+⚠ **The probe was junk on its first run and said so loudly** — it reported
+`['double','click','double','click']`, claiming `double` on the very first press.
+**Synthesized events default to `time=0`, and Tk decides `Double` off the event
+clock**, so the preceding control click was indistinguishable in time. Supplying an
+explicit `time=` to `event_generate` fixed it. Probe with both the control and the
+clock: `development/probe_421_click_order.py`.
+
+**A click count on `RowEvent` was considered and DROPPED** (maintainer, 2026-08-06) —
+do not re-propose it. DOM has `event.detail` and AppKit has `clickCount`, and either
+would let a handler early-return on the second click, but the maintainer is not
+worried about it. It would have been new public surface, so a minor, not the patch line.
 
 **⚠ DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** This was violated on 2026-08-06: a
 branch was handed off and then edited in place while the agent ran. The review reads
@@ -257,11 +344,12 @@ which code you were looking at — reading `tableview.py` would have silently sh
 421's work-in-progress while you believed you were on 417. The 2026-08-06 review
 caught this itself and reviewed committed blobs (`git show <sha>:<path>`) instead.
 
-#### What is on the two branches
+#### What shipped in `0.2.2` — commit map (both branches now merged and deleted)
 
-`fix/datatable-click-focus-421` is **stacked on** `fix/datatable-double-click-417`,
-so `git diff main...421` shows **both**. The review target is only the top 3 commits;
-tell the reviewer that, or it re-reviews work already signed off.
+`fix/datatable-click-focus-421` was **stacked on** `fix/datatable-double-click-417`.
+All of these are on `main`; the branch column records which PR carried them
+(**417** → #423, **421** → #424). Three later commits — `5d169044`, `9e257368`,
+`62950b0a` — applied the #421 review findings on top.
 
 | SHA | Branch | What |
 |---|---|---|
@@ -273,7 +361,7 @@ tell the reviewer that, or it re-reviews work already signed off.
 | `69f92b05` | 417 | probes + `demo_419_group_chevrons.py` |
 | `6718de36` | 417 | **fixes two defective tests** — see below |
 | `f7405d97` | 417 | CHANGELOG: the double `on_row_click` bullet |
-| `f425430f` | **421** | **#421 — `_take_click_focus` on the two `'break'` paths ← REVIEW THIS** |
+| `f425430f` | **421** | **#421 — `_take_click_focus` on the two `'break'` paths** |
 | `ff814b85` | **421** | CHANGELOG bullet for #421 |
 | `6c18d34e` | **421** | the 417 review record into `development/` |
 
@@ -355,11 +443,19 @@ re-checking:
 - **Taking focus on an empty-space click is not a regression** — ttk's own `Press`
   does `focus $w` unconditionally.
 
-#### ⚠ What is left to do on #421 — three findings, ALL to be fixed on the branch
+#### ✅ The three #421 review findings — ALL APPLIED 2026-08-06, nothing left here
 
-Maintainer decision 2026-08-06: fix all three on `fix/datatable-click-focus-421` as
-part of #421, not as a follow-up issue. Finding 1 is a user-visible bug on shipped
-behavior and adds no public surface, so it is patch-line work either way.
+Kept only because the measurements are worth not re-deriving. Landed as `5d169044`
+(finding 1 + its test), `9e257368` (finding 2), `62950b0a` (finding 3), all now on
+`main` via PR #424.
+
+⚠ **Finding 1's test needed a real control to be worth anything**, and got one: run
+against unfixed source it fails with `dragging a separator in checkbox mode resized
+nothing` **while its own plain-table control arm passes first** — so the failure is
+behavioral, not a broken harness. That is exactly the control the #417 review skipped,
+which is how two defective tests got through there.
+
+Original write-up follows.
 
 1. **MEDIUM — `tableview.py:2918`: column resizing is DEAD whenever selection
    checkboxes are on.** `_on_header_click` special-cases only `region == "heading"`, so
@@ -388,44 +484,28 @@ behavior and adds no public surface, so it is patch-line work either way.
    checkbox tables; the bullet body already says the right thing. Same standard that
    kept #397/#401 out of `0.2.1`.
 
-⚠ Finding 1 changes behavior, so **add its CHANGELOG bullet** when fixing it, and
-re-run the release-notes dry-run — the bullet count under `## [Unreleased]` (7 at
-`ff814b85`) will no longer match what step 3 below records.
-
-### After the fixes — the `0.2.2` release, in this order
+### ✅ The `0.2.2` release sequence — ALL STEPS DONE (2026-08-06)
 
 **Milestones are SETTLED (maintainer, 2026-08-06): #417, #418, #419, #420, #421 and
 #422 are all on `0.2.x — Patch line`. There are ZERO unmilestoned open issues** —
-verified against `gh`, and it clears the deviation this file used to flag.
+verified against `gh`, and it clears the deviation this file used to flag. That
+milestone now has **#422 and #207** left open.
 
-1. **Rebase `fix/datatable-double-click-417` onto `main`** (8 commits, behind by the
-   handoff commits), then rebase 421 on top of it. Re-run
-   `git diff main...HEAD -- CLAUDE.md` on **both** — it must stay empty.
-2. Push both, PR both, merge 417 first.
-3. **Promote `## [Unreleased]` → `## [0.2.2] — DataTable group headers and row events`
-   IN ITS OWN COMMIT**, and add the `[0.2.2]:` link definition. **The suffix is
-   AGREED** (maintainer, 2026-08-06) — the release title comes from it, so promoting
-   without one ships a release titled bare `0.2.2`. ⚠ `bump-my-version` commits **only
-   `pyproject.toml`**, so folding the promotion into the bump breaks `release.yml`'s
-   extraction. Dry-run already verified at `ff814b85`: title resolves, 7 bullets,
-   sections `### Changed` then `### Fixed`, no link definitions leaked.
-4. `py -3.12 -m bumpversion bump patch`, push `main` + the `v0.2.2` tag.
-5. **Close #417, #418, #419, #420 AND #421** — none self-closes, no `Fixes #` keyword
-   was used. **#422 stays OPEN** (macOS right-click coverage, deliberately not in
-   `0.2.2`).
-6. **Comment on #417 that it is on PyPI.** This was promised publicly on 2026-08-06 in
-   [comment 5202947523](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5202947523),
-   which also named `0.2.2` and said "later this morning". **That deadline was not
-   met** — the scope grew from one binding fix to five issues across two branches. If
-   the follow-up comment is now late, say so plainly rather than quietly.
+All six steps completed: branches rebased (with `git diff main...HEAD -- CLAUDE.md`
+empty on both — the trap that nearly bit #410), PR'd and merged as merge commits
+(#423 then #424), `## [Unreleased]` promoted in its own commit, `bumpversion` run,
+tag pushed, **published manually** (see START HERE), issues closed, #417 commented,
+branches deleted. ⚠ The CHANGELOG bullet count is **7**, but do **not** read that as
+"unchanged from the 7 recorded at `ff814b85`" — the column-resize fix **added** one
+and consolidating the #418/#420 pair **removed** one. Coincidence, not stasis.
 
-⚠ The old "if the review rejects #421, drop the branch" fallback is **SPENT** — the
-review accepted it. Keep the shape of the escape hatch in mind anyway: `417` is
-self-contained, reviewed and green on its own, so if the finding-1 fix turns out to be
-harder than the one-line rescope above, `0.2.2` can still ship from `417` alone with
-#421's CHANGELOG bullets removed, and #421 rides `0.2.3`.
+⚠ **The posted #417 comment is NOT verbatim the draft this file carried.** The draft
+predated the column-resize fix (#421 review finding 1), so it said "four more defects"
+and stopped at the focus bug. One sentence was appended covering the separator fix,
+which is user-visible in the release notes. **A prepared draft goes stale when the
+release grows** — re-read it against the final CHANGELOG before pasting.
 
-Everything below is the backlog to pick from **once `0.2.2` is out.**
+Everything below is the backlog to pick from now that `0.2.2` is out.
 
 **#409 is DONE (PR #414) — full entry in `docs/_dev/handoff-archive.md`.** Two
 things from it are worth carrying here because they are invisible in the diff and
@@ -443,9 +523,10 @@ will bite again:
   is folded into **#412**, not done. Don't write docs claiming the error lists what
   *that* widget knows — the branch shipped that sentence and the review caught it.
 
-**⚠ `## [Unreleased]` is ABSENT ON `main`** — #409 was docs-only, so it deliberately
-did not re-create the section. The in-flight #417 branch **does** re-create it (two
-bullets), so this resolves itself when that branch lands and reopens if it does not.
+**⚠ `## [Unreleased]` is ABSENT ON `main`** — `0.2.2` consumed it (the top section is
+now `## [0.2.2] — DataTable group headers and row events`, with its `[0.2.2]:` link
+definition at the bottom). The next fix commit re-creates it, per the convention under
+Release flow.
 
 **⏭ The next targets, in milestone order (see the table above for why).**
 
@@ -722,12 +803,25 @@ the `0.2.1` release.
 only. There is **no `development` branch** (CONTRIBUTING.md + the localization
 workflow target `main`).
 
+⚠ **`docs.yml` is CHAINED to `release.yml` SUCCEEDING**, not to the tag or the push —
+it triggers on `workflow_run` of "Release" `completed` and its `build` job is gated on
+`github.event.workflow_run.conclusion == 'success'`. So **any release that does not go
+through a green `release.yml` run leaves the docs site stale, silently** (the run shows
+as `completed/skipped`, which reads like a no-op). Kick it with
+**`gh workflow run docs.yml --ref main`**.
+
+⚠ **When Actions is down, publish by hand** — full recipe under START HERE
+(`0.2.2` shipped that way on 2026-08-06). Short version: build from a
+`git worktree` of the tag, `py -3.12 -m twine upload --config-file
+D:/Development/bootstack/.pypirc dist/*`, then `gh release create`, then the docs
+command above. **CI itself has no token** (OIDC trusted publishing), so the
+gitignored repo-root `.pypirc` is the only local credential.
+
 **CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
 commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` is absent
-on `main`** (`0.2.1` consumed it) **but PRESENT on both in-flight branches**, carrying
-**2 `### Changed` and 5 `### Fixed` bullets** at `ff814b85`. Promoting it to
-`## [0.2.2] — DataTable group headers and row events` — **suffix already agreed** — is
-step 3 of the release sequence under START HERE.
+on `main`** — `0.2.2` consumed it, so the top section is
+`## [0.2.2] — DataTable group headers and row events` (2 `### Changed`, 5 `### Fixed`)
+with its link definition at the bottom. The next fix commit re-creates it.
 
 **⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
 #397 and #401 because no public API could reach either defect; `0.2.0` did the same
@@ -933,6 +1027,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
+| **0.2.2** | SHIPPED 2026-08-06 (PyPI + tag `v0.2.2`), titled *DataTable group headers and row events*. **Published MANUALLY with `twine` during a GitHub Actions major outage** — `release.yml` never ran, and the docs deploy had to be kicked with `gh workflow run docs.yml` because it triggers off a successful Release run (see START HERE). #417 `<Double-1>` bound unconditionally so `on_row_double_click` fires on a read-only table (PR #423) · #418/#420 group headers no longer fire row events with an empty record · #419 deferred chevron refresh after an event-driven expand · #421 click focus on group-header and checkbox-mode rows, plus the column separator that could not be dragged in checkbox mode (PR #424). ⚠ Two behavior notes shipped under `### Changed`: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks), and a read-only table's second press no longer repeats the first press's action |
 | **0.2.1** | SHIPPED 2026-08-05 (PyPI + tag `v0.2.1`), titled *event and shortcut correctness*. #403/#404 sidebar shortcut + #406 its test coverage · #405 `Command`/`Option` modifier map (PR #411) · the #392-review cluster (PR #410, merged as a **merge commit** to keep its six one-per-issue commits): #396 `emit()`/`on()` share one `_event_target()` seam · #398 `on_visibility_alpha` self-unbind · #399 unmatched-unbind report under `BOOTSTACK_DEBUG` · #400 failed cancellation no longer reports success · **#397** dialog result fired at a destroyed widget and **#401** `'break'` from a non-interactive field — both fixed and merged but **absent from the CHANGELOG**, being unreachable from public API (root causes live in `a93a47a4` / `7e204801`) |
 | **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
 | **0.1.8** | macOS sizing on Tcl/Tk 9 (Aqua 72→96 DPI baseline broke `detect_scale_factor()`) |
