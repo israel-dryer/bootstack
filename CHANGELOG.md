@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **Double-clicking a `DataTable` row now fires `on_row_double_click`.** The binding behind the event was installed only when the table was also built with `allow_edit=True`, so on a read-only table — the common case — the event had nothing behind it and the handler never ran, while `on_row_click` and `on_row_right_click` on the same table kept working. That is what made it look like the event itself was broken rather than absent. The event is public API and does not depend on editing, so it is now bound unconditionally; `allow_edit` still controls only whether the built-in edit dialog opens alongside it. (#417)
+
 ## [0.2.1] — event and shortcut correctness
 
 ### Fixed

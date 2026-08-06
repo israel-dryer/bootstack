@@ -1158,8 +1158,10 @@ class TableView(Frame):
         self._tree.bind("<Escape>", lambda _e: self.deselect_all(), add="+")
         if self._context_menus != "none":
             bind_right_click(self._tree, self._on_tree_context)
-        if self._editing['updating']:
-            self._tree.bind("<Double-1>", self._on_row_double_click)
+        # Bound unconditionally: `on_row_double_click` is public API and does not
+        # depend on editing. The handler itself gates the built-in edit dialog on
+        # `_editing['updating']`, so editing behavior is unchanged.
+        self._tree.bind("<Double-1>", self._on_row_double_click)
         # Track resize events to rebalance grouped layouts
         self._tree.bind("<Configure>", self._on_tree_configure)
 

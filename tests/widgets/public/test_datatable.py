@@ -321,3 +321,63 @@ def test_iter_rows_suspended_does_not_clobber_shared_source(shown_app):
     assert src._sort == [], "iter_rows left the source sorted while suspended"
 
     it.close()
+
+
+# --------------------------------------------------------------------------- row events
+
+
+def _double_click(tree, iid) -> None:
+    """Synthesize a double-click on a row.
+
+    Tk rejects ``event_generate("<Double-1>")`` outright ("Double, Triple, or
+    Quadruple modifier not allowed") — ``Double`` is a binding pattern, not an
+    event type, and the binding machinery derives it from consecutive presses
+    close in time and position. So two presses is the only way to produce one.
+    """
+    box = tree.bbox(iid)
+    # Precondition: an unmapped window returns '' from bbox(), which would make
+    # every assertion below pass (or fail) vacuously.
+    assert box != "", "row has no bbox — the tree is unmapped, so this test cannot click"
+    x, y = box[0] + box[2] // 2, box[1] + box[3] // 2
+    assert tree.identify_row(y) == iid, "hit test missed the target row"
+    for t in (100, 120):
+        tree.event_generate("<ButtonPress-1>", x=x, y=y, time=t)
+        tree.event_generate("<ButtonRelease-1>", x=x, y=y, time=t + 5)
+
+
+@pytest.mark.gui
+def test_row_double_click_fires_without_editing(shown_app):
+    """#417: on_row_double_click fired only when the table also had allow_edit=True.
+
+    The `<Double-1>` binding was installed inside `if self._editing['updating']`,
+    so on a default (read-only) table the public event had nothing behind it.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_double_click(lambda e: seen.append(e))
+    _pump(shown_app)
+
+    tree = table._internal._tree
+    _double_click(tree, tree.get_children()[0])
+    _pump(shown_app)
+
+    assert len(seen) == 1, "double-click on a read-only table did not fire on_row_double_click"
+    assert seen[0].record["name"] == "Ada"
+
+
+@pytest.mark.gui
+def test_row_double_click_bound_regardless_of_editing(shown_app):
+    """The invariant behind #417, asserted without geometry.
+
+    The behavioral test above depends on the row being mapped and hit-testable,
+    which is not guaranteed for every widget packed into the shared root. This
+    one states the actual invariant — the binding exists either way — and so
+    fails deterministically if the gate ever comes back.
+    """
+    read_only = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10)
+    editable = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10, allow_edit=True)
+    _pump(shown_app)
+
+    for label, table in (("read-only", read_only), ("allow_edit=True", editable)):
+        bound = [b for b in table._internal._tree.bind() if "Double" in b]
+        assert bound, f"{label} table has no double-click binding"
