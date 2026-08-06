@@ -2913,15 +2913,18 @@ class TableView(Frame):
         # Body click with checkboxes showing: treat the list like a checklist —
         # a plain click toggles the row in/out of the selection (no modifier),
         # and "break" suppresses ttk's default replace-the-selection behavior.
+        # Only a click that lands on a row earns that "break" — a click on a
+        # column separator reports no row, and stopping it there would kill the
+        # drag that resizes the column.
         if self._toggle_select_active():
             iid = self._tree.identify_row(event.y)
-            self._take_click_focus(iid)
             if iid:
+                self._take_click_focus(iid)
                 if iid in self._tree.selection():
                     self._tree.selection_remove(iid)
                 else:
                     self._tree.selection_add(iid)
-            return "break"
+                return "break"
         return None
 
     def _filter_header_column(self) -> None:

@@ -626,6 +626,57 @@ def test_click_takes_keyboard_focus_in_checkbox_mode(shown_app):
     assert tree.focus() == row, "clicking a row in checkbox mode did not set item focus"
 
 
+def _find_separator(tree) -> tuple[int, int]:
+    """Scan the heading strip for a point ttk reports as a column separator."""
+    for y in (4, 8, 12):
+        for x in range(2, int(tree.winfo_width()) - 2):
+            if tree.identify_region(x, y) == "separator":
+                return x, y
+    raise AssertionError("no column separator found — the tree is too narrow or unmapped")
+
+
+def _drag(tree, x: int, y: int, dx: int) -> None:
+    tree.event_generate("<ButtonPress-1>", x=x, y=y)
+    tree.event_generate("<B1-Motion>", x=x + dx, y=y)
+    tree.event_generate("<ButtonRelease-1>", x=x + dx, y=y)
+
+
+@pytest.mark.gui
+def test_column_resize_survives_checkbox_mode(shown_app):
+    """#421: the checkbox branch stopped clicks that were never its business.
+
+    A press on a column separator reports no row, but the branch returned
+    `'break'` regardless, swallowing the press that starts ttk's resize drag.
+    Column resizing was dead on every table showing selection checkboxes.
+
+    The plain table is the control: it shares the drag synthesis, so if it
+    fails to resize the checkbox arm proves nothing about the fix.
+    """
+    plain = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    checkbox = bs.DataTable(
+        rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10,
+        selection_mode="multi", show_selection_controls=True,
+    )
+    _pump(shown_app)
+
+    assert not plain._internal._toggle_select_active(), "the control table is in checkbox mode"
+    assert checkbox._internal._toggle_select_active(), "checkbox click handling is not active"
+
+    widths = {}
+    for label, table in (("control", plain), ("checkbox", checkbox)):
+        tree = table._internal._tree
+        cols = ("#0", "#1", "#2")
+        x, y = _find_separator(tree)
+        before = {c: tree.column(c, "width") for c in cols}
+        _drag(tree, x, y, 36)
+        _pump(shown_app)
+        after = {c: tree.column(c, "width") for c in cols}
+        widths[label] = [c for c in cols if before[c] != after[c]]
+
+    assert widths["control"], "control failed — dragging a separator resized nothing at all"
+    assert widths["checkbox"], "dragging a separator in checkbox mode resized nothing"
+
+
 # --------------------------------------------------------------------------- group chevrons
 
 
