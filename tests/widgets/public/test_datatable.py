@@ -13,6 +13,8 @@ Two concerns are covered:
 """
 from __future__ import annotations
 
+import types
+
 import pytest
 
 import bootstack as bs
@@ -321,3 +323,330 @@ def test_iter_rows_suspended_does_not_clobber_shared_source(shown_app):
     assert src._sort == [], "iter_rows left the source sorted while suspended"
 
     it.close()
+
+
+# --------------------------------------------------------------------------- row events
+
+
+_click_clock = 1000
+"""Monotonic timestamp source for synthesized clicks.
+
+Click-count detection compares each press against the previous one's time and
+position, so two synthesized clicks at the same coordinates must never send time
+backwards. Fixed literals did: every call started at the same value, which was
+harmless only for as long as no two calls in the suite happened to share a
+position. That is an order-dependent trap, and it would surface as a
+double-click silently not registering — i.e. as a false "the fix is broken".
+"""
+
+
+def _next_click_time(step: int = 20) -> int:
+    global _click_clock
+    _click_clock += step
+    return _click_clock
+
+
+def _double_click(tree, iid) -> None:
+    """Synthesize a double-click on a row.
+
+    Tk rejects ``event_generate("<Double-1>")`` outright ("Double, Triple, or
+    Quadruple modifier not allowed") — ``Double`` is a binding pattern, not an
+    event type, and the binding machinery derives it from consecutive presses
+    close in time and position. So two presses is the only way to produce one.
+    """
+    box = tree.bbox(iid)
+    # Precondition: an unmapped window returns '' from bbox(), which would make
+    # every assertion below pass (or fail) vacuously.
+    assert box != "", "row has no bbox — the tree is unmapped, so this test cannot click"
+    x, y = box[0] + box[2] // 2, box[1] + box[3] // 2
+    assert tree.identify_row(y) == iid, "hit test missed the target row"
+    first = _next_click_time()
+    for t in (first, first + 20):
+        tree.event_generate("<ButtonPress-1>", x=x, y=y, time=t)
+        tree.event_generate("<ButtonRelease-1>", x=x, y=y, time=t + 5)
+
+
+@pytest.mark.gui
+def test_row_double_click_fires_without_editing(shown_app):
+    """#417: on_row_double_click fired only when the table also had allow_edit=True.
+
+    The `<Double-1>` binding was installed inside `if self._editing['updating']`,
+    so on a default (read-only) table the public event had nothing behind it.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_double_click(lambda e: seen.append(e))
+    _pump(shown_app)
+
+    tree = table._internal._tree
+    _double_click(tree, tree.get_children()[0])
+    _pump(shown_app)
+
+    assert len(seen) == 1, "double-click on a read-only table did not fire on_row_double_click"
+    assert seen[0].record["name"] == "Ada"
+
+
+@pytest.mark.gui
+def test_row_double_click_bound_regardless_of_editing(shown_app):
+    """A geometry-free canary for #417: the binding exists either way.
+
+    Deliberately weaker than it looks, so don't rely on it alone — it proves a
+    `<Double-*>` sequence is bound, not that it reaches `_on_row_double_click`.
+    The handler is not recoverable from the bound script: bootstack names its Tcl
+    commands with a serial (`bsregular31`) rather than tkinter's stock
+    `id(...) + func.__name__`, so there is nothing to match on. The behavioral
+    test above is what proves the wiring; this one is the cheap regression net.
+    """
+    read_only = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10)
+    editable = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10, allow_edit=True)
+    _pump(shown_app)
+
+    for label, table in (("read-only", read_only), ("allow_edit=True", editable)):
+        bound = [b for b in table._internal._tree.bind() if "Double" in b]
+        assert bound, f"{label} table has no double-click binding"
+
+
+@pytest.mark.gui
+def test_group_header_double_click_opens_no_dialog(shown_app):
+    """#420's user-visible harm: a spurious New Record dialog on an editable table.
+
+    A group header fell through to an empty record, and `_open_form_dialog({})`
+    takes the falsy branch and titles itself "New Record" — so double-clicking a
+    header invited the user to create a row by clicking something that is not a
+    row. The empty row event is the API-level symptom; this is the one a user
+    actually sees, and only a probe covered it.
+
+    The dialog is stubbed rather than opened: it is modal, and driven
+    synthetically it blocks the loop forever. Recording the call is enough — what
+    is under test is whether it is reached at all, and with what.
+    """
+    opened = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"],
+                         page_size=10, allow_edit=True)
+    table.group_by("role")
+    _pump(shown_app)
+
+    impl = table._internal
+    impl._open_form_dialog = lambda record=None, **kw: opened.append(record)
+
+    tree = impl._tree
+    header = tree.get_children("")[0]
+    leaf = tree.get_children(header)[0]
+    # Preconditions: the edit path must genuinely be live, and the header must
+    # genuinely carry no record, or a clean result below means nothing.
+    assert impl._editing['updating'], "editing is not enabled, so no dialog could open either way"
+    assert header not in impl._row_map, "group header unexpectedly has a record"
+
+    _double_click(tree, header)
+    _pump(shown_app)
+    assert opened == [], f"double-clicking a group header opened the edit dialog with {opened!r}"
+
+    # Control: a real row must still open it, carrying that row's record — or the
+    # empty result above only shows the dialog never opens at all.
+    _double_click(tree, leaf)
+    _pump(shown_app)
+    assert len(opened) == 1, "control failed — double-clicking a real row did not open the dialog"
+    assert opened[0], "control failed — the dialog opened with an empty record (the New Record path)"
+    assert opened[0]["name"] == impl._row_map[leaf]["name"]
+
+
+@pytest.mark.gui
+def test_row_double_click_ignores_group_header(shown_app):
+    """A group header carries no record, so it must not emit a row event.
+
+    Group parents are real tree items that `identify_row()` resolves, but
+    `_render_grouped` never puts them in `_row_map` — so a handler guarding only
+    on `if not iid` falls through to an empty record. `on_row_click` has always
+    guarded on membership; `on_row_double_click` did not, and binding it
+    unconditionally for #417 made that reachable on every grouped table.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_double_click(lambda e: seen.append(e))
+    table.group_by("role")
+    _pump(shown_app)
+
+    tree = table._internal._tree
+    header = tree.get_children("")[0]
+    leaf = tree.get_children(header)[0]
+    # Precondition: without a header that is genuinely absent from _row_map there
+    # is nothing here to test, and the empty result below would be meaningless.
+    assert header not in table._internal._row_map, "group header unexpectedly has a record"
+
+    _double_click(tree, header)
+    _pump(shown_app)
+    assert seen == [], f"double-click on a group header emitted a row event: {seen!r}"
+
+    # Control: the identical synthesis on a real row under that header must fire,
+    # or the empty result above only shows the test cannot click.
+    _double_click(tree, leaf)
+    _pump(shown_app)
+    assert len(seen) == 1, "control failed — double-click on a real row did not fire"
+    assert seen[0].record["name"] == table._internal._row_map[leaf]["name"]
+    assert seen[0].id is not None
+
+
+def _right_click(tree, iid) -> None:
+    """Synthesize a right-click on a row, with the same hit-test preconditions."""
+    box = tree.bbox(iid)
+    assert box != "", "row has no bbox — the tree is unmapped, so this test cannot click"
+    x, y = box[0] + box[2] // 2, box[1] + box[3] // 2
+    assert tree.identify_row(y) == iid, "hit test missed the target row"
+    tree.event_generate("<Button-3>", x=x, y=y, rootx=x + 200, rooty=y + 200)
+
+
+@pytest.mark.gui
+def test_row_right_click_ignores_group_header(shown_app):
+    """#418: right-click on a group header emitted a row event with no record.
+
+    Same defect as #417's, one handler over: `_on_row_context` tested only
+    `if not iid` under a comment that claimed to exclude group headers. Unlike
+    the double-click case this needed no unusual configuration — right-click is
+    bound whenever context menus are on, which is the default — so it was live
+    in 0.2.1 rather than newly exposed.
+
+    Also asserts `_context_iid` is cleared. A header used to be recorded as the
+    menu's target even though the menu never opened, leaving a later row-menu
+    command pointed at a row that carries no record.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_right_click(lambda e: seen.append(e))
+    table.group_by("role")
+    _pump(shown_app)
+
+    impl = table._internal
+    # The row menu grabs the pointer and blocks the loop when driven
+    # synthetically; it is not what is under test here.
+    impl._ensure_row_menu = lambda *a, **kw: None
+    impl._row_menu = types.SimpleNamespace(show=lambda *a, **kw: None)
+
+    tree = impl._tree
+    header = tree.get_children("")[0]
+    leaf = tree.get_children(header)[0]
+    assert header not in impl._row_map, "group header unexpectedly has a record"
+
+    _right_click(tree, header)
+    _pump(shown_app)
+    assert seen == [], f"right-click on a group header emitted a row event: {seen!r}"
+    assert impl._context_iid is None, "a group header was recorded as the row menu's target"
+
+    # Control: the identical synthesis on a real row must fire, or the empty
+    # result above only shows the test cannot click.
+    _right_click(tree, leaf)
+    _pump(shown_app)
+    assert len(seen) == 1, "control failed — right-click on a real row did not fire"
+    assert seen[0].record["name"] == impl._row_map[leaf]["name"]
+    assert impl._context_iid == leaf
+
+
+# --------------------------------------------------------------------------- group chevrons
+
+
+def _chevron_state(impl, iid) -> tuple[bool, bool]:
+    """Return (group is open, chevron is drawn as open) for a group header."""
+    opened = bool(int(impl._tree.item(iid, "open") or 0))
+    image = impl._tree.item(iid, "image")
+    if isinstance(image, (list, tuple)):
+        image = image[0] if image else ""
+    return opened, str(image) == str(impl._chevron_icon(True))
+
+
+def _grouped_table(shown_app, *, opened: bool):
+    """A grouped table plus its first group header, in `opened` state and in sync.
+
+    The starting state is a parameter because it decides whether a test can see
+    the defect at all: only the *expand* direction desyncs, so a test that ends
+    up collapsing proves nothing. A double-click nets two toggles, so it has to
+    start open to finish on an expand.
+
+    Set directly rather than by synthesizing an action: the setup must not
+    depend on the mechanism under test, and setting `open` fires no
+    notification, so it cannot mask the defect either.
+    """
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.group_by("role")
+    _pump(shown_app)
+
+    impl = table._internal
+    header = impl._tree.get_children("")[0]
+    impl._tree.focus_set()
+    impl._tree.focus(header)
+    impl._tree.selection_set(header)
+    impl._tree.item(header, open=opened, image=impl._chevron_icon(opened))
+    _pump(shown_app)
+
+    # Precondition: the setup itself must be in sync, or a desync below proves
+    # nothing about the action under test.
+    assert _chevron_state(impl, header) == (opened, opened), "setup left the group out of sync"
+    return table, impl, header
+
+
+@pytest.mark.gui
+@pytest.mark.parametrize("routine, keys", [
+    ("ToggleFocus", "space / Return"),
+    ("Keynav right", "Right"),
+])
+def test_group_chevron_tracks_keyboard_expand(shown_app, routine, keys):
+    """#419: a keyboard-driven expand repainted the previous chevron.
+
+    `_refresh_group_chevrons` is bound to the open/close notifications and read
+    the item's state synchronously. The toolkit reports an expand *before* it
+    records it (its collapse path sets the state first), so the handler saw the
+    stale value and drew a collapsed chevron on an open group. Reachable in
+    0.2.1 from the keyboard alone: the body takes focus from a click on a data
+    row or from Tab, and arrow keys then step onto the header.
+
+    Both routines are covered because the expand keys are not one path — space
+    and Return route through the toggle, while Right calls the open routine
+    directly, so a fix applied at the toggle alone would leave Right broken.
+
+    Drives the routine each key is bound to rather than synthesizing the key.
+    A synthesized key is silently dropped once earlier tests have filled the
+    shared root and the table is no longer mapped, which showed up as this test
+    failing about one run in five with its own control tripping — the failure
+    mode this suite is known for. The key-to-routine mapping belongs to the
+    toolkit's binding table, not to us; what this test owns is what happens once
+    the notification arrives, and that is reproduced exactly.
+    """
+    _table, impl, header = _grouped_table(shown_app, opened=False)
+
+    # Both routines act on whichever item holds focus.
+    impl._tree.focus(header)
+    _pump(shown_app)
+    assert impl._tree.focus() == header, "precondition: the group header does not hold item focus"
+
+    if routine == "ToggleFocus":
+        impl._tree.tk.call("ttk::treeview::ToggleFocus", impl._tree)
+    else:
+        impl._tree.tk.call("ttk::treeview::Keynav", impl._tree, "right")
+    _pump(shown_app)
+
+    opened, chevron_open = _chevron_state(impl, header)
+    assert opened, f"control failed — {routine} ({keys}) did not expand the group"
+    assert chevron_open, f"group expanded via {routine} ({keys}) but its chevron is drawn collapsed"
+
+
+@pytest.mark.gui
+def test_group_chevron_tracks_double_click(shown_app):
+    """#419, via the path #417 opened up on read-only tables.
+
+    Binding `<Double-1>` unconditionally means the second press of a
+    double-click resolves to the double-click handler instead of the click
+    handler, so the click handler's `'break'` no longer suppresses the built-in
+    expand — which routes through the same stale-state notification above.
+
+    Starts open deliberately. A double-click nets two toggles, so from a
+    collapsed start it finishes on a *collapse*, which was never broken — the
+    test would pass against the unfixed code and prove nothing. Starting open
+    means the second toggle is the expand that desyncs. The net open state is
+    unchanged either way; the chevron is what breaks.
+    """
+    _table, impl, header = _grouped_table(shown_app, opened=True)
+
+    _double_click(impl._tree, header)
+    _pump(shown_app)
+
+    opened, chevron_open = _chevron_state(impl, header)
+    assert opened, "control failed — the double-click did not leave the group expanded"
+    assert chevron_open, "group is expanded after a double-click but its chevron is drawn collapsed"

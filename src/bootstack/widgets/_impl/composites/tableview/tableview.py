@@ -1148,8 +1148,8 @@ class TableView(Frame):
         self._tree.bind("<Button-1>", self._on_header_click)
         self._tree.bind("<<TreeviewSelect>>", self._on_selection_event)
         # Keep group-header chevrons in sync with their open/closed state.
-        self._tree.bind("<<TreeviewOpen>>", self._refresh_group_chevrons, add="+")
-        self._tree.bind("<<TreeviewClose>>", self._refresh_group_chevrons, add="+")
+        self._tree.bind("<<TreeviewOpen>>", self._refresh_group_chevrons_deferred, add="+")
+        self._tree.bind("<<TreeviewClose>>", self._refresh_group_chevrons_deferred, add="+")
         self._tree.bind("<ButtonRelease-1>", self._on_row_click_event)
         # Escape clears the selection (also reachable in single-select mode, where
         # clicking can't return to an empty selection). Bound on the tree widget
@@ -1158,8 +1158,10 @@ class TableView(Frame):
         self._tree.bind("<Escape>", lambda _e: self.deselect_all(), add="+")
         if self._context_menus != "none":
             bind_right_click(self._tree, self._on_tree_context)
-        if self._editing['updating']:
-            self._tree.bind("<Double-1>", self._on_row_double_click)
+        # Bound unconditionally: `on_row_double_click` is public API and does not
+        # depend on editing. The handler itself gates the built-in edit dialog on
+        # `_editing['updating']`, so editing behavior is unchanged.
+        self._tree.bind("<Double-1>", self._on_row_double_click)
         # Track resize events to rebalance grouped layouts
         self._tree.bind("<Configure>", self._on_tree_configure)
 
@@ -1690,9 +1692,12 @@ class TableView(Frame):
             col_idx = 0
         # Right-click does not alter the selection (left-click owns that); it
         # only records which row the menu targets and opens the menu there.
-        self._context_iid = iid or None
-        if not iid:
+        # A group header is a real tree item but holds no record — it is absent
+        # from `_row_map` — so it targets nothing, exactly like empty space.
+        if not iid or iid not in self._row_map:
+            self._context_iid = None
             return  # empty space or a group-header row — no row menu
+        self._context_iid = iid
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         self._row_menu_col = col_idx
@@ -1704,8 +1709,8 @@ class TableView(Frame):
         if region == "heading":
             return
         iid = self._tree.identify_row(event.y)
-        if not iid:
-            return
+        if not iid or iid not in self._row_map:
+            return  # empty space or a group-header row (no record)
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         if self._editing['updating']:
@@ -2340,6 +2345,19 @@ class TableView(Frame):
         try:
             new_state = not bool(int(self._tree.item(iid, "open") or 0))
             self._tree.item(iid, open=new_state, image=self._chevron_icon(new_state))
+        except Exception:
+            pass
+
+    def _refresh_group_chevrons_deferred(self, _event=None) -> None:
+        """Refresh chevrons once Tk has applied the item's new open state.
+
+        The toolkit reports an expand *before* it records it, so reading the
+        state inside the notification paints the previous chevron. Deferring to
+        the next idle point reads the settled state. Scheduled on the root so
+        the pending callback outlives any widget being torn down.
+        """
+        try:
+            self._root().after_idle(self._refresh_group_chevrons)
         except Exception:
             pass
 
