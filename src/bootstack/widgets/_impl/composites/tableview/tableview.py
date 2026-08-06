@@ -29,7 +29,7 @@ from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
-from bootstack._runtime.utility import bind_right_click
+from bootstack._runtime.utility import bind_right_click, debug_log_exception
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu
 from bootstack.widgets._impl.composites.tooltip import ToolTip
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
@@ -2876,7 +2876,9 @@ class TableView(Frame):
             if iid:
                 self._tree.focus(iid)
         except Exception:
-            pass
+            # Silence here would restore the very bug this method exists to
+            # fix, with nothing to show for it on any channel.
+            debug_log_exception("could not move keyboard focus to the clicked row")
 
     def _on_header_click(self, event):
         """Handle left-click: header sorting, or toggle-select with checkboxes."""
