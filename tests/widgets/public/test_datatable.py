@@ -475,3 +475,98 @@ def test_row_right_click_ignores_group_header(shown_app):
     assert len(seen) == 1, "control failed — right-click on a real row did not fire"
     assert seen[0].record["name"] == impl._row_map[leaf]["name"]
     assert impl._context_iid == leaf
+
+
+# --------------------------------------------------------------------------- group chevrons
+
+
+def _chevron_state(impl, iid) -> tuple[bool, bool]:
+    """Return (group is open, chevron is drawn as open) for a group header."""
+    opened = bool(int(impl._tree.item(iid, "open") or 0))
+    image = impl._tree.item(iid, "image")
+    if isinstance(image, (list, tuple)):
+        image = image[0] if image else ""
+    return opened, str(image) == str(impl._chevron_icon(True))
+
+
+def _grouped_table(shown_app):
+    """A grouped table plus its first group header, collapsed and in sync."""
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.group_by("role")
+    _pump(shown_app)
+
+    impl = table._internal
+    header = impl._tree.get_children("")[0]
+    impl._tree.focus_set()
+    impl._tree.focus(header)
+    impl._tree.selection_set(header)
+    _pump(shown_app)
+
+    # Collapse first, so the test can observe the expand direction — that is the
+    # only one that desyncs. Set directly rather than by synthesizing a key: the
+    # setup must not depend on the same mechanism the test is measuring, and a
+    # synthesized key is exactly what gets dropped once earlier tests have filled
+    # the shared root. Setting `open` fires no notification, so this cannot mask
+    # the defect under test.
+    impl._tree.item(header, open=False, image=impl._chevron_icon(False))
+    _pump(shown_app)
+    # Precondition: the setup itself must be in sync, or a desync below proves
+    # nothing about the action under test.
+    assert _chevron_state(impl, header) == (False, False), "setup did not collapse the group cleanly"
+    return table, impl, header
+
+
+@pytest.mark.gui
+@pytest.mark.parametrize("key", ["<space>", "<Return>", "<Right>"])
+def test_group_chevron_tracks_keyboard_expand(shown_app, key):
+    """#419: a keyboard-driven expand repainted the previous chevron.
+
+    `_refresh_group_chevrons` is bound to the open/close notifications and read
+    the item's state synchronously. The toolkit reports an expand *before* it
+    records it (its collapse path sets the state first), so the handler saw the
+    stale value and drew a collapsed chevron on an open group. Reachable in
+    0.2.1 from the keyboard alone: the table body takes focus by Tab or by a
+    click on any row, and arrow keys then move onto the header.
+
+    All three keys are covered because they are not one path — space and Return
+    route through the toolkit's toggle, while Right calls its open routine
+    directly, so a fix at the toggle alone would leave Right broken.
+    """
+    _table, impl, header = _grouped_table(shown_app)
+
+    # The keys under test act on whichever item holds focus, so aim it here
+    # rather than relying on it surviving from setup — once earlier tests have
+    # filled the shared root that is not dependable, and the symptom is a
+    # keystroke that silently does nothing.
+    impl._tree.focus(header)
+    _pump(shown_app)
+    assert impl._tree.focus() == header, "precondition: the group header does not hold item focus"
+
+    impl._tree.event_generate(key)
+    _pump(shown_app)
+
+    opened, chevron_open = _chevron_state(impl, header)
+    assert opened, f"control failed — {key} did not expand the group, so nothing was tested"
+    assert chevron_open, f"group expanded with {key} but its chevron is drawn collapsed"
+
+
+@pytest.mark.gui
+def test_group_chevron_tracks_double_click(shown_app):
+    """#419, via the path #417 opened up on read-only tables.
+
+    Binding `<Double-1>` unconditionally means the second press of a
+    double-click resolves to the double-click handler instead of the click
+    handler, so the click handler's `'break'` no longer suppresses the built-in
+    expand — which routes through the same stale-state notification above. The
+    net open state is unchanged either way; the chevron was what broke.
+    """
+    _table, impl, header = _grouped_table(shown_app)
+
+    _double_click(impl._tree, header)
+    _pump(shown_app)
+
+    opened, chevron_open = _chevron_state(impl, header)
+    assert opened == chevron_open, (
+        f"group open state and chevron disagree after a double-click: "
+        f"open={opened} chevron_open={chevron_open}"
+    )
