@@ -13,6 +13,8 @@ Two concerns are covered:
 """
 from __future__ import annotations
 
+import types
+
 import pytest
 
 import bootstack as bs
@@ -419,3 +421,57 @@ def test_row_double_click_ignores_group_header(shown_app):
     assert len(seen) == 1, "control failed — double-click on a real row did not fire"
     assert seen[0].record["name"] == table._internal._row_map[leaf]["name"]
     assert seen[0].id is not None
+
+
+def _right_click(tree, iid) -> None:
+    """Synthesize a right-click on a row, with the same hit-test preconditions."""
+    box = tree.bbox(iid)
+    assert box != "", "row has no bbox — the tree is unmapped, so this test cannot click"
+    x, y = box[0] + box[2] // 2, box[1] + box[3] // 2
+    assert tree.identify_row(y) == iid, "hit test missed the target row"
+    tree.event_generate("<Button-3>", x=x, y=y, rootx=x + 200, rooty=y + 200)
+
+
+@pytest.mark.gui
+def test_row_right_click_ignores_group_header(shown_app):
+    """#418: right-click on a group header emitted a row event with no record.
+
+    Same defect as #417's, one handler over: `_on_row_context` tested only
+    `if not iid` under a comment that claimed to exclude group headers. Unlike
+    the double-click case this needed no unusual configuration — right-click is
+    bound whenever context menus are on, which is the default — so it was live
+    in 0.2.1 rather than newly exposed.
+
+    Also asserts `_context_iid` is cleared. A header used to be recorded as the
+    menu's target even though the menu never opened, leaving a later row-menu
+    command pointed at a row that carries no record.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_right_click(lambda e: seen.append(e))
+    table.group_by("role")
+    _pump(shown_app)
+
+    impl = table._internal
+    # The row menu grabs the pointer and blocks the loop when driven
+    # synthetically; it is not what is under test here.
+    impl._ensure_row_menu = lambda *a, **kw: None
+    impl._row_menu = types.SimpleNamespace(show=lambda *a, **kw: None)
+
+    tree = impl._tree
+    header = tree.get_children("")[0]
+    leaf = tree.get_children(header)[0]
+    assert header not in impl._row_map, "group header unexpectedly has a record"
+
+    _right_click(tree, header)
+    _pump(shown_app)
+    assert seen == [], f"right-click on a group header emitted a row event: {seen!r}"
+    assert impl._context_iid is None, "a group header was recorded as the row menu's target"
+
+    # Control: the identical synthesis on a real row must fire, or the empty
+    # result above only shows the test cannot click.
+    _right_click(tree, leaf)
+    _pump(shown_app)
+    assert len(seen) == 1, "control failed — right-click on a real row did not fire"
+    assert seen[0].record["name"] == impl._row_map[leaf]["name"]
+    assert impl._context_iid == leaf

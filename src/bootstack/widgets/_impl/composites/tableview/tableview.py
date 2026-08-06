@@ -1692,9 +1692,12 @@ class TableView(Frame):
             col_idx = 0
         # Right-click does not alter the selection (left-click owns that); it
         # only records which row the menu targets and opens the menu there.
-        self._context_iid = iid or None
-        if not iid:
+        # A group header is a real tree item but holds no record — it is absent
+        # from `_row_map` — so it targets nothing, exactly like empty space.
+        if not iid or iid not in self._row_map:
+            self._context_iid = None
             return  # empty space or a group-header row — no row menu
+        self._context_iid = iid
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         self._row_menu_col = col_idx
