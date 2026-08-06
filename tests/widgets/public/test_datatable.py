@@ -367,12 +367,14 @@ def test_row_double_click_fires_without_editing(shown_app):
 
 @pytest.mark.gui
 def test_row_double_click_bound_regardless_of_editing(shown_app):
-    """The invariant behind #417, asserted without geometry.
+    """A geometry-free canary for #417: the binding exists either way.
 
-    The behavioral test above depends on the row being mapped and hit-testable,
-    which is not guaranteed for every widget packed into the shared root. This
-    one states the actual invariant — the binding exists either way — and so
-    fails deterministically if the gate ever comes back.
+    Deliberately weaker than it looks, so don't rely on it alone — it proves a
+    `<Double-*>` sequence is bound, not that it reaches `_on_row_double_click`.
+    The handler is not recoverable from the bound script: bootstack names its Tcl
+    commands with a serial (`bsregular31`) rather than tkinter's stock
+    `id(...) + func.__name__`, so there is nothing to match on. The behavioral
+    test above is what proves the wiring; this one is the cheap regression net.
     """
     read_only = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10)
     editable = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name"], page_size=10, allow_edit=True)
@@ -381,3 +383,39 @@ def test_row_double_click_bound_regardless_of_editing(shown_app):
     for label, table in (("read-only", read_only), ("allow_edit=True", editable)):
         bound = [b for b in table._internal._tree.bind() if "Double" in b]
         assert bound, f"{label} table has no double-click binding"
+
+
+@pytest.mark.gui
+def test_row_double_click_ignores_group_header(shown_app):
+    """A group header carries no record, so it must not emit a row event.
+
+    Group parents are real tree items that `identify_row()` resolves, but
+    `_render_grouped` never puts them in `_row_map` — so a handler guarding only
+    on `if not iid` falls through to an empty record. `on_row_click` has always
+    guarded on membership; `on_row_double_click` did not, and binding it
+    unconditionally for #417 made that reachable on every grouped table.
+    """
+    seen = []
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"], page_size=10)
+    table.on_row_double_click(lambda e: seen.append(e))
+    table.group_by("role")
+    _pump(shown_app)
+
+    tree = table._internal._tree
+    header = tree.get_children("")[0]
+    leaf = tree.get_children(header)[0]
+    # Precondition: without a header that is genuinely absent from _row_map there
+    # is nothing here to test, and the empty result below would be meaningless.
+    assert header not in table._internal._row_map, "group header unexpectedly has a record"
+
+    _double_click(tree, header)
+    _pump(shown_app)
+    assert seen == [], f"double-click on a group header emitted a row event: {seen!r}"
+
+    # Control: the identical synthesis on a real row under that header must fire,
+    # or the empty result above only shows the test cannot click.
+    _double_click(tree, leaf)
+    _pump(shown_app)
+    assert len(seen) == 1, "control failed — double-click on a real row did not fire"
+    assert seen[0].record["name"] == table._internal._row_map[leaf]["name"]
+    assert seen[0].id is not None

@@ -1706,8 +1706,8 @@ class TableView(Frame):
         if region == "heading":
             return
         iid = self._tree.identify_row(event.y)
-        if not iid:
-            return
+        if not iid or iid not in self._row_map:
+            return  # empty space or a group-header row (no record)
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         if self._editing['updating']:
