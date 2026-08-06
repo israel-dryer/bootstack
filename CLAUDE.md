@@ -96,10 +96,11 @@ either destroys the work.
   assumed — this is the trap that nearly bit #410). **Reviewed 2026-08-06 and every
   finding is handled**; record committed at `development/review-417-double-click.md`.
 - **`fix/datatable-click-focus-421`** (head `6c18d34e`, **3 commits**, stacked on the
-  above) — carries **#421** plus the review record. **NOT REVIEWED. That is the next
-  session's task — see START HERE.** ⚠ The suite count above was measured at
-  `ff814b85`, one commit earlier; `6c18d34e` adds only `development/*.md`, so the
-  count stands — but it was not re-run at the head.
+  above) — carries **#421** plus the review record. **REVIEWED 2026-08-06 — verdict
+  ship-ready, with three findings still TO APPLY; see START HERE.** ⚠ The suite count
+  above was measured at `ff814b85`, one commit earlier — but the review re-ran the full
+  suite at the head `6c18d34e` and got the **same** 973 / 13 and 123 / 6, so the count
+  is now confirmed at the head, not inferred.
 
 ⚠ **A worktree was used for #421 and has been REMOVED**; the branch itself lives in
 the repo normally. Do not go looking for a checkout under `scratchpad/`.
@@ -152,8 +153,9 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: `/code-review` on the #417 branch, then cut `0.2.2` — see START
-HERE.** No milestone target is chosen beyond it. ⚠ **The milestones were
+**⏭ ACTIVE TARGET: apply the three #421 review findings, then cut `0.2.2` — see START
+HERE.** Both branches are reviewed; nothing is waiting on a review agent. No milestone
+target is chosen beyond the release. ⚠ **The milestones were
 RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
 before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
 interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
@@ -218,22 +220,36 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — `/code-review` on the #421 branch, then cut `0.2.2`.
+### ★ START HERE — apply the three #421 review findings, then cut `0.2.2`.
 
-**⏭ THE TASK IS `/code-review` ON `fix/datatable-click-focus-421`, THEN THE RELEASE.**
-The `0.2.2` content is finished, tested and (for the lower branch) reviewed. The one
-thing standing between here and a tag is that **#421's code has never been reviewed
-by anything but the session that wrote it.**
+**✅ THE REVIEW IS DONE (2026-08-06). `/code-review` passed `fix/datatable-click-focus-421`
+— verdict SHIP-READY — but returned three findings, and the maintainer decided all
+three get FIXED ON THAT BRANCH before `0.2.2` ships.** Full record committed at
+**`development/review-421-click-focus.md`**; the fix list is under
+*What is left to do* below.
 
-**⚠ YOU CANNOT LAUNCH THE REVIEW.** `/code-review` is `disable-model-invocation` —
-the `Skill` tool refuses it, and the skill instructions forbid replicating its
-workflow by other means. **Ask the maintainer to run it.** Do not work around this.
+**⚠ THE WORK STAYS ON THE WINDOWS BOX.** The session that received the review ran out
+of budget and stopped there. A move to the macOS box was briefly considered and
+**dropped** — the maintainer is continuing on this machine, so nothing was pushed and
+nothing needs to be fetched. Do not go looking for these branches on the other box.
 
-**⚠ THEN DO NOT TOUCH THE BRANCH UNTIL IT COMES BACK.** This was violated on
-2026-08-06: the branch was handed off and then edited in place while the agent ran.
-The review reads files on disk, not only `git diff`, so it reviews a moving target.
-If follow-up work cannot wait, do it in a **`git worktree`** or on another branch.
-Memory `feedback_dont_touch_branch_under_review`.
+**⚠ BOTH BRANCHES ARE STILL LOCAL-ONLY, AND SO ARE FOUR+ `main` COMMITS.** `origin` has
+only `main` at **`04218191`**, while local `main` is at **`04f99af9`** or later —
+several unpushed `docs(claude):` commits — and neither feature branch exists remotely
+at all. The usual ancestry commands therefore report nothing for either branch; that is
+**not** "already merged", it is "never left this box". **Deleting either destroys the
+work, and so does losing this machine.** The push is step 2 of the release sequence
+below and has not happened yet.
+
+**⚠ DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** This was violated on 2026-08-06: a
+branch was handed off and then edited in place while the agent ran. The review reads
+files on disk, not only `git diff`, so it reviews a moving target. If follow-up work
+cannot wait, do it in a **`git worktree`** or on another branch. Memory
+`feedback_dont_touch_branch_under_review`. ⚠ **And a worktree runs against `main`'s
+source unless you set `PYTHONPATH`** — the editable install points at
+`D:\Development\bootstack\src`, so a worktree's tests import *main's* code. The #421
+review hit this; it happened to hand it a free pre-fix control, but it silently
+invalidates a post-fix run.
 
 **⚠ AND CHECK `git rev-parse` ON BOTH BRANCHES BEFORE READING ANY FILE.** These two
 branches were briefly at the *identical* commit, so a branch name did not tell you
@@ -317,16 +333,66 @@ it praised.** Adversarial verification cuts both ways — a clean review is not 
   `probe_group_header_click_focus.py`, and `demo_419_group_chevrons.py` (a
   seven-step manual checklist covering all five issues). Each probe carries a control.
 
-#### What a reviewer should actually probe on #421
+#### ⚠ What the #421 review established — do NOT re-derive
 
-The fix adds `_take_click_focus(iid)` — `focus_set()` plus item focus — ahead of the
-two `'break'` returns in `_on_header_click`. **Both `'break'`s are load-bearing** (they
-suppress the replace-the-selection default those modes override), so the fix takes
-focus rather than changing control flow. Soft spots: whether taking focus on click
-can steal it from something mid-interaction, and whether item focus on a group header
-has any effect on selection semantics that the tests do not cover.
+Full record at **`development/review-421-click-focus.md`**. Verified, and not worth
+re-checking:
 
-### After the review — the `0.2.2` release, in this order
+- **#421's two new tests are NOT vacuous.** Run against unfixed source both fail with
+  the right symptom (`focus_lastfor()` is the App root, not the tree), and test 1's
+  internal control arm — clicking a plain data row — passes. This is exactly the
+  control the #417 review skipped, which is how two defective tests got through there.
+- **Suite green at the head.** 973 passed / 13 skipped (widgets+CLI) and 123 / 6
+  (data), matching the `ff814b85` figure. The previously-flaky
+  `test_group_chevron_tracks_keyboard_expand` passed on both of two runs.
+- **The group-header focus question is CLOSED — it is a non-issue.** Tk's `<space>` is
+  `ttk::treeview::ToggleFocus` → `Toggle $w $item`, which toggles the item's *open
+  state*, not selection. Measured after a group-header click: `tree.selection()` is
+  `()`, `table.selection` is `[]`, no `SelectionChange`. Item focus on a group header
+  cannot leak into selection.
+- **`_tree.focus` is read nowhere else in the `tableview` package** — nothing
+  downstream assumes the focus item is a data row.
+- **Taking focus on an empty-space click is not a regression** — ttk's own `Press`
+  does `focus $w` unconditionally.
+
+#### ⚠ What is left to do on #421 — three findings, ALL to be fixed on the branch
+
+Maintainer decision 2026-08-06: fix all three on `fix/datatable-click-focus-421` as
+part of #421, not as a follow-up issue. Finding 1 is a user-visible bug on shipped
+behavior and adds no public surface, so it is patch-line work either way.
+
+1. **MEDIUM — `tableview.py:2918`: column resizing is DEAD whenever selection
+   checkboxes are on.** `_on_header_click` special-cases only `region == "heading"`, so
+   a click on a column **separator** falls into `if self._toggle_select_active():`,
+   where `identify_row(event.y)` returns `""` — and the branch **still** returns
+   `"break"`, swallowing ttk's `resize.press`. **Measured:** a plain table resizes
+   (`120 → 156`); with `selection_mode="multi", show_selection_controls=True` none of
+   its three separators move at all. The `break` is load-bearing **only when there is a
+   row to toggle**. #421's diff compounds it — `_take_click_focus(iid)` sits *above*
+   the `if iid:` guard, so a failed resize attempt now also yanks focus into the tree
+   body. **Fix: move the call inside `if iid:` and return `"break"` only there.** The
+   reviewer verified that change: all three separators resize (`#0` 43→79, `#1`/`#2`
+   likewise) and all 23 `test_datatable.py` tests stay green. ⚠ **The breakage predates
+   the branch** — but the diff edits exactly these lines. **No test covers the
+   separator path either way; add one.**
+2. **LOW — `tableview.py:2874`: swap `except Exception: pass` for
+   `debug_log_exception`.** The defect #421 fixes *is* "focus silently did not happen";
+   if `focus_set()`/`focus(iid)` raises, the fix degrades back to the original bug with
+   no signal anywhere. `debug_log_exception` (`_runtime/utility.py`, #399) never
+   raises, so it is safe in a Tk dispatch path. Neighbors do the bare `pass`, but this
+   is new code.
+3. **LOW — `CHANGELOG.md:25`: the headline overstates the blast radius.** "Clicking a
+   `DataTable` row now leaves the keyboard pointed at that row" reads as though
+   ordinary row clicks were broken. **They never were** — the branch's own control
+   proves plain rows always took focus. Scope the headline to group headers and
+   checkbox tables; the bullet body already says the right thing. Same standard that
+   kept #397/#401 out of `0.2.1`.
+
+⚠ Finding 1 changes behavior, so **add its CHANGELOG bullet** when fixing it, and
+re-run the release-notes dry-run — the bullet count under `## [Unreleased]` (7 at
+`ff814b85`) will no longer match what step 3 below records.
+
+### After the fixes — the `0.2.2` release, in this order
 
 **Milestones are SETTLED (maintainer, 2026-08-06): #417, #418, #419, #420, #421 and
 #422 are all on `0.2.x — Patch line`. There are ZERO unmilestoned open issues** —
@@ -353,9 +419,11 @@ verified against `gh`, and it clears the deviation this file used to flag.
    met** — the scope grew from one binding fix to five issues across two branches. If
    the follow-up comment is now late, say so plainly rather than quietly.
 
-**⚠ If the review rejects #421**, drop that branch and ship `0.2.2` from
-`fix/datatable-double-click-417` alone — it is self-contained, reviewed and green.
-Remove #421's CHANGELOG bullet with it, and #421 rides `0.2.3`.
+⚠ The old "if the review rejects #421, drop the branch" fallback is **SPENT** — the
+review accepted it. Keep the shape of the escape hatch in mind anyway: `417` is
+self-contained, reviewed and green on its own, so if the finding-1 fix turns out to be
+harder than the one-line rescope above, `0.2.2` can still ship from `417` alone with
+#421's CHANGELOG bullets removed, and #421 rides `0.2.3`.
 
 Everything below is the backlog to pick from **once `0.2.2` is out.**
 
