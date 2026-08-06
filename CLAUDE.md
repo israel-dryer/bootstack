@@ -73,19 +73,36 @@ on the next statement, then grep the file.
 `0.2.1`. Build, PyPI publish, GitHub Release and the docs deploy all ran green.
 **`main` is GREEN.** ⚠ **The counts this file used to carry (`919 passed / 14
 skipped`) were STALE** and produced a phantom "46-test gap" that a whole session
-flagged as unexplained. Measured 2026-08-06: `main` collects **976** shared-root
-widgets+CLI tests (`-m "not isolated"`), the `fix/datatable-double-click-417` branch
-**980** (branch head `701cea54`). Branch run: exit 0, **967 passed / 13 skipped**
-widgets+CLI, **123 passed / 6 skipped** data, every isolated leg. The tree is
-clean. A failing test is a real signal — treat any red as a
-regression. **When you record a count here, record the DATE and the COMMIT** — a
-bare number silently rots into a fake regression signal.
+flagged as unexplained. **When you record a count here, record the DATE and the
+COMMIT** — a bare number silently rots into a fake regression signal. Measured
+2026-08-06, full `py -3.12 tests/run_gui.py`, exit 0 on both:
 
-**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — **three** commits (`aeffa27d`,
-`638b24e3`, `701cea54`), **local only, never pushed, no PR**, and **behind `main`**
-by the handoff commits. It carries **#417 AND #418** despite the name. Reviewed by an agent 2026-08-06, which found and fixed a real defect
-(`638b24e3`); **the maintainer's own `/code-review` has NOT run yet and is the next
-session's task**, after which `0.2.2` cuts. See START HERE. Nothing else is open.
+| ref | commit | widgets+CLI | data |
+|---|---|---|---|
+| `fix/datatable-double-click-417` | `f7405d97` | **971 passed / 13 skipped** | 123 / 6 |
+| `fix/datatable-click-focus-421` | `ff814b85` | **973 passed / 13 skipped** | 123 / 6 |
+
+Every isolated leg passed on both. The `+2` is exactly #421's two new tests. A
+failing test is a real signal — treat any red as a regression.
+
+**⏭ IN FLIGHT: TWO STACKED BRANCHES, both LOCAL ONLY, never pushed, no PR.**
+`origin` still has only `main`, so the usual ancestry commands report nothing for
+either — that is not "already merged", it is "never left this box". Deleting
+either destroys the work.
+
+- **`fix/datatable-double-click-417`** (head `f7405d97`, **8 commits**) — carries
+  **#417, #418, #419, #420**. Behind `main` by the handoff commits; **rebase before
+  opening a PR**. `git diff main...HEAD -- CLAUDE.md` is **empty** (verified, not
+  assumed — this is the trap that nearly bit #410). **Reviewed 2026-08-06 and every
+  finding is handled**; record committed at `development/review-417-double-click.md`.
+- **`fix/datatable-click-focus-421`** (head `6c18d34e`, **3 commits**, stacked on the
+  above) — carries **#421** plus the review record. **NOT REVIEWED. That is the next
+  session's task — see START HERE.** ⚠ The suite count above was measured at
+  `ff814b85`, one commit earlier; `6c18d34e` adds only `development/*.md`, so the
+  count stands — but it was not re-run at the head.
+
+⚠ **A worktree was used for #421 and has been REMOVED**; the branch itself lives in
+the repo normally. Do not go looking for a checkout under `scratchpad/`.
 **#409 shipped 2026-08-05 via PR #414** (merge
 commit `d428f6be`) — docs-only, unreleased, and it left **#412** open on purpose;
 full entry in the archive, summary under START HERE. Both `0.2.1` PRs are merged:
@@ -177,8 +194,7 @@ description, not just the title.**
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207 | 1 |
-| — | **UNMILESTONED** — #417 and #418, both FIXED on `fix/datatable-double-click-417`, both shipping in `0.2.2`, both still OPEN | 2 |
+| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207, #417, #418, #419, #420, #421, #422 | 7 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -190,180 +206,156 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ TWO ISSUES ARE UNMILESTONED: #417 and #418** — both DataTable row-event bugs,
-both with their own row in the table above. **26** open as of 2026-08-06 (verified
-against `gh`, not counted by hand). #417 came from an external user; #418 was filed
-by us while reviewing #417's fix. Both are bug fixes on public API, so `0.2.x —
-Patch line` is the fit, but **the maintainer has not made that call** — do not
-assign either unasked. An unmilestoned backlog makes the milestone feature
-worthless (maintainer's call), so this is a real deviation, not a bookkeeping nit.
+**✅ ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
+counted by hand) — the deviation this file used to flag is closed. The maintainer
+assigned #417, #418, #419, #420, #421 and #422 to `0.2.x — Patch line` in one call:
+all six are bug fixes on existing public API and **none adds public surface**, which
+is the test for the patch line. #417 came from an external user; the other five were
+filed by us while fixing it. ⚠ **Do not assign a milestone unasked** — that rule
+still stands, this was an explicit decision.
 ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — run `/code-review`, then cut `0.2.2`.
+### ★ START HERE — `/code-review` on the #421 branch, then cut `0.2.2`.
 
-**⏭ THE TASK IS `/code-review` ON `fix/datatable-double-click-417`, THEN THE
-RELEASE.** The maintainer wants the review first and has said "we can proceed after
-the review." `0.2.2` is expected **the morning of 2026-08-06** and the reporter has
-been told so publicly (see below), so this is time-boxed.
+**⏭ THE TASK IS `/code-review` ON `fix/datatable-click-focus-421`, THEN THE RELEASE.**
+The `0.2.2` content is finished, tested and (for the lower branch) reviewed. The one
+thing standing between here and a tag is that **#421's code has never been reviewed
+by anything but the session that wrote it.**
 
 **⚠ YOU CANNOT LAUNCH THE REVIEW.** `/code-review` is `disable-model-invocation` —
-the `Skill` tool refuses it with *"reserved for explicit user invocation"*, and the
-skill instructions forbid replicating its workflow by other means. **Ask the
-maintainer to run `/code-review` themselves.** Do not work around this.
+the `Skill` tool refuses it, and the skill instructions forbid replicating its
+workflow by other means. **Ask the maintainer to run it.** Do not work around this.
 
-**THREE commits, local only, never pushed, no PR. The branch name is now
-under-descriptive — it carries #418 as well:**
+**⚠ THEN DO NOT TOUCH THE BRANCH UNTIL IT COMES BACK.** This was violated on
+2026-08-06: the branch was handed off and then edited in place while the agent ran.
+The review reads files on disk, not only `git diff`, so it reviews a moving target.
+If follow-up work cannot wait, do it in a **`git worktree`** or on another branch.
+Memory `feedback_dont_touch_branch_under_review`.
 
-| SHA | What |
-|---|---|
-| `aeffa27d` | the #417 fix — `<Double-1>` bound unconditionally |
-| `638b24e3` | the group-header guard on `_on_row_double_click`, found while reviewing `aeffa27d` |
-| `701cea54` | **#418** — the same guard on `_on_row_context`; **maintainer decided it rides along in `0.2.2`** |
+**⚠ AND CHECK `git rev-parse` ON BOTH BRANCHES BEFORE READING ANY FILE.** These two
+branches were briefly at the *identical* commit, so a branch name did not tell you
+which code you were looking at — reading `tableview.py` would have silently shown
+421's work-in-progress while you believed you were on 417. The 2026-08-06 review
+caught this itself and reviewed committed blobs (`git show <sha>:<path>`) instead.
 
-⚠ **Review target is `git diff main` and the branch is BEHIND `main`** by the
-handoff commits. Verified safe: `git diff main...HEAD -- CLAUDE.md` is **empty**, so
-the branch does not revert the handoff — this is the trap that nearly bit #410, and
-it was checked, not assumed. **Rebase before opening a PR.**
+#### What is on the two branches
 
-⚠ **The probes and the reorder plugin are committed on `main` ONLY, so they VANISH
-when you check out the branch.** Running
-`pytest ... -p reorder_datatable_last` from the branch fails with
-`ImportError: No module named 'reorder_datatable_last'` — which reads exactly like a
-test failure (`exit 1`) and is not one. Copy the file in, or run it after rebasing.
+`fix/datatable-click-focus-421` is **stacked on** `fix/datatable-double-click-417`,
+so `git diff main...421` shows **both**. The review target is only the top 3 commits;
+tell the reviewer that, or it re-reviews work already signed off.
 
-**What the fix is.** `DataTable.on_row_double_click` never fired unless the table
-was also built with `allow_edit=True`: `tableview.py` installed the `<Double-1>`
-binding inside `if self._editing['updating']`, so on a read-only table the public
-event had nothing behind it, while `on_row_click`/`on_row_right_click` — bound on
-separate ungated paths — kept working. The gate was never needed:
-`_on_row_double_click` emits `<<RowDoubleClick>>` first and only then gates the edit
-dialog, so the binding moved out of the `if` and editing behavior is unchanged.
-`638b24e3` then fixes what that exposed — see the review findings below.
+| SHA | Branch | What |
+|---|---|---|
+| `aeffa27d` | 417 | #417 — `<Double-1>` bound unconditionally |
+| `638b24e3` | 417 | #420's guard on `_on_row_double_click` (commit says `#417`; re-cited later — history reads oddly, notes are correct) |
+| `701cea54` | 417 | #418 — the same guard on `_on_row_context` |
+| `14808981` | 417 | #419 — deferred chevron refresh |
+| `36ae3720` | 417 | CHANGELOG: chevron bullet, `#420` re-citation, `### Changed` |
+| `69f92b05` | 417 | probes + `demo_419_group_chevrons.py` |
+| `6718de36` | 417 | **fixes two defective tests** — see below |
+| `f7405d97` | 417 | CHANGELOG: the double `on_row_click` bullet |
+| `f425430f` | **421** | **#421 — `_take_click_focus` on the two `'break'` paths ← REVIEW THIS** |
+| `ff814b85` | **421** | CHANGELOG bullet for #421 |
+| `6c18d34e` | **421** | the 417 review record into `development/` |
 
-**⚠ WHAT THE 2026-08-06 REVIEW ALREADY ESTABLISHED. Do not re-derive any of it;
-spend the review's effort elsewhere.**
+#### ⚠ What the 2026-08-06 review established — do NOT re-derive
 
-- **Both original tests fail pre-fix BEHAVIORALLY**, not with `AttributeError`
-  (`assert 0 == 1` on the event count; `assert []` on the binding), with their
-  `bbox() != ''` preconditions passing first.
-- **Full suite green:** `py -3.12 tests/run_gui.py` exit 0, **967 passed / 13
-  skipped** shared-root (2026-08-06, branch head `701cea54`), every isolated leg.
-- **NOT order-dependent.** The suite was re-run with `test_datatable.py` forced to
-  collect **LAST**, after ~950 tests have filled the shared root — the exact failure
-  mode this file warns about. Exit 0, all **17** datatable tests pass, including all
-  three geometry-dependent group-header tests. Plugin at
-  `development/reorder_datatable_last.py` (see the vanishing-file warning above).
-- **The 46-test gap is STALE BOOKKEEPING, not a mystery.** `--collect-only
-  -m "not isolated"`: `main` **976**, branch **978** — exactly +2. The `919` figure
-  this file used to record for `0.2.1` was simply out of date. **Fixed above.**
-- **The guard cannot over-reject.** All four `self._tree.insert` sites were
-  enumerated: the three that insert data rows each write `_row_map[iid] = rec` on
-  the very next line, and the fourth is the group parent — the one row deliberately
-  absent from `_row_map`.
-- **Docs needed no change.** `docs/widgets/datatable.rst:401` already said a
-  double-click *"also"* opens the edit dialog with `allow_edit`, which only holds if
-  the event fires either way — so this was a code defect against documented behavior.
+Full record committed at **`development/review-417-double-click.md`**. Verdict was
+ship-ready. It verified, and these should not be re-checked:
 
-**⚠ THE FINDING THAT `638b24e3` FIXES, because it generalizes.** Binding
-`<Double-1>` unconditionally made a latent defect reachable on *every* grouped
-table. `_on_row_double_click` guarded only `if not iid` — but **a group header IS a
-real tree item that `identify_row()` resolves**, and `_render_grouped`
-(`tableview.py:~3363`) deliberately keeps group parents out of `_row_map`. So the
-handler fell through to `rec = {}` and emitted `RowEvent(record={}, id=None)`; a
-handler doing the documented `e.record["name"]` raises `KeyError` inside the Tk
-dispatch. `_on_row_click_event` has **always** had the correct guard
-(`if not iid or iid not in self._row_map`). **The lesson: membership in `_row_map`,
-not mere existence of an iid, is what distinguishes a row from a header** — and
-`DataTable.group_by()` is public, so this was reachable, not theoretical.
+- **The `iid not in self._row_map` guard is exact.** Group parents go only to
+  `_group_parents`; data rows only to `_row_map`. All four `_tree.insert` sites were
+  enumerated.
+- **No binding accumulation** from the unconditional `<Double-1>` — `_build_tree`
+  runs once and the bind has no `add=`.
+- **The deferred chevron refresh is safe after teardown** — scheduled on
+  `self._root()`, and every `item()` call is inside `try/except`.
+- **`_update_selection_markers` does not clobber chevrons** — selection markers are
+  inactive whenever `_group_by_key` is set. A suspected conflict, chased and closed.
 
-**Three soft spots a reviewer should actually probe:**
+**All six of its findings are handled.** Findings 1–4 landed in `6718de36` and
+`f7405d97`; finding 5 became **#422**; finding 6 needed no action.
 
-- ⚠ **Tk REJECTS `event_generate("<Double-1>")`** — `TclError: Double, Triple, or
-  Quadruple modifier not allowed`. `Double` is a binding *pattern*, not an event
-  type; the binding machinery derives the match from consecutive presses close in
-  time and position, so **two presses is the only way to synthesize one**.
-- ⚠ **The handler is NOT recoverable from `tree.bind("<Double-1>")`.** Stock tkinter
-  names a command `id(bound_method) + func.__name__`, so `"_on_row_double_click" in
-  script` *looks* like a clean geometry-free assertion — **it fails**. bootstack
-  substitutes a serial (measured: `2877737059456bsregular31`), which is #392's
-  funcid-recycling fix doing its job. This was tried, disproved by its own control,
-  and the affected test's docstring corrected to stop over-claiming. `test_row_double_click_bound_regardless_of_editing`
-  therefore proves only that *some* `<Double-*>` sequence is bound — it is a cheap
-  canary, **not** the deterministic net it once claimed to be. The behavioral tests
-  are what prove the wiring.
-- **Probes must stub `_open_form_dialog` AND the row menu.** Both block the loop
-  forever when driven synthetically (modal `wait_window` / menu grab) — an earlier
-  run hung for two minutes before that was found.
+#### ⚠ THE LESSON WORTH KEEPING: that review MISSED two real defects
 
-**⚠ ONE JUDGMENT CALL LEFT OPEN, flagged to the maintainer and undecided.** The
-second CHANGELOG bullet cites `(#417)`, but that defect **predates** #417 and was
-reachable on `0.2.1` via `allow_edit=True` + `group_by()` (where the same
-double-click additionally opened a spurious **New Record** dialog — `_open_form_dialog({})`
-takes the falsy path and titles itself "New Record"). It arguably deserves its own
-issue number the way #418 did. **No strong view was formed; decide it in review.**
+It called the tests "better than the repo average". **Two of them were broken**, both
+found afterward by running the control the committing session should have run —
+*revert the fix, confirm the test fails*:
 
-**⚠ `## [Unreleased]` NOW EXISTS on the branch** with **two** `### Fixed` bullets.
-It is still absent on `main`. If the review rejects the branch, the section goes
-with it.
+- **`test_group_chevron_tracks_double_click` was VACUOUS** — it passed against the
+  unfixed code. The setup started collapsed, so the double-click's two toggles
+  finished on a *collapse*, the direction that was never broken.
+- **`test_group_chevron_tracks_keyboard_expand` was FLAKY**, ~1 run in 5, its own
+  control tripping. It synthesized key events, and those are dropped once earlier
+  tests fill the shared root and the table is unmapped.
+
+**The standing rule is that agents over-flag. This one under-flagged, on exactly what
+it praised.** Adversarial verification cuts both ways — a clean review is not proof.
+
+#### Measured facts worth not re-deriving
+
+- **A double-click also fires `on_row_click` TWICE** (measured 2 clicks + 1
+  double-click, against a 1/0 single-click control). `<ButtonRelease-1>` has no
+  `Double` counterpart. Documented in the CHANGELOG; no test covers the interaction.
+- **The toolkit reports an expand BEFORE recording it.** `ttk::treeview::OpenItem`
+  generates `<<TreeviewOpen>>` and *then* sets `-open true`; `CloseItem` sets first.
+  That asymmetry is the whole of #419. Verified from `info body`, not from memory.
+- **Tk REJECTS `event_generate("<Double-1>")`** — `Double` is a binding pattern, not
+  an event type. Two presses is the only way to synthesize one.
+- **Do not synthesize keys in the shared-root suite.** Drive the routine the key is
+  bound to (`ttk::treeview::ToggleFocus`, `ttk::treeview::Keynav w right`). The
+  key-to-routine mapping is the toolkit's binding table, not ours.
+- **Assert focus via `focus_lastfor()`, not `focus_get()`** — the latter reports
+  nothing unless the window is active, which is not dependable here.
+- **Probes must stub `_open_form_dialog` AND the row menu** — both block the loop
+  forever when driven synthetically.
+- Four probes and a visual demo are **committed** in `development/`:
+  `probe_group_header_chevron_sync.py`, `probe_021_allow_edit_group_header.py`,
+  `probe_group_header_click_focus.py`, and `demo_419_group_chevrons.py` (a
+  seven-step manual checklist covering all five issues). Each probe carries a control.
+
+#### What a reviewer should actually probe on #421
+
+The fix adds `_take_click_focus(iid)` — `focus_set()` plus item focus — ahead of the
+two `'break'` returns in `_on_header_click`. **Both `'break'`s are load-bearing** (they
+suppress the replace-the-selection default those modes override), so the fix takes
+focus rather than changing control flow. Soft spots: whether taking focus on click
+can steal it from something mid-interaction, and whether item focus on a group header
+has any effect on selection semantics that the tests do not cover.
 
 ### After the review — the `0.2.2` release, in this order
 
-1. **Rebase the branch onto `main`** (it is one commit behind).
-2. Push, PR, merge.
-3. **Promote `## [Unreleased]` → `## [0.2.2] — <suffix>` IN ITS OWN COMMIT**, and add
-   the `[0.2.2]:` link definition at the bottom. ⚠ `bump-my-version` commits **only
-   `pyproject.toml`**, so a promotion folded into the bump ships a release whose
-   notes still read `[Unreleased]` and breaks `release.yml`'s extraction.
-   ⚠ **The release TITLE comes from the suffix after `## [0.2.2] —`** — promoting
-   without one ships a release titled bare `0.2.2`. Suggested but **not agreed**:
-   *"DataTable row events"*. Verify the rendered notes before tagging with the
-   `release_notes.extract` one-liner under **Release flow**.
+**Milestones are SETTLED (maintainer, 2026-08-06): #417, #418, #419, #420, #421 and
+#422 are all on `0.2.x — Patch line`. There are ZERO unmilestoned open issues** —
+verified against `gh`, and it clears the deviation this file used to flag.
+
+1. **Rebase `fix/datatable-double-click-417` onto `main`** (8 commits, behind by the
+   handoff commits), then rebase 421 on top of it. Re-run
+   `git diff main...HEAD -- CLAUDE.md` on **both** — it must stay empty.
+2. Push both, PR both, merge 417 first.
+3. **Promote `## [Unreleased]` → `## [0.2.2] — DataTable group headers and row events`
+   IN ITS OWN COMMIT**, and add the `[0.2.2]:` link definition. **The suffix is
+   AGREED** (maintainer, 2026-08-06) — the release title comes from it, so promoting
+   without one ships a release titled bare `0.2.2`. ⚠ `bump-my-version` commits **only
+   `pyproject.toml`**, so folding the promotion into the bump breaks `release.yml`'s
+   extraction. Dry-run already verified at `ff814b85`: title resolves, 7 bullets,
+   sections `### Changed` then `### Fixed`, no link definitions leaked.
 4. `py -3.12 -m bumpversion bump patch`, push `main` + the `v0.2.2` tag.
-5. **Close #417 AND #418**, neither of which closes itself — the commits reference
-   them but no `Fixes #` keyword was used, deliberately, since they landed before
-   the review.
-6. **Comment on #417 that it is on PyPI** — this was promised publicly (below).
-   Nothing was promised to anyone on #418; it is ours.
+5. **Close #417, #418, #419, #420 AND #421** — none self-closes, no `Fixes #` keyword
+   was used. **#422 stays OPEN** (macOS right-click coverage, deliberately not in
+   `0.2.2`).
+6. **Comment on #417 that it is on PyPI.** This was promised publicly on 2026-08-06 in
+   [comment 5202947523](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5202947523),
+   which also named `0.2.2` and said "later this morning". **That deadline was not
+   met** — the scope grew from one binding fix to five issues across two branches. If
+   the follow-up comment is now late, say so plainly rather than quietly.
 
-**✅ SETTLED: #418 RIDES ALONG in `0.2.2`** (maintainer, 2026-08-06). Fixed in
-`701cea54` on the same branch, so it is one PR and one review. **The issue is still
-OPEN — close it when the PR merges**, and note the CHANGELOG carries its own bullet
-citing `(#418)`.
-
-### Outward-facing actions ALREADY TAKEN 2026-08-06 — do not repeat
-
-- **Replied to the #417 reporter** (`bLynnb2762`), maintainer-approved wording:
-  [comment 5202947523](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5202947523).
-  ⚠ **It names `0.2.2` and says "later this morning", and promises a follow-up
-  comment once it is on PyPI.** That promise is step 5 above.
-- **Filed #418** — `on_row_right_click` fires with `record={} id=None` on a group
-  header. Labeled `bug`, **deliberately UNMILESTONED** (the maintainer's call, not
-  ours). Same missing guard as `638b24e3`, but on `_on_row_context`
-  (`tableview.py:~1694`), under a comment that *claims* to exclude group headers and
-  does not. **Live on `main` today** — right-click needs no unusual configuration.
-  **Now FIXED in `701cea54`; the issue itself is still open.** ⚠ The fix also moves
-  `self._context_iid = iid or None`, which ran BEFORE the guard and so recorded a
-  group header as the row menu's target even though the menu never opened — leaving
-  a later row-menu command aimed via `_context_iids()` at a row with no record. That
-  second half is invisible in the issue title; don't drop it if the fix is redone.
-- **Commented on #383** with the `context_menus` finding.
-  ⚠ **This CORRECTS what this file used to say.** The old text claimed
-  `context_menus` is "not exposed on the public `DataTable`". Measured truth:
-  `docs/widgets/datatable.rst:566-573` **documents it as a `bs.DataTable` argument**,
-  it is absent from `datatable.py`, and passing it constructs fine while
-  `impl._context_menus` stays `'all'` — **silently swallowed**, all four values
-  inert. The *conclusion* (the right-click gate is unreachable) survives; the premise
-  did not. ⚠ Wiring it through is **not purely additive** — `context_menus="none"`
-  would also silence the public `on_row_right_click` (`tableview.py:1159`).
-
-**Four probes are UNTRACKED in `development/`** — `probe_417_group_header_double_click.py`,
-`probe_417_context_menus_reachable.py`, `probe_417_row_event_guards.py`, and
-`reorder_datatable_last.py`. Each carries a control. **They are cited by #418 and by
-the #383 comment, so commit them** (this file's own standing lesson: an artifact
-only survives if it is IN THE REPO).
+**⚠ If the review rejects #421**, drop that branch and ship `0.2.2` from
+`fix/datatable-double-click-417` alone — it is self-contained, reviewed and green.
+Remove #421's CHANGELOG bullet with it, and #421 rides `0.2.3`.
 
 Everything below is the backlog to pick from **once `0.2.2` is out.**
 
@@ -664,9 +656,10 @@ workflow target `main`).
 
 **CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
 commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` is absent
-on `main`** (`0.2.1` consumed it) **but PRESENT on the `fix/datatable-double-click-417`
-branch**, carrying two `### Fixed` bullets. Promoting it to `## [0.2.2] — <suffix>`
-is step 3 of the release sequence under START HERE.
+on `main`** (`0.2.1` consumed it) **but PRESENT on both in-flight branches**, carrying
+**2 `### Changed` and 5 `### Fixed` bullets** at `ff814b85`. Promoting it to
+`## [0.2.2] — DataTable group headers and row events` — **suffix already agreed** — is
+step 3 of the release sequence under START HERE.
 
 **⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
 #397 and #401 because no public API could reach either defect; `0.2.0` did the same
