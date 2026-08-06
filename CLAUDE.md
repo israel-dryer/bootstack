@@ -76,8 +76,10 @@ shared-root widgets+CLI, **125 passed / 4 skipped** data, and every isolated leg
 The tree is clean apart from untracked `development/` probes. A failing test is a
 real signal — treat any red as a regression.
 
-**⏭ NOTHING IS IN FLIGHT.** No open PRs, no unpushed branches, tree clean but for
-untracked `development/` probes. **#409 shipped 2026-08-05 via PR #414** (merge
+**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — one commit (`aeffa27d`),
+**local only, never pushed, no PR**. Awaiting maintainer review of the diff; that
+review IS the next session's task (see START HERE). Nothing else is open.
+**#409 shipped 2026-08-05 via PR #414** (merge
 commit `d428f6be`) — docs-only, unreleased, and it left **#412** open on purpose;
 full entry in the archive, summary under START HERE. Both `0.2.1` PRs are merged:
 **#410** (the #392-review cluster, merged as a **merge commit** so its six
@@ -85,8 +87,11 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-**✅ BRANCHES ARE CLEAN — `main` is the ONLY branch, local or remote** (swept
-2026-08-05, maintainer-approved). All seven survivors were deleted together with
+**BRANCHES: `main` plus the one in-flight branch above.** ⚠ `fix/datatable-double-click-417`
+is **unpushed**, so `origin` still has only `main` — the two ancestry commands below
+report nothing for it. Do not read that as "already merged"; it has never left this
+box, and deleting it would destroy the work. It was swept clean on 2026-08-05
+(maintainer-approved) and all seven survivors were deleted together with
 their `: gone` locals: three merged ancestors (`docs/custom-events-409` PR #414,
 `fix/command-option-modifiers-405` PR #411, `fix/event-cleanup-392-followups`
 PR #410) and four squash-merge leftovers (`cleanup/shell-visibility-idiom` PR #384,
@@ -123,7 +128,8 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE TARGET: none chosen — see START HERE.** ⚠ **The milestones were
+**⏭ ACTIVE TARGET: reviewing the #417 fix branch — see START HERE.** No milestone
+target is chosen beyond it. ⚠ **The milestones were
 RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
 before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
 interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
@@ -165,6 +171,7 @@ description, not just the title.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207 | 1 |
+| — | **UNMILESTONED** — #417 (fixed on a branch, awaiting review; see START HERE) | 1 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -176,18 +183,73 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**✅ EVERY open issue is milestoned — re-verified 2026-08-05 after the restructure,
-0 unmilestoned.** An unmilestoned backlog makes the milestone feature worthless
-(maintainer's call). **24** open that day, per the table above.
+**⚠ ONE ISSUE IS UNMILESTONED: #417**, filed by an external user 2026-08-06 and not
+yet triaged; it has its own row in the table above. **25** open as of 2026-08-06.
+It is a bug fix on public API, so `0.2.x — Patch line` is the fit, but **the
+maintainer has not made that call** — do not assign it unasked. An unmilestoned
+backlog makes the milestone feature worthless (maintainer's call), so this is a
+real deviation, not a bookkeeping nit.
 ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — nothing in flight. Pick the next target.
+### ★ START HERE — review the #417 diff on `fix/datatable-double-click-417`.
 
-**⏭ NO ACTIVE WORK.** `main` is clean, `0.2.1` is released, #409 merged 2026-08-05
-via PR #414. The next session picks from the list below and starts fresh.
+**⏭ THE TASK IS A REVIEW, not new work.** One commit `aeffa27d` on
+`fix/datatable-double-click-417` (local only, unpushed, no PR). Read it with
+`git diff main...fix/datatable-double-click-417`. The maintainer has NOT reviewed
+it yet and has NOT approved pushing, opening a PR, milestoning #417, or replying to
+the reporter — **ask before any of those**; every one is outward-facing.
+
+**What the fix is.** `DataTable.on_row_double_click` never fired unless the table
+was also built with `allow_edit=True`: `tableview.py` installed the `<Double-1>`
+binding inside `if self._editing['updating']`, so on a read-only table the public
+event had nothing behind it, while `on_row_click`/`on_row_right_click` — bound on
+separate ungated paths — kept working. That asymmetry is what made it read as a
+broken event rather than an absent binding. The gate was never needed:
+`_on_row_double_click` emits `<<RowDoubleClick>>` first and only then gates the edit
+dialog, so the binding moved out of the `if` and editing behavior is unchanged.
+Verified on a full Windows suite run, exit 0 (**965 passed / 13 skipped**
+shared-root leg — note that is 46 higher than the 919 this file records for the
+`0.2.1` baseline; the branch adds only 2 tests, so **the gap predates it and was not
+chased down**).
+
+**Three things a reviewer should actually check, because they are the soft spots:**
+
+- ⚠ **Tk REJECTS `event_generate("<Double-1>")`** — `TclError: Double, Triple, or
+  Quadruple modifier not allowed`. `Double` is a binding *pattern*, not an event
+  type; the binding machinery derives the match from consecutive presses close in
+  time and position, so **two presses is the only way to synthesize one**. Both the
+  test and `development/probe_417_datatable_double_click.py` do that, and the probe
+  carries a hand-bound `<Double-Button-1>` control on the same widget so a zero-hit
+  reading cannot be confused with a probe that simply cannot click. **The first
+  version of that probe measured its own control** — it read the binding table
+  *after* installing the control binding, so it reported "bound" in both arms. If
+  you re-derive any of this, keep the ordering.
+- **The behavioral test is the fragile one.** `test_row_double_click_fires_without_editing`
+  needs the row mapped and hit-testable in the shared root, which this file records
+  as not guaranteed — it asserts `bbox() != ''` and `identify_row()` as preconditions
+  so it cannot pass vacuously, but it is still the test most likely to go flaky in a
+  reordered suite. `test_row_double_click_bound_regardless_of_editing` exists as the
+  geometry-free invariant and is the one that fails deterministically.
+- **The probe stubs `_open_form_dialog` and the row menu.** Both block the loop
+  forever when driven synthetically (modal `wait_window` / menu grab) — an earlier
+  run hung for two minutes before that was found. Neither is under test.
+
+**Already checked, so don't redo it:** the docs needed no change —
+`docs/widgets/datatable.rst:401` already said a double-click *"also"* opens the edit
+dialog with `allow_edit`, which only holds if the event fires either way, so this
+was a code defect against documented behavior. And the same gated-binding shape does
+exist for `on_row_right_click` (bound only when `context_menus != "none"`), but
+`context_menus` is **not exposed on the public `DataTable`** and defaults to `'all'`,
+so it is unreachable from public API — same call made for #397/#401. Nothing filed.
+
+**⚠ The branch re-creates `## [Unreleased]`** in the CHANGELOG (it is absent on
+`main`, consumed by `0.2.1`). If the review rejects the branch, that section goes
+with it and the next code fix must re-create it again.
+
+Everything below is the backlog to pick from **once #417 is settled.**
 
 **#409 is DONE (PR #414) — full entry in `docs/_dev/handoff-archive.md`.** Two
 things from it are worth carrying here because they are invisible in the diff and
@@ -205,8 +267,9 @@ will bite again:
   is folded into **#412**, not done. Don't write docs claiming the error lists what
   *that* widget knows — the branch shipped that sentence and the review caught it.
 
-**⚠ `## [Unreleased]` is STILL ABSENT** — #409 was docs-only, so it deliberately
-did not re-create the section. The next **code** fix does.
+**⚠ `## [Unreleased]` is ABSENT ON `main`** — #409 was docs-only, so it deliberately
+did not re-create the section. The in-flight #417 branch **does** re-create it, so
+this resolves itself if that branch lands and reopens if it does not.
 
 **⏭ The next targets, in milestone order (see the table above for why).**
 
