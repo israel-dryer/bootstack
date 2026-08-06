@@ -75,15 +75,15 @@ on the next statement, then grep the file.
 skipped`) were STALE** and produced a phantom "46-test gap" that a whole session
 flagged as unexplained. Measured 2026-08-06: `main` collects **976** shared-root
 widgets+CLI tests (`-m "not isolated"`), the `fix/datatable-double-click-417` branch
-**979**. Branch run: exit 0, **966 passed / 13 skipped** widgets+CLI, **123 passed /
-6 skipped** data, every isolated leg. The tree is clean apart from untracked
-`development/` probes. A failing test is a real signal — treat any red as a
+**980** (branch head `701cea54`). Branch run: exit 0, **967 passed / 13 skipped**
+widgets+CLI, **123 passed / 6 skipped** data, every isolated leg. The tree is
+clean. A failing test is a real signal — treat any red as a
 regression. **When you record a count here, record the DATE and the COMMIT** — a
 bare number silently rots into a fake regression signal.
 
-**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — **two** commits (`aeffa27d`
-then `638b24e3`), **local only, never pushed, no PR**, and **one commit behind
-`main`**. Reviewed by an agent 2026-08-06, which found and fixed a real defect
+**⏭ IN FLIGHT: `fix/datatable-double-click-417`** — **three** commits (`aeffa27d`,
+`638b24e3`, `701cea54`), **local only, never pushed, no PR**, and **behind `main`**
+by the handoff commits. It carries **#417 AND #418** despite the name. Reviewed by an agent 2026-08-06, which found and fixed a real defect
 (`638b24e3`); **the maintainer's own `/code-review` has NOT run yet and is the next
 session's task**, after which `0.2.2` cuts. See START HERE. Nothing else is open.
 **#409 shipped 2026-08-05 via PR #414** (merge
@@ -178,7 +178,7 @@ description, not just the title.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207 | 1 |
-| — | **UNMILESTONED** — #417 (fixed on a branch, awaiting `/code-review`) · #418 (filed 2026-08-06, unfixed) | 2 |
+| — | **UNMILESTONED** — #417 and #418, both FIXED on `fix/datatable-double-click-417`, both shipping in `0.2.2`, both still OPEN | 2 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -214,17 +214,25 @@ the `Skill` tool refuses it with *"reserved for explicit user invocation"*, and 
 skill instructions forbid replicating its workflow by other means. **Ask the
 maintainer to run `/code-review` themselves.** Do not work around this.
 
-**Two commits, local only, never pushed, no PR:**
+**THREE commits, local only, never pushed, no PR. The branch name is now
+under-descriptive — it carries #418 as well:**
 
 | SHA | What |
 |---|---|
 | `aeffa27d` | the #417 fix — `<Double-1>` bound unconditionally |
-| `638b24e3` | the group-header guard found while reviewing `aeffa27d` |
+| `638b24e3` | the group-header guard on `_on_row_double_click`, found while reviewing `aeffa27d` |
+| `701cea54` | **#418** — the same guard on `_on_row_context`; **maintainer decided it rides along in `0.2.2`** |
 
-⚠ **Review target is `git diff main` and the branch is ONE COMMIT BEHIND `main`**
-(`fbc0b235`, a handoff commit). Verified safe: `git diff main...HEAD -- CLAUDE.md`
-is **empty**, so the branch does not revert the handoff — this is the trap that
-nearly bit #410, and it was checked, not assumed. **Rebase before opening a PR.**
+⚠ **Review target is `git diff main` and the branch is BEHIND `main`** by the
+handoff commits. Verified safe: `git diff main...HEAD -- CLAUDE.md` is **empty**, so
+the branch does not revert the handoff — this is the trap that nearly bit #410, and
+it was checked, not assumed. **Rebase before opening a PR.**
+
+⚠ **The probes and the reorder plugin are committed on `main` ONLY, so they VANISH
+when you check out the branch.** Running
+`pytest ... -p reorder_datatable_last` from the branch fails with
+`ImportError: No module named 'reorder_datatable_last'` — which reads exactly like a
+test failure (`exit 1`) and is not one. Copy the file in, or run it after rebasing.
 
 **What the fix is.** `DataTable.on_row_double_click` never fired unless the table
 was also built with `allow_edit=True`: `tableview.py` installed the `<Double-1>`
@@ -241,12 +249,13 @@ spend the review's effort elsewhere.**
 - **Both original tests fail pre-fix BEHAVIORALLY**, not with `AttributeError`
   (`assert 0 == 1` on the event count; `assert []` on the binding), with their
   `bbox() != ''` preconditions passing first.
-- **Full suite green:** `py -3.12 tests/run_gui.py` exit 0, **966 passed / 13
-  skipped** shared-root, every isolated leg.
+- **Full suite green:** `py -3.12 tests/run_gui.py` exit 0, **967 passed / 13
+  skipped** shared-root (2026-08-06, branch head `701cea54`), every isolated leg.
 - **NOT order-dependent.** The suite was re-run with `test_datatable.py` forced to
   collect **LAST**, after ~950 tests have filled the shared root — the exact failure
-  mode this file warns about. Exit 0, all 16 datatable tests pass. Plugin kept at
-  `development/reorder_datatable_last.py`.
+  mode this file warns about. Exit 0, all **17** datatable tests pass, including all
+  three geometry-dependent group-header tests. Plugin at
+  `development/reorder_datatable_last.py` (see the vanishing-file warning above).
 - **The 46-test gap is STALE BOOKKEEPING, not a mystery.** `--collect-only
   -m "not isolated"`: `main` **976**, branch **978** — exactly +2. The `919` figure
   this file used to record for `0.2.1` was simply out of date. **Fixed above.**
@@ -313,12 +322,16 @@ with it.
    *"DataTable row events"*. Verify the rendered notes before tagging with the
    `release_notes.extract` one-liner under **Release flow**.
 4. `py -3.12 -m bumpversion bump patch`, push `main` + the `v0.2.2` tag.
-5. **Comment on #417 that it is on PyPI** — this was promised publicly (below).
+5. **Close #417 AND #418**, neither of which closes itself — the commits reference
+   them but no `Fixes #` keyword was used, deliberately, since they landed before
+   the review.
+6. **Comment on #417 that it is on PyPI** — this was promised publicly (below).
+   Nothing was promised to anyone on #418; it is ours.
 
-**⏭ OPEN QUESTION FOR THE MAINTAINER: does #418 ride along in `0.2.2`?** Raised,
-not answered. It is the identical one-line guard in the same file, currently
-unfixed, and **live in `0.2.1`**. Fixing it now means one patch instead of two;
-against that, it is a second behavior change going out on release morning.
+**✅ SETTLED: #418 RIDES ALONG in `0.2.2`** (maintainer, 2026-08-06). Fixed in
+`701cea54` on the same branch, so it is one PR and one review. **The issue is still
+OPEN — close it when the PR merges**, and note the CHANGELOG carries its own bullet
+citing `(#418)`.
 
 ### Outward-facing actions ALREADY TAKEN 2026-08-06 — do not repeat
 
@@ -331,6 +344,11 @@ against that, it is a second behavior change going out on release morning.
   ours). Same missing guard as `638b24e3`, but on `_on_row_context`
   (`tableview.py:~1694`), under a comment that *claims* to exclude group headers and
   does not. **Live on `main` today** — right-click needs no unusual configuration.
+  **Now FIXED in `701cea54`; the issue itself is still open.** ⚠ The fix also moves
+  `self._context_iid = iid or None`, which ran BEFORE the guard and so recorded a
+  group header as the row menu's target even though the menu never opened — leaving
+  a later row-menu command aimed via `_context_iids()` at a row with no record. That
+  second half is invisible in the issue title; don't drop it if the fix is redone.
 - **Commented on #383** with the `context_menus` finding.
   ⚠ **This CORRECTS what this file used to say.** The old text claimed
   `context_menus` is "not exposed on the public `DataTable`". Measured truth:
