@@ -116,6 +116,12 @@ How-to guides
 
       Intro screens that cover startup — timed branding, welcome, real progress.
 
+   .. grid-item-card:: :octicon:`device-camera;1.5em;sd-mr-1` Capturing Screenshots
+      :link: /tasks/capturing-screenshots
+      :link-type: doc
+
+      Save a window or a single widget as a PNG, JPEG, or PDF the user can share.
+
 Feature guides
 --------------
 
@@ -262,6 +268,7 @@ Developer tools
    /tasks/navigation/index
    /tasks/application-icons
    /tasks/splash-screens
+   /tasks/capturing-screenshots
 
 .. toctree::
    :caption: Feature guides
