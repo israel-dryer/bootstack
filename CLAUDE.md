@@ -113,22 +113,62 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-**⚠ IN FLIGHT (2026-08-07): `feat/widget-capture-427`, PUSHED, awaiting review.**
+**⚠ IN FLIGHT (2026-08-07): `feat/widget-capture-427`, PUSHED. REVIEWED, and all
+findings are APPLIED — what is left is the macOS/Linux legs, then a PR.**
 Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
 `.pdf` — from discussion #425 (an external user) via **#427**. **It ships as
 `0.3.0 — Screen capture`, its own minor, decided by the maintainer 2026-08-07**;
 it was moved off `Additions awaiting a minor` and the five milestones below it
-were renumbered up one. Five commits, head `a3b5f66a`. **Read
-`development/review-brief-427-capture.md` ON THAT BRANCH before reviewing it** —
-it records the settled decisions not to re-litigate, the measurements not to
-re-derive, the three controls that were run, and six self-flagged soft spots.
-**Windows-only so far; the macOS and Linux legs have NOT been run** — the
-maintainer is doing those. Run `development/verify_427_capture.py` on each box;
-it prints the platform and backend and SKIPs arms the machine cannot exercise.
-⚠ The likeliest real defect is #1 in the brief: the Linux subprocess fallback
-crops a full-screen grab using **virtual-desktop** coordinates, which is wrong
-on multi-monitor. Suite on the branch: **940 passed / 14 skipped** widgets+CLI
-(+10 = exactly its new tests) and 125 / 4 data, exit 0; clean `-W` docs build.
+were renumbered up one. **Nine commits, head `ef7e6421`.** ⚠ **There is NO PR
+yet** — verified with `gh pr list --head feat/widget-capture-427 --state all`,
+which returns empty. **Read `development/review-brief-427-capture.md` ON THAT
+BRANCH** — it records the settled decisions not to re-litigate and the
+measurements not to re-derive. ⚠ **But read it as a POINT-IN-TIME record: its
+six self-flagged soft spots are all resolved now** (see below), and it was
+deliberately not rewritten. **Windows-only so far; the macOS and Linux legs have
+NOT been run** — the maintainer is doing those. Run
+`development/verify_427_capture.py` on each box; it prints the platform and
+backend and SKIPs arms the machine cannot exercise. Suite on the branch,
+measured 2026-08-07 at `ef7e6421`: **944 passed / 14 skipped** widgets+CLI and
+**125 / 4** data, exit 0; clean `-W` docs build, and a `-n` build reports
+nothing for the touched pages.
+
+⚠ **The +14 over `main`'s 930 is the branch's own 10 tests plus the 4 the review
+added — it is NOT a regression.** This block previously recorded `940 / 14
+(+10 = exactly its new tests)`, which was correct at `a3b5f66a` and is now the
+exact stale-metric trap this file warns about elsewhere. Sum the legs yourself.
+
+**The review ran 2026-08-07 and found six things; five were fixed on the branch,
+one was documented. Do NOT re-derive these — each has a control committed at
+`development/probe_427_review_fixes.py` reproducing the pre-fix behavior.**
+
+- ✅ **The Linux virtual-desktop crop — FIXED (`8e721837`).** This was flagged
+  here as "the likeliest real defect" and it was real: `crop((1930, 10, 2200,
+  300))` on a 1920x1080 image returns 270x290 pixels, **every one black**, and
+  raises nothing. `_crop_desktop()` now bounds-checks and raises. ⚠ **Region
+  flags (`grim -g`, `import -crop`) were CONSIDERED and DELIBERATELY SKIPPED —
+  do not re-propose them.** None can be verified from the Windows box, and a
+  wrong `-g` region fails just as silently as the bug it would replace; the
+  bounds check is the part that holds on every backend.
+- ✅ **`save()` flattened only `RGBA` — FIXED.** The gate is on the target
+  format now, because the subprocess fallback opens whatever the desktop tool
+  wrote and mode `P` fails with `cannot write mode P as JPEG`.
+- ✅ **`settle()` re-entrancy — FIXED.** It turns the event loop, so a queued
+  handler can close the target. **Measured: `winfo_ismapped()` on a destroyed
+  widget RAISES `TclError: bad window path name` — it does not return 0**, so a
+  raw toolkit error escaped a method documented to raise `BootstackError`. That
+  measurement is what made the finding real rather than overstated.
+- ✅ **A negative `inset` — FIXED.** It expanded the rect and photographed the
+  neighbors; a 60x20 widget with `inset=-8` yields a 76x36 grab, **invisible to
+  the existing `right <= left` guard because the box only grew.**
+- ✅ **macOS Screen Recording permission — DOCUMENTED** (it returns the desktop
+  and raises nothing). ⚠ **`CGPreflightScreenCaptureAccess()` would detect it
+  but needs pyobjc, which bootstack does not depend on — decided against, do not
+  re-propose.**
+- ✅ **A dangling `:func:` xref — FIXED.** It pointed at
+  `bootstack.dialogs.ask_save_file`; the verb is top-level and its only autodoc
+  home is `bootstack.ask_save_file`. ⚠ **A default `-W` build does NOT catch a
+  dangling py xref — only `-n` does.**
 
 **BRANCHES: `main` plus `feat/widget-capture-427`** — the `main`-only state below
 was verified 2026-08-06 after the `0.2.2` release and held until the branch above
@@ -171,8 +211,9 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ ACTIVE: `feat/widget-capture-427` (#427), pushed 2026-08-07, awaiting review
-and the macOS/Linux legs** — see the IN FLIGHT block under Current state. It was
+**⏭ ACTIVE: `feat/widget-capture-427` (#427), pushed 2026-08-07. Reviewed, all
+findings applied; awaiting the macOS/Linux legs, then a PR** — see the IN FLIGHT
+block under Current state. It was
 taken ahead of the standing recommendation deliberately: an external user asked
 for it in discussion #425, and it is additive, so it cannot destabilize the
 batched strictness work. ⚠ **It adds public surface, so it CANNOT ride the patch
