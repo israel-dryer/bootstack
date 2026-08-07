@@ -9,6 +9,8 @@ from bootstack.events import Event, Subscription
 from bootstack.errors import ParentResolutionError
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from bootstack.scheduling import Schedule
     from bootstack.streams import Stream
 
@@ -185,6 +187,70 @@ class PublicWidgetBase:
             from bootstack.scheduling import Schedule
             self._schedule = Schedule(self._internal)
         return self._schedule
+
+    def capture(
+        self,
+        path: str | Path,
+        *,
+        inset: int = 0,
+        settle: float = 0.1,
+    ) -> Path:
+        """Save a picture of this widget to an image file.
+
+        Captures the area this widget occupies on screen — one widget, a whole
+        window, or the entire application, depending on what you call it on.
+        The file extension selects the format, so `.png`, `.jpg`, and `.pdf`
+        all work.
+
+        The widget has to be visible. A capture reads pixels from the display,
+        so the window is brought to the front first and a hidden or detached
+        widget cannot be captured at all. Any always-on-top setting the window
+        already had is left as it was found.
+
+        Pair it with a save dialog to let the user choose where it goes::
+
+            from bootstack.dialogs import ask_save_file
+
+            def on_export():
+                chosen = ask_save_file(initial_file="dashboard.png")
+                if chosen:
+                    app.capture(chosen)
+
+        Args:
+            path: Where to write the image. Missing parent folders are created,
+                and the extension chooses the format.
+            inset: Pixels to trim from every edge. Use `2` on a whole window to
+                drop the native border artifact.
+            settle: Seconds to let the desktop finish repainting before the
+                pixels are read. The default covers the common case of a dialog
+                closing just beforehand. The interface stays responsive while
+                this waits.
+
+        Returns:
+            The path that was written.
+
+        Raises:
+            BootstackError: If the widget is not visible on screen, if no
+                capture backend is available, or if the file cannot be written.
+        """
+        from bootstack._core import capture as _capture
+        from bootstack.errors import BootstackError
+
+        target = self._internal
+        with _capture.raised(target):
+            # Settle after raising: the desktop needs a moment to repaint the
+            # newly exposed area, and a widget created moments ago is not
+            # mapped until the toolkit has processed its pending geometry.
+            _capture.settle(target, settle)
+            if not target.winfo_ismapped():
+                raise BootstackError(
+                    f"{type(self).__name__} is not visible on screen, so there "
+                    f"is nothing to capture. Show the window and make sure the "
+                    f"widget is neither hidden nor detached before capturing it."
+                )
+            return _capture.capture_region(
+                _capture.widget_region(target, inset), path
+            )
 
     # ----- on() — overloaded -------------------------------------------------
 
