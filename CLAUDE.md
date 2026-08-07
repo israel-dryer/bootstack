@@ -113,8 +113,24 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-**BRANCHES: `main` ONLY, local and remote** — verified 2026-08-06 after the `0.2.2`
-release (`git branch -a` shows `main` plus `origin/main`). Nothing is in flight.
+**⚠ IN FLIGHT (2026-08-07): `feat/widget-capture-427`, PUSHED, awaiting review.**
+Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
+`.pdf` — from discussion #425 (an external user) via **#427**, milestoned
+`Additions awaiting a minor`. Five commits, head `a3b5f66a`. **Read
+`development/review-brief-427-capture.md` ON THAT BRANCH before reviewing it** —
+it records the settled decisions not to re-litigate, the measurements not to
+re-derive, the three controls that were run, and six self-flagged soft spots.
+**Windows-only so far; the macOS and Linux legs have NOT been run** — the
+maintainer is doing those. Run `development/verify_427_capture.py` on each box;
+it prints the platform and backend and SKIPs arms the machine cannot exercise.
+⚠ The likeliest real defect is #1 in the brief: the Linux subprocess fallback
+crops a full-screen grab using **virtual-desktop** coordinates, which is wrong
+on multi-monitor. Suite on the branch: **940 passed / 14 skipped** widgets+CLI
+(+10 = exactly its new tests) and 125 / 4 data, exit 0; clean `-W` docs build.
+
+**BRANCHES: `main` plus `feat/widget-capture-427`** — the `main`-only state below
+was verified 2026-08-06 after the `0.2.2` release and held until the branch above
+was pushed on 2026-08-07.
 An earlier sweep on 2026-08-05
 (maintainer-approved) deleted all seven survivors together with
 their `: gone` locals: three merged ancestors (`docs/custom-events-409` PR #414,
@@ -153,7 +169,16 @@ One genuine break still warrants a minor, so the version is right — it just re
 on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
 in any layout pairing a field with a taller widget on a stretch axis.
 
-**⏭ NO ACTIVE TARGET — `0.2.2` shipped 2026-08-06 and nothing is in flight.** Pick
+**⏭ ACTIVE: `feat/widget-capture-427` (#427), pushed 2026-08-07, awaiting review
+and the macOS/Linux legs** — see the IN FLIGHT block under Current state. It was
+taken ahead of the standing recommendation deliberately: an external user asked
+for it in discussion #425, and it is additive, so it cannot destabilize the
+batched strictness work. ⚠ **It adds public surface, so it CANNOT ride the patch
+line.** Whether it cuts ahead of `0.3.0 — Strictness and value types` as its own
+minor — which answers the reporter sooner but renumbers four milestones — is
+**still open and is the maintainer's call**.
+
+After it, pick
 from the table below; the standing recommendation is the unnumbered
 `Test and release confidence` workstream (**#407** then **#380**), and **#390** is a
 decision that can be taken at any time. ⚠ **The milestones were
