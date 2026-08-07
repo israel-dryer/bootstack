@@ -209,18 +209,18 @@ class PublicWidgetBase:
 
         Pair it with a save dialog to let the user choose where it goes::
 
-            from bootstack.dialogs import ask_save_file
+            import bootstack as bs
 
             def on_export():
-                chosen = ask_save_file(initial_file="dashboard.png")
+                chosen = bs.ask_save_file(initial_file="dashboard.png")
                 if chosen:
                     app.capture(chosen)
 
         Args:
             path: Where to write the image. Missing parent folders are created,
                 and the extension chooses the format.
-            inset: Pixels to trim from every edge. Use `2` on a whole window to
-                drop the native border artifact.
+            inset: Pixels to trim from every edge, zero or more. Use `2` on a
+                whole window to drop the native border artifact.
             settle: Seconds to let the desktop finish repainting before the
                 pixels are read. The default covers the common case of a dialog
                 closing just beforehand. The interface stays responsive while
@@ -230,8 +230,9 @@ class PublicWidgetBase:
             The path that was written.
 
         Raises:
-            BootstackError: If the widget is not visible on screen, if no
-                capture backend is available, or if the file cannot be written.
+            BootstackError: If the widget is not visible on screen, if `inset`
+                is negative, if no capture backend is available, or if the file
+                cannot be written.
         """
         from bootstack._core import capture as _capture
         from bootstack.errors import BootstackError
@@ -242,6 +243,14 @@ class PublicWidgetBase:
             # newly exposed area, and a widget created moments ago is not
             # mapped until the toolkit has processed its pending geometry.
             _capture.settle(target, settle)
+            # Settling turns the event loop, so anything queued runs here —
+            # including a handler that closes the window being photographed.
+            if not target.winfo_exists():
+                raise BootstackError(
+                    f"{type(self).__name__} was closed while the capture was "
+                    f"waiting for the screen to settle, so there is nothing "
+                    f"left to photograph."
+                )
             if not target.winfo_ismapped():
                 raise BootstackError(
                     f"{type(self).__name__} is not visible on screen, so there "
