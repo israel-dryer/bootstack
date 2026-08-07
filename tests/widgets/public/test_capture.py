@@ -18,6 +18,7 @@ import pytest
 from PIL import Image
 
 import bootstack as bs
+from bootstack._core import capture as _capture
 from bootstack.errors import BootstackError
 
 pytestmark = pytest.mark.gui
@@ -128,3 +129,65 @@ def test_capture_leaves_a_deliberately_topmost_window_pinned(shown_app, tmp_path
         assert root.attributes("-topmost")
     finally:
         root.attributes("-topmost", False)
+
+
+def test_negative_inset_raises(shown_app, tmp_path):
+    """An inset trims. It must not be usable to photograph the neighbors."""
+    label = bs.Label("no growing")
+    shown_app.tk.update_idletasks()
+
+    with pytest.raises(BootstackError, match="is negative"):
+        label.capture(tmp_path / "grown.png", inset=-8, settle=0)
+
+
+def test_widget_closed_while_settling_raises_a_bootstack_error(
+    shown_app, tmp_path
+):
+    """Settling turns the event loop, so a queued handler can close the target.
+
+    Without the guard the next line reads geometry from a dead widget and a raw
+    toolkit error escapes a method documented to raise `BootstackError`. The
+    control is every other test in this file: the same call without a pending
+    destroy captures normally.
+    """
+    label = bs.Label("closing")
+    shown_app.tk.update_idletasks()
+    shown_app.tk.after(1, label.tk.destroy)
+
+    with pytest.raises(BootstackError, match="closed while the capture"):
+        label.capture(tmp_path / "gone.png", settle=0.1)
+
+
+def test_a_no_alpha_format_converts_a_mode_the_grabbers_never_produce(tmp_path):
+    """`save()` gates on the target format, not on one source mode.
+
+    Reached through the internal function on purpose. The Windows and macOS
+    grabbers only ever return RGB or RGBA, so this is unreachable from the
+    public method on either box — it is the Linux fallback, which opens
+    whatever the desktop screenshot tool wrote, that can produce a palette
+    image.
+    """
+    palette = Image.new("P", (4, 4))
+
+    with Image.open(_capture.save(palette, tmp_path / "flat.jpg")) as img:
+        assert img.mode == "RGB"
+
+    # Control: PNG stores a palette perfectly well, so nothing is converted.
+    with Image.open(_capture.save(palette, tmp_path / "kept.png")) as img:
+        assert img.mode == "P"
+
+
+def test_a_region_outside_the_grab_raises_instead_of_padding_black():
+    """A screenshot tool that missed the monitor must not yield a black picture.
+
+    Cropping past the edge of an image pads the result with black and raises
+    nothing, so the failure would reach the user as a plausible-looking
+    all-black file with nothing to debug.
+    """
+    desktop = Image.new("RGB", (1920, 1080), "white")
+
+    with pytest.raises(BootstackError, match="does not cover the area"):
+        _capture._crop_desktop(desktop, (1930, 10, 2200, 300))
+
+    # Control: a region the grab does cover crops normally.
+    assert _capture._crop_desktop(desktop, (10, 10, 110, 60)).size == (100, 50)
