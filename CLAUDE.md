@@ -115,8 +115,10 @@ deleted after the release.
 
 **⚠ IN FLIGHT (2026-08-07): `feat/widget-capture-427`, PUSHED, awaiting review.**
 Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
-`.pdf` — from discussion #425 (an external user) via **#427**, milestoned
-`Additions awaiting a minor`. Five commits, head `a3b5f66a`. **Read
+`.pdf` — from discussion #425 (an external user) via **#427**. **It ships as
+`0.3.0 — Screen capture`, its own minor, decided by the maintainer 2026-08-07**;
+it was moved off `Additions awaiting a minor` and the five milestones below it
+were renumbered up one. Five commits, head `a3b5f66a`. **Read
 `development/review-brief-427-capture.md` ON THAT BRANCH before reviewing it** —
 it records the settled decisions not to re-litigate, the measurements not to
 re-derive, the three controls that were run, and six self-flagged soft spots.
@@ -174,18 +176,32 @@ and the macOS/Linux legs** — see the IN FLIGHT block under Current state. It w
 taken ahead of the standing recommendation deliberately: an external user asked
 for it in discussion #425, and it is additive, so it cannot destabilize the
 batched strictness work. ⚠ **It adds public surface, so it CANNOT ride the patch
-line.** Whether it cuts ahead of `0.3.0 — Strictness and value types` as its own
-minor — which answers the reporter sooner but renumbers four milestones — is
-**still open and is the maintainer's call**.
+line.** ✅ **DECIDED 2026-08-07 (maintainer): it CUTS AHEAD as its own minor.** It
+is now **`0.3.0 — Screen capture`**, and everything below it shifted up one.
 
 After it, pick
 from the table below; the standing recommendation is the unnumbered
 `Test and release confidence` workstream (**#407** then **#380**), and **#390** is a
-decision that can be taken at any time. ⚠ **The milestones were
-RESTRUCTURED and RENUMBERED 2026-08-05** (maintainer-approved). Anything written
-before that date referring to `0.3.0 — Guided flows`, `0.4.0 — Power-user
-interactions`, `0.5.0 — Structured editing` or `0.6.0 — Argument and value
-strictness` is using the **old** numbers.
+decision that can be taken at any time. ⚠ **The milestones have been RENUMBERED
+TWICE — read the CURRENT table below, never a number quoted in older prose.**
+Restructured and renumbered 2026-08-05, then renumbered again 2026-08-07 when
+`0.3.0 — Screen capture` was inserted ahead of the strictness batch. Two
+generations of stale numbers are therefore in circulation:
+
+| written before | says | now means |
+|---|---|---|
+| 2026-08-05 | `0.3.0 — Guided flows` | `0.6.0 — Guided flows` |
+| 2026-08-05 | `0.4.0 — Power-user interactions` | `0.7.0 — Power-user interactions` |
+| 2026-08-05 | `0.5.0 — Structured editing` | `0.8.0 — Structured editing` |
+| 2026-08-05 | `0.6.0 — Argument and value strictness` | `0.4.0 — Strictness and value types` |
+| 2026-08-07 | `0.3.0 — Strictness and value types` | `0.4.0 — Strictness and value types` |
+| 2026-08-07 | `0.4.0 — Form, signals, and composite authoring` | `0.5.0 — …` |
+| 2026-08-07 | `0.5.0 / 0.6.0 / 0.7.0` | `0.6.0 / 0.7.0 / 0.8.0` |
+
+⚠ **Prose further down this file still quotes the OLD numbers in places** (e.g.
+"#369 and #383 are milestoned `0.6.0 — Argument and value strictness`"). Those
+lines were not swept. The table above is the authority; when you touch such a
+line, fix it.
 
 **THE RULE, which is the part worth keeping: numbered milestones are RELEASES;
 unnumbered milestones hold work NOT YET ASSIGNED to a release.** Membership in a
@@ -213,16 +229,17 @@ description, not just the title.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
-| 2 | **`0.3.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
-| 3 | **`0.4.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
-| 4 | **`0.5.0 — Guided flows`** — #311, #312 | 2 |
-| 5 | **`0.6.0 — Power-user interactions`** — #315, #316 | 2 |
-| 6 | **`0.7.0 — Structured editing`** — #192, #314 | 2 |
+| 1 | **`0.3.0 — Screen capture`** — #427 (IN FLIGHT, `feat/widget-capture-427`) | 1 |
+| 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
+| 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
+| 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
+| 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
+| 6 | **`0.7.0 — Power-user interactions`** — #315, #316 | 2 |
+| 7 | **`0.8.0 — Structured editing`** — #192, #314 | 2 |
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207, #417, #418, #419, #420, #421, #422 | 7 |
+| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207, #422 | 2 |
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
@@ -234,8 +251,17 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**✅ ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
-counted by hand) — the deviation this file used to flag is closed. The maintainer
+**⚠ ONE UNMILESTONED OPEN ISSUE as of 2026-08-07: #426** ("Layout migration error
+names `align_self=`/`justify_self=`, which do not exist" — filed 2026-08-07 by
+someone other than us). **It is deliberately left unassigned**: the rule below
+says do not assign a milestone unasked, and it has not been raised with the
+maintainer. It reads like patch-line material — an error message naming kwargs
+that do not exist is a bug fix on existing public API, adding nothing — but that
+is the maintainer's call to make. ⚠ Note it contradicts this file's own layout
+example, which teaches `Use grow= / align_self=` as the good error message.
+
+**ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
+counted by hand) — the deviation this file used to flag was closed. The maintainer
 assigned #417, #418, #419, #420, #421 and #422 to `0.2.x — Patch line` in one call:
 all six are bug fixes on existing public API and **none adds public surface**, which
 is the test for the patch line. #417 came from an external user; the other five were
