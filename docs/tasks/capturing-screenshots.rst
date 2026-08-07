@@ -24,15 +24,13 @@ Letting the user choose the file
 --------------------------------
 
 In practice you rarely want a hard-coded filename. Pair the capture with
-:func:`~bootstack.dialogs.ask_save_file` and the user picks both the location
-and the format:
+:func:`~bootstack.ask_save_file` and the user picks both the location and the
+format:
 
 .. code-block:: python
 
-   from bootstack.dialogs import ask_save_file
-
    def on_export():
-       chosen = ask_save_file(
+       chosen = bs.ask_save_file(
            initial_file="dashboard.png",
            file_types=[("PNG image", "*.png"),
                        ("JPEG image", "*.jpg"),
@@ -104,6 +102,15 @@ knowing before you build on it:
 - **The capture is what the screen shows.** A long list scrolled halfway down is
   captured halfway down; there is no way to photograph content scrolled out of
   view.
+- **On macOS, the application needs permission to record the screen.** Without it
+  the system quietly hands back a picture of the desktop instead of the window —
+  no error, just the wrong image. macOS asks the first time an application
+  captures anything and never asks again if that prompt was declined; grant it
+  under System Settings → Privacy and Security → Screen and System Audio
+  Recording (called Screen Recording before macOS 15) and restart the
+  application. While developing, the permission follows whatever launched the
+  script, so it is the terminal or editor that needs it rather than the script
+  itself.
 
 If the application already had its window pinned always-on-top, that setting is
 left exactly as it was found.
