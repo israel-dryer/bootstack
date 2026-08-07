@@ -25,9 +25,13 @@ from PIL import Image, ImageGrab
 
 from bootstack.errors import BootstackError
 
-# Formats with no alpha channel. A capture bound for one of these is
-# flattened first, because saving RGBA as JPEG fails outright.
+# Formats that store plain color and nothing else. A capture bound for one of
+# these is converted first, because saving an image that carries transparency
+# — or a color palette — as JPEG fails outright.
 _NO_ALPHA_FORMATS = {".jpg", ".jpeg", ".pdf", ".bmp"}
+
+# Image modes those formats accept as they are.
+_PLAIN_COLOR_MODES = ("RGB", "L")
 
 # Tried in order, first one installed wins.
 _SUBPROCESS_BACKENDS = (
@@ -46,8 +50,13 @@ def widget_region(tk_widget, inset: int = 0) -> tuple[int, int, int, int]:
 
     Args:
         tk_widget: The toolkit widget to measure.
-        inset: Pixels to trim from every edge.
+        inset: Pixels to trim from every edge. Zero or more.
     """
+    if inset < 0:
+        raise BootstackError(
+            f"inset={inset} is negative. An inset trims pixels from every "
+            f"edge, so it cannot reach past the widget onto its neighbors."
+        )
     x, y = tk_widget.winfo_rootx(), tk_widget.winfo_rooty()
     width, height = tk_widget.winfo_width(), tk_widget.winfo_height()
     left, top = x + inset, y + inset
@@ -144,7 +153,13 @@ def grab(bbox: tuple[int, int, int, int] | None = None) -> Image.Image:
 def save(image: Image.Image, path) -> Path:
     """Write an image to `path`, taking the format from its extension."""
     path = Path(path)
-    if image.mode == "RGBA" and path.suffix.lower() in _NO_ALPHA_FORMATS:
+    # Decided by the target format rather than one source mode: a desktop
+    # screenshot tool can hand back a palette or grayscale-with-alpha image,
+    # and those fail on the same formats RGBA does.
+    if (
+        path.suffix.lower() in _NO_ALPHA_FORMATS
+        and image.mode not in _PLAIN_COLOR_MODES
+    ):
         image = image.convert("RGB")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -186,9 +201,34 @@ def _grab_via_subprocess(
             continue
         finally:
             tmp.unlink(missing_ok=True)
-        return image.crop(bbox) if bbox else image
+        return _crop_desktop(image, bbox) if bbox else image
 
     raise BootstackError(
         "No screen capture backend is available. Install a Pillow build with "
         "XCB support, or one of: grim, gnome-screenshot, spectacle, import."
     )
+
+
+def _crop_desktop(
+    image: Image.Image, bbox: tuple[int, int, int, int]
+) -> Image.Image:
+    """Cut a region out of a whole-desktop grab, refusing a region it misses.
+
+    The screenshot tools photograph the desktop and return an image measured
+    from their own origin, while the region is measured across the whole
+    virtual desktop. Those agree on an ordinary single-monitor session and can
+    disagree otherwise — most often when the window sits on a monitor the tool
+    did not photograph. Cropping past the edge of an image pads the result with
+    black rather than failing, so the caller would get a plausible-looking
+    all-black picture and no way to tell why. Raising is the better answer.
+    """
+    left, top, right, bottom = bbox
+    if left < 0 or top < 0 or right > image.width or bottom > image.height:
+        raise BootstackError(
+            f"The screen capture tool returned a {image.width}x{image.height} "
+            f"picture, which does not cover the area being captured — "
+            f"({left}, {top}) to ({right}, {bottom}). This usually means the "
+            f"window is on a monitor the tool did not photograph; moving it to "
+            f"the main display is the reliable workaround."
+        )
+    return image.crop(bbox)
