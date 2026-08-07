@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Added
+
+- **Every widget can now save a picture of itself.** `capture(path)` writes the area a widget occupies on screen to an image file and returns the path it wrote — call it on the app for the whole window, or on any single widget for just that part of it. The file extension picks the format, so `.png`, `.jpg`, and `.pdf` all work, and missing folders in the path are created for you. Pair it with `ask_save_file()` to let the user choose where the picture goes. The window is raised before the picture is taken, and an always-on-top setting the window already had is left exactly as it was found. Capturing a hidden or detached widget raises an error rather than silently saving whatever happened to be behind it. (#427)
+
 ## [0.2.2] — DataTable group headers and row events
 
 ### Changed
