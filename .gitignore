@@ -19,6 +19,8 @@ docsenv
 errors
 development/archived
 development/issues
+# Output written by the capture probe/demo — artifacts, not source.
+development/screencap_out
 testenv
 pyvenv
 identifier.sqlite
