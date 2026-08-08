@@ -14,8 +14,10 @@ always-on-top setting left as it was found.
 """
 from __future__ import annotations
 
+import sys
+
 import pytest
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 import bootstack as bs
 from bootstack._core import capture as _capture
@@ -25,6 +27,24 @@ from bootstack.errors import BootstackError
 # push the widgets clean off the display and every grab asks for a region no
 # monitor covers. See the note beside this module in `tests/run_gui.py`.
 pytestmark = [pytest.mark.gui, pytest.mark.isolated]
+
+
+def _monitors():
+    """The display layout, or a skip when this machine cannot report one.
+
+    Deliberately imported here rather than read off the capture module, so that
+    running these against unfixed source fails on the BEHAVIOR under test and
+    not on a missing attribute.
+    """
+    try:
+        from screeninfo import get_monitors
+
+        found = get_monitors()
+    except Exception as exc:  # noqa: BLE001 - headless boxes raise several types
+        pytest.skip(f"no display layout available: {exc}")
+    if not found:
+        pytest.skip("no monitors reported")
+    return found
 
 
 def test_capture_writes_the_file_and_returns_its_path(shown_app, tmp_path):
@@ -194,3 +214,69 @@ def test_a_region_outside_the_grab_raises_instead_of_padding_black():
 
     # Control: a region the grab does cover crops normally.
     assert _capture._crop_desktop(desktop, (10, 10, 110, 60)).size == (100, 50)
+
+
+def test_a_region_on_no_display_names_the_real_cause(monkeypatch):
+    """An off-display region must not be reported as a missing backend.
+
+    Pillow reports a region no monitor covers as `UnidentifiedImageError`,
+    which IS an `OSError` — the same exception raised by a Pillow built without
+    XCB. Reading the first as the second sends a macOS user off to install
+    Linux screenshot tools on a machine whose own backend works perfectly.
+
+    The failure is forced rather than provoked with a real off-screen grab:
+    Windows crops a whole-desktop grab and returns black instead of raising, so
+    a test that leaned on the genuine failure would assert a macOS-only answer.
+    """
+    def refuse(*args, **kwargs):
+        raise UnidentifiedImageError("cannot identify image file")
+
+    monkeypatch.setattr(_capture.ImageGrab, "grab", refuse)
+    # The real `sys`, not the capture module's reference to it — unfixed source
+    # does not import `sys` at all, and patching through it would turn this
+    # into an attribute error instead of the behavioral failure it should be.
+    monkeypatch.setattr(sys, "platform", "darwin")
+
+    monitors = _monitors()
+    below_everything = max(m.y + m.height for m in monitors) + 5_000
+    off = (10, below_everything, 110, below_everything + 100)
+
+    with pytest.raises(BootstackError, match="not on any display") as nowhere:
+        _capture.grab(off)
+    assert "grim" not in str(nowhere.value)
+
+    # Control: the identical forced failure over a region that IS on a display.
+    # A different cause earns a different message — and neither one may send a
+    # Mac user to install Linux tooling.
+    first = monitors[0]
+    on = (first.x + 10, first.y + 10, first.x + 60, first.y + 40)
+
+    with pytest.raises(BootstackError, match="capture failed") as covered:
+        _capture.grab(on)
+    assert "grim" not in str(covered.value)
+
+
+def test_a_window_hanging_off_the_edge_still_counts_as_on_screen():
+    """The guard must refuse only what no monitor touches at all.
+
+    A window dragged half off the bottom of the screen captures perfectly well
+    — measured on macOS, which clamps such a window and grabs it in full — so
+    treating partial overlap as off-display would reject a working capture.
+
+    This one guards against a future over-rejection rather than reproducing the
+    original defect: it exercises a helper that did not exist before the fix, so
+    unfixed source can only fail it for the uninteresting reason.
+    """
+    monitors = _monitors()
+    first = monitors[0]
+
+    fully_on = (first.x + 10, first.y + 10, first.x + 60, first.y + 40)
+    assert _capture._covered_by_a_display(fully_on) is True
+
+    half_off = (first.x + 10, first.y + first.height - 20,
+                first.x + 60, first.y + first.height + 200)
+    assert _capture._covered_by_a_display(half_off) is True
+
+    below_everything = max(m.y + m.height for m in monitors) + 5_000
+    nowhere = (first.x + 10, below_everything, first.x + 60, below_everything + 100)
+    assert _capture._covered_by_a_display(nowhere) is False
