@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`import bootstack` no longer requires `idlelib`, so it works on Linux builds of Python that ship without IDLE.** `idlelib` is part of the standard library, but Debian and Ubuntu package IDLE separately — the way they package Tkinter separately — and it is not installed by default. bootstack imported `WidgetRedirector` from it at module scope, in code the top-level package reaches unconditionally, so on those systems `import bootstack` raised `ModuleNotFoundError: No module named 'idlelib'` and nothing in the framework could be used at all. Since `idlelib` is standard library it is not on PyPI and could not be declared as a dependency, so there was no way to fix this by installing something. That one class is now part of bootstack, alongside the other pieces of the code editor already adapted from IDLE, and nothing in the framework imports `idlelib` any more. Windows and macOS were never affected: the python.org installers bundle IDLE. (#430)
+
 ## [0.2.2] — DataTable group headers and row events
 
 ### Changed
