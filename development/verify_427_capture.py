@@ -22,6 +22,7 @@ Run: py -3.12 development/verify_427_capture.py     (Windows)
 
 import platform
 import sys
+import time
 import tkinter
 from pathlib import Path
 
@@ -66,6 +67,32 @@ def mean_difference(path_a, path_b):
         diff = ImageChops.difference(first, second).convert("L")
         pixels = first.size[0] * first.size[1]
         return sum(v * c for v, c in enumerate(diff.histogram())) / pixels
+
+
+def pinned(root, timeout=0.5):
+    """Ask for always-on-top, reporting whether the request actually took.
+
+    A window manager that honors it answers asynchronously, and that answer
+    arrives as a window event rather than an idle callback — so this polls
+    instead of reading once. Reading too early reports "not supported" on a
+    machine that supports it perfectly well.
+
+    A refused request still leaves one recorded, so it is put back before
+    reporting failure: otherwise the next reader gets the record rather than
+    the window manager's answer.
+    """
+    root.attributes("-topmost", True)
+    deadline = time.monotonic() + timeout
+    while True:
+        root.update()
+        if root.attributes("-topmost"):
+            return True
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(0.01)
+    root.attributes("-topmost", False)
+    root.update_idletasks()
+    return False
 
 
 def banner():
@@ -162,29 +189,25 @@ def run_checks():
         # off — no error. Both arms below would then report on the window
         # manager rather than on the capture: the pinned arm fails and its
         # opposite passes for free.
-        root.attributes("-topmost", True)
-        root.update_idletasks()
-        if not root.attributes("-topmost"):
-            # Put the refused request back, so it cannot be read as a granted
-            # one by anything that looks later.
-            root.attributes("-topmost", False)
-            root.update_idletasks()
+        if not pinned(root):
             skip("always-on-top is restored",
                  "this window manager ignores -topmost, so neither direction "
                  "can be told apart")
         else:
+            # `update()` rather than `update_idletasks()` throughout: the
+            # window manager's answer is a window event, not an idle callback.
             root.attributes("-topmost", False)
-            root.update_idletasks()
+            root.update()
             app.capture(OUT / "verify-topmost-off.png")
             check("a non-topmost window is left non-topmost",
                   not root.attributes("-topmost"))
 
-            root.attributes("-topmost", True)
-            root.update_idletasks()
+            pinned(root)
             app.capture(OUT / "verify-topmost-on.png")
             check("a deliberately pinned window stays pinned",
                   bool(root.attributes("-topmost")))
             root.attributes("-topmost", False)
+            root.update()
     except tkinter.TclError as exc:
         skip("always-on-top is restored",
              f"window manager does not support -topmost: {exc}")
