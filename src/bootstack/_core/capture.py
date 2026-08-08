@@ -47,10 +47,14 @@ _PLAIN_COLOR_MODES = ("RGB", "L")
 
 # Tried in order, first one installed wins.
 _SUBPROCESS_BACKENDS = (
-    ("grim", ["grim", "{out}"]),                              # wlroots, Sway
+    ("grim", ["grim", "{out}"]),                                    # wlroots, Sway
     ("gnome-screenshot", ["gnome-screenshot", "-f", "{out}"]),
-    ("spectacle", ["spectacle", "-b", "-n", "-o", "{out}"]),  # KDE
-    ("import", ["import", "-window", "root", "{out}"]),       # ImageMagick
+    # `-f` asks for the full screen. Without it spectacle repeats whatever
+    # capture mode it was last used with, which is remembered in its own
+    # config — so the same call photographs the desktop on one machine and a
+    # single window on the next.
+    ("spectacle", ["spectacle", "-b", "-n", "-f", "-o", "{out}"]),  # KDE
+    ("import", ["import", "-window", "root", "{out}"]),             # ImageMagick
 )
 
 # Platforms whose region handling inside `ImageGrab` can be relied on. Windows
