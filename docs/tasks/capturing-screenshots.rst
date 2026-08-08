@@ -118,15 +118,15 @@ knowing before you build on it:
   application. While developing, the permission follows whatever launched the
   script, so it is the terminal or editor that needs it rather than the script
   itself.
-- **On Linux, a Wayland session may need a screenshot helper installed.** An X11
-  session captures directly and needs nothing. Wayland does not let an
-  application read the screen for itself, so the capture goes through the
-  desktop's own screenshot tool — ``grim`` on Sway and other wlroots desktops,
-  ``spectacle`` on KDE, ``gnome-screenshot`` where it is still present. Some
-  desktops ship none of them, and there the capture raises an error naming what
-  to install rather than saving anything. Worth checking early if your users are
-  on Linux, because it is the one platform where capture can be unavailable
-  outright.
+- **On Linux, a capture may need a screenshot helper installed.** Most X11
+  sessions capture directly and need nothing. Wayland does not let an
+  application read the screen for itself, and some X11 setups cannot either, so
+  the capture falls back to the desktop's own screenshot tool — ``grim`` on Sway
+  and other wlroots desktops, ``spectacle`` on KDE, ``gnome-screenshot`` where it
+  is still present, or ImageMagick's ``import``. A machine with none of them
+  installed raises an error naming those four rather than saving anything. Worth
+  checking early if your users are on Linux, because it is the one platform where
+  capturing can be unavailable outright.
 
 If the application already had its window pinned always-on-top, that setting is
 left exactly as it was found.
