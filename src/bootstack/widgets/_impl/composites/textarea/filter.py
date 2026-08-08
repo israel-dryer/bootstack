@@ -12,7 +12,9 @@ which are clean Python callables, not raw Tcl strings.
 from __future__ import annotations
 
 import tkinter as tk
-from idlelib.redirector import WidgetRedirector
+from bootstack.widgets._impl.composites.textarea.redirector import (
+    WidgetRedirector,
+)
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
