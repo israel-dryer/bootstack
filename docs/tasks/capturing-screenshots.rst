@@ -101,7 +101,14 @@ knowing before you build on it:
   another application still lands in the picture.
 - **The capture is what the screen shows.** A long list scrolled halfway down is
   captured halfway down; there is no way to photograph content scrolled out of
-  view.
+  view. Capturing a widget that has been scrolled right out of its viewport
+  raises an error rather than photographing whatever now sits in its place — a
+  row still counts as capturable while any part of it is in view.
+- **On a Retina Mac the picture is saved at the window's own size.** A 560×360
+  window produces a 560×360 image rather than the finer pixel grid the display
+  actually draws it on, so text is slightly softer than in a screenshot taken
+  with the system's own tool. Captures come out the same size on every machine,
+  which is usually what you want when they are headed for a report.
 - **On macOS, the application needs permission to record the screen.** Without it
   the system quietly hands back a picture of the desktop instead of the window —
   no error, just the wrong image. macOS asks the first time an application
