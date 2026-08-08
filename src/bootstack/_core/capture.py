@@ -53,6 +53,18 @@ _SUBPROCESS_BACKENDS = (
     ("import", ["import", "-window", "root", "{out}"]),       # ImageMagick
 )
 
+# Platforms whose region handling inside `ImageGrab` can be relied on. Windows
+# reports the origin of the grab and crops the region against it; macOS hands
+# the region to `screencapture` and rescales what comes back, which is what
+# keeps the result aligned on a Retina display. Cropping those here instead
+# would throw both of those away.
+#
+# Everywhere else — Linux — `ImageGrab` crops without checking that the
+# picture it grabbed actually covers the region, which pads the difference
+# with black and raises nothing. That is the failure `_crop_desktop` refuses,
+# so on those platforms the region is cut here rather than by the library.
+_LIBRARY_HANDLES_REGION = sys.platform in ("win32", "darwin")
+
 
 def widget_region(tk_widget, inset: int = 0) -> tuple[int, int, int, int]:
     """Return a widget's on-screen rectangle as `(left, top, right, bottom)`.
@@ -197,12 +209,16 @@ def capture_region(bbox: tuple[int, int, int, int], path) -> Path:
 def grab(bbox: tuple[int, int, int, int] | None = None) -> Image.Image:
     """Grab a screen region, or the whole primary display when `bbox` is None."""
     try:
-        # `all_screens` widens the grab to the whole virtual desktop. Without
-        # it, a region on a monitor left of or above the primary one is cropped
-        # out of a primary-only grab and comes back silently BLACK — no
-        # exception raised and nothing to debug. Pillow honors the flag on
-        # Windows and ignores it elsewhere.
-        return ImageGrab.grab(bbox=bbox, all_screens=bbox is not None)
+        if _LIBRARY_HANDLES_REGION:
+            # `all_screens` widens the grab to the whole virtual desktop.
+            # Without it, a region on a monitor left of or above the primary
+            # one is cropped out of a primary-only grab and comes back
+            # silently BLACK — no exception raised and nothing to debug.
+            return ImageGrab.grab(bbox=bbox, all_screens=bbox is not None)
+        # Grab the whole desktop and cut the region out below, under the
+        # bounds check. This platform grabs everything and crops either way,
+        # so what changes is where the crop happens, not how much is read.
+        image = ImageGrab.grab()
     except (OSError, NotImplementedError) as exc:
         # Diagnosis happens only AFTER a failed grab, never before one, so
         # nothing here can reject a capture that would have worked.
@@ -231,6 +247,9 @@ def grab(bbox: tuple[int, int, int, int] | None = None) -> Image.Image:
 
         # Wayland, or a Pillow built without XCB.
         return _grab_via_subprocess(bbox)
+    # Outside the `except` on purpose: a region the grab missed is a capture
+    # failure to report, not a reason to try another backend.
+    return _crop_desktop(image, bbox) if bbox else image
 
 
 def _covered_by_a_display(bbox: tuple[int, int, int, int]) -> bool | None:
@@ -326,18 +345,18 @@ def _crop_desktop(
 ) -> Image.Image:
     """Cut a region out of a whole-desktop grab, refusing a region it misses.
 
-    The screenshot tools photograph the desktop and return an image measured
-    from their own origin, while the region is measured across the whole
-    virtual desktop. Those agree on an ordinary single-monitor session and can
-    disagree otherwise — most often when the window sits on a monitor the tool
-    did not photograph. Cropping past the edge of an image pads the result with
-    black rather than failing, so the caller would get a plausible-looking
-    all-black picture and no way to tell why. Raising is the better answer.
+    A whole-desktop grab returns an image measured from whatever its source
+    treats as the origin, while the region is measured across the whole virtual
+    desktop. Those agree on an ordinary single-monitor session and can disagree
+    otherwise — most often when the window sits on a monitor the grab did not
+    cover. Cropping past the edge of an image pads the result with black rather
+    than failing, so the caller would get a plausible-looking all-black picture
+    and no way to tell why. Raising is the better answer.
     """
     left, top, right, bottom = bbox
     if left < 0 or top < 0 or right > image.width or bottom > image.height:
         raise BootstackError(
-            f"The screen capture tool returned a {image.width}x{image.height} "
+            f"The screen capture returned a {image.width}x{image.height} "
             f"picture, which does not cover the area being captured — "
             f"({left}, {top}) to ({right}, {bottom}). This usually means the "
             f"window is on a monitor the tool did not photograph; moving it to "
