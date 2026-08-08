@@ -230,9 +230,9 @@ class PublicWidgetBase:
             The path that was written.
 
         Raises:
-            BootstackError: If the widget is not visible on screen, if `inset`
-                is negative, if no capture backend is available, or if the file
-                cannot be written.
+            BootstackError: If the widget is not visible on screen or has been
+                scrolled out of view, if `inset` is negative, if no capture
+                backend is available, or if the file cannot be written.
         """
         from bootstack._core import capture as _capture
         from bootstack.errors import BootstackError
@@ -245,7 +245,7 @@ class PublicWidgetBase:
             _capture.settle(target, settle)
             # Settling turns the event loop, so anything queued runs here —
             # including a handler that closes the window being photographed.
-            if not target.winfo_exists():
+            if not _capture.still_exists(target):
                 raise BootstackError(
                     f"{type(self).__name__} was closed while the capture was "
                     f"waiting for the screen to settle, so there is nothing "
@@ -256,6 +256,16 @@ class PublicWidgetBase:
                     f"{type(self).__name__} is not visible on screen, so there "
                     f"is nothing to capture. Show the window and make sure the "
                     f"widget is neither hidden nor detached before capturing it."
+                )
+            # Being mapped is not the same as being in view: a widget scrolled
+            # out of a viewport stays mapped, and its rectangle then points at
+            # whatever else happens to be on screen there.
+            if _capture.clipped_out_of_view(target):
+                raise BootstackError(
+                    f"{type(self).__name__} has been scrolled out of view, so "
+                    f"the area it reports is no longer inside its window and "
+                    f"would photograph whatever is behind. Scroll it back into "
+                    f"view before capturing it."
                 )
             return _capture.capture_region(
                 _capture.widget_region(target, inset), path
