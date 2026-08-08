@@ -36,6 +36,11 @@ ISOLATED = [
     "tests/widgets/public/test_pagestack.py",
     "tests/widgets/public/test_hot_reload_app.py",
     "tests/widgets/public/test_hot_reload_shell.py",
+    # A capture reads pixels from the display, so its widgets have to be ON the
+    # display. In the shared root they land wherever the accumulated tests have
+    # pushed them — measured at y~2810 on a 956px-tall screen — and every grab
+    # asks for a region no monitor covers. A fresh root keeps them on screen.
+    "tests/widgets/public/test_capture.py",
 ]
 
 # Modules that construct a fresh root PER TEST (e.g. an App-config factory

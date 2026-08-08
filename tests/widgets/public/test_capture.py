@@ -21,7 +21,10 @@ import bootstack as bs
 from bootstack._core import capture as _capture
 from bootstack.errors import BootstackError
 
-pytestmark = pytest.mark.gui
+# `isolated` keeps these out of the shared-root leg, where accumulated tests
+# push the widgets clean off the display and every grab asks for a region no
+# monitor covers. See the note beside this module in `tests/run_gui.py`.
+pytestmark = [pytest.mark.gui, pytest.mark.isolated]
 
 
 def test_capture_writes_the_file_and_returns_its_path(shown_app, tmp_path):
