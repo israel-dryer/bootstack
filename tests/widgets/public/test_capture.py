@@ -15,6 +15,7 @@ always-on-top setting left as it was found.
 from __future__ import annotations
 
 import sys
+import time
 import tkinter
 import types
 
@@ -129,7 +130,7 @@ def test_inset_larger_than_the_widget_raises(shown_app, tmp_path):
         label.capture(tmp_path / "over.png", inset=9999, settle=0)
 
 
-def _pin(root) -> bool:
+def _pin(root, timeout: float = 0.5) -> bool:
     """Pin a window on top, reporting whether the setting actually took.
 
     Always-on-top is a request to the window manager, not something the
@@ -138,11 +139,22 @@ def _pin(root) -> bool:
     tests below would otherwise be measuring the window manager rather than the
     capture. Measured on a bare X server: setting it reads back 0, with no
     capture involved anywhere.
+
+    A window manager that does honor the request answers asynchronously, and
+    that answer arrives as a window event rather than an idle callback — so the
+    read is polled rather than taken once. Reading too early reports "not
+    supported" on the machines that support it perfectly well, which would skip
+    both tests on exactly the boxes able to run them.
     """
     root.attributes("-topmost", True)
-    root.update_idletasks()
-    if root.attributes("-topmost"):
-        return True
+    deadline = time.monotonic() + timeout
+    while True:
+        root.update()
+        if root.attributes("-topmost"):
+            return True
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(0.01)
     # Put the request back where it was found. A refused request still leaves
     # one recorded, and the next caller reads that record rather than the
     # window manager — which made this very check report differently depending
@@ -161,8 +173,10 @@ def test_capture_restores_a_window_that_was_not_topmost(shown_app, tmp_path):
     # "left off" cannot be told from "never went on".
     if not _pin(root):
         pytest.skip("this window manager does not honor always-on-top")
+    # `update()`, not `update_idletasks()`: clearing the setting is answered by
+    # the window manager the same way setting it is.
     root.attributes("-topmost", False)
-    root.update_idletasks()
+    root.update()
 
     bs.Label("restore me").capture(tmp_path / "restore.png", settle=0)
 
