@@ -174,8 +174,6 @@ def run_checks():
              f"window manager does not support -topmost: {exc}")
 
     negative_monitor_arm()
-    report()
-    app.close()
 
 
 def negative_monitor_arm():
@@ -251,5 +249,24 @@ with bs.App(title="Capture verification", padding=16, gap=10,
     bs.Label("Colored content above proves the grab is not blank.",
              font="caption")
 
-app.schedule.delay(600, run_checks)
+def main():
+    """Run the checks, and report whatever was measured no matter what.
+
+    Most arms assert rather than catch, and this runs inside a Tk callback, so
+    an unexpected raise would otherwise vanish into the toolkit's error handler
+    — leaving no summary and a window that never closes. A Linux box with no
+    capture backend hits that on the very first arm, which is precisely the
+    platform this script still has to be run on.
+    """
+    try:
+        run_checks()
+    except Exception as exc:  # noqa: BLE001 - reporting harness, not handling
+        check("verification ran to completion", False,
+              f"{type(exc).__name__}: {exc}")
+    finally:
+        report()
+        app.close()
+
+
+app.schedule.delay(600, main)
 app.run()
