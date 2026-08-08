@@ -1,7 +1,11 @@
-"""Does the ported WidgetRedirector actually work, on a Python with no idlelib?
+"""Does the ported WidgetRedirector work, and is the import free of idlelib?
 
-Run inside the clean venv holding the PyPI build, whose filter.py has been
-repointed at the port. Three things to establish, in order:
+Written to run unchanged on Windows, macOS, and Linux. Only arm 1 depends on
+the machine: it can be *proved* only where `idlelib` is absent, so everywhere
+else it reports SKIP and the run continues. Arms 2-4 test the port's behavior,
+which has nothing to do with whether idlelib happens to be installed — gating
+them behind arm 1 left them runnable only on the one box that cannot finish the
+GUI suite (#432), which is the opposite of what a probe is for.
 
   1. `import bootstack` succeeds at all, which is the bug being fixed.
   2. The redirector intercepts BOTH a Python-side call and one made through the
@@ -12,17 +16,20 @@ repointed at the port. Three things to establish, in order:
 
 Arm 2 carries its own control: an unregistered operation must pass through
 untouched, or "it was intercepted" would prove nothing.
+
+Run: py -3.12 development/probe_430_idlelib_free_import.py    (Windows)
+     python development/probe_430_idlelib_free_import.py      (macOS, Linux)
 """
-import sys
+import platform
 import tkinter as tk
 
 import bootstack as bs
+print(f"  0. platform                   : {platform.system()}, Tk {tk.TkVersion}")
 print(f"  1. import bootstack           : OK, version {bs.__version__}")
 print(f"     idlelib importable?        : ", end="")
 try:
     import idlelib  # noqa: F401
-    print("YES — this box cannot prove anything, install without it")
-    sys.exit(1)
+    print("YES — arm 1 SKIPPED, only a box without idlelib can prove it")
 except ImportError:
     print("no (so the port is what made arm 1 pass)")
 
