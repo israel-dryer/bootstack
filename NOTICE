@@ -8,3 +8,23 @@ licensed under the MIT License.
 
 The original ttkbootstrap license and copyright notice are preserved above
 in compliance with the MIT License terms.
+
+This project also contains code derived from IDLE, part of the CPython
+standard library (https://github.com/python/cpython),
+Copyright (c) 2001-2023 Python Software Foundation; All Rights Reserved,
+licensed under the Python Software Foundation License Agreement, Version 2.
+
+  src/bootstack/widgets/_impl/composites/textarea/redirector.py
+
+is a port of idlelib/redirector.py, carrying its WidgetRedirector and
+OriginalCommand classes and their dispatch logic. Summary of the changes made,
+as the Python Software Foundation License Agreement asks for: the
+OriginalCommand interface was narrowed to three private attributes,
+WidgetRedirector.__repr__ was dropped, the operation name is coerced to a
+string before lookup, the widget reference is retained after close() rather
+than deleted, and type hints and rewritten documentation were added.
+
+Other modules in the same package implement designs described in IDLE — the
+Delegator and Percolator chain, UndoDelegator, the editor sidebar, and
+parenmatch's flash-and-restore highlighting — but share no substantial code
+with it and are original implementations.
