@@ -368,8 +368,9 @@ def _crop_desktop(
         raise BootstackError(
             f"The screen capture returned a {image.width}x{image.height} "
             f"picture, which does not cover the area being captured — "
-            f"({left}, {top}) to ({right}, {bottom}). This usually means the "
-            f"window is on a monitor the tool did not photograph; moving it to "
-            f"the main display is the reliable workaround."
+            f"({left}, {top}) to ({right}, {bottom}). Either the window is "
+            f"hanging off the edge of the screen, or it is on a display the "
+            f"capture did not reach. Moving it fully onto the main display "
+            f"resolves both."
         )
     return image.crop(bbox)
