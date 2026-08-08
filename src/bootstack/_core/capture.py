@@ -73,7 +73,8 @@ _SUBPROCESS_BACKENDS = (
 # with no check that it covers the region, padding the difference with black
 # and raising nothing. That is the failure `_crop_desktop` refuses, so there
 # the region is cut here rather than by the library.
-_LIBRARY_HANDLES_REGION = sys.platform in ("win32", "darwin")
+_LIBRARY_REGION_PLATFORMS = ("win32", "darwin")
+_LIBRARY_HANDLES_REGION = sys.platform in _LIBRARY_REGION_PLATFORMS
 
 
 def widget_region(tk_widget, inset: int = 0) -> tuple[int, int, int, int]:

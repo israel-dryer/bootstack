@@ -422,3 +422,51 @@ def test_the_bounds_check_covers_the_library_path_not_only_the_fallback(
 
     # Control: a region that grab does cover still comes back cropped.
     assert _capture.grab((10, 10, 110, 60)).size == (100, 50)
+
+
+def test_the_region_stays_the_libraries_job_where_the_platform_needs_it(
+    monkeypatch,
+):
+    """The opposite direction of the test above, which only forces it off.
+
+    Windows crops against the origin its own grab reports, and macOS asks
+    `screencapture` for the region and rescales the answer — the rescale being
+    what keeps a Retina capture aligned. Cutting the region here instead would
+    silently break both, on boxes this suite is usually not running on. So the
+    hand-off is asserted rather than left implied: the library receives the
+    rectangle, and nothing here crops or bounds-checks it.
+    """
+    grabbed = Image.new("RGB", (800, 600), "white")
+    calls = []
+
+    def record(*args, **kwargs):
+        calls.append(kwargs)
+        return grabbed
+
+    monkeypatch.setattr(_capture, "_LIBRARY_HANDLES_REGION", True)
+    monkeypatch.setattr(
+        _capture, "ImageGrab", types.SimpleNamespace(grab=record)
+    )
+
+    # A region the grab does not cover: proof the crop was not taken over here,
+    # since doing so would raise exactly as the test above requires.
+    assert _capture.grab((10, 10, 2000, 100)) is grabbed
+    assert calls == [{"bbox": (10, 10, 2000, 100), "all_screens": True}]
+
+
+def test_only_windows_and_macos_leave_the_region_to_the_library():
+    """Guard the platform list itself, which both tests above have to force.
+
+    Each of them monkeypatches the flag, so dropping a platform from the list
+    would leave the pair green while changing what every capture on that
+    platform does. Restating the mapping is the cost of catching that.
+
+    The list is asserted rather than the flag derived from it. Comparing the
+    flag against `sys.platform` looks equivalent and is vacuous everywhere it
+    is False: on Linux, deleting the exemption entirely left both sides False
+    and the assertion green. Measured — that was this test's first version.
+    """
+    assert _capture._LIBRARY_REGION_PLATFORMS == ("win32", "darwin")
+    assert _capture._LIBRARY_HANDLES_REGION == (
+        sys.platform in _capture._LIBRARY_REGION_PLATFORMS
+    )
