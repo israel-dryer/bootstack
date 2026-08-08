@@ -81,6 +81,52 @@ def widget_region(tk_widget, inset: int = 0) -> tuple[int, int, int, int]:
     return (left, top, right, bottom)
 
 
+def still_exists(tk_widget) -> bool:
+    """Whether a widget is still alive, without leaking a toolkit error.
+
+    `winfo_exists()` reports 0 for a destroyed child but RAISES for a destroyed
+    root — the toolkit has no interpreter left to ask by then. Both mean the
+    same thing to a caller, so both answer False here.
+    """
+    try:
+        return bool(tk_widget.winfo_exists())
+    except tkinter.TclError:
+        return False
+
+
+def clipped_out_of_view(tk_widget) -> bool:
+    """Whether a widget's rectangle has left its own window entirely.
+
+    A widget scrolled out of a viewport stays MAPPED — the toolkit reports
+    `winfo_ismapped()` and `winfo_viewable()` as 1 for a row that is nowhere
+    near the visible area — while `winfo_rooty()` keeps reporting where the row
+    would be if the window were tall enough to show it. Measured: a row in a
+    scrolled list reported y=273 for a window spanning 390 to 630.
+
+    Capturing that rectangle photographs whatever else is on screen there and
+    saves it without complaint, which is the one outcome this module exists to
+    prevent. Only a rectangle that has left the window completely is refused;
+    a row half out of view still captures, matching the rule that a capture
+    shows what the screen shows.
+    """
+    top = tk_widget.winfo_toplevel()
+    if tk_widget is top:
+        return False
+
+    left, top_y = tk_widget.winfo_rootx(), tk_widget.winfo_rooty()
+    right = left + tk_widget.winfo_width()
+    bottom = top_y + tk_widget.winfo_height()
+
+    win_left, win_top = top.winfo_rootx(), top.winfo_rooty()
+    win_right = win_left + top.winfo_width()
+    win_bottom = win_top + top.winfo_height()
+
+    return not (
+        left < win_right and right > win_left
+        and top_y < win_bottom and bottom > win_top
+    )
+
+
 @contextlib.contextmanager
 def raised(tk_widget):
     """Hold a widget's window at the front for the duration of a capture.

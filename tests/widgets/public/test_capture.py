@@ -15,6 +15,7 @@ always-on-top setting left as it was found.
 from __future__ import annotations
 
 import sys
+import tkinter
 
 import pytest
 from PIL import Image, UnidentifiedImageError
@@ -214,6 +215,76 @@ def test_a_region_outside_the_grab_raises_instead_of_padding_black():
 
     # Control: a region the grab does cover crops normally.
     assert _capture._crop_desktop(desktop, (10, 10, 110, 60)).size == (100, 50)
+
+
+def test_a_widget_scrolled_out_of_view_cannot_be_captured(shown_app, tmp_path):
+    """Mapped is not the same as in view.
+
+    A widget scrolled out of a viewport stays mapped and keeps reporting the
+    position it would occupy if the window were tall enough to show it, so the
+    grab reads whatever else is on screen there and saves it without
+    complaining. Measured before the guard: a row reporting y=273 for a window
+    spanning 390 to 630 captured successfully and produced a 1-color image,
+    against 217 colors for the same row in view.
+    """
+    rows = []
+    with bs.ScrollView(scroll_direction="vertical", height=120) as view:
+        for i in range(30):
+            with bs.Card(padding=6) as row:
+                bs.Label(f"row {i}")
+            rows.append(row)
+    shown_app.tk.update_idletasks()
+    shown_app.tk.update()
+
+    first = rows[0]
+    # Control: in view, the very same widget captures normally. Without this a
+    # broken ScrollView would make the assertion below pass for free.
+    assert first.capture(tmp_path / "in-view.png", settle=0).is_file()
+
+    view.yview_moveto(0.5)
+    shown_app.tk.update_idletasks()
+    shown_app.tk.update()
+
+    window_top = shown_app.tk.winfo_rooty()
+    row_bottom = first.tk.winfo_rooty() + first.tk.winfo_height()
+    # Preconditions, so this cannot pass for the wrong reason: the row really
+    # did leave the window, and the toolkit really does still call it mapped —
+    # if it did not, the older visibility guard would be the one raising.
+    if row_bottom > window_top:
+        pytest.skip("the viewport did not scroll the row out of the window")
+    assert first.tk.winfo_ismapped()
+
+    with pytest.raises(BootstackError, match="scrolled out of view"):
+        first.capture(tmp_path / "scrolled-away.png", settle=0)
+
+
+def test_a_destroyed_root_is_reported_gone_rather_than_raising(shown_app):
+    """`winfo_exists()` answers for a dead child but RAISES for a dead root.
+
+    Measured: a destroyed child returns 0, while a destroyed root raises
+    `TclError: application has been destroyed` — there is no interpreter left
+    to ask. Both mean "nothing to photograph", so both must answer False, or a
+    raw toolkit error escapes a method documented to raise `BootstackError`.
+    This is the App-level arm of the guard already fixed for child widgets.
+
+    Asserted through the helper rather than through `capture()`: reaching it
+    for real means destroying the root mid-settle, which would take the rest of
+    this module's tests with it. So this guards against regression rather than
+    reproducing the defect — unfixed source can only fail it for the
+    uninteresting reason that the helper does not exist yet.
+    """
+    class DeadRoot:
+        def winfo_exists(self):
+            raise tkinter.TclError("application has been destroyed")
+
+    assert _capture.still_exists(DeadRoot()) is False
+
+    # Controls, through the real toolkit: alive, then destroyed.
+    live = bs.Label("alive")
+    shown_app.tk.update_idletasks()
+    assert _capture.still_exists(live.tk) is True
+    live.tk.destroy()
+    assert _capture.still_exists(live.tk) is False
 
 
 def test_a_region_on_no_display_names_the_real_cause(monkeypatch):
