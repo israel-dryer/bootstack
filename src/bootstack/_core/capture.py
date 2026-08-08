@@ -57,16 +57,22 @@ _SUBPROCESS_BACKENDS = (
     ("import", ["import", "-window", "root", "{out}"]),             # ImageMagick
 )
 
-# Platforms whose region handling inside `ImageGrab` can be relied on. Windows
-# reports the origin of the grab and crops the region against it; macOS hands
-# the region to `screencapture` and rescales what comes back, which is what
-# keeps the result aligned on a Retina display. Cropping those here instead
-# would throw both of those away.
+# Platforms where cutting the region has to stay `ImageGrab`'s job, because it
+# needs detail this module does not have. Windows crops against the origin its
+# own grab reports, which cannot be reconstructed from a rectangle alone; macOS
+# asks `screencapture` for the region and rescales the answer, which is what
+# keeps the result aligned on a Retina display. Cutting the region here would
+# discard both.
 #
-# Everywhere else — Linux — `ImageGrab` crops without checking that the
-# picture it grabbed actually covers the region, which pads the difference
-# with black and raises nothing. That is the failure `_crop_desktop` refuses,
-# so on those platforms the region is cut here rather than by the library.
+# This says which code owns the crop, not that the crop is checked — neither of
+# those is. Windows pads a region reaching past the grabbed desktop with black,
+# and macOS stretches a region the system clamped. Extending the bounds check to
+# them is a separate change, and one no box available here can verify.
+#
+# Everywhere else — Linux — `ImageGrab` grabs the whole desktop and crops it
+# with no check that it covers the region, padding the difference with black
+# and raising nothing. That is the failure `_crop_desktop` refuses, so there
+# the region is cut here rather than by the library.
 _LIBRARY_HANDLES_REGION = sys.platform in ("win32", "darwin")
 
 
