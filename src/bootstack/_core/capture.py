@@ -16,6 +16,7 @@ import contextlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import tkinter
@@ -24,6 +25,17 @@ from pathlib import Path
 from PIL import Image, ImageGrab
 
 from bootstack.errors import BootstackError
+
+try:
+    from screeninfo import get_monitors
+    HAS_SCREENINFO = True
+except ImportError:
+    HAS_SCREENINFO = False
+
+# Platforms whose capture backend ships with the operating system. There is
+# nothing to install and nothing to fall back to, so a failure here is a real
+# failure rather than a missing-backend one.
+_BUILTIN_BACKEND_PLATFORMS = ("win32", "darwin")
 
 # Formats that store plain color and nothing else. A capture bound for one of
 # these is converted first, because saving an image that carries transparency
@@ -145,9 +157,63 @@ def grab(bbox: tuple[int, int, int, int] | None = None) -> Image.Image:
         # exception raised and nothing to debug. Pillow honors the flag on
         # Windows and ignores it elsewhere.
         return ImageGrab.grab(bbox=bbox, all_screens=bbox is not None)
-    except (OSError, NotImplementedError):
+    except (OSError, NotImplementedError) as exc:
+        # Diagnosis happens only AFTER a failed grab, never before one, so
+        # nothing here can reject a capture that would have worked.
+        #
+        # The catch is deliberately wide because the failures it has to cover
+        # are: no ImageGrab on this build at all, and a grab that ran and came
+        # back with nothing usable. Those need opposite answers, and the
+        # exception type cannot tell them apart — Pillow reports a region no
+        # display covers as `UnidentifiedImageError`, which IS an `OSError`.
+        if bbox is not None and _covered_by_a_display(bbox) is False:
+            raise BootstackError(
+                f"The area being captured — ({bbox[0]}, {bbox[1]}) to "
+                f"({bbox[2]}, {bbox[3]}) — is not on any display, so there are "
+                f"no pixels to read. A window moved off the edge of the screen, "
+                f"or a widget scrolled out of view, is the usual cause."
+            ) from exc
+
+        if sys.platform in _BUILTIN_BACKEND_PLATFORMS:
+            # Falling through to the subprocess chain here would end in advice
+            # to install Linux screenshot tools on a machine that already has a
+            # working backend — wrong on its face and no help in fixing this.
+            raise BootstackError(
+                f"The screen capture failed — {exc}. The window may have been "
+                f"hidden or moved while the picture was being taken."
+            ) from exc
+
         # Wayland, or a Pillow built without XCB.
         return _grab_via_subprocess(bbox)
+
+
+def _covered_by_a_display(bbox: tuple[int, int, int, int]) -> bool | None:
+    """Whether any monitor covers part of `bbox`.
+
+    Returns None when the question cannot be answered — no `screeninfo`, or it
+    could not read the display layout — so a caller can tell "definitely not on
+    a display" apart from "could not tell", and only act on the former.
+
+    Partial overlap counts as covered. A window hanging off the bottom edge of
+    the screen captures perfectly well; only a region no monitor touches at all
+    has nothing to read.
+    """
+    if not HAS_SCREENINFO:
+        return None
+
+    left, top, right, bottom = bbox
+    try:
+        monitors = get_monitors()
+    except Exception:  # noqa: BLE001 - a diagnostic must not raise its own error
+        return None
+    if not monitors:
+        return None
+
+    return any(
+        left < m.x + m.width and right > m.x
+        and top < m.y + m.height and bottom > m.y
+        for m in monitors
+    )
 
 
 def save(image: Image.Image, path) -> Path:
