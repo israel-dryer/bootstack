@@ -69,30 +69,30 @@ on the next statement, then grep the file.
 
 ## Current state
 
-**Released:** **`0.2.2` on PyPI, tag `v0.2.2` (2026-08-06)** — published **manually
-with `twine`**, not by `release.yml`, because GitHub Actions was in a major outage
-all afternoon. See START HERE for exactly what that means for next time.
-Previous: `0.2.1` (2026-08-05).
+**Released:** **`0.2.3` on PyPI, tag `v0.2.3` (2026-08-08)** — titled *Import
+without IDLE*, **shipped by `release.yml`, which ran clean end to end**. Actions was
+healthy again, so none of the manual `twine` fallback was needed and `docs.yml`
+chained off the successful Release run automatically. Previous: `0.2.2`
+(2026-08-06, published **manually** during an Actions outage — that recipe is kept
+under Release flow because it will be needed again).
 
-**`main` is GREEN.** ⚠ **The counts this file used to carry (`919 passed / 14
-skipped`) were STALE** and produced a phantom "46-test gap" that a whole session
-flagged as unexplained. **When you record a count here, record the DATE and the
-COMMIT** — a bare number silently rots into a fake regression signal. Measured
-2026-08-06 on `fix/datatable-click-focus-421` at `fa735f99` (the content `main`
-now carries), full `py -3.12 tests/run_gui.py`, **exit 0, all legs passed**:
+**`main` is GREEN.** ⚠ **The counts this file carried (`930 / 14` and `125 / 4`)
+were WRONG, and the `973 / 13` + `123 / 6` it dismissed as "mis-recorded" were the
+closer pair.** Measured TWICE on 2026-08-08 — once on `fix/idlelib-import-430`, then
+again on `main` at the release commit **`96886a98`** — full `py -3.12
+tests/run_gui.py`, **exit 0, all legs passed, identical across both runs**:
 
 | leg | result |
 |---|---|
-| widgets+CLI, shared root | **930 passed / 14 skipped** (+ 49 passed across the isolated legs) |
-| data | **125 passed / 4 skipped** |
+| widgets+CLI, shared root | **976 passed / 13 skipped** (+ 49 passed across the isolated legs) |
+| data | **123 passed / 6 skipped** |
 
-⚠ **This does NOT match the `973 / 13` and `123 / 6` this file used to record for
-the same content, and the difference is NOT a regression.** `--collect-only -q`
-settled it in seconds: 994 → 995 collected across the fix (exactly the one new
-test it adds), and `tests/data` collects 129 either way — the same 129 the old
-`123 / 6` summed to, just split differently between passed and skipped. **The old
-figure was mis-recorded, not stale.** Sum the legs yourself rather than trusting
-either number; `run_gui.py` prints no aggregate.
+⚠ **Do NOT read the move from `930` as a regression** — it is a correction to a
+mis-recorded number, not a change in the suite; the data leg matches the older
+`123 / 6` exactly. `--collect-only -q` settles any future doubt in seconds: `main`
+collects **1170** at `96886a98`. **This file has now produced a phantom gap in BOTH
+directions**, so: record the DATE and the COMMIT beside any count, or do not record
+one at all. Sum the legs yourself — `run_gui.py` prints no aggregate.
 
 **✅ BOTH IN-FLIGHT BRANCHES ARE MERGED AND DELETED (2026-08-06).**
 `fix/datatable-double-click-417` went in as **PR #423** (merge commit `1ab5cda7`) and
@@ -113,30 +113,79 @@ one-per-issue commits landed individually — the granularity was the deliverabl
 and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
 deleted after the release.
 
-**⚠ IN FLIGHT (2026-08-07): `feat/widget-capture-427`, PUSHED. REVIEWED, and all
-findings are APPLIED — what is left is the macOS/Linux legs, then a PR.**
+**✅ `0.2.3` SHIPPED 2026-08-08 — #430. `fix/idlelib-import-430` merged as PR #435
+(merge commit `3c785759`), then DELETED local + remote; head `57ee3041` if it ever
+needs resurrecting.** `import bootstack` raised `ModuleNotFoundError` on any Python
+build without `idlelib` (Debian and Ubuntu package IDLE separately, like
+`python3-tk`), so the WHOLE framework was unimportable — not a degraded
+`CodeEditor`. Fixed by **porting** `WidgetRedirector` into
+`textarea/redirector.py` rather than importing it; `idlelib` is stdlib, so it is
+not on PyPI and could never have been declared as a dependency. Full root cause and
+the Linux repro are on the issue — do not re-derive. Three things worth carrying
+here:
+
+- ⚠ **`NOTICE` now carries a PSF attribution, scoped to `redirector.py` ALONE —
+  that scope was MEASURED, do not widen it.** The first draft listed six
+  IDLE-derived modules. Comparing each against its claimed `idlelib` source
+  (docstrings and type hints stripped, normalized through `ast.unparse`) showed
+  only `redirector.py` carries IDLE's *expression*: **29% verbatim, 5-line
+  identical runs**. The other five — `filter`, `undo`, `sidebar`, `line_numbers`,
+  `bracket_matcher` — share **0–7%**, and their longest runs are 1–2 line
+  incidentals like `import tkinter as tk`. They implement IDLE's *designs*, which
+  is an idea, not protected expression, so declaring them PSF-derived would tell a
+  license scanner something untrue. PSF LA v2: **clause 2** is copyright
+  retention, **clause 3** is the changes summary — both satisfied. ⚠ `NOTICE`
+  reaches users as `dist-info/licenses/NOTICE` via **setuptools' automatic
+  license-file globbing, NOT `MANIFEST.in`** (which names only `LICENSE`) —
+  verified by opening the published wheel, not assumed.
+- ⚠ **A probe must be RUNNABLE ON EVERY BOX IT IS MEANT TO INFORM.**
+  `probe_430_idlelib_free_import.py` called `sys.exit(1)` the moment `idlelib`
+  imported, so on Windows and macOS it printed arm 1 and stopped — even though arms
+  2–4 (interception from Python AND through the Tcl command, the unregistered-op
+  control, `close()`, a real `CodeEditor` through `FilterChain`) do not depend on
+  `idlelib` at all. It was runnable only on the one box that **cannot finish the
+  GUI suite (#432)**. Now SKIPs and continues. **The capture branch had already
+  fixed the identical shape in `b005509b`** — this is a recurring failure mode, not
+  a one-off.
+- ⚠ **`gh issue close --comment` SILENTLY DROPS THE COMMENT if the issue is already
+  closed** — and a PR body saying `Closes #430` closes it at merge. It warns about
+  the close and says nothing about the comment. Post with `gh issue comment`
+  separately, and **check the comment actually landed**. Also: **`bump-my-version`
+  had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
+  reinstalled as **1.5.1**. Check for it before assuming the release flow works.
+
+**⚠ IN FLIGHT (2026-08-08): `feat/widget-capture-427`, PUSHED. Reviewed, findings
+applied, and the macOS/Linux legs ARE NOW DONE — but there is still NO PR, and
+#429 is open against its own code.**
 Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
 `.pdf` — from discussion #425 (an external user) via **#427**. **It ships as
 `0.3.0 — Screen capture`, its own minor, decided by the maintainer 2026-08-07**;
 it was moved off `Additions awaiting a minor` and the five milestones below it
-were renumbered up one. **Nine commits, head `ef7e6421`.** ⚠ **There is NO PR
-yet** — verified with `gh pr list --head feat/widget-capture-427 --state all`,
-which returns empty. **Read `development/review-brief-427-capture.md` ON THAT
-BRANCH** — it records the settled decisions not to re-litigate and the
-measurements not to re-derive. ⚠ **But read it as a POINT-IN-TIME record: its
-six self-flagged soft spots are all resolved now** (see below), and it was
-deliberately not rewritten. **Windows-only so far; the macOS and Linux legs have
-NOT been run** — the maintainer is doing those. Run
+were renumbered up one. **24 commits, head `ac9a87a3`** — ⚠ the LOCAL checkout was
+**15 behind origin** on 2026-08-08, so `git fetch` before reading a single file on
+it. ⚠ **There is STILL NO PR** — re-verified 2026-08-08 with
+`gh pr list --head feat/widget-capture-427 --state all`, which returns empty.
+**Read `development/review-brief-427-capture.md` ON THAT BRANCH** — it records the
+settled decisions not to re-litigate and the measurements not to re-derive. ⚠ **But
+read it as a POINT-IN-TIME record: its six self-flagged soft spots are all resolved
+now** (see below), and it was deliberately not rewritten. Run
 `development/verify_427_capture.py` on each box; it prints the platform and
-backend and SKIPs arms the machine cannot exercise. Suite on the branch,
-measured 2026-08-07 at `ef7e6421`: **944 passed / 14 skipped** widgets+CLI and
-**125 / 4** data, exit 0; clean `-W` docs build, and a `-n` build reports
-nothing for the touched pages.
+backend and SKIPs arms the machine cannot exercise.
 
-⚠ **The +14 over `main`'s 930 is the branch's own 10 tests plus the 4 the review
-added — it is NOT a regression.** This block previously recorded `940 / 14
-(+10 = exactly its new tests)`, which was correct at `a3b5f66a` and is now the
-exact stale-metric trap this file warns about elsewhere. Sum the legs yourself.
+**✅ The macOS and Linux legs HAVE NOW BEEN RUN** (maintainer, 2026-08-08) — that is
+what the 15 newer commits are: `e9d9f2f4` ask spectacle for a fullscreen grab,
+`493a0980` + `ac9a87a3` the Linux docs, `31a4eb46` bounds-check on the library's own
+crop path, `575b8400` refuse a scrolled-out widget and a destroyed root, `aae0396c`
+run the capture tests in their own process, `67aefdbf` pin the region hand-off on
+Windows and macOS, `d66b3440` let the topmost precondition wait for the window
+manager. Those legs also produced **#429, #431, #432, #433, #434**. ⚠ **#429 is
+against capture's OWN code** — a click during `settle()` re-enters the handler and
+starts an overlapping capture — and should be settled before the PR, since it is a
+defect in the feature being shipped, not in the suite around it.
+
+⚠ **The suite figure this block used to carry (`944 / 14` at `ef7e6421`) is 15
+commits STALE — do not quote it.** Measure on the branch and record the commit
+beside the number, per the rule at the top of this file.
 
 **The review ran 2026-08-07 and found six things; five were fixed on the branch,
 one was documented. Do NOT re-derive these — each has a control committed at
@@ -292,14 +341,23 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ ONE UNMILESTONED OPEN ISSUE as of 2026-08-07: #426** ("Layout migration error
-names `align_self=`/`justify_self=`, which do not exist" — filed 2026-08-07 by
-someone other than us). **It is deliberately left unassigned**: the rule below
-says do not assign a milestone unasked, and it has not been raised with the
-maintainer. It reads like patch-line material — an error message naming kwargs
-that do not exist is a bug fix on existing public API, adding nothing — but that
-is the maintainer's call to make. ⚠ Note it contradicts this file's own layout
-example, which teaches `Use grow= / align_self=` as the good error message.
+**⚠ SEVEN UNMILESTONED OPEN ISSUES as of 2026-08-08** (verified against `gh`, not
+counted by hand): **#426, #428, #429, #431, #432, #433, #434**. Six of the seven
+were filed 2026-08-07/08; **#428 is from an external user** (`@bLynnb2762` — data
+returned by a `FormDialog` select field differs from a plain `Select` and a `Form`
+select field), which makes it the one with someone waiting on it. **#431/#432/#433/
+#434 all came out of running the macOS and Linux legs for #427** and are
+test-infrastructure failures, not user-facing: `#432` (the shared-root GUI leg
+exits silently mid-run on Linux) is the one that **still blocks #380 (CI)** even
+after `0.2.3`. **#429** is a defect in `capture()`'s own code. **#426** contradicts
+this file's own layout example, which teaches `Use grow= / align_self=` as the good
+error message.
+
+**They are deliberately left unassigned** — the rule below says do not assign a
+milestone unasked, and none has been raised with the maintainer. **#430 was the
+exception and it was explicit**: the maintainer said "we release this with 0.2.3",
+which decided the milestone, so it was assigned to `0.2.x — Patch line` and shipped.
+Absent that kind of direct instruction, leave them alone.
 
 **ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
 counted by hand) — the deviation this file used to flag was closed. The maintainer
@@ -313,31 +371,44 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — `0.2.2` IS SHIPPED. Pick the next target from the milestone table.
+### ★ START HERE — `0.2.3` IS SHIPPED. Next: #429, then the PR for `feat/widget-capture-427`.
 
-**`0.2.2` went out 2026-08-06 ~20:15 UTC and every post-release step is done.**
-Nothing about this release is outstanding. The next piece of work is a fresh choice
-from the milestone table above — see "The next targets" below for the standing
-recommendation (`Test and release confidence`: #407 then #380).
+**`0.2.3` went out 2026-08-08 and every post-release step is done.** Nothing about
+this release is outstanding. **The live work is `feat/widget-capture-427`** — its
+macOS/Linux legs are done, it has no PR yet, and **#429 is open against its own
+code**; settle that, then PR it as `0.3.0 — Screen capture`. After that, the
+standing recommendation from the milestone table is `Test and release confidence`
+(#407 then #380) — but note **#432 now blocks #380 harder than before**, since the
+GUI leg cannot complete on Linux at all.
 
 Verified, not assumed:
 
-- **PyPI** — `0.2.2` live, wheel + sdist. Proved with an actual
-  `pip download --no-deps bootstack==0.2.2`, not just the upload output.
-  ⚠ The **`/pypi/bootstack/json` summary endpoint lagged and still said `0.2.1`
-  minutes after a successful upload** — it is CDN-cached. Use
-  `/pypi/bootstack/<version>/json` (returns 200) or a real `pip download`. Do not
-  read a stale summary as a failed upload and re-upload.
-- **GitHub Release** — [`v0.2.2`](https://github.com/israel-dryer/bootstack/releases/tag/v0.2.2),
-  titled `0.2.2 — DataTable group headers and row events`, both artifacts attached,
-  not a draft, not a prerelease.
-- **Docs** — deployed, `http://bootstack.org/` returns 200 (run `31127618821`).
-- **Issues** — #417, #418, #419, #420, #421 all CLOSED; **#422 deliberately still
-  OPEN** (macOS right-click coverage). The "it's live" comment is posted on #417
-  ([5208863289](https://github.com/israel-dryer/bootstack/issues/417#issuecomment-5208863289)).
-- **Branches** — both deleted, local and remote. `main` is the only branch.
+- **PyPI** — `0.2.3` live, wheel + sdist, proved with a real
+  `pip download --no-deps bootstack==0.2.3`. ⚠ The **`/pypi/bootstack/json` summary
+  endpoint is CDN-cached and lagged behind a successful `0.2.2` upload** — use
+  `/pypi/bootstack/<version>/json` or a real `pip download`, and never read a stale
+  summary as a failed upload and re-upload.
+- **The fix, inside the published wheel** — `from idlelib` is gone from the shipped
+  `filter.py`, and `NOTICE` is present at `dist-info/licenses/NOTICE` carrying the
+  PSF attribution. **Checking the artifact, not the source tree, is what proves a
+  packaging-shaped bug is actually fixed** — #430 was reported against the shipped
+  `0.2.2` wheel in the first place.
+- **GitHub Release** — [`v0.2.3`](https://github.com/israel-dryer/bootstack/releases/tag/v0.2.3),
+  titled `0.2.3 — Import without IDLE`, both artifacts, not a draft, not a
+  prerelease.
+- **Docs** — deployed automatically, `http://bootstack.org/` returns 200 (run
+  `31274654592`, chained off the successful Release run).
+- **Issue** — #430 CLOSED, milestoned `0.2.x — Patch line`, "it's live" comment
+  posted ([5227773487](https://github.com/israel-dryer/bootstack/issues/430#issuecomment-5227773487)).
+- **Branch** — `fix/idlelib-import-430` deleted local + remote (head `57ee3041`),
+  verified merged with the two-command check before deleting.
 
-#### ⚠ THE PART THAT MATTERS NEXT TIME: this release was published BY HAND
+**⚠ `release.yml` RAN CLEAN for `v0.2.3`** — build, PyPI publish, and GitHub Release
+all green, and `docs.yml` chained off it automatically. Actions had recovered from
+the 2026-08-06 outage. **The manual recipe below was NOT needed and is kept only as
+the fallback for next time.**
+
+#### ⚠ THE FALLBACK, FROM `0.2.2`: publishing BY HAND when Actions is down
 
 `release.yml` **never ran successfully for `v0.2.2`.** GitHub Actions was in a
 **major outage** all afternoon (incident opened 15:22 UTC, still *investigating* at
@@ -615,10 +686,9 @@ will bite again:
   is folded into **#412**, not done. Don't write docs claiming the error lists what
   *that* widget knows — the branch shipped that sentence and the review caught it.
 
-**⚠ `## [Unreleased]` is ABSENT ON `main`** — `0.2.2` consumed it (the top section is
-now `## [0.2.2] — DataTable group headers and row events`, with its `[0.2.2]:` link
-definition at the bottom). The next fix commit re-creates it, per the convention under
-Release flow.
+**⚠ `## [Unreleased]` is ABSENT ON `main`** — `0.2.3` consumed it (the top section is
+now `## [0.2.3] — Import without IDLE`, with its `[0.2.3]:` link definition at the
+bottom). The next fix commit re-creates it, per the convention under Release flow.
 
 **⏭ The next targets, in milestone order (see the table above for why).**
 
@@ -885,7 +955,12 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
 **⚠ Use `py -3.12 -m bumpversion`, NOT the `.venv` shim.** This file used to point
 at `.venv/Scripts/bump-my-version.exe` — that shim is part of the **stale `.venv`**
 and dies with *"Access is denied"* on its `Python314` path, like everything else in
-there. Installed on 3.12 (2026-08-05, **v1.5.0**). ⚠ **The import name is
+there. ⚠ **It DISAPPEARS — check for it before every release.** Recorded here as
+installed 2026-08-05 (v1.5.0), it was **gone by 2026-08-08** (`No module named
+bumpversion`) and had to be reinstalled with
+`py -3.12 -m pip install --upgrade bump-my-version` (now **v1.5.1**). That is twice
+this environment has lost a release-critical tool, so verify rather than assume.
+⚠ **The import name is
 `bumpversion`, not `bump_my_version`** — probing the wrong one reports "no module"
 on an interpreter that has it perfectly well, which cost a wrong conclusion during
 the `0.2.1` release.
@@ -894,6 +969,13 @@ the `0.2.1` release.
 (PyPI + GitHub Release) → `docs.yml` deploys. `release.yml` fires on `v*` tags
 only. There is **no `development` branch** (CONTRIBUTING.md + the localization
 workflow target `main`).
+
+⚠ **POST-RELEASE: `gh issue close --comment "..."` SILENTLY DROPS THE COMMENT when
+the issue is already closed** — and a PR body containing `Closes #N` closes it at
+merge, which is the normal case. `gh` warns only about the close and says nothing
+about the comment, so the "it's live" note is lost without a visible error. Post it
+with **`gh issue comment N --body ...`** instead, and **verify it landed** with
+`gh issue view N --json comments`. Bit `0.2.3`.
 
 ⚠ **`docs.yml` is CHAINED to `release.yml` SUCCEEDING**, not to the tag or the push —
 it triggers on `workflow_run` of "Release" `completed` and its `build` job is gated on
@@ -911,9 +993,12 @@ gitignored repo-root `.pypirc` is the only local credential.
 
 **CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
 commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` is absent
-on `main`** — `0.2.2` consumed it, so the top section is
-`## [0.2.2] — DataTable group headers and row events` (2 `### Changed`, 5 `### Fixed`)
-with its link definition at the bottom. The next fix commit re-creates it.
+on `main`** — `0.2.3` consumed it, so the top section is
+`## [0.2.3] — Import without IDLE` (1 `### Fixed` bullet) with its link definition at
+the bottom. The next fix commit re-creates it. ⚠ **Verify the extraction against the
+REAL file before tagging, not a simulation** — `release_notes.extract('X.Y.Z', ...)`
+returns `(title, body)`; confirm the title carries the descriptive suffix, the body
+starts at `### Fixed`, and no bottom link definitions leaked in.
 
 **⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
 #397 and #401 because no public API could reach either defect; `0.2.0` did the same
@@ -1119,6 +1204,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
+| **0.2.3** | SHIPPED 2026-08-08 (PyPI + tag `v0.2.3`), titled *Import without IDLE*. **Published by `release.yml`, which ran clean** — Actions had recovered, so the docs deploy chained off it with no manual kick. Single issue: **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python build without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the WHOLE framework rather than degrading `CodeEditor`; `idlelib` is stdlib so it could never be a declared dependency, and the fix ports `WidgetRedirector` into `textarea/redirector.py` (PR #435). Also added a PSF attribution to `NOTICE`, scoped by measurement to `redirector.py` alone — see Current state for why the other five IDLE-derived modules are deliberately NOT listed |
 | **0.2.2** | SHIPPED 2026-08-06 (PyPI + tag `v0.2.2`), titled *DataTable group headers and row events*. **Published MANUALLY with `twine` during a GitHub Actions major outage** — `release.yml` never ran, and the docs deploy had to be kicked with `gh workflow run docs.yml` because it triggers off a successful Release run (see START HERE). #417 `<Double-1>` bound unconditionally so `on_row_double_click` fires on a read-only table (PR #423) · #418/#420 group headers no longer fire row events with an empty record · #419 deferred chevron refresh after an event-driven expand · #421 click focus on group-header and checkbox-mode rows, plus the column separator that could not be dragged in checkbox mode (PR #424). ⚠ Two behavior notes shipped under `### Changed`: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks), and a read-only table's second press no longer repeats the first press's action |
 | **0.2.1** | SHIPPED 2026-08-05 (PyPI + tag `v0.2.1`), titled *event and shortcut correctness*. #403/#404 sidebar shortcut + #406 its test coverage · #405 `Command`/`Option` modifier map (PR #411) · the #392-review cluster (PR #410, merged as a **merge commit** to keep its six one-per-issue commits): #396 `emit()`/`on()` share one `_event_target()` seam · #398 `on_visibility_alpha` self-unbind · #399 unmatched-unbind report under `BOOTSTACK_DEBUG` · #400 failed cancellation no longer reports success · **#397** dialog result fired at a destroyed widget and **#401** `'break'` from a non-interactive field — both fixed and merged but **absent from the CHANGELOG**, being unreachable from public API (root causes live in `a93a47a4` / `7e204801`) |
 | **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
