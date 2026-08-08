@@ -129,9 +129,38 @@ def test_inset_larger_than_the_widget_raises(shown_app, tmp_path):
         label.capture(tmp_path / "over.png", inset=9999, settle=0)
 
 
+def _pin(root) -> bool:
+    """Pin a window on top, reporting whether the setting actually took.
+
+    Always-on-top is a request to the window manager, not something the
+    application decides. A session without a window manager — a headless test
+    display, most often — leaves the setting unset and raises nothing, so both
+    tests below would otherwise be measuring the window manager rather than the
+    capture. Measured on a bare X server: setting it reads back 0, with no
+    capture involved anywhere.
+    """
+    root.attributes("-topmost", True)
+    root.update_idletasks()
+    if root.attributes("-topmost"):
+        return True
+    # Put the request back where it was found. A refused request still leaves
+    # one recorded, and the next caller reads that record rather than the
+    # window manager — which made this very check report differently depending
+    # on whether a previous test had already tried. Measured: the two tests
+    # below both skipped when run alone, and the second one passed when run
+    # after the first.
+    root.attributes("-topmost", False)
+    root.update_idletasks()
+    return False
+
+
 def test_capture_restores_a_window_that_was_not_topmost(shown_app, tmp_path):
     """Capturing raises the window; it must put the setting back afterward."""
     root = shown_app.tk
+    # Without this the assertion below is free: where the setting never takes,
+    # "left off" cannot be told from "never went on".
+    if not _pin(root):
+        pytest.skip("this window manager does not honor always-on-top")
     root.attributes("-topmost", False)
     root.update_idletasks()
 
@@ -147,8 +176,8 @@ def test_capture_leaves_a_deliberately_topmost_window_pinned(shown_app, tmp_path
     starting state, so a fix that simply forced the flag off would fail here.
     """
     root = shown_app.tk
-    root.attributes("-topmost", True)
-    root.update_idletasks()
+    if not _pin(root):
+        pytest.skip("this window manager does not honor always-on-top")
     try:
         bs.Label("still pinned").capture(tmp_path / "pinned.png", settle=0)
         assert root.attributes("-topmost")
