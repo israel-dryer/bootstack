@@ -157,18 +157,34 @@ def run_checks():
     # --- always-on-top is restored, both directions -------------------------
     root = app.tk
     try:
-        root.attributes("-topmost", False)
-        root.update_idletasks()
-        app.capture(OUT / "verify-topmost-off.png")
-        check("a non-topmost window is left non-topmost",
-              not root.attributes("-topmost"))
-
+        # Precondition. Always-on-top is a request to the window manager, and a
+        # session without one accepts the setting, ignores it, and reads back
+        # off — no error. Both arms below would then report on the window
+        # manager rather than on the capture: the pinned arm fails and its
+        # opposite passes for free.
         root.attributes("-topmost", True)
         root.update_idletasks()
-        app.capture(OUT / "verify-topmost-on.png")
-        check("a deliberately pinned window stays pinned",
-              bool(root.attributes("-topmost")))
-        root.attributes("-topmost", False)
+        if not root.attributes("-topmost"):
+            # Put the refused request back, so it cannot be read as a granted
+            # one by anything that looks later.
+            root.attributes("-topmost", False)
+            root.update_idletasks()
+            skip("always-on-top is restored",
+                 "this window manager ignores -topmost, so neither direction "
+                 "can be told apart")
+        else:
+            root.attributes("-topmost", False)
+            root.update_idletasks()
+            app.capture(OUT / "verify-topmost-off.png")
+            check("a non-topmost window is left non-topmost",
+                  not root.attributes("-topmost"))
+
+            root.attributes("-topmost", True)
+            root.update_idletasks()
+            app.capture(OUT / "verify-topmost-on.png")
+            check("a deliberately pinned window stays pinned",
+                  bool(root.attributes("-topmost")))
+            root.attributes("-topmost", False)
     except tkinter.TclError as exc:
         skip("always-on-top is restored",
              f"window manager does not support -topmost: {exc}")
