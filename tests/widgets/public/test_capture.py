@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import sys
 import tkinter
+import types
 
 import pytest
 from PIL import Image, UnidentifiedImageError
@@ -351,3 +352,30 @@ def test_a_window_hanging_off_the_edge_still_counts_as_on_screen():
     below_everything = max(m.y + m.height for m in monitors) + 5_000
     nowhere = (first.x + 10, below_everything, first.x + 60, below_everything + 100)
     assert _capture._covered_by_a_display(nowhere) is False
+
+
+def test_the_bounds_check_covers_the_library_path_not_only_the_fallback(
+    monkeypatch,
+):
+    """`grab()` must not hand the region to a cropper that does not check it.
+
+    Where the imaging library serves a region by grabbing the whole desktop
+    first, it crops without checking that what it grabbed covers the region —
+    it pads the difference with black and raises nothing. So the guard has to
+    sit on that path too, not only on the subprocess fallback.
+
+    Measured against the unfixed code with an undersized grab and a window
+    outside it: a capture saved a 400x300 file of one color, all black, and
+    raised nothing at all.
+    """
+    grabbed = Image.new("RGB", (800, 600), "white")
+    monkeypatch.setattr(_capture, "_LIBRARY_HANDLES_REGION", False)
+    monkeypatch.setattr(
+        _capture, "ImageGrab", types.SimpleNamespace(grab=lambda *a, **k: grabbed)
+    )
+
+    with pytest.raises(BootstackError, match="does not cover the area"):
+        _capture.grab((10, 10, 2000, 100))
+
+    # Control: a region that grab does cover still comes back cropped.
+    assert _capture.grab((10, 10, 110, 60)).size == (100, 50)
