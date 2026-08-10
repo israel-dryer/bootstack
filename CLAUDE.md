@@ -76,23 +76,38 @@ chained off the successful Release run automatically. Previous: `0.2.2`
 (2026-08-06, published **manually** during an Actions outage — that recipe is kept
 under Release flow because it will be needed again).
 
-**`main` is GREEN.** ⚠ **The counts this file carried (`930 / 14` and `125 / 4`)
-were WRONG, and the `973 / 13` + `123 / 6` it dismissed as "mis-recorded" were the
-closer pair.** Measured TWICE on 2026-08-08 — once on `fix/idlelib-import-430`, then
-again on `main` at the release commit **`96886a98`** — full `py -3.12
-tests/run_gui.py`, **exit 0, all legs passed, identical across both runs**:
+**`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
+has now been wrong about them FOUR times, in both directions.** The `976 / 13`
+and `1170` recorded here on 2026-08-08 — which "corrected" `930 / 14` and
+declared it wrong — were themselves wrong. `930 / 14` and `125 / 4` were right
+all along.
+
+Measured 2026-08-10 on `feat/widget-capture-427` at **`bdbdd097`**, freshly
+rebased so it contains **all of `main`**, full `py -3.12 tests/run_gui.py`,
+**exit 0, all legs passed**:
 
 | leg | result |
 |---|---|
-| widgets+CLI, shared root | **976 passed / 13 skipped** (+ 49 passed across the isolated legs) |
-| data | **123 passed / 6 skipped** |
+| widgets+CLI, shared root | **932 passed / 14 skipped** (74 deselected — the `isolated` legs) |
+| data | **125 passed / 4 skipped** |
+| every leg summed | **1128 passed / 22 skipped** |
 
-⚠ **Do NOT read the move from `930` as a regression** — it is a correction to a
-mis-recorded number, not a change in the suite; the data leg matches the older
-`123 / 6` exactly. `--collect-only -q` settles any future doubt in seconds: `main`
-collects **1170** at `96886a98`. **This file has now produced a phantom gap in BOTH
-directions**, so: record the DATE and the COMMIT beside any count, or do not record
-one at all. Sum the legs yourself — `run_gui.py` prints no aggregate.
+**`main` alone is `932 / 14` and `125 / 4`, and collects `1126`.** The capture
+branch adds 22 tests, all marked `isolated`, so it contributes nothing to the
+shared leg — the shared-leg figure above IS main's.
+
+⚠ **The proof does not need another test run, which is why it is worth writing
+down.** That branch is a verified superset of `main`
+(`git merge-base --is-ancestor origin/main HEAD`) and only ADDS tests, yet it
+collects **1148** against main's recorded **1170**. A superset cannot collect
+fewer than its subset, so `1170` was impossible on its face. Both of the
+2026-08-08 figures are high by exactly 44, which reads like a summing error
+rather than drift.
+
+**The rule that keeps being broken: record the DATE and the COMMIT beside any
+count, and re-measure rather than reasoning from a number already in this
+file.** Sum the legs yourself — `run_gui.py` prints no aggregate. And if a count
+here disagrees with one you just measured, prefer yours and fix this table.
 
 **✅ BOTH IN-FLIGHT BRANCHES ARE MERGED AND DELETED (2026-08-06).**
 `fix/datatable-double-click-417` went in as **PR #423** (merge commit `1ab5cda7`) and
@@ -154,17 +169,27 @@ here:
   had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
   reinstalled as **1.5.1**. Check for it before assuming the release flow works.
 
-**⚠ IN FLIGHT (2026-08-08): `feat/widget-capture-427`, PUSHED. Reviewed, findings
-applied, and the macOS/Linux legs ARE NOW DONE — but there is still NO PR, and
-#429 is open against its own code.**
+**⚠ TWO BRANCHES IN FLIGHT (2026-08-10). Neither has a PR.**
+
+**1. `feat/widget-capture-427` — REBASED ONTO MAIN AND PUSHED, head `bdbdd097`,
+27 commits. #429 is FIXED. It is waiting on ONE THING: the macOS and Linux runs
+of `development/probe_429_settle_without_input.py`.** The maintainer started the
+macOS run 2026-08-10; Linux was expected later the same day. ⚠ **History was
+REWRITTEN by that rebase** — any other checkout needs
+`git fetch && git reset --hard origin/feat/widget-capture-427`, not a pull. A
+backup ref `backup/widget-capture-427-prerebase` points at the pre-rebase head
+`05707330`; delete it once the branch merges.
+
 Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
 `.pdf` — from discussion #425 (an external user) via **#427**. **It ships as
 `0.3.0 — Screen capture`, its own minor, decided by the maintainer 2026-08-07**;
 it was moved off `Additions awaiting a minor` and the five milestones below it
-were renumbered up one. **24 commits, head `ac9a87a3`** — ⚠ the LOCAL checkout was
-**15 behind origin** on 2026-08-08, so `git fetch` before reading a single file on
-it. ⚠ **There is STILL NO PR** — re-verified 2026-08-08 with
+were renumbered up one. ⚠ **There is STILL NO PR** — verified 2026-08-10 with
 `gh pr list --head feat/widget-capture-427 --state all`, which returns empty.
+
+**2. `fix/formdialog-select-value-428` — NEW 2026-08-10, off `main`, pushed, head
+`989f0bb1`. GROUNDWORK ONLY — #428 is NOT fixed and the reported behavior is NOT
+yet reproduced.** See its own block further down.
 **Read `development/review-brief-427-capture.md` ON THAT BRANCH** — it records the
 settled decisions not to re-litigate and the measurements not to re-derive. ⚠ **But
 read it as a POINT-IN-TIME record: its six self-flagged soft spots are all resolved
@@ -178,14 +203,64 @@ what the 15 newer commits are: `e9d9f2f4` ask spectacle for a fullscreen grab,
 crop path, `575b8400` refuse a scrolled-out widget and a destroyed root, `aae0396c`
 run the capture tests in their own process, `67aefdbf` pin the region hand-off on
 Windows and macOS, `d66b3440` let the topmost precondition wait for the window
-manager. Those legs also produced **#429, #431, #432, #433, #434**. ⚠ **#429 is
-against capture's OWN code** — a click during `settle()` re-enters the handler and
-starts an overlapping capture — and should be settled before the PR, since it is a
-defect in the feature being shipped, not in the suite around it.
+manager. Those legs also produced **#429, #431, #432, #433, #434**.
 
-⚠ **The suite figure this block used to carry (`944 / 14` at `ef7e6421`) is 15
-commits STALE — do not quote it.** Measure on the branch and record the commit
-beside the number, per the rule at the top of this file.
+#### ✅ #429 IS FIXED (2026-08-10) — `settle()` no longer dispatches events
+
+Three commits: `e616f5dc` the fix + tests, `22a844d9` the docs and the version
+tag, `bdbdd097` the probes and demo. **Do NOT re-derive any of this.**
+
+`settle()` ran `root.update()` every 10ms so the desktop could repaint, which
+dispatched everything queued — so a second click on the export button re-entered
+the caller's handler mid-capture and stacked a second save dialog on the END
+USER. It now flushes idle work, sleeps quietly, and flushes again.
+
+- **Reproduced first, with a control.** Pre-fix the handler reached nesting depth
+  2; the same call queued AFTER the capture stayed at depth 1. Measuring DEPTH
+  rather than call count is what separates re-entrancy from "it ran twice".
+  Post-fix every arm is depth 1 with `calls=2` — the second click is not
+  swallowed, it is serialized.
+- **Captures are pixel-identical.** A shot taken right after a window closed
+  differs from a reference by **0 px**, against a 50 px floor between two shots
+  of an unchanged window.
+- ⚠ **The fix could NOT live in `capture()`.** The documented pattern calls
+  `ask_save_file()` BEFORE `capture()`, so a re-entrant handler opens the second
+  dialog before reaching any guard there. Raising or no-oping was considered and
+  REJECTED — both hand the application author a problem AND make the end-user
+  outcome worse than the bug (an unhandled exception on a double-click, or a file
+  silently not written). Memory `feedback_framework_absorbs_not_developer`.
+- ⚠ **`tk busy` was rejected, but NOT for the reason first measured.** It is
+  invisible to a capture (0 px). It was dropped for being far more machinery than
+  not calling `update()`.
+- ⚠ **THE MEASUREMENT TRAP, worth more than the fix: compare captures only
+  within ONE `bs.App` INSTANCE.** The FIRST app in a process renders its content
+  white; every later one in the same process falls back to default grey. Two
+  captures from different app instances therefore differ in ~99% of pixels for
+  reasons unrelated to what is being measured — and a noise control built from
+  two same-population shots agreed to 14 px, so it looked sound. That produced a
+  confident WRONG conclusion (`tk busy` "gets photographed"). Stricter cousin of
+  the standing "measure within one process" rule.
+- ⚠ **A test that leaned on the old behavior had to change.**
+  `test_widget_closed_while_settling_raises_a_bootstack_error` queued its destroy
+  on a timer and relied on settle dispatching it; with the wait quiet that timer
+  no longer fires during the capture and the test would have passed **without
+  ever destroying anything**. It queues the destroy as IDLE work now. Confirmed
+  non-vacuous by disabling the guard.
+
+**⏭ THE ONE OPEN QUESTION, and the reason there is no PR yet: does the quiet
+settle still repaint on macOS and Linux?** On Windows the DWM keeps a backing
+store so the window looks right without processing Expose — 0 px. On X11 with no
+compositor that may not hold, and the failure would be a capture showing a stale
+patch where a dialog was. **Run `development/probe_429_settle_without_input.py`
+on each box and watch the `test: sleep-only settle after a window closed` arm.**
+A FAIL there means the fix needs a platform branch. Also re-run
+`verify_427_capture.py`, since `settle()` changed underneath it.
+
+⚠ **#431/#432/#433/#434 are NOT capture defects** and must not be bolted onto
+this branch — they are pre-existing test-infrastructure bugs that running the
+other platforms merely surfaced. #431 and #434 are the SAME modifier-bit
+assumption seen from two platforms and are best fixed together, once Linux has
+reported.
 
 **The review ran 2026-08-07 and found six things; five were fixed on the branch,
 one was documented. Do NOT re-derive these — each has a control committed at
@@ -219,7 +294,56 @@ one was documented. Do NOT re-derive these — each has a control committed at
   home is `bootstack.ask_save_file`. ⚠ **A default `-W` build does NOT catch a
   dangling py xref — only `-n` does.**
 
-**BRANCHES: `main` plus `feat/widget-capture-427`** — the `main`-only state below
+### ⏭ `fix/formdialog-select-value-428` — GROUNDWORK ONLY, #428 NOT REPRODUCED
+
+Branch created off `main` 2026-08-10 and pushed, head **`989f0bb1`** (one commit,
+two probes, no fix). **#428 is from an external user** (`@bLynnb2762`) and is the
+only open issue with someone outside the project waiting on it. Unmilestoned —
+**do not assign one unasked.**
+
+The report: with `options=[('One', 1), ...]`, a plain `bs.Select` and a `Form`
+select both return the VALUE `1`, but `FormDialog.result` returns the TEXT
+`'One'`. The reporter's runnable repro is on the issue.
+
+**What the probes ESTABLISH — do not re-derive, and do not re-search the read
+path:**
+
+- **The READ path is NOT the cause.** `bs.Form.get()` calls `self._internal.get()`;
+  the internal `Form.get()` is literally `return self.data`; `FormDialog` reads
+  that same `.data`. All three end in `_collect_data()` →
+  `_read_value_from_widget()` → `widget.value`. The public `FormDialog.result` is
+  a bare passthrough to the impl. **There is no conversion anywhere on that chain
+  that could turn a value into its text.** Reading further down it is a dead end.
+- **The public `bs.Form` path is CORRECT, including the part the reporter
+  exercised.** Measured: the editor built is a `Select`, its options are
+  normalized to `{'text', 'value'}` bags, and assigning the TEXT —
+  `widget.value = "One"`, which is what picking from the dropdown amounts to —
+  reads back as the VALUE `1` through `widget.value`, `form.get()` and
+  `form.data` alike.
+- **So the divergence is in what the DIALOG BUILDS, or how its form is
+  constructed** — not in how any of it is read. The one construction difference
+  found by reading: the impl `FormDialog` passes `data=self._data` into the
+  internal `Form` alongside `items`; the public `bs.Form` passes only `items`.
+
+**⚠ The dialog half is STILL UNREPRODUCED. That is the next step, and two traps
+cost time already:**
+
+- **`bootstack.dialogs.FormDialog` is a public WRAPPER**, not the impl class in
+  `dialogs/_impl/formdialog.py`. Reading the impl and then calling its methods on
+  the imported class gives `AttributeError` — `_build_form_content` does not
+  exist on the wrapper. Reach the impl through `._internal`.
+- **`dlg.show()` runs its own modal wait loop that a close scheduled with `after`
+  does NOT break.** It hung a probe until the task was killed. Either drive the
+  impl directly, or find a non-blocking way in.
+- Probe output must be **ASCII** — a check mark raised `UnicodeEncodeError` on
+  this box's cp1252 console. Same "runnable on every box it informs" rule #430 hit.
+
+Suspects worth testing first, in order: whether the dialog's internal `Form`
+receives the same normalized option bags, and whether `data=self._data` seeding
+changes what `_read_value_from_widget` returns for a select.
+
+**BRANCHES: `main`, `feat/widget-capture-427`, `fix/formdialog-select-value-428`.**
+The `main`-only state below
 was verified 2026-08-06 after the `0.2.2` release and held until the branch above
 was pushed on 2026-08-07.
 An earlier sweep on 2026-08-05
@@ -319,7 +443,7 @@ description, not just the title.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.3.0 — Screen capture`** — #427 (IN FLIGHT, `feat/widget-capture-427`) | 1 |
+| 1 | **`0.3.0 — Screen capture`** — #427 (IN FLIGHT, `feat/widget-capture-427`, rebased + pushed, awaiting the macOS/Linux probe run) | 1 |
 | 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -341,17 +465,18 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ SEVEN UNMILESTONED OPEN ISSUES as of 2026-08-08** (verified against `gh`, not
-counted by hand): **#426, #428, #429, #431, #432, #433, #434**. Six of the seven
-were filed 2026-08-07/08; **#428 is from an external user** (`@bLynnb2762` — data
-returned by a `FormDialog` select field differs from a plain `Select` and a `Form`
-select field), which makes it the one with someone waiting on it. **#431/#432/#433/
-#434 all came out of running the macOS and Linux legs for #427** and are
-test-infrastructure failures, not user-facing: `#432` (the shared-root GUI leg
-exits silently mid-run on Linux) is the one that **still blocks #380 (CI)** even
-after `0.2.3`. **#429** is a defect in `capture()`'s own code. **#426** contradicts
-this file's own layout example, which teaches `Use grow= / align_self=` as the good
-error message.
+**⚠ EIGHT UNMILESTONED OPEN ISSUES as of 2026-08-10** (verified against `gh`, not
+counted by hand): **#426, #428, #431, #432, #433, #434, #436**, and **#429 —
+which is FIXED on `feat/widget-capture-427` but stays OPEN until that branch
+merges.** **#428 is from an external user** (`@bLynnb2762` — data returned by a
+`FormDialog` select field differs from a plain `Select` and a `Form` select
+field), which makes it the one with someone waiting on it; it now has a branch.
+**#431/#432/#433/#434 all came out of running the macOS and Linux legs for #427**
+and are test-infrastructure failures, not user-facing: `#432` (the shared-root GUI
+leg exits silently mid-run on Linux) is the one that **still blocks #380 (CI)**
+even after `0.2.3`. **#426** contradicts this file's own layout example, which
+teaches `Use grow= / align_self=` as the good error message. **#436** is the
+`versionadded` convention, filed 2026-08-10.
 
 **They are deliberately left unassigned** — the rule below says do not assign a
 milestone unasked, and none has been raised with the maintainer. **#430 was the
@@ -371,15 +496,35 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE — `0.2.3` IS SHIPPED. Next: #429, then the PR for `feat/widget-capture-427`.
+### ★ START HERE (2026-08-10) — capture is BLOCKED ON A PROBE RUN, not on code.
 
-**`0.2.3` went out 2026-08-08 and every post-release step is done.** Nothing about
-this release is outstanding. **The live work is `feat/widget-capture-427`** — its
-macOS/Linux legs are done, it has no PR yet, and **#429 is open against its own
-code**; settle that, then PR it as `0.3.0 — Screen capture`. After that, the
-standing recommendation from the milestone table is `Test and release confidence`
-(#407 then #380) — but note **#432 now blocks #380 harder than before**, since the
-GUI leg cannot complete on Linux at all.
+**`0.2.3` shipped 2026-08-08 and every post-release step is done.** Two branches
+are in flight and **neither has a PR**; full detail in the IN FLIGHT block above.
+
+**1. `feat/widget-capture-427` — rebased onto main, pushed, `bdbdd097`. #429 is
+FIXED.** The only thing between it and a PR is **running
+`development/probe_429_settle_without_input.py` on macOS and Linux** — the fix
+stopped `settle()` from turning the event loop, and whether the window still
+repaints without that is guaranteed on Windows but not on X11 without a
+compositor. macOS was started 2026-08-10; Linux was expected later that day.
+**If both pass, PR it as `0.3.0 — Screen capture`. If the `sleep-only settle`
+arm fails, the fix needs a platform branch** — that is the whole decision.
+
+**2. `fix/formdialog-select-value-428` — groundwork only, `989f0bb1`.** #428 is
+an EXTERNAL user's bug and is not reproduced yet. The probes rule out the read
+path entirely, which is the expensive half; what remains is reproducing the
+dialog side. Its own block above says exactly where to pick up and which two
+traps already cost time.
+
+After those, the standing recommendation is `Test and release confidence`
+(#407 then #380) — but **#432 blocks #380 harder than before**, since the GUI leg
+cannot complete on Linux at all.
+
+⚠ **#436 was filed 2026-08-10**: adopt `versionadded` across the public API,
+because the docs site serves ONE version and a reader cannot tell which release
+an API needs. `capture()` is already tagged on its branch as the first case. It
+carries one undecided question — whether `versionchanged` gets applied
+retroactively to `0.2.0`–`0.2.3` or stays forward-only.
 
 Verified, not assumed:
 
