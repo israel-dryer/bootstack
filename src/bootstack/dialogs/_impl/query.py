@@ -96,7 +96,6 @@ class QueryDialog:
                     role="primary",
                     default=True,
                     command=lambda dlg: self._on_submit(),
-                    closes=False,
                 ),
             ],
             min_size=(350, 120),
@@ -155,8 +154,14 @@ class QueryDialog:
             entry = TextEntry(master=frame, label=None, show_message=False, **kwargs)
 
         entry.pack(pady=(0, 5), fill=X)
-        entry.bind("<Return>", self._on_submit)
-        entry.bind("<KP_Enter>", self._on_submit)
+        # The footer button routes its refusal through `Dialog`, which owns the
+        # close. A key press has no button behind it, so it closes here.
+        def _submit_from_key(*_: Any) -> None:
+            if self._on_submit() and self._dialog.toplevel:
+                self._dialog.toplevel.destroy()
+
+        entry.bind("<Return>", _submit_from_key)
+        entry.bind("<KP_Enter>", _submit_from_key)
 
         # Focus the entry field
         def _focus():
@@ -172,10 +177,16 @@ class QueryDialog:
         frame.pack(fill=X, expand=True)
         self._entry_widget = entry
 
-    def _on_submit(self, *_: Any) -> None:
-        """Handle submit (Enter key or button click)."""
+    def _on_submit(self, *_: Any) -> bool:
+        """Handle submit (Enter key or button click).
+
+        Records the entered value and reports whether the press is accepted.
+        Returning `False` refuses it, which leaves the dialog open — the button
+        this is wired to hands that answer back to `Dialog`, which owns the
+        close.
+        """
         if not self._entry_widget:
-            return
+            return False
 
         # Get value from widget - Field widgets use .value, Entry/Combobox use .get()
         if hasattr(self._entry_widget, 'value'):
@@ -188,18 +199,18 @@ class QueryDialog:
                     title=MessageCatalog.translate("validation.out_of_range"),
                     master=self._dialog.toplevel,
                 )
-                return
-            if result is not None:
-                self._dialog.result = result
-                if self._dialog.toplevel:
-                    self._dialog.toplevel.destroy()
-        else:
-            # Regular Entry/Combobox - use old validation logic
-            result = self._entry_widget.get()
-            if self._validate(result):
-                self._dialog.result = self._datatype(result) if self._datatype != str else result
-                if self._dialog.toplevel:
-                    self._dialog.toplevel.destroy()
+                return False
+            if result is None:
+                return False
+            self._dialog.result = result
+            return True
+
+        # Regular Entry/Combobox - use old validation logic
+        result = self._entry_widget.get()
+        if not self._validate(result):
+            return False
+        self._dialog.result = self._datatype(result) if self._datatype != str else result
+        return True
 
     def _on_filter_list(self, event: tkinter.Event) -> None:
         """Filter combobox items based on user input."""

@@ -84,14 +84,13 @@ class DialogButton:
     result: Any | None = None  # value assigned to dialog.result
     """Value assigned to `dialog.result` when clicked."""
 
-    closes: bool = True  # close dialog after click
-    """Whether the button closes the dialog when clicked."""
-
     default: bool = False  # default button (Enter)
     """Whether this is the default button (focused, triggered by Enter)."""
 
-    command: Callable[[Dialog], None] | None = None
-    """Callback invoked when clicked."""
+    command: Callable[[Dialog], Any] | None = None
+    """Callback invoked when clicked. Returning `False` refuses the press — the
+    dialog records no result and stays open — which is how a button rejects the
+    input it was given. Any other return value, including `None`, accepts it."""
 
     accent: AccentToken | str | None = None
     """Accent token for styling (e.g. `'primary'`, `'danger'`)."""
@@ -501,11 +500,21 @@ class Dialog:
 
             def make_command(s: DialogButton):
                 def cmd():
-                    if s.command:
-                        s.command(self)
+                    # A command returning False refuses the press: the dialog
+                    # neither records a result nor closes. Without this, a
+                    # command that declines to act (a form failing validation,
+                    # say) still stamps its button's result, and that value
+                    # outlives the press — a later cancel cannot clear it,
+                    # because a cancel button's own result is None and the write
+                    # below is skipped for None.
+                    if s.command and s.command(self) is False:
+                        return
                     if s.result is not None:
                         self.result = s.result
-                    if s.closes and self._toplevel:
+                    # `winfo_exists` rather than a bare truth test: a command is
+                    # free to close the dialog itself, and destroying an already
+                    # destroyed toplevel raises.
+                    if self._toplevel and self._toplevel.winfo_exists():
                         self._toplevel.destroy()
 
                 return cmd

@@ -6,6 +6,7 @@ to create modal or non-modal dialogs for structured data entry.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from tkinter import Widget
 from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Sequence, Tuple, Union, TYPE_CHECKING
 
@@ -200,8 +201,6 @@ class FormDialog:
         """
         # Allow initial layout priming each time the dialog is shown
         self._initial_layout_done = False
-        # A re-shown dialog must not report the previous run's entries.
-        self._submitted_data = None
 
         self._dialog.show(
             position=position,
@@ -500,44 +499,90 @@ class FormDialog:
     def _wrap_button_commands(self):
         """Wrap button command callbacks to pass FormDialog instead of Dialog."""
         for button in self._buttons:
-            # For non-cancel buttons, handle validation and closing manually
-            if button.role != "cancel":
-                button.closes = False
             if button.command:
                 original_command = button.command
                 def wrapped_command(dlg, cmd=original_command, btn=button):
-                    # Validate form before running custom command
-                    if self.form and btn.role != "cancel":
-                        if not self.form.validate():
-                            return
-                    result = cmd(self)  # Pass FormDialog, not Dialog
-                    if result is False:
-                        return
-                    # Set result and close manually when not cancelled
-                    if self._dialog:
-                        # Read the form while its editors are still alive.
-                        self._submitted_data = self.form.data if self.form else None
-                        self._dialog.result = btn.result if btn.result is not None else self._submitted_data
-                        if btn.closes is False and self._dialog.toplevel:
-                            self._dialog.toplevel.destroy()
-                    return result
+                    if not self._accept_press(btn):
+                        return False
+                    outcome = cmd(self)  # Pass FormDialog, not Dialog
+                    if outcome is False:
+                        # The caller's command refused. Nothing may be recorded:
+                        # a result written before this point would outlive the
+                        # press, and a later cancel could not clear it, because a
+                        # cancel button's own result is None and `Dialog` skips
+                        # the write for None.
+                        return False
+                    self._record_press(btn)
+                    return outcome
                 button.command = wrapped_command
             else:
-                # No custom command: inject validation and close behavior for non-cancel buttons
                 def auto_command(dlg=None, btn=button):
-                    if btn.role == "cancel":
-                        # Cancel button: leave result as None, dialog closes via default behavior
-                        return
-                    if self.form:
-                        if not self.form.validate():
-                            return
-                    if self._dialog:
-                        # Read the form while its editors are still alive.
-                        self._submitted_data = self.form.data if self.form else None
-                        self._dialog.result = btn.result if btn.result is not None else self._submitted_data
-                        if btn.closes is False and self._dialog.toplevel:
-                            self._dialog.toplevel.destroy()
+                    if not self._accept_press(btn):
+                        return False
+                    self._record_press(btn)
+                    return None
                 button.command = auto_command
+
+    def _accept_press(self, btn: DialogButton) -> bool:
+        """Decide whether `btn`'s press goes through, capturing the form if so.
+
+        Returns `False` to refuse the press. `Dialog` treats that as a veto: it
+        records no result and leaves the window open, so an invalid form cannot
+        close the dialog and cannot leave a result token behind it.
+
+        The capture happens here, BEFORE the caller's command runs, because a
+        command is free to destroy the dialog itself. Reading the form after
+        that would fall back to the editors' Tk variables and reintroduce #428
+        on the one path that passes `command=`.
+
+        Args:
+            btn: The button specification being pressed.
+        """
+        if not self._button_returns_data(btn):
+            # A cancel, or an action button such as a Delete: neither reads the
+            # form, so requiring the form to be valid before the press would
+            # refuse it for a reason that cannot matter.
+            return True
+        if self.form and not self.form.validate():
+            return False
+        # Read the form while its editors are still alive. After `show()`
+        # returns, the dialog and every editor in it are destroyed, and a read
+        # then falls back to the editor's Tk variable — which holds display text
+        # rather than the value, and flattens every type to `str` (#428).
+        self._submitted_data = self.form.data if self.form else None
+        return True
+
+    def _record_press(self, btn: DialogButton) -> None:
+        """Record the result of an accepted press.
+
+        Only a button whose result IS the entered data needs anything written
+        here — `Dialog` records a result of its own for every other button, and
+        skips the write when that result is `None`, which is what keeps a cancel
+        from reporting the form.
+
+        Args:
+            btn: The button specification that was pressed.
+        """
+        if self._dialog and btn.result is None and self._button_returns_data(btn):
+            self._dialog.result = self._submitted_data
+
+    def _button_returns_data(self, btn: DialogButton) -> bool:
+        """Whether `btn`'s press will hand the caller the entered data.
+
+        This is the same question `_resolve_result` answers when the dialog
+        closes, asked at press time — which is the only moment the form is still
+        readable. Keying the snapshot to it means the capture cannot disagree
+        with the read.
+
+        Args:
+            btn: The button specification being pressed.
+        """
+        if btn.role == "cancel":
+            return False
+        if isinstance(btn.result, str) and btn.result.lower() in self._DATA_RESULTS:
+            return True
+        # A non-cancel button with no result of its own returns the form data.
+        return btn.result is None
 
     def _normalize_buttons(self, buttons: Iterable[ButtonSpec | str] | None) -> list[DialogButton]:
         """Normalize button specifications, providing defaults if none given."""
@@ -551,7 +596,11 @@ class FormDialog:
         normalized: list[DialogButton] = []
         for btn in buttons:
             if isinstance(btn, DialogButton):
-                normalized.append(btn)
+                # Copy: `_wrap_button_commands` rewrites `command`, and this is
+                # the caller's own object — a spec reused across two dialogs
+                # would otherwise come back with the first dialog's wrapper on
+                # it, and the second would wrap that again.
+                normalized.append(replace(btn))
             elif isinstance(btn, str):
                 # Simple string becomes a button
                 btn_lower = btn.lower()
