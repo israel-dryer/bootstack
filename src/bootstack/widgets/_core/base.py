@@ -234,6 +234,8 @@ class PublicWidgetBase:
             BootstackError: If the widget is not visible on screen or has been
                 scrolled out of view, if `inset` is negative, if no capture
                 backend is available, or if the file cannot be written.
+
+        .. versionadded:: 0.3.0
         """
         from bootstack._core import capture as _capture
         from bootstack.errors import BootstackError

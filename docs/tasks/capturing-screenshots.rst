@@ -1,6 +1,8 @@
 Capturing Screenshots
 =====================
 
+.. versionadded:: 0.3.0
+
 Every widget can save a picture of itself. Call ``capture()`` on the app to get
 the whole window, or on a single widget to get just that part of it — useful for
 letting someone share a dashboard, a report, or one chart with a colleague who
@@ -43,6 +45,13 @@ format:
 
 That is the whole feature for most applications — a button, a save dialog, and
 one call.
+
+A capture pauses briefly before reading the screen, so the desktop can finish
+repainting the area a closing dialog just uncovered — a tenth of a second by
+default, adjustable with ``settle``. The pause is deliberate: nothing else runs
+during it, so an impatient second click on the export button waits its turn
+instead of re-entering the handler and opening a second save dialog on top of
+the first. You do not need to guard the button against double-clicks yourself.
 
 Capturing part of the window
 ----------------------------
