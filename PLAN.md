@@ -75,13 +75,35 @@ Touches `_wrap_button_commands` (both `wrapped_command` and `auto_command`) and
   reason `FormDialog` reaches it at all. Whether that fallback should return the
   variable's text for a select is worth a follow-up issue, not scope here.
 
-## Blast radius
+## The decision: standardize on VALUE
 
-Every `FormDialog` editor whose display text differs from its value is affected,
-not just `select` — the fallback returns whatever the Tk variable holds. The
-regression test should therefore cover at least one non-select editor if a
-suitable one exists, and the CHANGELOG entry should not promise this is
-select-only.
+DECIDED (maintainer, 2026-08-10). The reporter deliberately left it open — *"the
+same type of data, whether that be the text or the value"* — so this is a choice,
+not a given. `FormDialog` is brought in line with the other two paths rather than
+the reverse: `.value` means the value framework-wide, `.selection` is the
+both-parts bag, and two of three paths already return the value. Standardizing on
+text would have touched all three.
+
+## Blast radius — wider than the issue title, MEASURED
+
+`development/probe_428_end_to_end.py` runs the reporter's literal flow and
+reports the TYPE beside the value:
+
+```
+bs.Select.value            1      int   OK
+Form.get()['k']            1      int   OK
+FormDialog.result['k']    'One'   str   MISMATCH
+```
+
+**The type is not separately recoverable on the broken path.** The fallback
+returns whatever the Tk variable holds, and Tk variables are string-backed, so
+EVERY value type is flattened to `str` there — an int comes back as its label
+here, and a date editor would return its formatted display string rather than a
+`date`. #428 is a type-integrity bug across the dialog's whole editor set, not a
+select-labelling quirk.
+
+So: the regression test asserts VALUE **and** TYPE, and covers a non-select
+editor as well; the CHANGELOG entry must not promise this is select-only.
 
 ## How it will be verified
 

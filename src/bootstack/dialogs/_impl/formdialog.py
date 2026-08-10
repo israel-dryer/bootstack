@@ -152,6 +152,11 @@ class FormDialog:
 
         self.form: Any = None  # Form widget, imported lazily to avoid circular import
         self.result: Any = None
+        # The form's values as they stood when a submit button was pressed.
+        # Captured there rather than read back afterward: `show()` only returns
+        # once the dialog is gone, and reading a destroyed editor falls back to
+        # its display text, so a select would report 'One' where 1 was entered.
+        self._submitted_data: Any = None
         self._initial_layout_done = False
         self._scrollview = None
         self._window_id = None
@@ -195,6 +200,8 @@ class FormDialog:
         """
         # Allow initial layout priming each time the dialog is shown
         self._initial_layout_done = False
+        # A re-shown dialog must not report the previous run's entries.
+        self._submitted_data = None
 
         self._dialog.show(
             position=position,
@@ -223,7 +230,13 @@ class FormDialog:
         if dialog_result is None:
             return None
         if isinstance(dialog_result, str) and dialog_result.lower() in self._DATA_RESULTS:
-            return self.form.data if self.form else None
+            # The snapshot taken when the button was pressed, NOT a fresh read.
+            # This runs after `show()` returns, so the dialog and every editor
+            # in it are already destroyed; reading one now falls back to its Tk
+            # variable, which holds display text rather than the value — a
+            # select would report 'One' where 1 was entered, and any value type
+            # would come back as `str` (#428).
+            return self._submitted_data
         # A non-cancel button with no explicit result already carries the form
         # data (set in `_wrap_button_commands`); anything else is an action token.
         return dialog_result
@@ -502,7 +515,9 @@ class FormDialog:
                         return
                     # Set result and close manually when not cancelled
                     if self._dialog:
-                        self._dialog.result = btn.result if btn.result is not None else (self.form.data if self.form else None)
+                        # Read the form while its editors are still alive.
+                        self._submitted_data = self.form.data if self.form else None
+                        self._dialog.result = btn.result if btn.result is not None else self._submitted_data
                         if btn.closes is False and self._dialog.toplevel:
                             self._dialog.toplevel.destroy()
                     return result
@@ -517,7 +532,9 @@ class FormDialog:
                         if not self.form.validate():
                             return
                     if self._dialog:
-                        self._dialog.result = btn.result if btn.result is not None else (self.form.data if self.form else None)
+                        # Read the form while its editors are still alive.
+                        self._submitted_data = self.form.data if self.form else None
+                        self._dialog.result = btn.result if btn.result is not None else self._submitted_data
                         if btn.closes is False and self._dialog.toplevel:
                             self._dialog.toplevel.destroy()
                 button.command = auto_command

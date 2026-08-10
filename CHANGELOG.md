@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`FormDialog.result` now gives you the values you put in, not the text shown on screen.** A `select` built from `[('One', 1), ('Two', 2)]` returned `'One'` where a plain `Select` and the same field in a `Form` both returned `1` — so the three disagreed, and the dialog was the odd one out. It affected every editor whose displayed text differs from its underlying value, not only `select`: the result was read back after the dialog had already closed, at which point the only thing left to read was the on-screen text, and that arrives as a string whatever the value's real type was. A date field, for instance, handed back its formatted text rather than a date. The entries are now taken when you press the button, while the form is still on screen, so what you get back is what was entered — same values, same types, matching `Form` and `Select`. Cancelling still returns `None`, and re-using a dialog no longer reports the previous run's entries. (#428)
+
 ## [0.2.3] — Import without IDLE
 
 ### Fixed
