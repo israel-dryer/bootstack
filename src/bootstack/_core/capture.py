@@ -37,6 +37,10 @@ except ImportError:
 # failure rather than a missing-backend one.
 _BUILTIN_BACKEND_PLATFORMS = ("win32", "darwin")
 
+# How long to pause between event-loop turns while settling. Short enough to
+# stay responsive to the repaint we are waiting for, long enough not to spin.
+_SETTLE_TICK = 0.01
+
 # Formats that store plain color and nothing else. A capture bound for one of
 # these is converted first, because saving an image that carries transparency
 # — or a color palette — as JPEG fails outright.
@@ -194,18 +198,25 @@ def raised(tk_widget):
 def settle(tk_widget, seconds: float) -> None:
     """Let pending redraws finish before the pixels are read.
 
-    Flushes the framework's own drawing, then waits `seconds` so the desktop
-    can repaint the area behind any window that has just closed — a save
-    dialog, most commonly.
+    Waits `seconds` while the event loop turns, so the desktop can repaint
+    the area behind any window that has just closed — a save dialog, most
+    commonly.
 
-    The wait deliberately does NOT dispatch events. Turning the event loop
-    here would run everything queued, including a second click on the button
-    that started the capture: that click re-enters the caller's handler, which
-    opens a second save dialog on top of the first and starts an overlapping
-    capture, none of which the person clicking asked for. Waiting quietly
-    costs a brief pause — a tenth of a second by default — and makes the
-    second click wait its turn instead. Flushing pending drawing is idle work,
-    so it still happens.
+    The wait has to dispatch events. Flushing our own drawing is not enough:
+    the area a closing window uncovers is repainted by the desktop, and on
+    macOS that repaint does not happen at all unless the loop is turning. A
+    capture taken without it photographs the dialog that was just dismissed
+    rather than the widget underneath.
+
+    Dispatching brings its own problem, which is why the window is held busy
+    for the duration. Turning the loop runs everything queued, including a
+    second click on the button that started the capture: that click would
+    re-enter the caller's handler, opening a second save dialog on top of the
+    first and starting an overlapping capture, none of which the person
+    clicking asked for. `tk busy` routes that click to a blocking window
+    instead, and is invisible in the photograph. Where it is unavailable the
+    wait still dispatches — a correct picture matters more than the stray
+    click, which is the trade the toolkit leaves us.
 
     Args:
         tk_widget: Any widget; its root window is the one flushed.
@@ -213,10 +224,48 @@ def settle(tk_widget, seconds: float) -> None:
     """
     root = tk_widget._root()
     root.update_idletasks()
-    time.sleep(max(seconds, 0.0))
-    # Again after the wait: anything the pause allowed to arrive gets drawn
-    # before the pixels are read.
+    with _input_blocked(tk_widget):
+        deadline = time.perf_counter() + max(seconds, 0.0)
+        while time.perf_counter() < deadline:
+            root.update()
+            # Yield the processor rather than spinning on update() alone.
+            time.sleep(_SETTLE_TICK)
+        # Once more after the wait, so anything the pause allowed to arrive
+        # is drawn before the pixels are read.
+        root.update()
     root.update_idletasks()
+
+
+@contextlib.contextmanager
+def _input_blocked(tk_widget):
+    """Route input away from a window while the event loop is being turned.
+
+    Yields either way: a window that cannot be held busy is still captured,
+    just without the protection from a stray click.
+
+    ⚠ The target may already be DEAD by the time this runs — settling flushes
+    pending drawing first, and idle work queued before the capture can destroy
+    it. Asking a destroyed widget for its toplevel raises a raw `TclError`,
+    which would escape a method documented to raise `BootstackError` and
+    pre-empt the guard that reports the closure properly. So the lookup is
+    guarded too, not just the `tk busy` calls.
+    """
+    top = None
+    held = False
+    try:
+        top = tk_widget.winfo_toplevel()
+        top.tk.call("tk", "busy", "hold", top._w)
+        held = True
+    except tkinter.TclError:
+        held = False
+    try:
+        yield held
+    finally:
+        if held and top is not None:
+            try:
+                top.tk.call("tk", "busy", "forget", top._w)
+            except tkinter.TclError:
+                pass
 
 
 def capture_region(bbox: tuple[int, int, int, int], path) -> Path:

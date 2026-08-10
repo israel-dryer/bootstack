@@ -26,6 +26,10 @@ import bootstack as bs
 from bootstack._core import capture as _capture
 from bootstack.errors import BootstackError
 
+# A color nothing in the theme uses, so any of it in a capture came from the
+# test's own cover window rather than from the application.
+_COVER_COLOR = "#ff00ff"
+
 # `isolated` keeps these out of the shared-root leg, where accumulated tests
 # push the widgets clean off the display and every grab asks for a region no
 # monitor covers. See the note beside this module in `tests/run_gui.py`.
@@ -232,30 +236,127 @@ def test_widget_closed_while_settling_raises_a_bootstack_error(
         label.capture(tmp_path / "gone.png", settle=0.1)
 
 
-def test_settling_does_not_run_queued_handlers(shown_app, tmp_path):
-    """Settling must not dispatch queued work — #429.
+def test_settling_repaints_the_area_a_closed_window_uncovered(
+    shown_app, tmp_path
+):
+    """The capture must show the widget, not the dialog that just closed — #429.
 
-    `settle()` used to turn the event loop so the desktop could repaint, which
-    ran everything queued along with it. For the person using the application
-    that meant a second click on an export button re-entered the handler
-    mid-capture, stacking a second save dialog they never asked for.
+    This is the whole point of settling. A save dialog sits over the target and
+    the capture happens the moment it closes, so the desktop has to repaint the
+    uncovered area before the pixels are read. On macOS that repaint does not
+    happen at all unless the event loop is turning, and the resulting file is a
+    photograph of the dismissed dialog — through the public method, following
+    the pattern the docstring teaches.
 
-    The second half of this test is its control: the timer is real and does
-    fire the moment the loop turns, so the first assertion is about WHEN it
-    runs, not about a timer that was never going to run at all.
+    The cover is a distinctive color so the assertion is about CONTENT rather
+    than geometry: any of it left in the frame means the stale pixels were
+    captured. Measured before the fix, this arm caught 51400 of 60800 pixels.
+
+    ⚠ Settling stopped dispatching for a first pass at #429 and this exact
+    scenario is what that broke, so the assertion is deliberately not on the
+    settle mechanism but on the picture it produces.
+
+    ⚠ The window is SIZED, and both the window and the saved image are checked
+    before the content assertion. The shared root collapses to 1x1 with no
+    content of its own, and a one-pixel capture sampling one point away from
+    the cover would report a clean picture no matter how broken settling was.
+    """
+    top = shown_app.tk.winfo_toplevel()
+    # ⚠ Released in the finally below, and released rather than restored. The
+    # root is SHARED, and any explicit geometry left on it — including the one
+    # it had before — pins the window at that size, so later tests' widgets
+    # land outside it and the scrolled-out-of-view guard refuses to capture
+    # them. That surfaced as two failures in tests this one never touched.
+    # An empty geometry hands sizing back to the content.
+    try:
+        top.geometry("320x200")
+        shown_app.tk.update()
+
+        # Precondition: the size request was actually serviced. Without this
+        # the content assertion below can pass on a degenerate rectangle.
+        assert top.winfo_width() >= 200 and top.winfo_height() >= 120, (
+            f"the window is {top.winfo_width()}x{top.winfo_height()}, too "
+            f"small for a capture that could show anything"
+        )
+
+        cover = tkinter.Toplevel(shown_app.tk)
+        cover.overrideredirect(True)
+        cover.configure(background=_COVER_COLOR)
+        cover.geometry(
+            f"{top.winfo_width()}x{top.winfo_height()}"
+            f"+{top.winfo_rootx()}+{top.winfo_rooty()}"
+        )
+        cover.lift()
+        cover.attributes("-topmost", True)
+        shown_app.tk.update()
+        # Closed the way a dialog closes: torn down, with no pumping after.
+        cover.destroy()
+
+        saved = shown_app.capture(tmp_path / "uncovered.png", settle=0.3)
+    finally:
+        top.wm_geometry("")
+        shown_app.tk.update()
+
+    with Image.open(saved) as img:
+        width, height = img.size
+        pixels = list(img.convert("RGB").getdata())
+
+    # Second precondition, on the image rather than the window: a grab that
+    # came back tiny cannot say anything about what is in the frame.
+    assert width >= 200 and height >= 120, (
+        f"the capture is {width}x{height}, too small to judge its content"
+    )
+
+    stale = sum(1 for r, g, b in pixels if r > 200 and g < 80 and b > 200)
+    assert stale == 0, (
+        f"{stale} of {len(pixels)} pixels still show the closed window, so the "
+        f"capture photographed it instead of the application"
+    )
+
+
+def test_settling_holds_the_window_busy_while_it_dispatches(
+    shown_app, tmp_path
+):
+    """Dispatching is what repaints, so input is blocked for the duration — #429.
+
+    Turning the event loop runs everything queued, including a second click on
+    the button that started the capture: that click would re-enter the caller's
+    handler and stack a second save dialog. `tk busy` routes it to a blocking
+    window instead.
+
+    Observed from inside the settle window, using the very dispatching this
+    guards: a timer scheduled to land mid-settle reads the busy state. The
+    assertions after the call are its controls — the timer really did fire (so
+    the reading is not of an empty list), and the hold is released on the way
+    out (so it does not leak onto the application).
+
+    ⚠ This asserts the GUARD IS IN PLACE, not that it swallows a click. A
+    synthesized click cannot test that: `event_generate` aimed at a widget
+    delivers straight to its bindings and never consults the busy window, so
+    it re-enters whether busy is held or not. Measured, with `tk busy status`
+    reading 1 at the time. The swallowing half is a manual check —
+    `development/demo_429_busy_during_settle.py`.
     """
     label = bs.Label("settling")
-    shown_app.tk.update_idletasks()
-
-    ran: list[str] = []
-    shown_app.tk.after(10, lambda: ran.append("queued"))
-
-    label.capture(tmp_path / "shot.png", settle=0.2)
-
-    assert ran == [], "settling dispatched queued work and re-entered the app"
-
     shown_app.tk.update()
-    assert ran == ["queued"], "the timer never fired, so the check above was vacuous"
+    top = label.tk.winfo_toplevel()
+
+    def busy_status() -> str:
+        return str(top.tk.call("tk", "busy", "status", top._w))
+
+    assert busy_status() == "0", "the window was already busy before settling"
+
+    seen: list[str] = []
+    shown_app.tk.after(60, lambda: seen.append(busy_status()))
+
+    label.capture(tmp_path / "shot.png", settle=0.3)
+
+    assert seen == ["1"], (
+        "the window was not held busy while settling dispatched events"
+        if seen
+        else "the timer never fired, so settling did not dispatch at all"
+    )
+    assert busy_status() == "0", "settling left the window busy"
 
 
 def test_a_no_alpha_format_converts_a_mode_the_grabbers_never_produce(tmp_path):

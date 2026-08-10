@@ -246,10 +246,10 @@ class PublicWidgetBase:
             # newly exposed area, and a widget created moments ago is not
             # mapped until the toolkit has processed its pending geometry.
             _capture.settle(target, settle)
-            # Settling no longer dispatches events, but it still yields the
-            # interpreter, and the checks below cost nothing next to reading
-            # the screen. A target closed on another thread, or by a timer
-            # that ran before the capture started, still has to be caught.
+            # Settling dispatches, so a timer that ran during it can have
+            # closed the target — and these checks cost nothing next to
+            # reading the screen. A target closed on another thread, or by a
+            # timer that ran before the capture started, has to be caught too.
             if not _capture.still_exists(target):
                 raise BootstackError(
                     f"{type(self).__name__} was closed while the capture was "
