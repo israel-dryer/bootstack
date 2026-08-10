@@ -52,10 +52,27 @@ default, adjustable with ``settle``. Without that pause the picture can come
 back showing the dialog that was just dismissed rather than the window
 underneath it.
 
-The window stops accepting input for the moment the pause lasts, so an
+The window also stops accepting input for the moment the pause lasts, so an
 impatient second click on the export button is discarded instead of
 re-entering the handler and opening a second save dialog on top of the first.
-You do not need to guard the button against double-clicks yourself.
+
+.. note::
+
+   That input guard is not honored on macOS. A second click during the pause
+   does reach the button there, so a handler that opens a save dialog can be
+   entered twice. If a double-click on your export button would cause trouble,
+   disable it for the duration:
+
+   .. code-block:: python
+
+      def on_export():
+          button.disabled = True
+          try:
+              chosen = bs.ask_save_file(initial_file="dashboard.png")
+              if chosen:
+                  app.capture(chosen)
+          finally:
+              button.disabled = False
 
 Capturing part of the window
 ----------------------------

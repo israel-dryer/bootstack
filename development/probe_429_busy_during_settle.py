@@ -29,9 +29,15 @@ but about the wrong thing. Strategies are pinned in this file now.
 
 Arms:
 
-  1. Is the window held busy WHILE settling dispatches? Structural, and the
-     one thing here that is worth automating — it is also asserted by
-     `tests/widgets/public/test_capture.py`.
+  0. IS THE HOLD REAL ON THIS PLATFORM? `tk busy status` is not the answer —
+     macOS returns 1 for a busy window it never maps. The answer is whether
+     that window is MAPPED and whether Tk's own hit test at a button inside
+     the target resolves to it or to the button. This arm is the automatable
+     substitute for the manual click check, and it is the arm that would have
+     caught the macOS hole immediately. Measured on Tk 8.6.17/aqua:
+     status=1, mapped=0, hit=the button.
+  1. Is the window held busy WHILE settling dispatches? Structural, and it is
+     also asserted by `tests/widgets/public/test_capture.py`.
   2. Does a synthesized click re-enter anyway? It does. Kept as the standing
      demonstration that this technique cannot answer the input question.
   3. Is the busy window visible in the photograph? Compared against a floor
@@ -133,6 +139,33 @@ def main() -> int:
         def sequence() -> None:
             nonlocal depth, max_depth
 
+            # [0] Does the hold DO anything here? status is not evidence.
+            inner = button._internal
+            px, py = inner.winfo_rootx() + 5, inner.winfo_rooty() + 5
+            top.tk.call("tk", "busy", "hold", top._w)
+            app.tk.update()
+            busy_windows = [str(w) for w in
+                            top.tk.splitlist(top.tk.call("winfo", "children",
+                                                         top._w))
+                            if "Busy" in str(w)]
+            mapped = [w for w in busy_windows
+                      if str(top.tk.call("winfo", "ismapped", w)) == "1"]
+            hit = str(top.tk.call("winfo", "containing", px, py))
+            top.tk.call("tk", "busy", "forget", top._w)
+            app.tk.update()
+            if mapped and hit not in (str(inner), str(inner._w)):
+                results.append((
+                    "[0] is the hold real on this platform",
+                    f"YES - busy window mapped and the hit test at the button "
+                    f"resolves to {hit!r}; input should be blocked here"))
+            else:
+                results.append((
+                    "[0] is the hold real on this platform",
+                    f"NO - busy windows {busy_windows or 'none'}, mapped "
+                    f"{mapped or 'none'}, hit test at the button resolves to "
+                    f"{hit!r}. The hold is accepted and does nothing, so a "
+                    f"real click re-enters. Known on macOS/aqua."))
+
             # [1] Is busy held while settling dispatches? Read from inside the
             # settle window by a timer, which only runs because it dispatches.
             before = busy_status()
@@ -179,9 +212,12 @@ def main() -> int:
                 results.append(("[3] busy visible in the photograph?",
                                 "INCONCLUSIVE - sizes differ, compare by hand"))
             elif signal <= floor:
-                results.append(("[3] busy visible in the photograph?",
-                                f"PASS - {signal} px vs a {floor} px floor; "
-                                f"invisible"))
+                results.append((
+                    "[3] busy visible in the photograph?",
+                    f"PASS - {signal} px vs a {floor} px floor; invisible. "
+                    f"⚠ READ THIS WITH ARM 0: where the hold is not real the "
+                    f"window is never mapped, so invisibility is trivially "
+                    f"true and says nothing about a platform that maps it."))
             else:
                 results.append(("[3] busy visible in the photograph?",
                                 f"FAIL - {signal} px vs a {floor} px floor; "

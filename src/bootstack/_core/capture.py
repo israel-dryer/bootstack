@@ -214,9 +214,22 @@ def settle(tk_widget, seconds: float) -> None:
     re-enter the caller's handler, opening a second save dialog on top of the
     first and starting an overlapping capture, none of which the person
     clicking asked for. `tk busy` routes that click to a blocking window
-    instead, and is invisible in the photograph. Where it is unavailable the
-    wait still dispatches — a correct picture matters more than the stray
-    click, which is the trade the toolkit leaves us.
+    instead.
+
+    ⚠ THE HOLD IS BEST-EFFORT, AND ON macOS IT DOES NOTHING. Aqua reports the
+    hold as successful and never maps the window it created: `tk busy status`
+    returns 1 while the busy window sits at `winfo_ismapped() == 0`, and Tk's
+    own hit test at the button's position still resolves to the button. So a
+    real click re-enters the handler there — confirmed by hand, since a
+    synthesized click cannot test this. Measured on Tk 8.6.17 in plain
+    tkinter, so it is the toolkit rather than anything above it. X11 and Win32
+    map the window and are expected to honor it;
+    `development/probe_429_busy_during_settle.py` reports which a given box
+    does.
+
+    The wait dispatches either way. A correct picture is worth more than a
+    stray click: without dispatching, the capture reads pixels that are simply
+    wrong, and that is the failure this function exists to prevent.
 
     Args:
         tk_widget: Any widget; its root window is the one flushed.
@@ -242,6 +255,9 @@ def _input_blocked(tk_widget):
 
     Yields either way: a window that cannot be held busy is still captured,
     just without the protection from a stray click.
+
+    ⚠ Yielding `True` means the hold was ACCEPTED, not that input is actually
+    blocked — macOS accepts it and does not map the busy window. See `settle`.
 
     ⚠ The target may already be DEAD by the time this runs — settling flushes
     pending drawing first, and idle work queued before the capture can destroy

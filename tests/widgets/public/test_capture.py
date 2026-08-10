@@ -330,12 +330,24 @@ def test_settling_holds_the_window_busy_while_it_dispatches(
     the reading is not of an empty list), and the hold is released on the way
     out (so it does not leak onto the application).
 
-    ⚠ This asserts the GUARD IS IN PLACE, not that it swallows a click. A
-    synthesized click cannot test that: `event_generate` aimed at a widget
-    delivers straight to its bindings and never consults the busy window, so
-    it re-enters whether busy is held or not. Measured, with `tk busy status`
-    reading 1 at the time. The swallowing half is a manual check —
-    `development/demo_429_busy_during_settle.py`.
+    ⚠ This asserts the hold is REQUESTED AND RELEASED, which is all that is
+    portable. It does NOT assert that input is blocked, and `tk busy status`
+    is not evidence that it is: macOS returns 1 for a busy window it never
+    maps, so the hold is accepted and does nothing and a real click re-enters
+    the handler. Confirmed by hand on Tk 8.6.17/aqua, and reproduced in plain
+    tkinter, so it is the toolkit rather than anything above it.
+
+    Whether a given platform honors the hold is arm 0 of
+    `development/probe_429_busy_during_settle.py` — it checks the busy window
+    is mapped and that Tk's hit test at a button resolves to it. That is
+    deliberately not asserted here, because it is platform-dependent and would
+    make this test fail on macOS for something it is not testing.
+
+    ⚠ A synthesized click cannot stand in for the manual check either:
+    `event_generate` aimed at a widget delivers straight to its bindings and
+    never consults the busy window, so it re-enters whether the hold is real
+    or not. The swallowing half is
+    `development/demo_429_busy_during_settle.py`, by hand.
     """
     label = bs.Label("settling")
     shown_app.tk.update()

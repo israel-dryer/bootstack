@@ -25,19 +25,30 @@ WHAT TO DO
      there is a wide window to click into.
   3. Read the log in the window.
 
-WHAT YOU SHOULD SEE
+WHAT YOU SHOULD SEE — AND IT DEPENDS ON THE PLATFORM
 
   captures started: 1        <- every extra click was swallowed
   max nesting:      1        <- the handler never re-entered itself
 
-WHAT A FAILURE LOOKS LIKE
+  Expected where the toolkit honors `tk busy`: X11 and Win32 map the busy
+  window, so the click lands on it and is discarded.
 
-  captures started: 3        <- the clicks got through
-  max nesting:      2        <- and one landed INSIDE the running capture
+WHAT macOS DOES, AND IT IS NOT A REGRESSION
 
-Nesting above 1 is the defect in #429: for a real application that second
-click opens a second save dialog on top of the first, and starts an
-overlapping capture nobody asked for.
+  captures started: 3
+  max nesting:      2        <- a click landed INSIDE the running capture
+
+  ⚠ MEASURED AND EXPECTED ON AQUA. `tk busy hold` there reports success and
+  never maps the window it created — `tk busy status` returns 1 while the busy
+  window sits at `winfo_ismapped() == 0`, and Tk's own hit test at the button
+  still resolves to the button. Reproduced in plain tkinter on Tk 8.6.17, so
+  it is the toolkit, not the framework. Run arm 0 of
+  `probe_429_busy_during_settle.py` to see what THIS box does before reading
+  a re-entry here as a defect.
+
+Nesting above 1 on a platform whose arm 0 says the hold IS real is the defect
+in #429: for a real application that second click opens a second save dialog
+on top of the first, and starts an overlapping capture nobody asked for.
 
 The demo captures to a temporary directory and deletes nothing, so the images
 are there if you want to confirm the picture is of the window rather than of a
@@ -100,24 +111,66 @@ def main() -> int:
             finally:
                 depth -= 1
 
+        def hold_is_real() -> bool:
+            """Does `tk busy` actually block input on THIS box?
+
+            `tk busy status` is not the answer — macOS returns 1 for a busy
+            window it never maps. What settles it is whether that window is
+            mapped and whether Tk's hit test at the button resolves to it.
+            """
+            top = app._internal.winfo_toplevel()
+            inner = export_button._internal
+            x, y = inner.winfo_rootx() + 5, inner.winfo_rooty() + 5
+            try:
+                top.tk.call("tk", "busy", "hold", top._w)
+                app.tk.update()
+                mapped = any(
+                    str(top.tk.call("winfo", "ismapped", str(w))) == "1"
+                    for w in top.tk.splitlist(
+                        top.tk.call("winfo", "children", top._w))
+                    if "Busy" in str(w)
+                )
+                hit = str(top.tk.call("winfo", "containing", x, y))
+                return mapped and hit != str(inner)
+            except Exception:                     # noqa: BLE001 - demo surface
+                return False
+            finally:
+                try:
+                    top.tk.call("tk", "busy", "forget", top._w)
+                    app.tk.update()
+                except Exception:                 # noqa: BLE001
+                    pass
+
         def report() -> None:
+            real = hold_is_real()
             note("")
             note("---- verdict " + "-" * 30)
             note(f"captures started: {started}")
             note(f"captures finished: {finished}")
             note(f"max nesting:      {max_depth}")
+            note(f"tk busy honored here: {'yes' if real else 'NO'}")
             if started == 0:
                 note("NOTHING CLICKED — click Export, then click it again fast.")
+            elif max_depth > 1 and real:
+                note("FAIL — this platform honors the hold and a click still")
+                note("re-entered the handler mid-capture.")
             elif max_depth > 1:
-                note("FAIL — a click re-entered the handler mid-capture.")
+                note("EXPECTED — this platform does not honor `tk busy`, so")
+                note("the click was never going to be blocked. Not a")
+                note("regression; it is the known limit (macOS/aqua).")
             elif started > 1:
                 note("Clicks were spaced out. Click FASTER to test the guard:")
                 note("the extra clicks have to land during the pause.")
-            else:
+            elif real:
                 note("PASS — the extra clicks were swallowed.")
+            else:
+                note("INCONCLUSIVE — only one capture ran, and this platform")
+                note("would not have blocked a click anyway. Click faster.")
 
         with bs.Row(gap=8):
-            bs.Button("Export", accent="primary", on_click=on_export)
+            # Named: hold_is_real() hit-tests against this exact button.
+            export_button = bs.Button("Export", accent="primary",
+                                      on_click=on_export)
             bs.Button("Show verdict", on_click=report)
             bs.Button("Quit", on_click=app.close)
 
