@@ -89,6 +89,35 @@ to when that button is clicked:
    elif dlg.result == "discard":
        discard()
 
+Refusing a press
+~~~~~~~~~~~~~~~~
+
+A button's ``command=`` can decline the press it was given. Return ``False``
+and the dialog records no result and stays open, so the user can correct the
+input and try again; return anything else — including ``None`` — and the press
+completes as usual:
+
+.. code-block:: python
+
+   def save(dlg):
+       if not name.value:
+           bs.alert("A name is required.")
+           return False        # refused: the dialog stays open
+       write(name.value)
+
+   dlg = Dialog(
+       title="New project",
+       content_builder=build,
+       buttons=[
+           DialogButton("Save",   role="primary", result="save", command=save),
+           DialogButton("Cancel", role="cancel"),
+       ],
+   )
+
+This is per press, not per button — the same button accepts the next press once
+the input is valid. It applies to the :kbd:`Enter` key as well, which triggers
+the default button through the same command.
+
 Dialog modes
 ~~~~~~~~~~~~
 

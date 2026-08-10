@@ -513,3 +513,45 @@ def test_a_command_refusing_after_the_capture_leaves_no_result(app):
     result = _drive(dialog, app, refuse_then_cancel)
 
     assert result is None, f"the refused press left its data behind: {result!r}"
+
+
+def test_a_cancel_role_button_carrying_a_data_token_captures_its_own_run(app):
+    """`_button_returns_data` and `_resolve_result` must ask the question the same way.
+
+    `_resolve_result` reads the result TOKEN first, so a button declared
+    `role="cancel", result="ok"` resolves through the snapshot. If the capture
+    side let the ROLE win, that press would take no snapshot of its own — and
+    since nothing resets `_submitted_data` between shows, the caller would be
+    handed the PREVIOUS run's entries. Contradictory input, but the failure it
+    produced was silent and wrong rather than loud.
+    """
+    dialog = FormDialog(
+        items=[_select_item()],
+        buttons=[
+            DialogButton(text="Close", role="cancel", result="ok"),
+            DialogButton(text="OK", role="primary", result="ok", default=True),
+        ],
+    )
+
+    first = _submit(dialog, app,
+                    lambda form: setattr(form._widgets["k"], "value", "Three"))
+    assert first["k"] == 3, "precondition: run one captured a snapshot"
+
+    second = _drive(dialog, app, lambda impl: _press_text(impl, "Close"))
+
+    assert second is not None, "the token resolved through no snapshot at all"
+    assert second["k"] != 3, f"run two reported run one's entries: {second!r}"
+
+
+def test_a_removed_kwarg_names_the_button_it_came_from(app):
+    """The error a caller upgrading past `closes=` meets first.
+
+    A bare `DialogButton(**mapping)` raises `TypeError: unexpected keyword
+    argument 'closes'` with nothing to say which button, or that a button is
+    involved at all. `Dialog._normalize_buttons` already wraps this; the
+    `FormDialog` copy did not, so the same mistake reported worse through the
+    dialog that most callers reach for.
+    """
+    with pytest.raises(ValueError, match="Invalid button mapping"):
+        FormDialog(items=[_select_item()],
+                   buttons=[{"text": "Apply", "closes": False}])

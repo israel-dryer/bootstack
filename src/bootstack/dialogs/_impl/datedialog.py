@@ -323,6 +323,13 @@ class DateDialog:
         Refuses the press — leaving the dialog open — until both endpoints are
         selected. The OK button hands that answer back to `Dialog`, which owns
         the close.
+
+        Unlike `_confirm`, this releases no grab of its own. It does not need
+        to: `Dialog` destroys the toplevel, and Tk releases a grab held by a
+        window when that window is destroyed (measured — see
+        `development/probe_437_review2_fixes.py`). `_confirm` keeps its
+        `grab_release()` because it destroys the window itself, where the call
+        is at least self-documenting.
         """
         if not self._picker:
             return False

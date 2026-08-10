@@ -992,8 +992,13 @@ class Form(Frame):
     # --- button helpers -------------------------------------------------
     def _make_button_command(self, spec: DialogButton):
         def command():
-            if spec.command:
-                spec.command(self)  # type: ignore[arg-type]
+            # A command returning `False` refuses the press, exactly as it does
+            # on a dialog footer button — `DialogButton.command` documents that
+            # contract on the field itself, and `Form` is its second consumer.
+            # Recording a result for a press the command declined is the shape
+            # #437 removed from `Dialog`; it must not survive here.
+            if spec.command and spec.command(self) is False:  # type: ignore[arg-type]
+                return
             self.result = spec.result if spec.result is not None else self.data
 
         return command

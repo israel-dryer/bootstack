@@ -88,9 +88,11 @@ class DialogButton:
     """Whether this is the default button (focused, triggered by Enter)."""
 
     command: Callable[[Dialog], Any] | None = None
-    """Callback invoked when clicked. Returning `False` refuses the press — the
-    dialog records no result and stays open — which is how a button rejects the
-    input it was given. Any other return value, including `None`, accepts it."""
+    """Callback invoked when clicked. Returning `False` refuses the press — no
+    result is recorded, and a dialog stays open — which is how a button rejects
+    the input it was given. Any other return value, including `None`, accepts
+    it. The same applies wherever these specifications are used, including the
+    button row of a `Form`."""
 
     accent: AccentToken | str | None = None
     """Accent token for styling (e.g. `'primary'`, `'danger'`)."""
@@ -540,7 +542,13 @@ class Dialog:
 
         if default_button is not None:
             default_button.focus_set()
-            self._toplevel.bind("<Return>", lambda e, b=default_button: b.invoke())
+            # The keypad Enter key reports `KP_Enter`, a separate keysym from
+            # `Return` on Windows, X11 and Aqua alike, so it needs its own
+            # binding — measured: without it the key does nothing at all in a
+            # dialog. One physical key produces one keysym, so binding both
+            # cannot invoke the button twice.
+            for key in ("<Return>", "<KP_Enter>"):
+                self._toplevel.bind(key, lambda e, b=default_button: b.invoke())
 
         if cancel_button is not None:
             self._toplevel.bind("<Escape>", lambda e, b=cancel_button: b.invoke())

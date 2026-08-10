@@ -222,3 +222,161 @@ So the reset is dead code, and the test that named it was passing for a reason i
 **Decision: keep the reset, correct the docstring.** The reset defends the invariant *"a result write is always paired with a capture"*, which nothing enforces structurally and which a future change could break silently. Removing it would make that invariant implicit. But the docstring now states outright that the veto is what carries the test, that deleting the reset changes nothing, and that **no test covers the reset itself because nothing can currently reach it**.
 
 Left for the next reviewer to weigh: whether unreachable defensive code with no coverage should stay at all, or whether the invariant deserves a structural guard instead.
+
+---
+
+# Round 2 — #437 / #438
+
+Reviewed `git diff 9a55742f..HEAD` at head `065ef56a` (code head `7c2cfde5`). Read the diff, `PLAN.md`'s pre-implementation sections, and the surrounding source; did not read the commit messages.
+
+**Verdict: not blocking.** I read `query.py` and `datedialog.py` line by line against their pre-diff forms and both rewrites are behavior-preserving on every branch I can trace (details in F5). The coverage gap is real and should be closed, but it is not a reason to hold the branch. Findings are ordered by severity.
+
+## F1 — should-fix — `src/bootstack/widgets/_impl/composites/form.py:993`
+
+**The new `DialogButton.command` veto is honored by `Dialog` and silently ignored by `Form`.**
+
+`DialogButton.command`'s docstring (`dialog.py:90`) now states unconditionally that returning `False` refuses the press. `DialogButton` has two consumers, not one. The second is `Form._build_buttons` → `_make_button_command`:
+
+```python
+def command():
+    if spec.command:
+        spec.command(self)          # return value discarded
+    self.result = spec.result if spec.result is not None else self.data
+```
+
+`bs.Form(buttons=[...])` is a public path (`src/bootstack/widgets/form.py:55`, documented as accepting `DialogButton` instances). So `bs.Form(buttons=[DialogButton(text="Save", role="primary", command=lambda f: False)])` stamps `form.result` with the entered data even though the command declined — the *exact* "a declined press still records a result" shape #437 removed from `Dialog`, left standing one file over, and now documented as impossible.
+
+Root cause: the contract was written onto the dataclass field but implemented in only one of the two places that call `spec.command`.
+
+Minimal change: in `_make_button_command`, `if spec.command and spec.command(self) is False: return` before the stamp. If the maintainer would rather not extend the veto to `Form`, then the field docstring has to say *where* it applies — otherwise this is #438's own failure mode (a declaration that means different things in different places) reintroduced by the fix for it.
+
+## F2 — should-fix — `src/bootstack/dialogs/_impl/formdialog.py:585`
+
+**A custom action button without an explicit `result=` is still classified as a submit, so #437's reported symptom survives for that shape.**
+
+`_button_returns_data` ends with `return btn.result is None`. So `DialogButton(text="Delete", role="danger", command=lambda dlg: do_delete())` — no `result=`, because the command does the work — is treated as a data submission: `_accept_press` runs `self.form.validate()`, an invalid record fails it, the press is refused, and Delete does nothing. That is the reported defect, unchanged, reached by the most natural way to write an action button that carries a command rather than a token.
+
+`DataTable` escapes only because `tableview.py:1759` happens to pass `{"result": "delete"}`. Nothing tells a user that a `result=` token is what buys them out of validation.
+
+This also makes **`CHANGELOG.md:23`** inaccurate: *"The same applied to any custom action button you added to a `FormDialog`. Validation now runs only for the buttons that actually submit the form."* It runs for any non-cancel button with no `result=`, whether or not it submits.
+
+Minimal change: either treat "has a `command` and no `result`" as an action rather than a submit, or leave the inference as-is and correct the CHANGELOG plus the `FormDialog` docstring to state that an action button must carry a `result=` token. The second is smaller and does not re-open the `submits` question the maintainer closed.
+
+## F3 — should-fix — `src/bootstack/dialogs/_impl/formdialog.py:572`
+
+**`_button_returns_data` and `_resolve_result` *can* disagree, and where they do the stale `_submitted_data` from a previous run leaks out.**
+
+The docstring claims: *"This is the same question `_resolve_result` answers when the dialog closes… Keying the snapshot to it means the capture cannot disagree with the read."* They are not the same question. `_button_returns_data` gives **role** precedence (`if btn.role == "cancel": return False`); `_resolve_result` gives the **token** precedence (`if isinstance(dialog_result, str) and dialog_result.lower() in self._DATA_RESULTS`). They diverge for a cancel-role button carrying a data token.
+
+Scenario: `FormDialog(items=[...], buttons=[DialogButton(text="Close", role="cancel", result="ok"), ...])`. Pressing Close takes no snapshot (`_accept_press` returns early on the role test), `Dialog` stamps `"ok"`, and `_resolve_result("ok")` hands back `self._submitted_data` — `None` on the first run, and **the previous run's entries** on a re-show.
+
+Narrow, but it matters beyond itself: it is a live counter-example to the "measured inert" table for the removed `show()` reset. The reset was inert *for the arms one test exercises*; on this path it was the thing turning a stale snapshot into `None`. The four-way measurement is sound as far as it goes — the conclusion drawn from it ("it changes nothing in any arm") is broader than the measurement supports.
+
+Minimal change: make `_button_returns_data` check the token before the role, so the two agree; or have `_resolve_result` yield `None` when no capture happened during the press that closed the dialog. Either way the docstring's invariant becomes true rather than asserted.
+
+## F4 — should-fix — `src/bootstack/dialogs/_impl/query.py:159`
+
+**`_submit_from_key` cannot fire, and the comment above it states the opposite.**
+
+The comment reads *"A key press has no button behind it, so it closes here."* It does have a button behind it: `Dialog._create_standard_buttons` binds `<Return>` on the **toplevel** to the default button (`dialog.py:543`), and the Submit spec is `default=True`. That is the path Enter actually takes, and it routes through `make_command`, the veto and `Dialog`'s close.
+
+The new closure is bound with `entry.bind(...)` on the **composite frame**. Focus never lands there: `_focus()` (`query.py:167`) prefers `entry.entry_widget`, and every widget `_create_content` can build — `TextEntry`, `NumericEntry`, `DateEntry`, `SelectBox` — inherits `entry_widget` from `field.py:291`. The composite frame is not in the inner entry's bindtags and Tk does not bubble child→parent, so the handler is unreachable. It was equally unreachable before the diff; the diff rewrote it rather than deleting it, and wrote a comment asserting a mechanism that does not exist.
+
+If it ever does become reachable (an entry without `entry_widget`, or a focus change), it is wrong twice over: it does not `return "break"`, so the toplevel `<Return>` binding still runs afterwards and calls `invoke()` on a button inside the toplevel it just destroyed — a background Tcl error Python cannot see; and its close uses a bare `if self._dialog.toplevel:` truth test, the exact check `dialog.py:514` was just changed away from, with a comment explaining why.
+
+Minimal change: delete the `<Return>`/`<KP_Enter>` bindings and let the default-button binding own the key. Deleting is smaller than fixing and removes a comment that documents behavior the code does not have.
+
+## F5 — should-fix — `src/bootstack/dialogs/_impl/query.py:180`, `src/bootstack/dialogs/_impl/datedialog.py:320`
+
+**Both rewritten paths ship with zero coverage.** Confirmed independently of the brief: nothing under `tests/` drives `_on_submit` or `_on_confirm_range` through a press, and the only `DateDialog` test (`test_dialog_result_subscription.py:67`) builds a single-mode dialog and never touches the range footer.
+
+I traced both by hand and believe they are equivalent:
+
+- `query._on_submit` — the `.value` branch keeps `items`-membership rejection → refuse, `result is None` → refuse, otherwise set + accept; the `.get()` branch keeps `_validate` → refuse, otherwise set + accept. The Submit spec has no `result=`, so `Dialog`'s `if s.result is not None` write cannot clobber what `_on_submit` stored.
+- `datedialog._on_confirm_range` — same three outcomes as before (no picker → open, incomplete range → open, complete → record + close), and the OK spec likewise has no `result=`.
+
+So this is not blocking. But "verified by reading" is what the branch currently rests on for two of its four source files, and both are cheap to cover with the `_drive`/`_press` pattern already in `test_formdialog_result_value.py`: one test asserting an incomplete range leaves the range dialog open while a complete one closes carrying the tuple, and one asserting a `QueryDialog` submit sets the value and closes. Those two would also have caught F6.
+
+## F6 — nit — `src/bootstack/dialogs/_impl/datedialog.py:332`
+
+**The range-confirm path lost its `grab_release()`.** `_confirm` (line 340) still calls `grab_release()` before `destroy()`; the range OK button now returns to `Dialog`, which destroys without it. Tk releases the grab when the grabbing window is destroyed, so this is almost certainly harmless — but the two close paths in one file now differ for no stated reason, and `_confirm`'s `try/except` around `grab_release` suggests someone once hit a case where it mattered. Either drop it from `_confirm` too (consistent with every other dialog in the tree) or note in a comment why the button path does not need it.
+
+## F7 — nit — `docs/widgets/dialog.rst:68`
+
+**The Guide does not teach the veto.** `DialogButton.command`'s new contract is a user-facing behavior change on a public class, and the Guide is the teaching layer — the API Reference is meant to be a last resort. `dialog.rst`'s "Reading the result" section walks through `result=` and never mentions that a command can now refuse its own press. Add a short subsection (validate in the command, `return False` to keep it open) using the example the CHANGELOG already contains.
+
+## F8 — nit — `src/bootstack/dialogs/_impl/formdialog.py:618`
+
+**A removed kwarg produces a worse error through `FormDialog` than through `Dialog`.** `Dialog._normalize_buttons` (`dialog.py:378`) wraps a bad mapping in `ValueError: Invalid button mapping {...}: ...`. `FormDialog._normalize_buttons` does a bare `DialogButton(**btn)`, so the common upgrade case — `FormDialog(buttons=[{"text": "Apply", "closes": False}])` — raises `TypeError: __init__() got an unexpected keyword argument 'closes'` with no dialog context and no pointer to the replacement. Given `closes` was just deleted, this is the error users of the removal will actually hit. Mirror `Dialog`'s wrapping.
+
+## Checked and clear — not worth re-deriving
+
+- **The `winfo_exists()` destroy guard covers every path into it.** The three ways to reach `make_command`'s `cmd()` are the button widget, the toplevel `<Return>` → `default_button.invoke()`, and `<Escape>` → `cancel_button.invoke()`. All three go through the same closure, `winfo exists` returns 0 on a destroyed path rather than raising, and the FormDialog wrapper is installed once in `__init__` (not per-show), so it cannot stack.
+- **No stale-token leak on re-show through the ordinary paths.** `Dialog.show()` already resets `self.result = None` (`dialog.py:330`), so removing `FormDialog`'s `_submitted_data` reset cannot resurrect a previous run's snapshot via a leftover `Dialog.result`. The only remaining route is F3's role/token disagreement.
+- **`replace(btn)` is safe.** `DialogButton` has no `init=False` fields, `_wrap_button_commands` runs once on the copies, and `Dialog._normalize_buttons` never mutates a spec — so the copy is sufficient and nothing double-wraps.
+- **`Form.data` returns `dict(self._collect_data())`**, a fresh dict, so the snapshot is a real copy and not an alias that keeps mutating.
+- **The other three in-tree `Dialog` commands cannot trip the veto**: `filterdialog._on_ok`, `fontdialog._on_submit` and `message._make_command_callback` all return `None` on every path, and the last one discards the user's return, so `MessageBox(command=...)` is unaffected.
+- **`_press` / `_press_text` pair correctly.** `_create_standard_buttons` iterates `reversed(self._buttons)`, and the only children of `_footer` are the buttons (the `_Separator` is packed into the toplevel), so `zip(reversed(specs), footer.winfo_children())` is a sound pairing and the length assertion protects it.
+
+---
+
+## Round 2 fix step — 2026-08-10
+
+Same session as the review, at the maintainer's direction to apply the findings rather than the blockers only. All eight are handled. Controls for every new test are committed at `development/probe_437_review2_controls.py`; the three cross-platform facts the fixes rest on are measured in `development/probe_437_review2_fixes.py`.
+
+### F1 — resolved by extending the veto to `Form`
+
+`_make_button_command` returns before the stamp when the command returns `False`, matching `Dialog`. `DialogButton.command`'s field docstring now says the contract applies wherever the specifications are used, `Form` included, rather than naming only the dialog. Control: `test_a_form_button_command_can_refuse_its_press` fails against the reverted line with `a refused press recorded {'k': 'typed'}`, and a paired control test proves a `Form` that recorded nothing at all would not pass it.
+
+### F2 — resolved by documentation, NOT by reclassifying the button
+
+⚠ **The reviewer's first option was rejected, and the reason should not be re-litigated.** Treating "has a `command` and no `result`" as an action would change what such a button returns: `_record_press` would stop capturing, and `FormDialog(buttons=[DialogButton(text="Apply", command=fn)])` — which returns the entered data today — would start returning `None`. #437's plan lists that arm under "keeps today's behavior exactly". So the inference stands and the contract is stated instead: **a result token is what makes a button an action**. Written in three places a caller actually reads — the public `FormDialog(buttons=...)` docstring, `_button_returns_data`, and the CHANGELOG line the review flagged, which no longer claims validation is scoped to the buttons that submit without saying what makes a button one.
+
+### F3 — resolved by reordering the predicate, which is what makes its docstring true
+
+`_button_returns_data` checks the result token BEFORE the role, so it asks the question in the same order `_resolve_result` does. A `role='cancel', result='ok'` button now captures its own run instead of resolving against whatever the previous run left in `_submitted_data`.
+
+⚠ **This closes the leak without re-adding the `show()` reset that #438 removed** — worth stating, because that removal rested on a four-arm measurement and re-adding it would read as the measurement having been wrong. It was not wrong; it was narrow. With the ordering fixed, every write of a data token to `dialog.result` is again paired with a capture in the same press, which is the invariant the reset was defending. Control: `test_a_cancel_role_button_carrying_a_data_token_captures_its_own_run` fails against the reverted order with `run two reported run one's entries: {'k': 3}`.
+
+### F4 — resolved by deleting the dead binding AND wiring the key it was reaching for
+
+The `_submit_from_key` closure and its two bindings are gone, and the comment asserting a mechanism that does not exist went with them. Measured before deleting (`probe_437_review2_fixes.py` arm 2): focus lands on a `TEntry` whose bindtags are `[the entry, 'TEntry', the toplevel, 'all']` — the composite frame is not among them, so the handler was unreachable, exactly as the review said.
+
+⚠ **Deleting it alone would have left a real gap, and this is the cross-platform half.** `Dialog` bound only `<Return>` on the toplevel, and `KP_Enter` is a separate keysym from `Return` on Windows, X11 and Aqua alike — so the keypad Enter key did nothing in any dialog in the framework. Measured, arm 3. Both sequences are bound now, in one loop, so they cannot drift apart. One physical key yields one keysym, so this cannot double-invoke.
+
+⚠ **`<KP_Enter>` CANNOT BE SYNTHESIZED on Windows Tk 8.6.15 — do not write a behavioral test for it.** `event_generate("<KP_Enter>")` produces an event with keysym `'??'` and keycode `0`: a `<Key>` catch-all sees it, `<KP_Enter>` does not, and passing `keycode=13` makes it arrive as `Return` instead. The first draft of that test looked sound — its `winfo_ismapped` precondition passed — then failed on the result after the harness's ten-second timeout. It asserts the binding structurally now, with `test_enter_presses_the_default_button` carrying the behavior through the key that can be driven. Same family as the standing "assert the INVARIANT, not the symptom" rule.
+
+### F5 — resolved with four tests, two of which were VACUOUS until the control ran
+
+`tests/widgets/public/test_dialog_press_contract.py` covers both arms of `query._on_submit` and both of `datedialog._on_confirm_range`, through the real footer button.
+
+⚠ **The two accept-path tests passed against deliberately broken source, and the tell was the clock: `1 passed in 10.78s`.** Both routines write the result BEFORE returning, so a version that refuses every press leaves the value standing, the window open, and `_drive`'s `force_close` tears it down ten seconds later — the result assertion is satisfied without the press ever having closed anything. That is #417's chevron test and #437's `test_an_action_button_runs_on_a_form_that_fails_validation` for the third time. Both now assert the dialog closed **at the press**, where it happens. All eight controls fail correctly.
+
+⚠ Note for whoever adds the next refusal test: the other two refusal branches in `query._on_submit` open a `MessageBox`, which would stack a second modal inside the first and stall the run. A date query with nothing entered is the one refusal reachable without it.
+
+### F6 — resolved by measuring, then stating the reason in the docstring
+
+Tk releases a grab held by a window when that window is destroyed — measured, arm 1: `grab_current()` is `None` after the destroy. So the range path needs no `grab_release()` of its own, and `_confirm` keeps its own because it destroys the window itself, where the call at least documents intent. `_on_confirm_range`'s docstring now says both, so the difference is no longer unexplained.
+
+### F7 — resolved with a Guide subsection
+
+`docs/widgets/dialog.rst` gains **Refusing a press** after *Reading the result*: validate in the command, `return False` to keep the dialog open, plus a note that it is per press rather than per button and that Enter takes the same path. Teaching layer, per the standing rule that the API Reference is a last resort.
+
+### F8 — resolved by mirroring `Dialog`
+
+`FormDialog._normalize_buttons` wraps a bad mapping in `ValueError: Invalid button mapping {...}: ...`. Control: `test_a_removed_kwarg_names_the_button_it_came_from` fails against the bare construction with the context-free `TypeError` the review predicted.
+
+### Verification — measured 2026-08-10, working tree on `fix/formdialog-select-value-428` at `065ef56a` plus these changes
+
+| leg | result |
+|---|---|
+| widgets+CLI, shared root | **957 passed / 14 skipped** (52 deselected) |
+| data | **125 passed / 4 skipped** |
+| `py -3.12 tests/run_gui.py` | **exit 0, all legs passed** |
+
+The branch head collected 947 in the shared leg; these changes add exactly 10 tests — 8 in the new file, 2 in `test_formdialog_result_value.py`. Docs: `rm -rf docs/_build && sphinx-build -b html docs docs/_build/html -W --keep-going` → **exit 0, zero warnings**. A `-n` build reports 89 warnings, **all pre-existing and none on `docs/widgets/dialog.rst`** — dangling xrefs in autogenerated stubs (`ContentBuilder`, `FooterBuilder`, `ButtonSpec`, the `forms.rst` item classes), not this branch's to fix.
+
+### Still open for the next reviewer
+
+- **`FormDialog` infers "action" from the presence of a result token, and nothing makes a caller aware of that.** F2 is closed by documentation, which is the smaller change and does not re-open the `submits` field the maintainer declined. If action buttons written without a token keep arriving, the inference is the thing to revisit — not the CHANGELOG.
+- **The keypad Enter binding has no behavioral coverage on this box.** It is assertable structurally here; a Linux run could drive it for real, since X11 carries `KP_Enter` in its keymap. Worth adding if #380's CI leg lands.

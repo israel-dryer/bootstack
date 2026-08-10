@@ -572,15 +572,28 @@ class FormDialog:
         This is the same question `_resolve_result` answers when the dialog
         closes, asked at press time — which is the only moment the form is still
         readable. Keying the snapshot to it means the capture cannot disagree
-        with the read.
+        with the read, which is why the two are ordered the same way: the
+        result token is checked BEFORE the role.
+
+        That order is load-bearing, not stylistic. A `role='cancel'` button
+        declared `result='ok'` is contradictory input, but `_resolve_result`
+        reads the token first and hands back the snapshot regardless. If the
+        role won here, such a press would take no snapshot, and the caller
+        would receive whatever a PREVIOUS run of the same dialog had left in
+        `_submitted_data`.
+
+        An action button is one carrying a result token of its own, such as
+        `'delete'` — that token is what distinguishes it from a submit. A
+        non-cancel button with no token IS the form's data, so it validates and
+        captures like any other submit.
 
         Args:
             btn: The button specification being pressed.
         """
-        if btn.role == "cancel":
-            return False
         if isinstance(btn.result, str) and btn.result.lower() in self._DATA_RESULTS:
             return True
+        if btn.role == "cancel":
+            return False
         # A non-cancel button with no result of its own returns the form data.
         return btn.result is None
 
@@ -615,7 +628,14 @@ class FormDialog:
                     result = None
                 normalized.append(DialogButton(text=btn, role=role, result=result))
             elif isinstance(btn, Mapping):
-                normalized.append(DialogButton(**btn))
+                # Named, like `Dialog._normalize_buttons`: a bare `**btn` raises
+                # `TypeError: unexpected keyword argument` with no indication of
+                # which button, or that a button is even involved. That is the
+                # error a caller carrying a removed kwarg meets first.
+                try:
+                    normalized.append(DialogButton(**btn))
+                except TypeError as exc:
+                    raise ValueError(f"Invalid button mapping {btn!r}: {exc}") from exc
             else:
                 raise TypeError(f"Invalid button type: {type(btn)}")
 

@@ -154,14 +154,12 @@ class QueryDialog:
             entry = TextEntry(master=frame, label=None, show_message=False, **kwargs)
 
         entry.pack(pady=(0, 5), fill=X)
-        # The footer button routes its refusal through `Dialog`, which owns the
-        # close. A key press has no button behind it, so it closes here.
-        def _submit_from_key(*_: Any) -> None:
-            if self._on_submit() and self._dialog.toplevel:
-                self._dialog.toplevel.destroy()
-
-        entry.bind("<Return>", _submit_from_key)
-        entry.bind("<KP_Enter>", _submit_from_key)
+        # Enter is deliberately NOT bound here. `Dialog` binds Return and
+        # KP_Enter on the toplevel to the default button, which is the Submit
+        # spec below — so the key already routes through the same command,
+        # refusal and close as a click. An entry-level binding would be dead
+        # anyway: focus goes to `entry.entry_widget`, and the composite frame is
+        # not in that widget's bindtags, so Tk would never reach it.
 
         # Focus the entry field
         def _focus():
@@ -178,12 +176,13 @@ class QueryDialog:
         self._entry_widget = entry
 
     def _on_submit(self, *_: Any) -> bool:
-        """Handle submit (Enter key or button click).
+        """Handle a Submit press, from the button or from the Enter key.
 
         Records the entered value and reports whether the press is accepted.
         Returning `False` refuses it, which leaves the dialog open — the button
         this is wired to hands that answer back to `Dialog`, which owns the
-        close.
+        close. Enter arrives here the same way, through the default-button
+        binding `Dialog` installs on the toplevel.
         """
         if not self._entry_widget:
             return False
