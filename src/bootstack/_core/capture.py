@@ -194,22 +194,29 @@ def raised(tk_widget):
 def settle(tk_widget, seconds: float) -> None:
     """Let pending redraws finish before the pixels are read.
 
-    Flushes the framework's own drawing, then yields for `seconds` so the
-    desktop can repaint the area behind any window that has just closed — a
-    save dialog, most commonly. The event loop keeps running throughout, so
-    the interface does not freeze while this waits.
+    Flushes the framework's own drawing, then waits `seconds` so the desktop
+    can repaint the area behind any window that has just closed — a save
+    dialog, most commonly.
+
+    The wait deliberately does NOT dispatch events. Turning the event loop
+    here would run everything queued, including a second click on the button
+    that started the capture: that click re-enters the caller's handler, which
+    opens a second save dialog on top of the first and starts an overlapping
+    capture, none of which the person clicking asked for. Waiting quietly
+    costs a brief pause — a tenth of a second by default — and makes the
+    second click wait its turn instead. Flushing pending drawing is idle work,
+    so it still happens.
 
     Args:
-        tk_widget: Any widget; its root window drives the event loop.
-        seconds: How long to yield for. Zero flushes without waiting.
+        tk_widget: Any widget; its root window is the one flushed.
+        seconds: How long to wait for. Zero flushes without waiting.
     """
     root = tk_widget._root()
     root.update_idletasks()
-    root.update()
-    deadline = time.monotonic() + max(seconds, 0.0)
-    while time.monotonic() < deadline:
-        time.sleep(0.01)
-        root.update()
+    time.sleep(max(seconds, 0.0))
+    # Again after the wait: anything the pause allowed to arrive gets drawn
+    # before the pixels are read.
+    root.update_idletasks()
 
 
 def capture_region(bbox: tuple[int, int, int, int], path) -> Path:

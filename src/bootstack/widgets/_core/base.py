@@ -223,8 +223,9 @@ class PublicWidgetBase:
                 whole window to drop the native border artifact.
             settle: Seconds to let the desktop finish repainting before the
                 pixels are read. The default covers the common case of a dialog
-                closing just beforehand. The interface stays responsive while
-                this waits.
+                closing just beforehand. The interface pauses for this long,
+                so a second click on the control that started the capture waits
+                its turn rather than starting an overlapping one.
 
         Returns:
             The path that was written.
@@ -243,8 +244,10 @@ class PublicWidgetBase:
             # newly exposed area, and a widget created moments ago is not
             # mapped until the toolkit has processed its pending geometry.
             _capture.settle(target, settle)
-            # Settling turns the event loop, so anything queued runs here —
-            # including a handler that closes the window being photographed.
+            # Settling no longer dispatches events, but it still yields the
+            # interpreter, and the checks below cost nothing next to reading
+            # the screen. A target closed on another thread, or by a timer
+            # that ran before the capture started, still has to be caught.
             if not _capture.still_exists(target):
                 raise BootstackError(
                     f"{type(self).__name__} was closed while the capture was "

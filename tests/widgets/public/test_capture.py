@@ -211,19 +211,51 @@ def test_negative_inset_raises(shown_app, tmp_path):
 def test_widget_closed_while_settling_raises_a_bootstack_error(
     shown_app, tmp_path
 ):
-    """Settling turns the event loop, so a queued handler can close the target.
+    """Settling flushes pending drawing, so idle work can close the target.
 
     Without the guard the next line reads geometry from a dead widget and a raw
     toolkit error escapes a method documented to raise `BootstackError`. The
     control is every other test in this file: the same call without a pending
     destroy captures normally.
+
+    ⚠ The destroy is queued as IDLE work, not on a timer. Settling stopped
+    dispatching events for #429, so an `after(1, ...)` no longer runs during it
+    and this test would pass without ever destroying anything — vacuous, and
+    green either way. Idle callbacks are what `update_idletasks()` still runs,
+    which is the path that remains open.
     """
     label = bs.Label("closing")
     shown_app.tk.update_idletasks()
-    shown_app.tk.after(1, label.tk.destroy)
+    shown_app.tk.after_idle(label.tk.destroy)
 
     with pytest.raises(BootstackError, match="closed while the capture"):
         label.capture(tmp_path / "gone.png", settle=0.1)
+
+
+def test_settling_does_not_run_queued_handlers(shown_app, tmp_path):
+    """Settling must not dispatch queued work — #429.
+
+    `settle()` used to turn the event loop so the desktop could repaint, which
+    ran everything queued along with it. For the person using the application
+    that meant a second click on an export button re-entered the handler
+    mid-capture, stacking a second save dialog they never asked for.
+
+    The second half of this test is its control: the timer is real and does
+    fire the moment the loop turns, so the first assertion is about WHEN it
+    runs, not about a timer that was never going to run at all.
+    """
+    label = bs.Label("settling")
+    shown_app.tk.update_idletasks()
+
+    ran: list[str] = []
+    shown_app.tk.after(10, lambda: ran.append("queued"))
+
+    label.capture(tmp_path / "shot.png", settle=0.2)
+
+    assert ran == [], "settling dispatched queued work and re-entered the app"
+
+    shown_app.tk.update()
+    assert ran == ["queued"], "the timer never fired, so the check above was vacuous"
 
 
 def test_a_no_alpha_format_converts_a_mode_the_grabbers_never_produce(tmp_path):
