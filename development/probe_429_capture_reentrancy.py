@@ -10,25 +10,42 @@ twice in a row is ordinary; a handler entered a second time while the first
 call is still inside `capture()` is the defect. Depth is what tells them apart,
 and it is what a fix has to move.
 
-MEASURED, and the reason `settle()` no longer turns the event loop:
+⚠ THIS PROBE'S EXPECTATIONS WERE WRITTEN AGAINST A FIX THAT WAS REVERSED, AND
+NEITHER OF ITS RE-ENTRY ARMS TESTS WHAT NOW GUARDS THE CAPTURE. Settling was
+briefly changed to dispatch nothing at all, and both arms below were tuned to
+that. It could not stay: on macOS the area a closed dialog uncovers is never
+repainted without dispatch, so the capture photographed the dismissed dialog —
+51400 of 60800 pixels wrong, through the public method. Settling dispatches
+again, and blocks INPUT with `tk busy` for the duration instead. See
+`probe_429_settle_without_input.py`.
 
-  before the fix   arm 1 depth 2, arm 3 depth 2   (re-entered mid-capture)
-  after the fix    every arm depth 1, calls 2     (serialized, nothing lost)
+What that means for each arm here, all of it measured:
 
-`calls=2` after the fix is the half worth keeping in view — the second click is
-not swallowed, it just waits its turn, so the person clicking still gets what
-they asked for and never sees a stacked dialog.
+  arm 1 drives the handler from a TIMER, and `tk busy` blocks input, not
+  scheduled work — so it re-enters, at depth 2, by design rather than by
+  defect. It is kept because that is the honest limitation of the guard: a
+  capture started from a timer can overlap one already running.
 
-Three arms, each printing PASS/FAIL against the FIXED behavior:
+  arm 3 synthesizes a click, which cannot test the guard at all —
+  `event_generate` aimed at a widget delivers straight to its bindings and
+  never consults the busy window, so it re-enters whether busy is held or not,
+  with `tk busy status` reading 1 at the time.
 
-  1. guard   — a queued call lands during a 0.3s settle. Expect depth 1;
-     depth 2 means the re-entrancy is back.
-  2. control — the same queued call lands after the capture returns. Expect
+The one question this probe was built for — does a REAL second click re-enter —
+is now a manual check: `development/demo_429_busy_during_settle.py`.
+
+The invariant measured is NESTING DEPTH, not call count. A handler called twice
+in a row is ordinary; a handler entered a second time while the first call is
+still inside `capture()` is the defect. Depth is what tells them apart.
+
+Three arms:
+
+  1. scheduled — a queued call lands during a 0.3s settle. Depth 2 EXPECTED:
+     the guard is on input, and a timer is not input.
+  2. control   — the same queued call lands after the capture returns. Expect
      depth 1 and calls 2. This arm is what proves arm 1 measures nesting
-     rather than "the handler only ran once", and it read depth 1 both before
-     and after the fix.
-  3. click   — arm 1 driven by a synthesized button release, confirming real
-     input takes the same path as a queued callback.
+     rather than "the handler only ran once".
+  3. synthetic click — depth 2 EXPECTED, and it says nothing about the guard.
 
 Run it on any box with a display:  py -3.12 development/probe_429_capture_reentrancy.py
 """
@@ -101,12 +118,15 @@ def main() -> int:
     print(f"platform={sys.platform}  settle={SETTLE}s  out={OUT}")
     failures = 0
 
-    print("\n[1] guard — second call queued INSIDE the settle window")
+    print("\n[1] scheduled — second call queued INSIDE the settle window")
     depth = run_arm("repro", queue_delay_ms=100, use_click=False)
-    if depth == 1:
-        print("  PASS - settling did not dispatch it; no re-entry (was depth 2)")
+    if depth > 1:
+        print("  AS EXPECTED - a timer re-enters; the guard is on input, and "
+              "scheduled work is not input. This is the guard's known limit.")
     else:
-        print("  FAIL - #429 is back: the handler re-entered during settle()")
+        print("  UNEXPECTED - a timer did not re-enter. Either settling "
+              "stopped dispatching (which breaks the repaint — see "
+              "probe_429_settle_without_input.py) or the timer never fired.")
         failures += 1
 
     print("\n[2] control — same call queued AFTER the capture returns")
@@ -118,12 +138,16 @@ def main() -> int:
         print(f"  FAIL - control nested at depth {depth}; arm 1 proves nothing")
         failures += 1
 
-    print("\n[3] click — a synthesized button release inside the settle window")
+    print("\n[3] synthetic click — a button release inside the settle window")
     depth = run_arm("click", queue_delay_ms=100, use_click=True)
-    if depth == 1:
-        print("  PASS - real input waits its turn too (was depth 2)")
+    if depth > 1:
+        print("  AS EXPECTED - and it proves nothing about the guard: a "
+              "synthesized click bypasses the busy window entirely. Whether a "
+              "REAL click is swallowed is manual — "
+              "development/demo_429_busy_during_settle.py")
     else:
-        print("  FAIL - a real click still re-enters mid-capture")
+        print("  UNEXPECTED - check the click fired at all before reading "
+              "this as the guard working; it cannot be what stopped it.")
         failures += 1
 
     print(f"\n{'FAILURES: ' + str(failures) if failures else 'all arms as expected'}")
