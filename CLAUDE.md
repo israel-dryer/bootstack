@@ -27,6 +27,21 @@ Go from nothing to something fast. The user should never need to `import tkinter
 > already cost us #379's `leakfix.patch`, which was saved to a per-session temp
 > `scratchpad/` and is genuinely gone.
 
+> 📋 **`REVIEW-PROTOCOL.md` in the repo root is the STANDING WORKFLOW for
+> iterative development** (maintainer, 2026-08-10). Read it before starting
+> implementation or review work. The core rule: **a session that has written
+> code never reviews code** — start a fresh session before every review, because
+> written artifacts transfer intent while session memory transfers
+> self-justification.
+>
+> ⚠ **If you are implementing, write `PLAN.md` at the repo root UP FRONT, before
+> you write code.** The whole protocol depends on that file existing, and a plan
+> reconstructed after the fact is a justification rather than a plan — which is
+> precisely what the session boundary exists to keep out. `PLAN.md` and
+> `REVIEW.md` are live working files for the branch in hand; this file keeps
+> standing rules and what is open; `docs/_dev/handoff-archive.md` keeps shipped
+> history.
+
 ---
 
 ## Environment — TWO MACHINES. Check which one you are on first.
