@@ -48,10 +48,14 @@ one call.
 
 A capture pauses briefly before reading the screen, so the desktop can finish
 repainting the area a closing dialog just uncovered — a tenth of a second by
-default, adjustable with ``settle``. The pause is deliberate: nothing else runs
-during it, so an impatient second click on the export button waits its turn
-instead of re-entering the handler and opening a second save dialog on top of
-the first. You do not need to guard the button against double-clicks yourself.
+default, adjustable with ``settle``. Without that pause the picture can come
+back showing the dialog that was just dismissed rather than the window
+underneath it.
+
+The window stops accepting input for the moment the pause lasts, so an
+impatient second click on the export button is discarded instead of
+re-entering the handler and opening a second save dialog on top of the first.
+You do not need to guard the button against double-clicks yourself.
 
 Capturing part of the window
 ----------------------------
