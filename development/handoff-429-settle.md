@@ -83,6 +83,103 @@ cost is the whole point: the repaint defect produces a picture of the wrong
 thing; the input defect produces a stacked save dialog on an impatient
 double-click.
 
+## ✅ THE WINDOWS LEG HAS RUN — 2026-08-11, at `1654c60e`
+
+**Both questions it was asked are answered, and both answers favor what shipped.**
+Windows box: Python 3.12.10, Tk 8.6, Pillow 12.0.0, Windows 11 (10.0.26200), two
+2560x1440 displays with the **primary at (0,0) and a second at (-2560, 0)** — so
+the negative-origin case is genuinely exercised here rather than skipped.
+
+### 1. The hold is REAL on Windows — arm 0 says YES
+
+```
+[0] is the hold real on this platform: YES - busy window mapped and the hit
+    test at the button resolves to ''; input should be blocked here
+[1] busy held while settling dispatched: PASS - 0 before, 1 during, 0 after
+[3] noise floor across a restack: 0 px (380x160)
+[3] busy visible in the photograph?: PASS - 0 px vs a 0 px floor; invisible
+```
+
+**So the hold is NOT dead weight and must not be stripped.** That was the exact
+decision this leg existed to settle: had Windows also reported "never mapped",
+the guard would have been doing nothing on any platform. It maps the busy window
+and routes the hit test away from the button, which is what the maintainer's
+2026-08-10 decision assumed and did not yet have evidence for.
+
+⚠ **Arm 3 is only meaningful HERE.** On macOS "invisible in the photograph" is
+trivially true because the window is never mapped. Windows maps it and the
+capture is still identical — 0 px against a 0 px floor — so on the one platform
+where the question is real, the guard costs the photograph nothing.
+
+### 2. The repaint defect is macOS-SPECIFIC
+
+```
+noise floor: 50 px between two ref shots
+control: dispatching settle after a window closed   PASS - 14 px (clean)
+test:    sleep-only settle after a window closed    FAIL - 14 px; this arm
+         reproduces the defect and it stopped reproducing, so the comparison is dead
+shipped: _capture.settle after a window closed      PASS - 14 px (clean)
+tk busy held during the shot                        PASS - 14 px (clean)
+```
+
+⚠ **That `FAIL` is the EXPECTED reading on this box, not a regression.** The arm
+exists to reproduce the defect, and it cannot here — which is precisely the
+outcome this file predicted ("if its sleep-only arm comes back clean on Windows,
+the defect is macOS-specific and `e616f5dc` only broke one platform"). The DWM
+keeps a backing store, so a Windows window looks right without processing Expose.
+**`e616f5dc` was never broken on Windows; it was broken on macOS only.**
+
+### 3. Everything else on this box
+
+- `verify_427_capture.py` — **14 passed, 0 failed, 0 skipped**, including
+  `negative-origin display captures real pixels` (control blank at 1, `capture()`
+  at 187) and both topmost-restoration arms.
+- `py -3.12 tests/run_gui.py` — **exit 0, all legs passed**. 20 legs,
+  **1129 passed / 21 skipped** summed. Shared root **932 / 14** (75 deselected),
+  data **125 / 4**, `test_capture.py` **23 passed**.
+- **Neither macOS red reproduced.** `test_bare_b_does_not_toggle_the_sidebar`
+  passes here — it is the Aqua modifier-bit assumption (#431/#434), so Windows is
+  the platform it was written for. And the capture leg showed **no** "cannot
+  identify image file" flakiness across a full run.
+
+### ⚠ The probe could not finish on the box it was written to inform
+
+`probe_429_busy_during_settle.py` **crashed with `UnicodeEncodeError` before
+printing arm 3's verdict** — a single `⚠` inside an f-string that reaches
+`print()`, against this box's **cp1252** console. Everything had already been
+computed; the run died in the reporting loop, so the headline arm printed and the
+last one was lost.
+
+**This is the third instance of the same trap** — #430's check mark, this
+branch's own `b005509b`, now this — and the sharpest, because the probe existed
+*specifically* to answer a Windows question and was the one thing that could not
+complete on Windows. Fixed by dropping the character. **Probe output must be
+pure ASCII; docstrings and comments are fine, since only `print()` goes through
+the console codec.**
+
+### 4. ✅ The manual demo PASSES on Windows — the guard works end to end
+
+`development/demo_429_busy_during_settle.py`, run by the maintainer 2026-08-11:
+**a rapid second click during the capture does not stack a second save dialog.**
+
+That is the half no automated arm can reach. A synthesized click is delivered
+straight to the widget's bindings and never consults the busy window — arm 2
+measures exactly that, re-entering to depth 2 *with* the hold up — so a human is
+the only instrument for it. Arm 0 said the window system *should* block the
+click; this is the confirmation that it does.
+
+**So #429 is now: repaint half fixed and covered by a regression test, input half
+WORKING on Windows and a documented limitation on macOS.** Nothing about it
+blocks the PR.
+
+### What is left
+
+⚠ **A REBASE before the PR.** The branch is **26 behind / 32 ahead**
+of `origin/main` as of 2026-08-11, because #442 (#428/#437/#438) merged
+underneath it. The suite figures above are against the pre-#442 base, which is
+why the shared leg reads **932 / 14** rather than main's current **962 / 14** —
+those are the same tests, not a regression.
+
 ## What the Windows/Linux leg must answer
 
 **Arm 0 of `probe_429_busy_during_settle.py` is the headline result**, not arm 3.

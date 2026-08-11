@@ -215,7 +215,7 @@ def main() -> int:
                 results.append((
                     "[3] busy visible in the photograph?",
                     f"PASS - {signal} px vs a {floor} px floor; invisible. "
-                    f"⚠ READ THIS WITH ARM 0: where the hold is not real the "
+                    f"READ THIS WITH ARM 0: where the hold is not real the "
                     f"window is never mapped, so invisibility is trivially "
                     f"true and says nothing about a platform that maps it."))
             else:
