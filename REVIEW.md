@@ -185,3 +185,91 @@ No viewability enforcement here at all, so the scenario cannot arise on this pla
 **Still open from `PLAN.md`, unchanged by this round:** `CLAUDE.md` still quotes the wrong #426 message as a good error under Layout. It must be fixed as its own commit on `main`, never on this branch — `git diff main...HEAD -- CLAUDE.md` is currently empty and must stay that way before merging.
 
 **Suggested strengthening of a `PLAN.md` invariant, for whoever picks this up:** the plan states "after any dialog closes, `grab_current()` is whatever it was before". F5a shows identity is not sufficient — the invariant should read *the same holder **and the same kind***, which is exactly what the old tests could not distinguish.
+
+---
+
+## Round 2 — 2026-08-11
+
+**Scope:** `git diff 76173410` — the five commits round 1's fix step produced, ending at **`d4f2d127`**. Working tree clean at review time; the shared leg re-measured at **1000 passed / 14 skipped / 75 deselected**, matching round 1's recorded figure.
+
+**Reviewer:** a fresh agent via `/code-review`, run before this session had written any code. It read round 1's record so it would not re-file F1–F5.
+
+**Fix step:** same session as the verification, at the maintainer's instruction to prove each finding before fixing it. Every finding below was verified — none was refuted this round, which is worth noting after round 1's 2-in-5.
+
+### The headline: round 1's own fix left the defect in four containers
+
+**F2 shipped a parameter with a default, and four of the nine call sites did not pass it.** Round 1's record explicitly rejected a defaulted flag — *"a defaulted `kind="local"`-style parameter means any caller who forgets gets the bug, silently — the default IS the defect"* — and then shipped exactly that, one keyword over. Four callers forgot within the same commit.
+
+The enumeration is what went wrong, not the reasoning. F2 measured which containers honor `grow=` and recorded *"`Row`, `Column`, `Card`, `GroupBox` place with `method=flex`"*. True — in `Card` and `GroupBox`'s **default** mode. Both are dual-mode: under `layout="grid"` they take a separate branch that grids the child and filters to `GRID_KEYS`. `Expander` and `AccordionSection` are the same shape. So the measurement classified four containers by the mode they happened to be constructed in, and "five call sites filter to `GRID_KEYS`" undercounted by four.
+
+⚠ **The transferable rule: enumerate the CALL SITES of the thing you changed, not the classes you can think of.** `grep -n '_reject_legacy_child_kwargs' src/` returns nine lines and takes one second; it was never run. Same shape as the standing "enumerate the producers, don't reason about the consumer" note in `CLAUDE.md`.
+
+### Verification
+
+Pre-fix, at `d4f2d127`, via `development/probe_426_grid_cell_advice.py` — **2 of 5 arms passed**:
+
+```
+[PASS] CONTROL Grid(columns=2)                    kind='grid cell'  advises grow=? False
+[PASS] CONTROL Card() default column              kind='flex child' advises grow=? True   grow honored? True
+[FAIL] Card(layout='grid')      kind='flex child' advises grow=? True  placement=grid options={'sticky': 'ewns'}
+[FAIL] GroupBox(layout='grid')  kind='flex child' advises grow=? True  placement=grid options={'sticky': 'ewns'}
+[FAIL] Accordion.add(layout='grid')  ...same
+```
+
+Post-fix: **5 of 5**. The two control arms pin both ends — a real `Grid` (already correct before this round) and a `Card` in its default column mode, where `grow=` genuinely is the remedy, so a fix that hard-wired everything to the grid advice would fail the control rather than pass silently.
+
+`Expander` has no arm: it is not in the public namespace (`'Expander' in dir(bs)` is `False`), so its call site is reachable only internally. Fixed for consistency, unmeasured by choice.
+
+---
+
+### G1 — `container.py:255`, four missed call sites — medium — **FIXED**
+
+`_reject_legacy_child_kwargs(layout_kw, where, *, advice=FLEX_CHILD_ADVICE)`, with `card.py:147`, `groupbox.py:139`, `expander.py:169` and `expander.py:287` passing no advice. All four sit inside an unambiguous grid branch — two of them under a comment reading *"Only reached for grid layout"* — and filter to `GRID_KEYS` on the next line. A user in `bs.Card(layout="grid")` was told to write `grow=` and then had it dropped.
+
+**Resolved by making the kind required**, which is what round 1's own reasoning called for: `_reject_legacy_child_kwargs(layout_kw, where, kind)` where `kind` is `'flex child'` or `'grid cell'`, positional and mandatory. A caller who forgets now gets a `TypeError` at the call, not a wrong message at the user. The advice is looked up in `_CHILD_ADVICE`, so an unknown kind raises `KeyError` rather than quietly selecting the other engine's remedy.
+
+The kind names the child's **placement**, not its parent class — deliberately, because that is the distinction the round-1 enumeration lost.
+
+### G2 — `container.py:270`, advice matched by identity — low — **FIXED**
+
+`kind = "grid cell" if advice is GRID_CHILD_ADVICE else "flex child"` derived the user-visible noun with `is` on a module constant. Any equal-but-distinct string — a formatted variant, a reloaded module under `bootstack.dev`, a future per-container advice — would have been labelled "flex child" while filtering to `GRID_KEYS`. Dissolved by G1: the kind is now the input and the advice the lookup, so the two cannot disagree.
+
+### G3 — `GRID_CHILD_ADVICE` named a class the user never constructed — low — **FIXED**
+
+The text ended *"weighting the row or column on the container (the Grid's columns/rows argument)"*, but it is emitted for `TabPage`, `StackPage`, `SplitPane` and `AppShell page` too — measured:
+
+```
+TabPage: fill is not a valid layout option for a grid cell. ... (the Grid's columns/rows argument)
+```
+
+A user who hit it from `tabs.add("tab", layout="grid")` was pointed at an argument on a class not in their code; the real argument is `columns=`/`rows=` on `add()`. Now reads *"(its columns/rows arguments)"*. Still written without a trailing `=`, per round 1's note that container-level options must not look like per-child remedies to the test's regex.
+
+### G4 — `docs/tasks/layout.rst:254` contradicted the new message — low — **FIXED**
+
+Every message ends *"see the layout guide"*, and the guide told *"a Row/Column/Grid child"* to use *"`grow` / `horizontal` / `vertical`"*. A grid-cell user got a message that deliberately withheld `grow=`, followed the link, and was told to use `grow` — landing back on the silent no-op the message had just steered them off. The bullet now splits by placement kind.
+
+### G5 — `CHANGELOG.md:21` re-asserted the advice the fix removed — low — **FIXED**
+
+The #426 bullet said the message *"now names `grow=` for claiming leftover space"* for a child of *"a `Row`, `Column` or `Grid`"*. False for `Grid` and for the page/pane containers after round 1. Rewritten to state both forms and why they differ.
+
+---
+
+## Round 2 fix summary
+
+| finding | severity | outcome |
+|---|---|---|
+| G1 — four grid call sites still emitting the flex advice | medium | **fixed** — kind is required now, + 7 tests |
+| G2 — advice matched by `is` identity | low | **fixed** — dissolved by G1 |
+| G3 — grid advice named "the Grid's" to non-Grid containers | low | **fixed** |
+| G4 — layout guide contradicted the new message | low | **fixed** |
+| G5 — CHANGELOG re-asserted the removed advice | low | **fixed** |
+
+**Tests added (7).** Round 1's tests drove the helper directly, so they said nothing about whether a real container asks it for the right remedy — which is precisely how four containers kept the defect. The new arms go through the public constructors: a parametrization over `Card`/`GroupBox`/`AccordionSection`/`Grid` in grid mode asserting the message says "grid cell", never says `grow=`, and recommends only `GRID_CHILD_KEYS`; a two-arm control over `Card`/`GroupBox` in **column** mode asserting the opposite, so the advice must follow the `layout=` rather than the class; and a structural test that the kind is required — `TypeError` when omitted, `KeyError` on a mistyped one. That last one is the invariant rather than the symptom, per the standing rule: it fails every time, where a behavioral test only fails for whichever container someone forgot.
+
+**Verification at the handover commit.** Shared leg **1007 passed / 14 skipped / 75 deselected**, exit 0 — 1000 plus exactly the 7 tests above, and below the 1021-selected ceiling. Full `py -3.12 tests/run_gui.py`: **exit 0, all 20 legs passed, summed 1204 passed / 21 skipped**, which is round 1's 1197 plus the same 7, skips unchanged. Clean `-W` docs build succeeded. The sum excludes pytest's collection lines, which is the arithmetic round 1 got wrong on its first reading.
+
+**Files touched:** `container.py`, `base.py`, `card.py`, `groupbox.py`, `expander.py`, `grid.py`, `appshell.py`, `pagestack.py`, `splitview.py`, `tabs.py`, `CHANGELOG.md`, `docs/tasks/layout.rst`, `test_layout_migration_error.py`, and a new `development/probe_426_grid_cell_advice.py`.
+
+**Filed rather than fixed — out of this branch's scope.** `base.py:515`: `attach()`'s grid branch filters re-attach kwargs to `GRID_KEYS` with **no** rejection at all, so `widget.attach(fill="x")` on a grid child is silently dropped, while the flex branch one line above rejects it. Same class as #426 on a different path, pre-existing, introduced by neither round. Worth an issue on the `0.3.x` patch line.
+
+**Unchanged from round 1 and still open:** `CLAUDE.md` quotes the wrong #426 message as a good error under Layout. It needs its own commit on `main`, never on this branch — and it now needs to describe **two** messages, not one corrected one. `git diff main...HEAD -- CLAUDE.md` must stay empty before merging.
