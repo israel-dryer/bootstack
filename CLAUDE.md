@@ -578,7 +578,15 @@ line, fix it.
 **THE RULE, which is the part worth keeping: numbered milestones are RELEASES;
 unnumbered milestones hold work NOT YET ASSIGNED to a release.** Membership in a
 numbered one is decided by compatibility *and* readiness, and the title names what
-actually ships. Nothing gets a number until its order is real. This replaced an
+actually ships. Nothing gets a number until its order is real.
+
+⚠ **CLOSE A MILESTONE WHEN ITS RELEASE SHIPS** (maintainer, 2026-08-11). The
+project had been inconsistent — only `0.1.0` was ever closed, while `0.2.0` and
+`0.3.0` sat open with zero open issues, so the milestone list mixed finished
+history with live work. All four shipped milestones are closed now
+(`0.1.0`, `0.2.0`, `0.2.x`, `0.3.0`), which makes **the open list exactly the
+live work and a direct cross-check on the table below.** They agreed 1:1 when
+last verified. If they ever disagree, trust `gh` and fix the table. This replaced an
 accidental mix in which `0.2.x`/`0.6.0` were compatibility buckets wearing subject
 names while `0.3.0`–`0.5.0` were subject themes wearing version numbers — which is
 how three of five `0.3.0 — Guided flows` issues came to be form/signal work.
