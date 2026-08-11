@@ -11,9 +11,11 @@ for the `TButton` bindtag, so a `TextArea` — which answers Enter by inserting 
 newline — got the newline AND the dialog closed on top of it (#441). The user
 is typing a paragraph and the dialog closes under them.
 
-The rule is now "who treats Enter as content", by bindtag: `TButton` invokes,
-`Text` inserts. A disabled widget of either kind answers nothing, so the
-default button still gets the key.
+The rule is now "who treats THIS Enter key as content", by bindtag and keysym:
+`TButton` invokes for both Enter keys, `Text` inserts for the main one only —
+Tk binds its keypad twin to a no-op script. A disabled widget of either kind
+answers nothing. In every "nothing answered" case the default button still gets
+the key, rather than it dying in the widget.
 
 ⚠ Interrogating the BINDINGS rather than the class was tried and is wrong; the
 docstring on `_key_was_consumed` records why, and
@@ -44,7 +46,7 @@ def test_an_enabled_button_consumed_the_key(app):
 
     button = _Button(app._tk_root, text="OK")
     try:
-        assert _key_was_consumed(button) is True
+        assert _key_was_consumed(button, "Return") is True
     finally:
         button.destroy()
 
@@ -55,7 +57,7 @@ def test_a_disabled_button_did_not(app):
 
     button = _Button(app._tk_root, text="OK", state="disabled")
     try:
-        assert _key_was_consumed(button) is False
+        assert _key_was_consumed(button, "Return") is False
     finally:
         button.destroy()
 
@@ -64,7 +66,7 @@ def test_an_editable_text_consumed_the_key(app):
     """#441 — Enter is a newline here, not a command."""
     text = tkinter.Text(app._tk_root, height=2)
     try:
-        assert _key_was_consumed(text) is True
+        assert _key_was_consumed(text, "Return") is True
     finally:
         text.destroy()
 
@@ -73,7 +75,73 @@ def test_a_disabled_text_did_not(app):
     """`tk::TextInsert` returns early on a disabled text — nothing answered."""
     text = tkinter.Text(app._tk_root, height=2, state="disabled")
     try:
-        assert _key_was_consumed(text) is False
+        assert _key_was_consumed(text, "Return") is False
+    finally:
+        text.destroy()
+
+
+# ---------------------------------------------------------------------------
+# The KEY half of the rule — a text widget answers only one of the two
+# ---------------------------------------------------------------------------
+
+def test_tk_binds_the_two_enter_keys_differently_on_a_text(app):
+    """The PRECONDITION the scoping rests on — measured, not assumed.
+
+    If Tk ever gives `Text <KP_Enter>` a real script, the stand-down below
+    becomes wrong and this test says so first, naming the reason, rather than
+    leaving the two behavioral tests to fail for an unexplained cause.
+    """
+    root = app._tk_root
+    assert "TextInsert" in root.tk.call("bind", "Text", "<Key-Return>")
+    assert root.tk.call("bind", "Text", "<Key-KP_Enter>").strip() == "# nothing"
+
+
+def test_a_button_consumed_the_keypad_key_too(app):
+    """A button is symmetric — bootstack binds BOTH keys to invoke."""
+    from bootstack.widgets._impl.primitives.button import Button as _Button
+
+    button = _Button(app._tk_root, text="OK")
+    try:
+        assert _key_was_consumed(button, "KP_Enter") is True
+    finally:
+        button.destroy()
+
+
+def test_an_editable_text_did_not_consume_the_keypad_key(app):
+    """A text widget is NOT symmetric, so the keypad key must stay alive.
+
+    `Text <KP_Enter>` is the literal script `# nothing`, so nothing was
+    inserted. Reporting it consumed would leave the keypad Enter dead for the
+    whole dialog: it would neither type a newline nor press the default button.
+
+    ⚠ NOT REACHABLE ON WINDOWS by either route — the platform folds the keypad
+    key into `Return` (so `keysym` is never `KP_Enter`) and `event_generate`
+    cannot synthesize it (keysym `??`, keycode 0, matching no binding). Both
+    measured in `development/probe_441_kp_enter_platform.py`. This test drives
+    the rule directly for exactly that reason; an end-to-end arm would pass
+    vacuously here and could only ever run on X11.
+    """
+    text = tkinter.Text(app._tk_root, height=2)
+    try:
+        assert _key_was_consumed(text, "KP_Enter") is False
+        # The control: the same widget, the other key, still consumed — so the
+        # assertion above cannot pass merely because the widget went unread.
+        assert _key_was_consumed(text, "Return") is True
+    finally:
+        text.destroy()
+
+
+def test_an_unrecognized_keysym_leaves_a_text_widget_consuming(app):
+    """The conservative side of the branch, pinned so it is not "simplified".
+
+    The test is `keysym != "KP_Enter"`, not `keysym == "Return"`. Standing down
+    wrongly costs a dead key; firing wrongly costs #441 itself — the dialog
+    closing on top of a newline the user just typed. For a text widget the
+    second is the worse failure, so an unknown key reads as consumed.
+    """
+    text = tkinter.Text(app._tk_root, height=2)
+    try:
+        assert _key_was_consumed(text, "Linefeed") is True
     finally:
         text.destroy()
 
@@ -106,7 +174,7 @@ def test_an_entry_did_not(app):
     try:
         entry = _descend(field._internal, "TEntry")
         assert entry is not None, "precondition: found the inner TEntry"
-        assert _key_was_consumed(entry) is False
+        assert _key_was_consumed(entry, "Return") is False
     finally:
         field.destroy()
 
@@ -118,7 +186,7 @@ def test_a_widget_that_cannot_report_bindtags_does_not_swallow_the_key(app):
         def bindtags(self):
             raise AttributeError("no bindtags here")
 
-    assert _key_was_consumed(Opaque()) is False
+    assert _key_was_consumed(Opaque(), "Return") is False
 
 
 # ---------------------------------------------------------------------------

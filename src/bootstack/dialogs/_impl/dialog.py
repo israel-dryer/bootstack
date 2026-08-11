@@ -273,8 +273,8 @@ def _log_grab_failure(message: str) -> None:
 _ENTER_IS_CONTENT = frozenset({"Text"})
 
 
-def _key_was_consumed(widget: Any) -> bool:
-    """Did `widget` already answer the Return key by the time it reached us?
+def _key_was_consumed(widget: Any, keysym: str) -> bool:
+    """Did `widget` already answer this Enter key by the time it reached us?
 
     A dialog binds Return on its TOPLEVEL so the default button can be pressed
     from an input field. The toplevel is last in the bindtag walk, so by the
@@ -299,17 +299,32 @@ def _key_was_consumed(widget: Any) -> bool:
     so the default button should still get it. Standing down there would leave
     the keyboard dead for the whole dialog.
 
-    ⚠ KNOWN LIMIT, UNMEASURED: this asks about the WIDGET, not about the key,
-    and the two Enter keys are not equivalent to a text widget. Tk binds
-    `Text <KP_Enter>` to the literal script `# nothing` (`tk8.6/text.tcl:308`,
-    unconditional — it is in the block that stops the generic `<Key>` binding
-    inserting `%A`, which for that key is `\r` rather than `\n`). So wherever
-    the keypad key arrives as its own keysym, a text widget inserts NOTHING and
-    this function still reports it consumed, leaving the key dead. That cannot
-    happen on Windows, which folds the key into `Return` (see the binding site
-    below), and it is unmeasured on X11 and Aqua. If it is ever confirmed
-    there, the fix is to pass the keysym in and scope the text-widget stand-down
-    to `Return`.
+    ⚠ THE KEY MATTERS, NOT ONLY THE WIDGET — which is why `keysym` is required
+    rather than defaulted. The two Enter keys are equivalent to a button and are
+    NOT equivalent to a text widget. Measured against the live binding table:
+
+        TButton  <Key-Return> -> button_default_binding
+        TButton  <Key-KP_Enter> -> button_default_binding   (both, app.py:150)
+        Text     <Key-Return> -> tk::TextInsert
+        Text     <Key-KP_Enter> -> '# nothing'
+
+    Tk binds `Text <KP_Enter>` to the literal script `# nothing`
+    (`tk8.6/text.tcl:308`, unconditional — it is in the block that stops the
+    generic `<Key>` binding inserting `%A`, which for that key is `\r` rather
+    than `\n`). So wherever the keypad key arrives as its own keysym a text
+    widget inserts NOTHING, and reporting it consumed would leave that key dead
+    for the whole dialog. Windows never reaches this: it FOLDS the keypad key
+    into `Return` (see the binding site below), so `keysym` is `Return` there
+    and the text branch behaves as it always has. X11 reports `KP_Enter`
+    separately and is the case this scoping exists for. Aqua is unmeasured and
+    needs no measurement — both of its possible answers are handled.
+
+    ⚠ The text branch tests `keysym != "KP_Enter"` rather than
+    `keysym == "Return"`, deliberately. An unrecognized keysym then reads as
+    CONSUMED, which is the conservative answer for a text widget: standing down
+    wrongly costs a dead key, while firing wrongly costs #441 itself — the
+    dialog closing on top of a newline the user just typed. The button branch
+    has no such asymmetry, both keys invoking there.
 
     ⚠ INTERROGATING THE BINDINGS INSTEAD WAS TRIED AND IS WRONG — do not
     re-propose it as the "general" rule. Asking whether any bindtag carries a
@@ -335,6 +350,11 @@ def _key_was_consumed(widget: Any) -> bool:
             return True
 
     if tags & _ENTER_IS_CONTENT:
+        if keysym == "KP_Enter":
+            # `Text <KP_Enter>` is the literal script `# nothing`, so nothing
+            # was inserted whatever the widget's state — the default button
+            # should still get the key rather than it dying here.
+            return False
         try:
             return str(widget.cget("state")) == "normal"
         except (AttributeError, tkinter.TclError):
@@ -758,11 +778,16 @@ class Dialog:
                 went in and the dialog closed on top of it. `_key_was_consumed`
                 owns that decision for both kinds of widget.
 
+                It is handed the KEYSYM as well as the widget because a text
+                widget answers only the main Enter key: Tk binds its keypad
+                twin to a no-op script, so standing down for that one would
+                leave it dead. A button answers both.
+
                 The remaining case is the one this binding exists for — focus
                 in an entry, as in `QueryDialog`, where nothing else would
                 answer the key.
                 """
-                if _key_was_consumed(event.widget):
+                if _key_was_consumed(event.widget, event.keysym):
                     return
                 b.invoke()
 
@@ -783,7 +808,11 @@ class Dialog:
             #   this binding exists for.
             # * Aqua is unmeasured.
             #
-            # Binding both is harmless where the two coincide.
+            # Binding both is harmless where the two coincide. Where they do
+            # NOT, the keysym is threaded into `_key_was_consumed` so a text
+            # widget stands down only for the key it actually inserts for --
+            # Tk's `Text <KP_Enter>` is a no-op script, so treating the two
+            # alike would kill the keypad key inside a dialog TextArea.
             for key in ("<Return>", "<KP_Enter>"):
                 self._toplevel.bind(key, press_default)
 

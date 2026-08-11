@@ -1,12 +1,19 @@
 """Is the keypad Enter key reachable at all, and does a Text widget answer it?
 
 `Dialog` binds `press_default` to BOTH `<Return>` and `<KP_Enter>` on its
-toplevel, and `_key_was_consumed` decides whether to stand down from the
-WIDGET the key reached, not from the key itself. That is only sound while the
-two Enter keys are equivalent to that widget -- and Tk binds
-`Text <KP_Enter>` to the literal script `# nothing` (tk8.6/text.tcl:308,
-unconditional), so they are not equivalent wherever the keypad key arrives as
-its own keysym.
+toplevel, and `_key_was_consumed` decides whether to stand down from the WIDGET
+the key reached AND the keysym. It needs both because the two Enter keys are
+equivalent to a button and not to a text widget: Tk binds `Text <KP_Enter>` to
+the literal script `# nothing` (tk8.6/text.tcl:308, unconditional), so a text
+widget inserts nothing for the keypad key wherever that key arrives as its own
+keysym.
+
+⚠ THE KEYSYM SCOPING LANDED AFTER THIS PROBE WAS FIRST WRITTEN. The probe
+originally existed to decide whether the asymmetry could arise on this box at
+all; it could not, so the case was documented as a known limit rather than
+fixed. It is fixed now — `_key_was_consumed` stands a text widget down only for
+`Return` — and this probe's remaining job is to record WHY no automated test on
+Windows can exercise that path, and to be the arm someone runs on X11.
 
 This probe answers, per platform, whether that case can arise here at all.
 
@@ -27,9 +34,10 @@ MEASURED SO FAR
   two keys, so the `<KP_Enter>` binding is unreachable and the Text/`# nothing`
   asymmetry cannot arise.
 
-  X11 and Aqua: UNRUN. X11 is the case that matters -- if the key arrives as
-  `KP_Enter` there, a dialog TextArea inserts nothing and `_key_was_consumed`
-  stands the dialog down anyway, leaving the key dead.
+  X11 and Aqua: UNRUN. X11 is the case the keysym scoping exists for -- if the
+  key arrives as `KP_Enter` there, a dialog TextArea inserts nothing, and the
+  default button must still get the key or it is dead. Running arm 2 on X11
+  confirms the fix end to end; nothing on Windows can, by either route.
 
 Run:  py -3.13 development/probe_441_kp_enter_platform.py
 Output is ASCII only -- this box's console is cp1252.
