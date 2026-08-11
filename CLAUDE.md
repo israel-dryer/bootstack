@@ -97,15 +97,24 @@ and `1170` recorded here on 2026-08-08 — which "corrected" `930 / 14` and
 declared it wrong — were themselves wrong. `930 / 14` and `125 / 4` were right
 all along.
 
-Measured 2026-08-10 on `feat/widget-capture-427` at **`bdbdd097`**, freshly
-rebased so it contains **all of `main`**, full `py -3.12 tests/run_gui.py`,
-**exit 0, all legs passed**:
+Measured 2026-08-11 on `fix/formdialog-select-value-428` at **`e0092336`**, which
+has `main` as an ancestor, full `py -3.12 tests/run_gui.py`, **exit 0, all 19
+legs passed**:
 
 | leg | result |
 |---|---|
-| widgets+CLI, shared root | **932 passed / 14 skipped** (74 deselected — the `isolated` legs) |
-| data | **125 passed / 4 skipped** |
-| every leg summed | **1128 passed / 22 skipped** |
+| widgets+CLI, shared root | **1006 passed / 13 skipped** (52 deselected — the `isolated` legs) |
+| data | **123 passed / 6 skipped** |
+| every leg summed | **1178 passed / 22 skipped** |
+
+⚠ **The data leg reads `123 / 6` where the 2026-08-10 row below says `125 / 4`
+for `main`.** Two tests moved from passed to skipped. That was NOT chased down —
+this branch does not touch `tests/data`, so it is either an environmental skip or
+another stale figure. **Measure `main` before treating it as a regression.**
+
+Previous, kept because the reasoning below refers to it — measured 2026-08-10 on
+`feat/widget-capture-427` at **`bdbdd097`**: widgets+CLI **932 / 14**, data
+**125 / 4**, summed **1128 / 22**.
 
 **`main` alone is `932 / 14` and `125 / 4`, and collects `1126`.** The capture
 branch adds 22 tests, all marked `isolated`, so it contributes nothing to the
@@ -184,27 +193,27 @@ here:
   had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
   reinstalled as **1.5.1**. Check for it before assuming the release flow works.
 
-**⚠ TWO BRANCHES IN FLIGHT (2026-08-10). Neither has a PR.**
+**⚠ TWO BRANCHES IN FLIGHT (2026-08-11). Neither has a PR** — re-verified with
+`gh pr list --head <branch> --state all`, empty for both.
 
-**1. `feat/widget-capture-427` — REBASED ONTO MAIN AND PUSHED, head `bdbdd097`,
-27 commits. #429 is FIXED. It is waiting on ONE THING: the macOS and Linux runs
-of `development/probe_429_settle_without_input.py`.** The maintainer started the
-macOS run 2026-08-10; Linux was expected later the same day. ⚠ **History was
-REWRITTEN by that rebase** — any other checkout needs
+**1. `feat/widget-capture-427` — head `origin/…` is `a7d8941a`, 30 commits.
+⚠ ANY LOCAL CHECKOUT IS BEHIND: the maintainer pushed three commits on
+2026-08-11 that REPLACED the #429 fix.** See the #429 block below — the approach
+changed, and the block that used to live here was describing code that is gone.
+⚠ **History was REWRITTEN by an earlier rebase** — a stale checkout needs
 `git fetch && git reset --hard origin/feat/widget-capture-427`, not a pull. A
 backup ref `backup/widget-capture-427-prerebase` points at the pre-rebase head
 `05707330`; delete it once the branch merges.
 
 Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
-`.pdf` — from discussion #425 (an external user) via **#427**. **It ships as
-`0.3.0 — Screen capture`, its own minor, decided by the maintainer 2026-08-07**;
-it was moved off `Additions awaiting a minor` and the five milestones below it
-were renumbered up one. ⚠ **There is STILL NO PR** — verified 2026-08-10 with
-`gh pr list --head feat/widget-capture-427 --state all`, which returns empty.
+`.pdf` — from discussion #425 (an external user) via **#427**. It ships in the
+minor now titled **`0.3.0 — Screen capture and dialog results`**, which the
+maintainer RENAMED and widened to also carry #428, #437 and #438 — so capture is
+no longer the only thing gating that release.
 
-**2. `fix/formdialog-select-value-428` — NEW 2026-08-10, off `main`, pushed, head
-`989f0bb1`. GROUNDWORK ONLY — #428 is NOT fixed and the reported behavior is NOT
-yet reproduced.** See its own block further down.
+**2. `fix/formdialog-select-value-428` — head `e0092336`, 9 commits AHEAD OF
+ORIGIN and unpushed as of 2026-08-11. #428, #437 and #438 are all FIXED on it,
+through four review rounds.** See its own block further down.
 **Read `development/review-brief-427-capture.md` ON THAT BRANCH** — it records the
 settled decisions not to re-litigate and the measurements not to re-derive. ⚠ **But
 read it as a POINT-IN-TIME record: its six self-flagged soft spots are all resolved
@@ -220,15 +229,30 @@ run the capture tests in their own process, `67aefdbf` pin the region hand-off o
 Windows and macOS, `d66b3440` let the topmost precondition wait for the window
 manager. Those legs also produced **#429, #431, #432, #433, #434**.
 
-#### ✅ #429 IS FIXED (2026-08-10) — `settle()` no longer dispatches events
+#### ✅ #429 IS FIXED — but ⚠ **THE FIX WAS REPLACED ON 2026-08-11. The quiet
+settle is GONE.**
 
-Three commits: `e616f5dc` the fix + tests, `22a844d9` the docs and the version
-tag, `bdbdd097` the probes and demo. **Do NOT re-derive any of this.**
+⚠ **This block described the wrong code for a day. Read the commit messages on
+the branch, not a summary, if anything here is load-bearing.** The first fix
+(`e616f5dc`) stopped `settle()` dispatching at all. That was REVERSED by
+**`e4fd4af7` — "block input while settling instead of not settling"**, plus
+`9aada08d` (docs) and `a7d8941a` (probes re-pointed, manual demo added).
 
 `settle()` ran `root.update()` every 10ms so the desktop could repaint, which
 dispatched everything queued — so a second click on the export button re-entered
 the caller's handler mid-capture and stacked a second save dialog on the END
-USER. It now flushes idle work, sleeps quietly, and flushes again.
+USER. **It now still dispatches, and holds `tk busy` over the target instead.**
+
+**⚠ THE OPEN QUESTION THIS FILE RECORDED WAS ANSWERED, AND THE ANSWER KILLED THE
+FIX: the quiet settle does NOT repaint on macOS.** The area a window uncovers is
+repainted by the desktop, and on macOS that does not happen at all unless the
+event loop is turning — so the capture returned whatever was there before. The
+Windows 0 px result was real but was a property of the DWM backing store, not of
+the approach.
+
+⚠ **`tk busy` is now ADOPTED, having been recorded here as REJECTED.** Do not
+re-litigate it in either direction; the reason it lost (more machinery than not
+calling `update()`) stopped mattering once not calling `update()` was ruled out.
 
 - **Reproduced first, with a control.** Pre-fix the handler reached nesting depth
   2; the same call queued AFTER the capture stayed at depth 1. Measuring DEPTH
@@ -244,9 +268,29 @@ USER. It now flushes idle work, sleeps quietly, and flushes again.
   REJECTED — both hand the application author a problem AND make the end-user
   outcome worse than the bug (an unhandled exception on a double-click, or a file
   silently not written). Memory `feedback_framework_absorbs_not_developer`.
-- ⚠ **`tk busy` was rejected, but NOT for the reason first measured.** It is
-  invisible to a capture (0 px). It was dropped for being far more machinery than
-  not calling `update()`.
+- ⚠ **`tk busy` is invisible to a capture (0 px) — but the first measurement of
+  that was WRONG in the other direction** (it "gets photographed", 3906 px). The
+  noise floor had been built from two static back-to-back shots, far too tight
+  for a comparison that restacks a window; it was measuring text antialiasing.
+  Floor measured across a restack now, and busy reads 0 px against it.
+- ⚠ **A SYNTHESIZED CLICK CANNOT TEST THE GUARD, and the probes now say so
+  instead of pretending otherwise.** `tk busy` intercepts by putting a window
+  over the target, so it only catches what the window system routed by pointer
+  position; `event_generate` aimed at a widget delivers straight to that
+  widget's bindings and re-enters with `tk busy status` reading 1. The real
+  question needs a human: **`development/demo_429_busy_during_settle.py`**,
+  click Export then keep clicking and read the nesting depth.
+- ⚠ **The guard is on INPUT, not on scheduled work.** A capture started from a
+  timer still re-enters, by design. `probe_429_capture_reentrancy.py` records
+  that as the known limit rather than a failure.
+- ⚠ **Three probes silently became their own controls** when the sleep-only
+  settle shipped, because every arm drove through `_capture.settle`. Worst case:
+  `probe_429_settle_without_input.py` had a "control" arm and a sleep-only arm
+  running IDENTICAL code and producing byte-identical images, while reporting
+  three FAILs that were all one unrelated thing (a cover window never removed,
+  photographed as pure magenta). Every strategy is pinned per-file now, arms that
+  read live code are labelled, and an `expect` argument keeps a
+  defect-reproducing arm from reporting failure forever.
 - ⚠ **THE MEASUREMENT TRAP, worth more than the fix: compare captures only
   within ONE `bs.App` INSTANCE.** The FIRST app in a process renders its content
   white; every later one in the same process falls back to default grey. Two
@@ -262,14 +306,14 @@ USER. It now flushes idle work, sleeps quietly, and flushes again.
   ever destroying anything**. It queues the destroy as IDLE work now. Confirmed
   non-vacuous by disabling the guard.
 
-**⏭ THE ONE OPEN QUESTION, and the reason there is no PR yet: does the quiet
-settle still repaint on macOS and Linux?** On Windows the DWM keeps a backing
-store so the window looks right without processing Expose — 0 px. On X11 with no
-compositor that may not hold, and the failure would be a capture showing a stale
-patch where a dialog was. **Run `development/probe_429_settle_without_input.py`
-on each box and watch the `test: sleep-only settle after a window closed` arm.**
-A FAIL there means the fix needs a platform branch. Also re-run
-`verify_427_capture.py`, since `settle()` changed underneath it.
+**⏭ WHAT IS OPEN NOW: is `tk busy` invisible off macOS?** `e4fd4af7` was measured
+on macOS, Tk 8.6. The dispatching wait is the shape the Windows and Linux legs
+already ran on 2026-08-08, so those legs' results still stand — what rides on top
+of them, untested elsewhere, is the busy hold. **Arm 3 of
+`development/probe_429_busy_during_settle.py` measures exactly that; run it on
+Windows and Linux.** Then `demo_429_busy_during_settle.py` by hand for the input
+half, which no automated arm can reach. Also re-run `verify_427_capture.py`,
+since `settle()` changed twice underneath it.
 
 ⚠ **#431/#432/#433/#434 are NOT capture defects** and must not be bolted onto
 this branch — they are pre-existing test-infrastructure bugs that running the
@@ -309,53 +353,70 @@ one was documented. Do NOT re-derive these — each has a control committed at
   home is `bootstack.ask_save_file`. ⚠ **A default `-W` build does NOT catch a
   dangling py xref — only `-n` does.**
 
-### ⏭ `fix/formdialog-select-value-428` — GROUNDWORK ONLY, #428 NOT REPRODUCED
+### ✅ `fix/formdialog-select-value-428` — #428, #437 and #438 ALL FIXED
 
-Branch created off `main` 2026-08-10 and pushed, head **`989f0bb1`** (one commit,
-two probes, no fix). **#428 is from an external user** (`@bLynnb2762`) and is the
-only open issue with someone outside the project waiting on it. Unmilestoned —
-**do not assign one unasked.**
+Head **`e0092336`** as of 2026-08-11, **9 commits ahead of origin and UNPUSHED**,
+no PR. `main` IS an ancestor. It grew well past its name: it now carries **#428**
+(the external report), **#437** and **#438**, all three milestoned
+`0.3.0 — Screen capture and dialog results`. **#428 is from an external user**
+(`@bLynnb2762`) — still the one with someone outside the project waiting.
 
-The report: with `options=[('One', 1), ...]`, a plain `bs.Select` and a `Form`
-select both return the VALUE `1`, but `FormDialog.result` returns the TEXT
-`'One'`. The reporter's runnable repro is on the issue.
+**The root cause, so it is not re-derived:** `FormDialog.result` was read AFTER
+the dialog closed, by which point the editors were destroyed and the only thing
+left to read was the on-screen TEXT — which arrives as a string whatever the
+value's real type was. It was never a conversion on the read path (an early
+session proved that half and it held). Entries are now captured at the press,
+while the form is alive, in `_accept_press`. The same defect hit every editor
+whose display differs from its value, not only `select`: a date field handed back
+its formatted text.
 
-**What the probes ESTABLISH — do not re-derive, and do not re-search the read
-path:**
+⚠ **`PLAN.md` and `REVIEW.md` at the repo root are this branch's live working
+files** (`REVIEW-PROTOCOL.md`), and the review record lives in
+`development/review-brief-437-438-dialog-buttons.md`, `…-round3.md` and
+`…-round4.md`. **Four review rounds have run.** Read those before touching the
+branch rather than re-reviewing from scratch.
 
-- **The READ path is NOT the cause.** `bs.Form.get()` calls `self._internal.get()`;
-  the internal `Form.get()` is literally `return self.data`; `FormDialog` reads
-  that same `.data`. All three end in `_collect_data()` →
-  `_read_value_from_widget()` → `widget.value`. The public `FormDialog.result` is
-  a bare passthrough to the impl. **There is no conversion anywhere on that chain
-  that could turn a value into its text.** Reading further down it is a dead end.
-- **The public `bs.Form` path is CORRECT, including the part the reporter
-  exercised.** Measured: the editor built is a `Select`, its options are
-  normalized to `{'text', 'value'}` bags, and assigning the TEXT —
-  `widget.value = "One"`, which is what picking from the dropdown amounts to —
-  reads back as the VALUE `1` through `widget.value`, `form.get()` and
-  `form.data` alike.
-- **So the divergence is in what the DIALOG BUILDS, or how its form is
-  constructed** — not in how any of it is read. The one construction difference
-  found by reading: the impl `FormDialog` passes `data=self._data` into the
-  internal `Form` alongside `items`; the public `bs.Form` passes only `items`.
+**Round 4 (2026-08-11) found five things; all five are handled:**
 
-**⚠ The dialog half is STILL UNREPRODUCED. That is the next step, and two traps
-cost time already:**
+- ✅ **The Dialog page taught reading a content widget after `show()`** —
+  `create_project(fields["name"].value)`, i.e. after every widget was destroyed.
+  It survived only because `TextField` is `StringVar`-backed; the same idiom with
+  a `bs.Select` raises `TclError`. **That is the very pattern #428 exists to
+  prevent, in the release that fixes it.** The example binds a `Signal` now.
+- ✅ **A DISABLED button swallowed Enter** — the stand-down guard assumed a
+  button that received the key had already acted on it, which is false when
+  `invoke` does nothing. Any content button that greys itself out on click left
+  the keyboard dead for the whole dialog.
+- ✅ **The bindtags read went through Tcl for a case that cannot arise here.**
+  Tkinter really does hand a callback a bare path string when the target is
+  absent from its widget map — but a dialog has 0 such widgets of 32, because
+  bootstack creates everything from Python. Simplified to `.bindtags()`.
+- ✅ **A CHANGELOG sentence contradicted the branch's own measurement** (claimed
+  dialogs resting on their default button were unaffected; #439 says no dialog
+  is in that state at open). Removed rather than corrected — the accurate version
+  would document #439 as if intended.
+- ✅ **A test pinned #439 as a passing precondition.** Loosened, so fixing #439
+  cannot turn it into a precondition failure.
+- ⏭ **Filed as #441, deliberately NOT fixed here:** Enter in a `TextArea` inserts
+  the newline and then the dialog closes on top of it, because the guard
+  recognizes only `TButton`. Needs a general rule for "did something already
+  handle this key?", not another special case.
 
-- **`bootstack.dialogs.FormDialog` is a public WRAPPER**, not the impl class in
-  `dialogs/_impl/formdialog.py`. Reading the impl and then calling its methods on
-  the imported class gives `AttributeError` — `_build_form_content` does not
-  exist on the wrapper. Reach the impl through `._internal`.
-- **`dlg.show()` runs its own modal wait loop that a close scheduled with `after`
-  does NOT break.** It hung a probe until the task was killed. Either drive the
-  impl directly, or find a non-blocking way in.
+⚠ **Traps this branch already paid for — do not re-pay them:**
+
+- **`bootstack.dialogs.FormDialog` is a public WRAPPER**, not the impl in
+  `dialogs/_impl/formdialog.py`. Reach the impl through `._internal`.
+- **`dlg.show()` runs a modal wait loop that a close scheduled with `after` does
+  NOT break.** Drive it by invoking a real footer button instead — and poll for
+  the modal grab rather than firing on a fixed delay, because `show()` pumps the
+  event loop while building and positioning, so a timer can land on a half-built
+  dialog. `_drive()` in `test_dialog_press_contract.py` is the worked pattern.
+- **`instate(['!disabled'])` is a QUESTION returning True when the widget is
+  ENABLED.** `not instate(['!disabled'])` therefore selects the disabled one —
+  a double negative that silently inverts a guard. Write
+  `not instate(['disabled'])`.
 - Probe output must be **ASCII** — a check mark raised `UnicodeEncodeError` on
-  this box's cp1252 console. Same "runnable on every box it informs" rule #430 hit.
-
-Suspects worth testing first, in order: whether the dialog's internal `Form`
-receives the same normalized option bags, and whether `data=self._data` seeding
-changes what `_read_value_from_widget` returns for a select.
+  this box's cp1252 console. Same rule #430 hit.
 
 **BRANCHES: `main`, `feat/widget-capture-427`, `fix/formdialog-select-value-428`.**
 The `main`-only state below
@@ -406,7 +467,9 @@ taken ahead of the standing recommendation deliberately: an external user asked
 for it in discussion #425, and it is additive, so it cannot destabilize the
 batched strictness work. ⚠ **It adds public surface, so it CANNOT ride the patch
 line.** ✅ **DECIDED 2026-08-07 (maintainer): it CUTS AHEAD as its own minor.** It
-is now **`0.3.0 — Screen capture`**, and everything below it shifted up one.
+became `0.3.0`, and everything below it shifted up one. ⚠ **That milestone was
+later RENAMED to `0.3.0 — Screen capture and dialog results` and widened to carry
+#428, #437 and #438** — capture no longer ships alone.
 
 After it, pick
 from the table below; the standing recommendation is the unnumbered
@@ -458,7 +521,7 @@ description, not just the title.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.3.0 — Screen capture`** — #427 (IN FLIGHT, `feat/widget-capture-427`, rebased + pushed, awaiting the macOS/Linux probe run) | 1 |
+| 1 | **`0.3.0 — Screen capture and dialog results`** — #427 (`feat/widget-capture-427`, awaiting the busy probe off macOS) · #428, #437, #438 (`fix/formdialog-select-value-428`, fixed, unpushed, no PR) | 4 |
 | 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -480,12 +543,19 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ EIGHT UNMILESTONED OPEN ISSUES as of 2026-08-10** (verified against `gh`, not
-counted by hand): **#426, #428, #431, #432, #433, #434, #436**, and **#429 —
-which is FIXED on `feat/widget-capture-427` but stays OPEN until that branch
-merges.** **#428 is from an external user** (`@bLynnb2762` — data returned by a
-`FormDialog` select field differs from a plain `Select` and a `Form` select
-field), which makes it the one with someone waiting on it; it now has a branch.
+**⚠ TEN UNMILESTONED OPEN ISSUES as of 2026-08-11** (verified against `gh`, not
+counted by hand): **#426, #431, #432, #433, #434, #436, #439, #440, #441**, and
+**#429 — which is FIXED on `feat/widget-capture-427` but stays OPEN until that
+branch merges.** ⚠ **#428 is NO LONGER unmilestoned** — the maintainer moved it,
+#437 and #438 onto `0.3.0 — Screen capture and dialog results`.
+
+**Three of these are NEW and came out of the dialog work:** **#439** (a dialog's
+default button never actually receives focus — `focus_set()` is a no-op because
+the button is built before the window is deiconified; several tests now assert
+around it rather than on it), **#440** (opening a dialog from inside a dialog
+leaves the outer one non-modal), and **#441** (Enter in a multi-line field
+submits the dialog instead of inserting a newline). **#439 and #441 are both
+about the same guard** and are worth taking together.
 **#431/#432/#433/#434 all came out of running the macOS and Linux legs for #427**
 and are test-infrastructure failures, not user-facing: `#432` (the shared-root GUI
 leg exits silently mid-run on Linux) is the one that **still blocks #380 (CI)**
@@ -511,29 +581,62 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-10) — capture is BLOCKED ON A PROBE RUN, not on code.
+### ★ START HERE (2026-08-11) — `0.3.0` is TWO BRANCHES, both code-complete, neither PR'd.
 
-**`0.2.3` shipped 2026-08-08 and every post-release step is done.** Two branches
-are in flight and **neither has a PR**; full detail in the IN FLIGHT block above.
+**`0.2.3` shipped 2026-08-08 and every post-release step is done.** The next
+release is **`0.3.0 — Screen capture and dialog results`**, which the maintainer
+renamed and widened: it needs **both** in-flight branches, not just capture.
 
-**1. `feat/widget-capture-427` — rebased onto main, pushed, `bdbdd097`. #429 is
-FIXED.** The only thing between it and a PR is **running
-`development/probe_429_settle_without_input.py` on macOS and Linux** — the fix
-stopped `settle()` from turning the event loop, and whether the window still
-repaints without that is guaranteed on Windows but not on X11 without a
-compositor. macOS was started 2026-08-10; Linux was expected later that day.
-**If both pass, PR it as `0.3.0 — Screen capture`. If the `sleep-only settle`
-arm fails, the fix needs a platform branch** — that is the whole decision.
+**1. `fix/formdialog-select-value-428` — `e0092336`, 9 commits UNPUSHED, no PR.
+#428, #437 and #438 are fixed; four review rounds have run and every finding is
+applied.** Full suite green on it (1178 / 22, exit 0). **The immediate next
+action is `git push` and then a PR** — nothing is known to be blocking it. ⚠ Its
+CHANGELOG section is `## [Unreleased]`; promoting it is a release step, not a
+branch step.
 
-**2. `fix/formdialog-select-value-428` — groundwork only, `989f0bb1`.** #428 is
-an EXTERNAL user's bug and is not reproduced yet. The probes rule out the read
-path entirely, which is the expensive half; what remains is reproducing the
-dialog side. Its own block above says exactly where to pick up and which two
-traps already cost time.
+**2. `feat/widget-capture-427` — `a7d8941a`, pushed, no PR. ⚠ THE #429 FIX WAS
+REPLACED ON 2026-08-11** (`e4fd4af7`) — the quiet settle did not repaint on
+macOS, so `settle()` dispatches again and holds `tk busy` instead. **A local
+checkout is behind by three commits; `git fetch && git reset --hard`, do not
+pull.** Open: **run arm 3 of `development/probe_429_busy_during_settle.py` on
+Windows and Linux** (is busy invisible there?), then
+`demo_429_busy_during_settle.py` by hand, then re-run `verify_427_capture.py`.
 
-After those, the standing recommendation is `Test and release confidence`
+**Take the dialog branch first** — it is the one with an external user waiting
+(#428) and needs no measurement, only a push and a PR. Capture needs another box.
+
+After both, the standing recommendation is `Test and release confidence`
 (#407 then #380) — but **#432 blocks #380 harder than before**, since the GUI leg
 cannot complete on Linux at all.
+
+⚠ **Three new issues came out of the dialog work and are deliberately NOT on
+either branch: #439, #440, #441.** #439 (the default button never receives
+focus) and #441 (Enter in a multi-line field submits) are the same guard seen
+twice and are worth one branch together; #440 (a dialog opened from a dialog
+leaves the outer one non-modal) is unrelated and unexamined.
+
+**⏭ A DESIGN IDEA WORTH CARRYING INTO THAT BRANCH (maintainer, 2026-08-11): map
+the real keys onto a virtual name with `event_add`**, so a dialog binds one
+`<<Submit>>` instead of `<Return>` + `<KP_Enter>` and the intent becomes
+targetable. **Measured before it gets designed around —
+`development/probe_439_virtual_event_for_submit.py`, and it needs a MAPPED
+window or every arm silently reads empty:**
+
+- ✅ **It works.** `root.event_add("<<Submit>>", "<Return>", "<KP_Enter>")` and a
+  `<<Submit>>` binding fires from the real key. One name covers both keys, which
+  is exactly the duplication the dialog carries today.
+- ⚠ **On a tag carrying BOTH, the PHYSICAL binding wins and the virtual one does
+  not run at all.** Measured: with `<<Submit>>` and `<Return>` both bound to the
+  widget, only `<Return>` fired. So this is not additive — anything already
+  binding `<Return>` directly shadows the virtual name on its own tag.
+- ⚠ **The mapping is per-INTERPRETER, not per-widget** (`event info` reads the
+  same through the root and through a widget). Adding one is a cross-cutting,
+  app-wide change, not a local one.
+- ❌ **It does NOT change the bindtag walk.** Order stayed
+  `widget → class → toplevel`. So the toplevel still runs after a button's class
+  binding and still has to decide whether something already answered the key —
+  **#441 is untouched by this.** It is a naming and deduplication win, not a
+  dispatch one; adopt it for clarity if wanted, but do not scope #441 around it.
 
 ⚠ **#436 was filed 2026-08-10**: adopt `versionadded` across the public API,
 because the docs site serves ONE version and a reader cannot tell which release
