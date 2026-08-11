@@ -633,21 +633,45 @@ suite at HEAD, rather than by reasoning from the recorded figure. This is the
 same failure mode CLAUDE.md records four previous instances of. Record the date
 AND the commit beside any count.
 
-### Still open for the next session
+### Round 3 carry-forward — ALL THREE NOW APPLIED (2026-08-11)
 
-Three round-3 findings are deliberately not applied, to stop the fix step
-growing scope the way round 2's did:
+They were held back at the end of the fix step to stop it growing scope the way
+round 2's did. The maintainer took them the next day, in two commits.
 
-- **R5 — `docs/widgets/dialog.rst:104`, the taught refusal pattern drops the
-  dialog's grab.** Measured: `grab_current()` is the dialog before the nested
-  `bs.alert(...)` and `None` after. This is a real bug in a pattern the branch
-  is actively teaching, and is the one of the three worth folding in.
-- **R6 — `docs/widgets/dialog.rst:112`**, no button sets `default=True` while
-  the prose says the veto applies to Enter; `name`, `write` and `build` are
-  undefined and it never calls `show()`.
-- **R7 — `form.py:997`**, the `Form` veto returns before the stamp without
-  clearing `result`, so a refused press leaves the previous accepted press's
-  data readable at `form.result`.
+- ✅ **R5 + R6 — `docs/widgets/dialog.rst`, `3d021cc0`.** The refusal example
+  now refuses with `bs.toast(...)` instead of a nested `bs.alert(...)`, and is
+  self-contained: `build` creates the field the refusal reads, Save carries
+  `default=True` so the paragraph beneath it is true, and the snippet calls
+  `show()` and reads `dlg.result`. ⚠ **A `.. note::` explaining what the nested
+  modal costs was drafted and DELIBERATELY DROPPED (maintainer).** Documenting
+  the grab release in the teaching layer papers over a defect and goes stale the
+  moment it is fixed. The grab behavior gets an issue instead. Clean `-W` docs
+  build, exit 0; example verified against `DialogButton.default`,
+  `TextField.value` and `bs.toast`.
+- ✅ **R7 — `form.py`, `70a039ce`.** Filed as a nit; it is more than that. **It
+  reproduces through the public API alone** — `bs.Form(buttons=...)`,
+  `form.set()`, `form.result`, real footer button — and `docs/tasks/building-forms.rst:98`
+  teaches the outside read that sees the stale value. With arbitrary result
+  tokens it also **misattributes the button**: accept Save, refuse Delete, and a
+  caller dispatching on `result` sees `"save"`.
+  ⚠ **The contract question was raised by the maintainer and settled
+  deliberately — do not re-litigate.** `result` now means *the most recent press
+  that completed*. The rejected alternative was *the last thing that succeeded*
+  (leave a prior result standing), and the cost of the choice is accepted: a
+  refusal also erases an earlier accepted press, so a late reader sees `None`.
+  Recording the declined press's own token was rejected outright as the shape
+  #437 removed from `Dialog`.
+  ⚠ **This is the same contract as `Dialog`'s but NOT the same mechanism, and
+  calling it "matching `Dialog`" understates it.** `Dialog.show()` resets
+  `result` and the accepted press closes the window, so a declined press need
+  only not stamp — there is never a prior press in the same lifetime. A `Form`
+  outlives its presses, so holding the contract means actively clearing.
+  Control: with the clear stashed the new test fails with `a refused press left
+  {'k': 'accepted'} readable`, the other 10 in the file passing.
+
+The CHANGELOG carries R7 in the veto's existing `### Changed` bullet rather than
+a new `### Fixed` one — the veto never shipped, so there is no released behavior
+being fixed, only the semantics of a new feature to state.
 
 And two decisions:
 
@@ -655,6 +679,11 @@ And two decisions:
   #437.~~ **DECIDED 2026-08-11 (maintainer): folded into #437.** The bullet now
   ends `(#437)`; no separate issue was filed. Reasoning above under the R2 fix.
 - **`focus_set()` being a no-op needs an issue.** Do not fix it on this branch.
+- **The nested-modal grab release needs an issue** — raised by dropping R5's
+  note rather than shipping it. `bs.alert()` called from inside a dialog leaves
+  the outer dialog non-modal, because destroying the nested modal releases the
+  grab instead of restoring the one it took over. Pre-existing and framework-wide
+  (`query._on_submit` has the same shape); not a defect this branch introduced.
 
 Nothing is committed. The suite is green and the controls have been run, so
 this is ready for the maintainer to test and then approve commit-by-commit.
