@@ -92,41 +92,40 @@ chained off the successful Release run automatically. Previous: `0.2.2`
 under Release flow because it will be needed again).
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
-has now been wrong about them FOUR times, in both directions.** The `976 / 13`
-and `1170` recorded here on 2026-08-08 — which "corrected" `930 / 14` and
-declared it wrong — were themselves wrong. `930 / 14` and `125 / 4` were right
-all along.
+has now been wrong about them FIVE times, in both directions.**
 
-Measured 2026-08-11 on `fix/formdialog-select-value-428` at **`e0092336`**, which
-has `main` as an ancestor, full `py -3.12 tests/run_gui.py`, **exit 0, all 19
+**AUTHORITATIVE — measured 2026-08-11 on `main` at `06acd727`** (the #442 merge,
+i.e. #428/#437/#438 included), full `py -3.12 tests/run_gui.py`, **exit 0, all 19
 legs passed**:
 
 | leg | result |
 |---|---|
-| widgets+CLI, shared root | **1006 passed / 13 skipped** (52 deselected — the `isolated` legs) |
-| data | **123 passed / 6 skipped** |
-| every leg summed | **1178 passed / 22 skipped** |
+| widgets+CLI, shared root | **962 passed / 14 skipped** (52 deselected; **1027 collected, 975 selected**) |
+| data | **125 passed / 4 skipped** |
+| every leg summed (19 legs) | **1136 passed / 21 skipped** |
 
-⚠ **The data leg reads `123 / 6` where the 2026-08-10 row below says `125 / 4`
-for `main`.** Two tests moved from passed to skipped. That was NOT chased down —
-this branch does not touch `tests/data`, so it is either an environmental skip or
-another stale figure. **Measure `main` before treating it as a regression.**
+⚠ **The `1006 / 13` recorded here for `e0092336` was IMPOSSIBLE, and so were
+`1001 / 13` and `1005 / 13` in `REVIEW.md`'s rounds 3 and 4.** The shared leg
+**selects 975 tests**, so no result summing to 1018 or 1019 can come out of it —
+`SHARED_GROUPS[0]` is one pytest process over `tests/widgets/public tests/cli`
+with `-m "not isolated"`, printing one summary line. **The ceiling is the
+selected count, and checking a reported total against it takes one command:**
+`pytest <paths> -m "not isolated" --collect-only -q | tail -2`. That single check
+would have caught three of the five wrong figures this file has carried.
+
+⚠ **The `123 / 6` data-leg flag is RESOLVED: it was wrong, not environmental.**
+Measured `125 / 4` on every one of six runs on 2026-08-11 — five on the branch
+head and one on merged `main`. Nothing moved from passed to skipped.
 
 Previous, kept because the reasoning below refers to it — measured 2026-08-10 on
 `feat/widget-capture-427` at **`bdbdd097`**: widgets+CLI **932 / 14**, data
-**125 / 4**, summed **1128 / 22**.
+**125 / 4**, summed **1128 / 22**. That row is consistent with today's: `main`
+gained the 30 tests #428/#437/#438 brought (932 → 962).
 
-**`main` alone is `932 / 14` and `125 / 4`, and collects `1126`.** The capture
-branch adds 22 tests, all marked `isolated`, so it contributes nothing to the
-shared leg — the shared-leg figure above IS main's.
-
-⚠ **The proof does not need another test run, which is why it is worth writing
-down.** That branch is a verified superset of `main`
-(`git merge-base --is-ancestor origin/main HEAD`) and only ADDS tests, yet it
-collects **1148** against main's recorded **1170**. A superset cannot collect
-fewer than its subset, so `1170` was impossible on its face. Both of the
-2026-08-08 figures are high by exactly 44, which reads like a summing error
-rather than drift.
+⚠ **A superset cannot collect fewer than its subset.** That is what exposed the
+2026-08-08 pair (`976 / 13` and `1170`), and the selected-count ceiling above is
+the same test applied within a single run. **Prefer a number you just measured
+over one written here, and fix the table when they disagree.**
 
 **The rule that keeps being broken: record the DATE and the COMMIT beside any
 count, and re-measure rather than reasoning from a number already in this
@@ -193,10 +192,21 @@ here:
   had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
   reinstalled as **1.5.1**. Check for it before assuming the release flow works.
 
-**⚠ TWO BRANCHES IN FLIGHT (2026-08-11). Neither has a PR** — re-verified with
-`gh pr list --head <branch> --state all`, empty for both.
+**⚠ ONE BRANCH IN FLIGHT (2026-08-11, later the same day).** The other merged —
+see below.
 
-**1. `feat/widget-capture-427` — head `origin/…` is `a7d8941a`, 30 commits.
+**✅ `fix/formdialog-select-value-428` IS MERGED AND DELETED.** It went in as
+**PR #442**, **merge commit `06acd727`** (a merge commit, not a squash — same
+call as #410/#423/#424, the one-commit-per-issue granularity being the
+deliverable). **#428, #437 and #438 are all CLOSED**, all milestoned
+`0.3.0 — Screen capture and dialog results`. Branch head was **`38d01598`** if it
+ever needs resurrecting; local and remote refs are gone (GitHub auto-deleted the
+remote on merge, which is why `git merge-base --is-ancestor origin/<branch>` now
+fails with *"Not a valid object name"* rather than reporting non-ancestry —
+**check the recorded head SHA against `origin/main` instead**).
+
+**1. `feat/widget-capture-427` — head `origin/…` is `1654c60e` (moved again on
+2026-08-11, after this file recorded `a7d8941a`), 30+ commits.
 ⚠ ANY LOCAL CHECKOUT IS BEHIND: the maintainer pushed three commits on
 2026-08-11 that REPLACED the #429 fix.** See the #429 block below — the approach
 changed, and the block that used to live here was describing code that is gone.
@@ -211,9 +221,8 @@ minor now titled **`0.3.0 — Screen capture and dialog results`**, which the
 maintainer RENAMED and widened to also carry #428, #437 and #438 — so capture is
 no longer the only thing gating that release.
 
-**2. `fix/formdialog-select-value-428` — head `e0092336`, 9 commits AHEAD OF
-ORIGIN and unpushed as of 2026-08-11. #428, #437 and #438 are all FIXED on it,
-through four review rounds.** See its own block further down.
+**Capture is now the ONLY thing gating `0.3.0`** — the dialog half shipped to
+`main` in PR #442.
 **Read `development/review-brief-427-capture.md` ON THAT BRANCH** — it records the
 settled decisions not to re-litigate and the measurements not to re-derive. ⚠ **But
 read it as a POINT-IN-TIME record: its six self-flagged soft spots are all resolved
@@ -353,13 +362,48 @@ one was documented. Do NOT re-derive these — each has a control committed at
   home is `bootstack.ask_save_file`. ⚠ **A default `-W` build does NOT catch a
   dangling py xref — only `-n` does.**
 
-### ✅ `fix/formdialog-select-value-428` — #428, #437 and #438 ALL FIXED
+### ✅ `fix/formdialog-select-value-428` — MERGED (PR #442, `06acd727`), branch deleted
 
-Head **`e0092336`** as of 2026-08-11, **9 commits ahead of origin and UNPUSHED**,
-no PR. `main` IS an ancestor. It grew well past its name: it now carries **#428**
-(the external report), **#437** and **#438**, all three milestoned
-`0.3.0 — Screen capture and dialog results`. **#428 is from an external user**
-(`@bLynnb2762`) — still the one with someone outside the project waiting.
+Shipped to `main` on 2026-08-11. It grew well past its name and carried **#428**
+(the external report from `@bLynnb2762`), **#437** and **#438** — all three now
+CLOSED and milestoned `0.3.0 — Screen capture and dialog results`. Head at merge
+was **`38d01598`**. ⚠ **Nothing is released yet**: `0.3.0` still waits on
+capture, so #428's reporter has NOT been told it is live. Post that comment with
+`gh issue comment` after the release — `gh issue close --comment` silently drops
+it on an already-closed issue.
+
+⚠ **THE SUITE WAS NOT GREEN WHEN THE BRANCH WAS HANDED OVER, and the way it got
+that way is worth more than the fix.** Round 4's verification ran at `70a039ce`
+— **one commit before** `f9f1692f` rewrote the very tests it was verifying — so
+a flaky test entered `main`'s queue unseen. Fixed pre-merge in `3d24ebbf`.
+**Verify at the commit you are shipping, not at the last one you happened to
+measure.**
+
+**The flake, because the mechanism will recur:**
+`test_enter_on_a_focused_button_does_not_also_press_the_default` failed its own
+precondition — `focus_lastfor()` named the toplevel, so the `focus_set()` above
+it had done nothing. **Tk's `focus_set()` is a SILENT no-op when the widget or
+any ancestor is unmapped**: `TkSetFocusWin` walks the ancestry and returns
+without setting anything, reporting nothing, so the miss surfaces one line later
+as an inexplicable focus assertion. The test's `_drive` helper polled for the
+modal grab as its "the dialog is up" barrier, but **the grab is set before the
+geometry manager maps the footer's children at idle** — the failure carried
+`button mapped=0 parent mapped=1 top mapped=1 grab=.!toplevel7`. Rate: **1 in 5
+full legs, 0 in 60 dialogs in a quiet process.** The barrier now waits for the
+grab AND the footer being mapped.
+
+⚠ **A 1-in-5 flake cannot be verified against by re-running.** The control at
+`development/probe_437_focus_flake.py` CREATES the condition instead —
+packed-but-not-yet-updated widgets leave idle geometry work outstanding when the
+dialog goes up: **old barrier 5/10 unmapped and 5/10 focus misses, new barrier 0
+and 0**, the two columns tracking one-for-one. Arm 1 is the mechanism alone and
+arm 2 is the quiet-process control that returns 0/60.
+
+⚠ **Round 4's review record was never written.** Four fix commits answered
+findings that existed nowhere in the repo. Reconstructed into `REVIEW.md` from
+the commits and their probes, labelled as reconstructed. **Rounds 1–3 each
+landed a `docs(review):` commit; make that the last step of a fix step, not an
+optional one.**
 
 **The root cause, so it is not re-derived:** `FormDialog.result` was read AFTER
 the dialog closed, by which point the editors were destroyed and the only thing
@@ -418,7 +462,8 @@ branch rather than re-reviewing from scratch.
 - Probe output must be **ASCII** — a check mark raised `UnicodeEncodeError` on
   this box's cp1252 console. Same rule #430 hit.
 
-**BRANCHES: `main`, `feat/widget-capture-427`, `fix/formdialog-select-value-428`.**
+**BRANCHES: `main`, `feat/widget-capture-427`** — `fix/formdialog-select-value-428`
+merged as PR #442 and was deleted local and remote on 2026-08-11.
 The `main`-only state below
 was verified 2026-08-06 after the `0.2.2` release and held until the branch above
 was pushed on 2026-08-07.
@@ -521,7 +566,7 @@ description, not just the title.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.3.0 — Screen capture and dialog results`** — #427 (`feat/widget-capture-427`, awaiting the busy probe off macOS) · #428, #437, #438 (`fix/formdialog-select-value-428`, fixed, unpushed, no PR) | 4 |
+| 1 | **`0.3.0 — Screen capture and dialog results`** — #427 (`feat/widget-capture-427`, awaiting the busy probe off macOS) · ~~#428, #437, #438~~ **MERGED via PR #442** | 1 |
 | 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -581,29 +626,31 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-11) — `0.3.0` is TWO BRANCHES, both code-complete, neither PR'd.
+### ★ START HERE (2026-08-11, evening) — `0.3.0` is now ONE branch: capture.
 
 **`0.2.3` shipped 2026-08-08 and every post-release step is done.** The next
 release is **`0.3.0 — Screen capture and dialog results`**, which the maintainer
-renamed and widened: it needs **both** in-flight branches, not just capture.
+renamed and widened. **Half of it has now landed.**
 
-**1. `fix/formdialog-select-value-428` — `e0092336`, 9 commits UNPUSHED, no PR.
-#428, #437 and #438 are fixed; four review rounds have run and every finding is
-applied.** Full suite green on it (1178 / 22, exit 0). **The immediate next
-action is `git push` and then a PR** — nothing is known to be blocking it. ⚠ Its
-CHANGELOG section is `## [Unreleased]`; promoting it is a release step, not a
-branch step.
+**✅ The dialog half is MERGED.** PR **#442**, merge commit **`06acd727`**,
+closing **#428, #437 and #438**; branch deleted (head was `38d01598`). `main` is
+green at that commit — **962 / 14** and **125 / 4**, 19 legs, exit 0. The
+CHANGELOG section on `main` is `## [Unreleased]`; promoting it is a release step.
 
-**2. `feat/widget-capture-427` — `a7d8941a`, pushed, no PR. ⚠ THE #429 FIX WAS
-REPLACED ON 2026-08-11** (`e4fd4af7`) — the quiet settle did not repaint on
-macOS, so `settle()` dispatches again and holds `tk busy` instead. **A local
-checkout is behind by three commits; `git fetch && git reset --hard`, do not
-pull.** Open: **run arm 3 of `development/probe_429_busy_during_settle.py` on
-Windows and Linux** (is busy invisible there?), then
-`demo_429_busy_during_settle.py` by hand, then re-run `verify_427_capture.py`.
+**⏭ THE ONE REMAINING BLOCKER: `feat/widget-capture-427` — `1654c60e`, pushed,
+no PR. ⚠ THE #429 FIX WAS REPLACED ON 2026-08-11** (`e4fd4af7`) — the quiet
+settle did not repaint on macOS, so `settle()` dispatches again and holds
+`tk busy` instead. **A local checkout is behind; `git fetch && git reset --hard`,
+do not pull.** Open: **run arm 3 of
+`development/probe_429_busy_during_settle.py` on Windows and Linux** (is busy
+invisible there?), then `demo_429_busy_during_settle.py` by hand, then re-run
+`verify_427_capture.py`. **That measurement needs another box — it is the whole
+remaining decision for `0.3.0`.**
 
-**Take the dialog branch first** — it is the one with an external user waiting
-(#428) and needs no measurement, only a push and a PR. Capture needs another box.
+⚠ **#428's reporter has NOT been told anything shipped**, because nothing has:
+the fix is on `main` and unreleased. Comment on the issue after `0.3.0`, with
+`gh issue comment` (not `gh issue close --comment`, which drops it silently on a
+closed issue).
 
 After both, the standing recommendation is `Test and release confidence`
 (#407 then #380) — but **#432 blocks #380 harder than before**, since the GUI leg
