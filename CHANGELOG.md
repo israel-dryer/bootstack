@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **The error raised for an outdated layout option now names options that exist.** Passing `fill=`, `expand=`, `anchor=`, `sticky=` or `side=` to a child of a `Row`, `Column` or `Grid` correctly raises, but the message recommended `align_self=` and `justify_self=`, which were renamed before release and never shipped. Following the advice produced a second, lower-level error naming an option you had never written. The message now names `grow=` for claiming leftover space along the stacking axis and `horizontal=`/`vertical=` for aligning or stretching across it, and lists the values each one takes. (#426)
+
 ## [0.3.0] — Screen capture and dialog results
 
 ### Added

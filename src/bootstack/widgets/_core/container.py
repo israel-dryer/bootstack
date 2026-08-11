@@ -226,8 +226,11 @@ def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
 
         raise BootstackError(
             f"{where}: {', '.join(sorted(bad))} is not a valid layout option for "
-            f"a Row/Column/Grid child. Use grow= / align_self= (and justify_self= "
-            f"in a Grid) instead — see the layout guide."
+            f"a Row/Column/Grid child. Use grow= to claim leftover space along "
+            f"the stacking axis, or horizontal=/vertical= to align or stretch "
+            f"across it — horizontal= takes left/center/right/stretch and "
+            f"vertical= takes top/center/bottom/stretch (for example "
+            f"horizontal=\"stretch\") — see the layout guide."
         )
 
 
