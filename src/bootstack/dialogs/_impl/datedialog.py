@@ -16,7 +16,8 @@ from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
 from bootstack.events import Subscription
 from bootstack.dialogs._impl.dialog import (
-    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, result_target,
+    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, restore_grab,
+    result_target,
 )
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets._impl.composites.calendar import Calendar
@@ -118,9 +119,16 @@ class _ChromeDialog(Dialog):
         if modal:
             # transient() is already called in Dialog._create_toplevel()
             # Don't call it again here as it breaks mica effect on Windows
+            previous_grab = None
             if self._mode == "modal":
+                # Remember who held the grab so it can be handed back — a
+                # nested modal must not leave its opener non-modal (#440).
+                previous_grab = self._toplevel.grab_current()
                 self._toplevel.grab_set()
-            self._master.wait_window(self._toplevel)
+            try:
+                self._master.wait_window(self._toplevel)
+            finally:
+                restore_grab(previous_grab)
 
     def _on_focus_out(self, event: tkinter.Event):
         if self._suppress_focus_out:

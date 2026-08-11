@@ -182,6 +182,36 @@ def emit_dialog_result(target: Optional[tkinter.Misc], payload: dict) -> None:
 
 # --- Dialog ----------------------------------------------------------------
 
+def restore_grab(previous: Any) -> None:
+    """Hand the modal grab back to whatever held it before this dialog took it.
+
+    Tk releases a grab when the window holding it is destroyed, but it does NOT
+    restore the grab that window displaced. So a modal opened from inside
+    another modal — `bs.alert()` from a dialog button command, or
+    `QueryDialog._on_submit` — took the grab over and then dropped it on the
+    floor when it closed. The OUTER dialog was left on screen and still
+    blocking its caller inside `show()`, yet holding no grab at all: the user
+    could click straight back into the main window and drive the app
+    underneath it, against a dialog that was modal in appearance only
+    (issue #440).
+
+    Pass the value `grab_current()` returned BEFORE `grab_set()`. `None` means
+    nothing held the grab, which is the outermost case and needs no restore.
+
+    A failure here is deliberately swallowed. This runs on a teardown path,
+    where the previous holder may itself have been destroyed while the inner
+    dialog was up, or the whole interpreter may be going down — and a dialog
+    that has already closed must not raise on its way out.
+    """
+    if previous is None:
+        return
+    try:
+        if previous.winfo_exists():
+            previous.grab_set()
+    except (AttributeError, tkinter.TclError):
+        pass
+
+
 # Bindtags whose widgets treat Enter as CONTENT rather than as a command.
 # `Text` is Tk's multi-line text class, which `TextArea` and `CodeEditor` are
 # both built on — naming the class covers them, and anything else Text-backed,
@@ -435,9 +465,16 @@ class Dialog:
             # sheet window class; calling grab_set on top of that is fine
             # but unnecessary. Plain modal mode still uses grab to block
             # interaction with the parent on platforms without a sheet.
+            previous_grab = None
             if self._mode in ("modal", "sheet"):
+                # Remember who held the grab so it can be handed back — a
+                # nested modal must not leave its opener non-modal (#440).
+                previous_grab = self._toplevel.grab_current()
                 self._toplevel.grab_set()
-            self._master.wait_window(self._toplevel)
+            try:
+                self._master.wait_window(self._toplevel)
+            finally:
+                restore_grab(previous_grab)
 
     @property
     def toplevel(self) -> Toplevel | None:
