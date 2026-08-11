@@ -80,9 +80,17 @@ class _ChromeDialog(Dialog):
         self._build_footer()
 
         # This override duplicates `Dialog.show()` rather than extending it, so
-        # the initial-focus resolution has to be repeated here or `ask_date()`
-        # would open with nothing focused — see `Dialog._focus_when_mapped`
-        # (issue #439).
+        # the initial-focus resolution has to be repeated here — see
+        # `Dialog._focus_when_mapped` (issue #439).
+        #
+        # This reaches only RANGE mode. Single-date mode commits the moment a
+        # date is clicked and so builds no footer buttons (see `__init__`),
+        # leaving `_default_button` None; nothing sets `_focus_target` for the
+        # raw calendar content either. So `ask_date()` still opens with focus on
+        # the toplevel itself, exactly as before — measured, not assumed. Giving
+        # the single-date calendar a real focus target is a separate change,
+        # since it would put a focus ring on a day cell and make the arrow keys
+        # move the selection.
         focus_target = self._focus_target or self._default_button
         if focus_target is not None:
             self._focus_when_mapped(focus_target)
