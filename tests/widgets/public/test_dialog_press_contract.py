@@ -241,19 +241,25 @@ def test_enter_presses_the_default_button(app):
     def hit_enter(dlg):
         top = dlg._dialog.toplevel
         assert top.winfo_ismapped(), "precondition: the dialog is on screen"
-        # A key press is delivered to the FOCUS widget, which on a freshly
-        # opened dialog is the toplevel itself — measured. `Dialog` asks for
-        # the default button to be focused, and that request does not take
-        # (the button is built before the window is deiconified), so nothing
-        # inside the window holds focus and this binding is the only thing
-        # that answers Enter. Generating on the toplevel is therefore the
-        # faithful simulation HERE, and only here; the two tests below give a
-        # button focus first, the way a click does.
+        # A key press is delivered to the FOCUS widget, so the press is
+        # generated wherever the focus actually is. On this box that is the
+        # toplevel itself — measured: `Dialog` asks for the default button to
+        # be focused and the request does not take, because the button is built
+        # before the window is deiconified (#439). The subject of this test is
+        # that Enter reaches the default button, which holds either way, so the
+        # precondition admits both rather than pinning the defect: fixing #439,
+        # or a platform where the request does take, must not turn this into a
+        # precondition failure. The two tests below give a button focus
+        # explicitly, the way a click does.
         #
         # `focus_lastfor`, not `focus_get`: the latter reports nothing unless
         # the window is active, which is not dependable in the shared root.
-        assert top.focus_lastfor() is top, "precondition: nothing inside holds focus"
-        top.event_generate("<Return>", when="now")
+        focused = top.focus_lastfor()
+        button = _footer_widget(dlg._dialog, "OK")
+        assert focused in (top, button), (
+            "precondition: focus is on the window or the default button, "
+            f"not {focused}")
+        focused.event_generate("<Return>", when="now")
 
     # This dialog IS the `Dialog`, so `_drive`'s `dialog._dialog` needs a hop.
     _drive(_Wrapped(dialog), app, hit_enter)
@@ -334,6 +340,50 @@ def test_enter_on_a_focused_button_does_not_also_press_the_default(app):
     _drive(_Wrapped(dialog), app, hit_enter)
 
     assert dialog.result is None, "the default button submitted on someone else's press"
+
+
+def test_enter_on_a_disabled_button_still_reaches_the_default(app):
+    """The exception to the guard above: a disabled button answers nothing.
+
+    Standing down for every button assumes the press was already handled, which
+    is true only while the button can act on it. A disabled one runs its class
+    binding and does nothing, so with a blanket guard the key dies there and the
+    dialog stops responding to Enter entirely — the state a content button
+    reaches by greying itself out on click.
+    """
+    calls: list[str] = []
+    dialog = _keypad_dialog(app, [
+        DialogButton(text="Cancel", role="cancel", result=None),
+        DialogButton(
+            text="Apply", role="secondary", result="apply",
+            command=lambda dlg: calls.append("apply"),
+        ),
+        DialogButton(
+            text="OK", role="primary", result="ok", default=True,
+            command=lambda dlg: calls.append("ok"),
+        ),
+    ])
+
+    def hit_enter(dlg):
+        top = dlg._dialog.toplevel
+        assert top.winfo_ismapped(), "precondition: the dialog is on screen"
+        apply_widget = _footer_widget(dlg._dialog, "Apply")
+        apply_widget.state(["disabled"])
+        assert apply_widget.instate(["disabled"]), "precondition: Apply is disabled"
+        apply_widget.focus_set()
+        assert top.focus_lastfor() is apply_widget, "precondition: Apply holds focus"
+
+        apply_widget.event_generate("<Return>", when="now")
+
+        assert "apply" not in calls, (
+            f"a disabled button acted on the press: {calls}")
+        assert calls == ["ok"], (
+            f"Enter did not reach the default button: {calls}")
+
+    _drive(_Wrapped(dialog), app, hit_enter)
+
+    assert dialog.result == "ok", (
+        f"the default button did not submit, result is {dialog.result!r}")
 
 
 def test_the_keypad_enter_key_is_bound_alongside_enter(app):

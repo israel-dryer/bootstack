@@ -557,15 +557,18 @@ class Dialog:
                 Standing down is also what makes keyboard traversal mean
                 something: Enter presses the button you tabbed to.
 
+                A DISABLED button is the exception: its class binding runs but
+                `invoke` does nothing, so nothing has answered the key and the
+                default button should still get it. Standing down there would
+                leave the keyboard dead for the whole dialog — which is what a
+                content button that greys itself out on click would cause.
+
                 The remaining case is the one this binding exists for — focus
                 in an entry, as in `QueryDialog`, where nothing else would
                 answer the key.
-
-                `bindtags` is read through Tcl rather than off the widget:
-                Tkinter hands a callback the bare path string, not a widget,
-                whenever the target is absent from its widget map.
                 """
-                if "TButton" in top.tk.splitlist(top.tk.call("bindtags", event.widget)):
+                pressed = event.widget
+                if "TButton" in pressed.bindtags() and not pressed.instate(["disabled"]):
                     return
                 b.invoke()
 
@@ -678,11 +681,11 @@ class Dialog:
     def _style_for_role(self, role: ButtonRole) -> tuple[str | None, str | None]:
         """Return (accent, variant) tuple for a button role."""
         if role == "primary":
-            return ("primary", None)
+            return "primary", None
         if role == "secondary":
-            return ("default", None)
+            return "default", None
         if role == "danger":
-            return ("danger", None)
+            return "danger", None
         if role == "cancel":
-            return ("default", "outline")
-        return ("default", None)
+            return "default", "outline"
+        return "default", None
