@@ -78,6 +78,14 @@ class _ChromeDialog(Dialog):
         self._build_content()
         self._build_footer()
 
+        # This override duplicates `Dialog.show()` rather than extending it, so
+        # the initial-focus resolution has to be repeated here or `ask_date()`
+        # would open with nothing focused — see `Dialog._focus_when_mapped`
+        # (issue #439).
+        focus_target = self._focus_target or self._default_button
+        if focus_target is not None:
+            self._focus_when_mapped(focus_target)
+
         self._position_dialog(
             position=position,
             anchor_to=anchor_to,

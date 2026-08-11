@@ -161,16 +161,18 @@ class QueryDialog:
         # anyway: focus goes to `entry.entry_widget`, and the composite frame is
         # not in that widget's bindtags, so Tk would never reach it.
 
-        # Focus the entry field
-        def _focus():
-            if hasattr(entry, 'entry_widget'):
-                entry.entry_widget.focus_set()
-            else:
-                entry.focus_set()
-
-        _focus()
-        # Ensure focus after dialog buttons set their own focus
-        entry.after_idle(_focus)
+        # Claim initial focus for the entry, so the user can type straight
+        # away. `Dialog` applies this once the window is mapped, in preference
+        # to the default button.
+        #
+        # This used to be a bare `focus_set()` plus an `after_idle` repeat to
+        # "ensure focus after dialog buttons set their own focus". Both ran
+        # while the toplevel was still withdrawn, where `focus_set()` is a
+        # silent no-op, so neither ever took and the entry was never actually
+        # focused — measured in `development/probe_439_default_button_focus.py`
+        # against pre-fix code, where focus sat on the toplevel. Handing the
+        # target to `Dialog` replaces the race with an ordering (issue #439).
+        self._dialog._focus_target = getattr(entry, "entry_widget", entry)
 
         frame.pack(fill=X, expand=True)
         self._entry_widget = entry

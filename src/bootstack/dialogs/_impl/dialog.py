@@ -283,6 +283,13 @@ class Dialog:
         self._footer: _Frame | None = None
         self._border_frame: _Frame | None = None
 
+        # Who gets focus when the window comes up. `_focus_target` is the
+        # override a content builder can claim (QueryDialog's entry); the
+        # default button is the fallback. Resolved once in `show()`, after
+        # content is built, so the two cannot race — see `_focus_when_mapped`.
+        self._default_button: _Button | None = None
+        self._focus_target: Widget | None = None
+
         self.result: Any = None
 
     # --------------------------------------------------------------- API
@@ -333,6 +340,16 @@ class Dialog:
         self._create_toplevel(modal=modal)
         self._build_footer()
         self._build_content()
+
+        # Resolve initial focus once, now that both halves exist. A content
+        # widget that claimed `_focus_target` wins; otherwise the default
+        # button takes it, which is what `DialogButton.default` promises.
+        # Deferred to <Map> because the window is still withdrawn here and
+        # `focus_set()` is a silent no-op until it is not (issue #439).
+        focus_target = self._focus_target or self._default_button
+        if focus_target is not None:
+            self._focus_when_mapped(focus_target)
+
         self._position_dialog(
             position=position,
             anchor_to=_resolve_anchor_target(anchor_to),
@@ -541,7 +558,10 @@ class Dialog:
             return
 
         if default_button is not None:
-            default_button.focus_set()
+            # Recorded, not focused here: `show()` resolves focus after the
+            # content is built, so a content widget asking for initial focus
+            # is not overruled by build order (issue #439).
+            self._default_button = default_button
             top = self._toplevel
 
             def press_default(event: Any, b: Any = default_button) -> None:
@@ -582,6 +602,54 @@ class Dialog:
             self._toplevel.bind("<Escape>", lambda e, b=cancel_button: b.invoke())
         else:
             self._toplevel.bind("<Escape>", lambda e: self._toplevel.destroy())
+
+    @staticmethod
+    def _focus_when_mapped(widget: Widget) -> None:
+        """Focus `widget` once it is actually mapped.
+
+        `focus_set()` is a SILENT no-op while the widget's toplevel is
+        withdrawn: `TkSetFocusWin` walks the ancestry and returns without
+        setting anything, reporting nothing. Footer buttons are built from
+        `_build_footer`, which runs while `_create_toplevel` still has the
+        window withdrawn, so focusing the default button there never took —
+        `focus_lastfor()` kept naming the toplevel, leaving keyboard users
+        with no focus ring and a Tab order starting from nowhere, in a dialog
+        documented as focusing its default button (issue #439).
+
+        Waiting for the widget's own `<Map>` states that precondition instead
+        of guessing a delay. Measured on Windows
+        (`development/probe_439_focus_timing.py`): the button is still
+        unmapped once `deiconify()` AND `update_idletasks()` have both
+        returned, so neither is a usable barrier. Asking after the toplevel is
+        deiconified happens to work — Tk defers a request made against a
+        mapped toplevel — but that deferral is a Tk implementation detail and
+        window managers map asynchronously, so the explicit wait is what
+        travels off this box.
+
+        Binding on the widget rather than scheduling on the root is
+        deliberate: a `<Map>` binding is torn down with the widget it is on,
+        so a dialog closed before it ever maps leaves nothing pending. An
+        `after` timer would outlive the widget and fire as an orphan.
+        """
+        if widget.winfo_ismapped():
+            widget.focus_set()
+            return
+
+        def on_map(_event: Any = None) -> None:
+            # One-shot: the default button should not reclaim focus every time
+            # the dialog is unmapped and remapped (minimize/restore), which
+            # would yank focus off whatever the user had tabbed to.
+            try:
+                widget.unbind("<Map>", bind_id)
+            except tkinter.TclError:
+                pass
+            try:
+                if widget.winfo_exists():
+                    widget.focus_set()
+            except tkinter.TclError:
+                pass
+
+        bind_id = widget.bind("<Map>", on_map, add="+")
 
     def _position_dialog(
             self,

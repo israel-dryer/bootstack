@@ -12,6 +12,8 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
+- **A dialog's default button now actually receives keyboard focus.** It is documented as focused and triggered by Enter, but only the second half was true: the request was made while the window was still hidden, where it is silently ignored, so a dialog opened with nothing focused. Keyboard users got no focus ring and a Tab order that started from nowhere. The same defect meant `ask_string()` and the other `ask_*` prompts did not focus their input either, so you could not type into one without clicking it first — those now focus their field, which takes precedence over the default button. (#439)
+
 - **The error raised for an outdated layout option now names options that exist.** Passing `fill=`, `expand=`, `anchor=`, `sticky=` or `side=` to a child of a `Row`, `Column` or `Grid` correctly raises, but the message recommended `align_self=` and `justify_self=`, which were renamed before release and never shipped. Following the advice produced a second, lower-level error naming an option you had never written. The message now names `grow=` for claiming leftover space along the stacking axis and `horizontal=`/`vertical=` for aligning or stretching across it, and lists the values each one takes. (#426)
 
 ## [0.3.0] — Screen capture and dialog results
