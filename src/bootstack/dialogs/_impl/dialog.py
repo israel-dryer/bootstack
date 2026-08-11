@@ -299,6 +299,18 @@ class Dialog:
             public container set as the active parent, so the callback creates
             widgets directly — no `parent=` needed, like an `App` body. Declare a
             single parameter (`def build(content): ...`) to also receive the
+    âš  KNOWN LIMIT, UNMEASURED: this asks about the WIDGET, not about the key,
+    and the two Enter keys are not equivalent to a text widget. Tk binds
+    `Text <KP_Enter>` to the literal script `# nothing` (`tk8.6/text.tcl:308`,
+    unconditional â€” it is in the block that stops the generic `<Key>` binding
+    inserting `%A`, which for that key is `\r` rather than `\n`). So wherever
+    the keypad key arrives as its own keysym, a text widget inserts NOTHING and
+    this function still reports it consumed, leaving the key dead. That cannot
+    happen on Windows, which folds the key into `Return` (see the binding site
+    below), and it is unmeasured on X11 and Aqua. If it is ever confirmed
+    there, the fix is to pass the keysym in and scope the text-widget stand-down
+    to `Return`.
+
             content container. If `None`, the dialog has no body area.
         footer_builder: Callback to build a fully custom footer. Replaces the
             standard button row when provided.
@@ -698,9 +710,24 @@ class Dialog:
                     return
                 b.invoke()
 
-            # The keypad Enter key reports `KP_Enter`, a separate keysym from
-            # `Return` on Windows, X11 and Aqua alike, so it needs its own
-            # binding to reach the default button from an input field.
+            # The keypad Enter key needs its own binding to reach the default
+            # button from an input field -- but only where the window system
+            # reports it separately, which is NOT everywhere. Measured with a
+            # real keypress, alternating against the main Enter key as a
+            # control (`development/probe_441_kp_enter_platform.py`):
+            #
+            # * Windows FOLDS it into `Return` -- keysym `Return`, keycode 13,
+            #   char `\r`, byte-identical to the main Enter key -- so this
+            #   binding never fires there. Synthesis is no help either: win32
+            #   cannot map the keysym back to a keycode and `event_generate`
+            #   delivers keysym `??` with keycode 0, matching no binding at
+            #   all. Both routes to this path are closed on Windows, so no
+            #   test there can cover it.
+            # * X11 reports `KP_Enter` as a distinct keysym. That is the case
+            #   this binding exists for.
+            # * Aqua is unmeasured.
+            #
+            # Binding both is harmless where the two coincide.
             for key in ("<Return>", "<KP_Enter>"):
                 self._toplevel.bind(key, press_default)
 
