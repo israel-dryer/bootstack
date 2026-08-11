@@ -99,14 +99,14 @@ completes as usual:
 
 .. code-block:: python
 
-   fields = {}
+   name = bs.Signal("")
 
    def build():
        bs.Label("Project name")
-       fields["name"] = bs.TextField()
+       bs.TextField(textsignal=name)
 
    def save(dlg):
-       if not fields["name"].value:
+       if not name():
            bs.toast("A name is required.")
            return False        # refused: the dialog stays open
 
@@ -114,19 +114,25 @@ completes as usual:
        title="New project",
        content_builder=build,
        buttons=[
-           DialogButton("Save",   role="primary", result="save", command=save,
-                        default=True),
+           DialogButton("Save", role="primary", result="save", command=save, default=True),
            DialogButton("Cancel", role="cancel"),
        ],
    )
    dlg.show()
 
    if dlg.result == "save":
-       create_project(fields["name"].value)
+       create_project(name())
 
 This is per press, not per button — the same button accepts the next press once
 the input is valid. It applies to the :kbd:`Enter` key as well, which triggers
 the default button through the same command.
+
+.. note::
+
+   Bind the content to a :class:`~bootstack.Signal` when you need its value
+   afterward, the way ``name`` is used above. ``show()`` returns once the window
+   has closed, and the widgets the builder made are gone by then — the signal
+   holds the value independently of them, so it is still there to read.
 
 Dialog modes
 ~~~~~~~~~~~~
