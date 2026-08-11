@@ -136,9 +136,10 @@ attributions. Block the module with a `meta_path` finder, assert the block works
 as a control, then import. It passed for `0.3.0`.
 
 **⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
-#441. Scoped 2026-08-11 (maintainer). **BUILT, REVIEWED THREE TIMES, AND GREEN on
-`fix/dialog-keyboard-modality` — awaiting a merge decision, and the branch is NOT
-PUSHED.** See START HERE.
+#441. Scoped 2026-08-11 (maintainer). **BUILT and REVIEWED THREE TIMES on
+`fix/dialog-keyboard-modality` (pushed, head `7ef64236`) — but BLOCKED ON #446,
+two order-dependent flakes in its own new test files that a green full-suite run
+did not show.** See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
 has now been wrong about them FIVE times, in both directions.**
@@ -684,10 +685,15 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-11, after the release**
-(verified against `gh`, not counted by hand): **#431, #432, #433, #434, #436.**
-Down from ten — #426/#439/#440/#441 went to `0.3.1` and #429 was milestoned into
-the release it actually shipped in.
+**⚠ SIX UNMILESTONED OPEN ISSUES as of 2026-08-11, end of session**
+(verified against `gh`, not counted by hand): **#431, #432, #433, #434, #436,
+#446.** Down from ten — #426/#439/#440/#441 went to `0.3.1` and #429 was
+milestoned into the release it actually shipped in.
+
+**#446 is the newest and the one that MATTERS RIGHT NOW** — the two `0.3.1`
+flakes, see START HERE. It is unmilestoned only because of the standing rule not
+to assign one unasked; **it is a plausible merge blocker for `0.3.1`** and wants
+a decision rather than a default.
 
 **#431/#432/#433/#434 all came out of running the macOS and Linux legs for #427**
 and are **test-infrastructure failures, not user-facing** — which is exactly why
@@ -716,27 +722,57 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-11, later still) — `0.3.1` IS BUILT AND UNDER REVIEW
+### ★ START HERE (2026-08-11, end of session) — `0.3.1` IS BUILT AND BLOCKED ON TWO FLAKES
 
 **`0.3.0` is on PyPI** (tag `v0.3.0`, clean `release.yml`, docs chained off it);
 every post-release step is done and verified — see Current state for the evidence
 and for the one new check worth repeating (import with `idlelib` blocked).
 
-**⚠ ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 13 commits, and it is
-NOT PUSHED.** `git ls-remote --heads origin fix/dialog-keyboard-modality` returns
-nothing, so this pointer is the ONLY record that it exists — which is exactly the
-failure mode memory `reference_handoff_blind_to_unpushed_branches` describes.
-**Push it.** `main` is at `78f107f9` and equals `origin/main`.
+**ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 15 commits, PUSHED.**
+Head **`7ef64236`**, tracking `origin`. `main` is **`a8eadc2c`** and equals
+`origin/main`. Both were pushed at the end of this session — an earlier version
+of this block said the branch was local-only, which is no longer true.
 
 It carries all four `0.3.1` issues — **#426, #439, #440, #441** — plus `PLAN.md`
 and `REVIEW.md` at the root. All four were scoped as **patch-safe** (none adds
 public surface) and **none is a regression from `0.3.0`**; all four exist in
 `0.2.3` too, which is what made shipping first and patching after the right call.
 
-**⏭ WHAT IS ACTUALLY LEFT: decide whether to merge.** The work is done and the
-suite is green — **1208 passed / 21 skipped, exit 0, all 20 legs**, plus a clean
-`-W` docs build. That is `main`'s 1159 plus the branch's 49 new tests.
-`git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
+#### ⛔ DO NOT MERGE YET — read this first
+
+**The branch has TWO low-rate flakes, filed as
+[#446](https://github.com/israel-dryer/bootstack/issues/446), and they were found
+AFTER a green full-suite run.** Both live in round 1's new dialog test files, both
+are order-dependent on the shared root, and **each file passes alone**:
+
+| test | file | rate observed |
+|---|---|---|
+| `test_the_restored_grab_is_the_same_KIND_it_was` | `test_dialog_nested_modality.py` | **1 in 12** at `7ef64236` |
+| `test_query_dialog_focuses_its_entry_not_the_default_button` | `test_dialog_initial_focus.py` | **1 in 8** at `346d7f39` |
+
+Flake A dies with `TclError: bad window path name` on `deiconify()` inside
+`dialog.show()` — the dialog's own toplevel destroyed out from under it, which is
+the signature this file already attributes to **a leaked `after` timer firing
+during a later test** (#397 did exactly that). Flake B puts focus on the
+**toplevel** instead of the entry, which is the signature of the **#437 flake** —
+`focus_set()` silently no-ops against an unmapped widget and the miss surfaces one
+assertion later. Both mechanisms are already written up in this file; neither is
+chased down.
+
+⚠ **THE LESSON, and it is the same one `0.3.0` round 4 paid for: `run_gui.py`
+EXIT 0 IS NOT EVIDENCE OF STABILITY.** This branch reports **1208 passed / 21
+skipped, exit 0, all 20 legs**, plus a clean `-W` docs build — and still has two
+flakes. At 1-in-8 a full green run is the *expected* outcome of a broken branch.
+**Do not re-run to check; re-running is how both of these hid.** The #437 control
+is the pattern: a probe that **CREATES** the condition and reports a rate
+(old barrier 5/10, new barrier 0/10), not one that looks for the symptom.
+
+**Reproduction is in #446** — the five dialog files in one pytest process, eight
+or more times. `git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
+
+**⏭ SO THE NEXT SESSION'S JOB, in order:** (1) chase #446's two mechanisms — both
+have a named prior with a worked fix, so neither should need re-deriving;
+(2) then decide the merge. #444 and #445 are deliberately NOT part of it.
 
 **THREE REVIEW ROUNDS RAN. `REVIEW.md` on the branch is the full record — read it
 rather than re-deriving.** The yield curve is the part worth carrying:
@@ -947,6 +983,17 @@ source unless you set `PYTHONPATH`** — the editable install points at
 `D:\Development\bootstack\src`, so a worktree's tests import *main's* code. The #421
 review hit this; it happened to hand it a free pre-fix control, but it silently
 invalidates a post-fix run.
+
+⚠ **`PYTHONPATH` ALONE IS HALF THE FIX, AND THE HALF-FIX IS LOUD — WHICH IS THE
+ONLY REASON IT GETS CAUGHT.** Setting `PYTHONPATH` to the worktree's `src` while
+passing **test paths relative to the primary checkout** runs the NEW tests against
+the OLD source. Measured 2026-08-11: 9–10 failures on every one of eight runs,
+where the honest answer was 1 in 8. **Pass the worktree's ABSOLUTE test paths too**
+(pytest then picks up its `conftest.py`), and prove which tree you loaded before
+trusting a single number:
+`PYTHONPATH=$W/src py -3.12 -c "import bootstack,os;print(os.path.dirname(bootstack.__file__))"`.
+The failure mode is friendly here only by luck — a version skew that happened to
+break loudly. Skew that breaks quietly reads as a real result.
 
 **⚠ AND CHECK `git rev-parse` ON BOTH BRANCHES BEFORE READING ANY FILE.** These two
 branches were briefly at the *identical* commit, so a branch name did not tell you
@@ -1604,6 +1651,16 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
 - **Bisect order-dependent failures; do not theorize.** A scripted prefix-bisect
   found the culprit file in 6 runs; a geometry probe turned "state pollution" into
   "reqheight 1242 > window 828, so the geometry manager unmapped it".
+- **⚠ A GREEN SUITE IS NOT EVIDENCE OF STABILITY, and this project keeps learning
+  it the expensive way.** `0.3.0`'s round 4 verified at the wrong commit and put a
+  flake into `main`'s queue; `0.3.1` reported **exit 0, all 20 legs, 1208 passed**
+  and had **two** flakes (#446) at 1-in-8 and 1-in-12. **At those rates a single
+  green run is the EXPECTED outcome of a broken branch**, so it carries almost no
+  information. Two habits follow. **Never re-run to disprove a flake** — that is
+  how both of these hid; build the #437-style control that *creates* the condition
+  and reports a rate. And **run the narrow combination as well as the full leg**:
+  both flakes appear in five dialog files sharing one process and neither file
+  fails alone, so the shared leg's ordering masks what a subset exposes.
 - **Measure the surface before scoping a sweep.** An AST pass over public
   `__init__` signatures + a construct-with-a-bogus-value probe turned "audit the
   siblings" from guesswork into a table (215 kwargs, 17/24 silently accepting) —
