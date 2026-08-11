@@ -1,17 +1,33 @@
-"""Cross-platform screen capture and OS printing helpers.
+"""Cross-platform screen capture helpers.
 
 A standalone, dependency-light utility for capturing the screen, a window,
-or a single widget, and for handing a file to the operating system's
-printer. Written for discussion #425; not part of the public API.
+or a single widget. Written for discussion #425; not part of the public API.
 
 Capture uses Pillow's `ImageGrab`, with a subprocess fallback for Linux
 desktops where `ImageGrab` is unavailable (Wayland, or a Pillow built
-without XCB). Printing shells out to the platform's native print path.
+without XCB).
 
 Multi-monitor is handled: coordinates are virtual-desktop coordinates, so
 a monitor placed left of or above the primary one has negative origins.
 Monitors are enumerated with `screeninfo`, the same library the framework's
 own window-positioning code uses.
+
+⚠ This prototype also carried OS printing helpers — `list_printers()`,
+`print_file()` and `print_image()`. They have been REMOVED, and re-adding
+them needs issue #427 read first, because printing is out of scope there
+deliberately and with measurements. The Windows shell `print` verb cannot
+honor a printer name or a copy count, so `printer=` and `copies=` were
+documented parameters that a whole platform silently ignored — the
+degrading-kwarg class #381 fixed and #383 is still sweeping up. And `.pdf`,
+the format the reporter actually asked about, resolves to a handler that
+registers no print verb at all, so it failed outright. Exporting a file and
+letting the user print it from an application that prints well is the
+honest version of the feature, and it is what shipped.
+
+⚠ What SHIPPED is `bootstack._core.capture`, not this file — bounds-checked
+crops, negative-origin displays, an always-on-top setting restored as found,
+and an input guard while the desktop settles. This prototype's own topmost
+handling was a defect. It is kept only because #427 references it by path.
 
 Requires: pillow, screeninfo
 
@@ -229,75 +245,3 @@ def _grab_via_subprocess(bbox=None):
         "No screen capture backend available. Install a Pillow build with "
         "XCB support, or one of: grim, gnome-screenshot, spectacle, import."
     )
-
-
-# --------------------------------------------------------------------------
-# Printing
-# --------------------------------------------------------------------------
-
-def list_printers():
-    """Return the names of installed printers."""
-    if WINDOWS:
-        result = subprocess.run(
-            ["powershell", "-NoProfile", "-Command",
-             "Get-Printer | Select-Object -ExpandProperty Name"],
-            capture_output=True, text=True, timeout=30,
-        )
-    else:
-        if not shutil.which("lpstat"):
-            return []
-        result = subprocess.run(
-            ["lpstat", "-e"], capture_output=True, text=True, timeout=30
-        )
-    if result.returncode != 0:
-        return []
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-
-
-def print_file(path, *, printer=None, copies=1):
-    """Send a file to a printer using the operating system's print path.
-
-    On Windows this invokes the shell's registered `print` verb for the
-    file type, which for images opens the Windows photo-printing wizard.
-    On macOS and Linux it submits the file to CUPS via `lp`.
-
-    Args:
-        path: File to print.
-        printer: Printer name. Uses the system default when omitted.
-            Ignored on Windows, which routes through the shell verb.
-        copies: Number of copies. Ignored on Windows.
-    """
-    path = Path(path).resolve()
-    if not path.is_file():
-        raise FileNotFoundError(path)
-
-    if WINDOWS:
-        # `print` is a shell verb registered per file type. Images resolve to
-        # the Photo Printing Wizard; other types depend on the installed
-        # handler, and some (PDF, plain text) may have none at all. The call
-        # is asynchronous and typically shows a dialog.
-        try:
-            os.startfile(str(path), "print")
-        except OSError as exc:
-            raise RuntimeError(
-                f"No print handler is registered for '{path.suffix}' files."
-            ) from exc
-        return
-
-    if not shutil.which("lp"):
-        raise RuntimeError("Printing requires CUPS (`lp` was not found).")
-
-    argv = ["lp"]
-    if printer:
-        argv += ["-d", printer]
-    if copies > 1:
-        argv += ["-n", str(copies)]
-    argv.append(str(path))
-    subprocess.run(argv, check=True, capture_output=True, timeout=60)
-
-
-def print_image(image, *, printer=None, copies=1):
-    """Print a Pillow image by writing it to a temporary file first."""
-    tmp = Path(tempfile.gettempdir()) / f"_print_{os.getpid()}.png"
-    image.save(tmp)
-    print_file(tmp, printer=printer, copies=copies)

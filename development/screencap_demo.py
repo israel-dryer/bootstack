@@ -17,7 +17,7 @@ from pathlib import Path
 import bootstack as bs
 
 from screencap import (capture_monitor, capture_screen, capture_widget,
-                       list_monitors, list_printers, monitor_for_widget)
+                       list_monitors, monitor_for_widget)
 
 OUT = Path(__file__).parent / "screencap_out"
 
@@ -106,6 +106,5 @@ with bs.App(title="Screen capture demo", padding=16, gap=12, size=(760, 620)) as
 for _m in list_monitors():
     print(f"monitor {_m.name}: x={_m.x} y={_m.y} {_m.width}x{_m.height} "
           f"primary={_m.is_primary}")
-print("printers:", list_printers())
 print("output folder:", OUT)
 app.run()
