@@ -252,8 +252,12 @@ A handful of behaviors trip people up the first time:
 - **A bordered container needs `padding`.** Without it, `Card` / `GroupBox` draw
   their border directly against the content.
 - **Legacy placement kwargs raise.** Passing `fill=`/`expand=`/`anchor=`/
-  `sticky=` to a Row/Column/Grid child raises a clear error instead of silently
-  collapsing it — use `grow` / `horizontal` / `vertical` instead.
+  `sticky=` to a child raises a clear error instead of silently collapsing it.
+  The replacement depends on how the container places its children: in a Row or
+  Column, use `grow` / `horizontal` / `vertical`; in a grid cell — a Grid child,
+  a page or pane, or any container built with ``layout="grid"`` — use
+  `horizontal` / `vertical` and weight the row or column on the container, since
+  `grow` does not apply there.
 
 Placement options reference
 ---------------------------
