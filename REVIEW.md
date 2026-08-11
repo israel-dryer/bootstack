@@ -687,3 +687,206 @@ And two decisions:
 
 Nothing is committed. The suite is green and the controls have been run, so
 this is ready for the maintainer to test and then approve commit-by-commit.
+
+---
+
+# Round 4 — #437 / #438
+
+Reviewed `git diff eab58129..HEAD` per `development/review-brief-437-438-round4.md`
+— the round-3 fix step (`79431bb2`) and the three commits taken after it.
+
+⚠ **This section is RECONSTRUCTED from the fix commits** (`f9f1692f`,
+`630338d1`, `cfcc8f72`, `e0092336`), which state each finding, the measurement
+behind it and its resolution. The round-4 reviewer's own write-up was never
+written into this file, and the branch was committed and left without it. Every
+claim below is traceable to a commit message or a committed probe; nothing is
+recalled. **The lesson is the same one this repo keeps paying for: an artifact
+that is not in the repo did not happen.** Rounds 1–3 each landed a
+`docs(review): record …` commit; round 4 did not, and a reader arriving at the
+branch would have found four fix commits answering findings that existed
+nowhere.
+
+Four findings, all fixed. All four are narrower than round 3's, and none is in
+the #428 half.
+
+## Findings and resolutions
+
+### R4-1 — blocking — `src/bootstack/dialogs/_impl/dialog.py`
+
+**Round 3's stand-down guard killed Enter outright for a disabled button.** The
+guard assumed that a key delivered to a `TButton` was answered by that button's
+class binding, so the toplevel handler stood down. For a **disabled** button the
+class binding runs and `invoke` does nothing — so nothing answered the key, and
+the guard swallowed it. Measured before the fix: `Apply` disabled and holding
+focus, one Return, `calls == []` and the dialog still open, where the same press
+previously fired `OK`. Reachable from any content button that greys itself out
+on click ("Test connection", an Apply waiting on further edits) — the keyboard
+goes dead for the whole dialog.
+
+**Resolved.** The guard now also asks whether the button can act. Control:
+against the guard without that condition the new test fails alone with
+`calls == []` — nothing ran at all — after both preconditions (disabled, holds
+focus) have passed, so the failure is behavioral rather than a broken harness.
+The `instate` polarity that makes this easy to get backwards is measured in
+`development/probe_437_instate_polarity.py`: `instate(['!disabled'])` is a query
+returning `True` when the widget is **enabled**, so `not instate(['!disabled'])`
+selects the disabled one.
+
+### R4-2 — should-fix — `src/bootstack/dialogs/_impl/dialog.py`
+
+**The guard read bindtags through Tcl for a case that cannot arise here.** The
+`tk.call("bindtags", event.widget)` spelling was there because Tkinter hands a
+callback a bare path *string* when the target is absent from its widget map —
+which it genuinely does, and `_runtime/app.py` already carries a fallback for
+it. It cannot happen on this path: walking a dialog holding a `TextField`,
+`Select`, `DateField` and `TextArea` straight from Tcl finds **32 descendants
+and 0 absent**, because everything bootstack builds is created from Python.
+
+**Resolved.** Reads bindtags off the widget. `development/probe_437_bindtags_via_widget.py`
+carries the measurement *and its control* — the control creates a Tcl-made
+widget and confirms the same check flags one when there is one, which is what
+makes the zero mean something rather than being a probe that cannot find
+anything.
+
+### R4-3 — should-fix — `tests/widgets/public/test_dialog_press_contract.py`
+
+**`test_enter_presses_the_default_button` asserted a defect as its
+precondition.** It required that nothing inside the window hold focus, which is
+true only because `default_button.focus_set()` does not take (**#439**). Fixing
+#439 — or running on a platform where the request does take — would have turned
+it into a precondition failure on a test whose subject, Enter reaching the
+default button, holds either way.
+
+**Resolved.** The precondition admits both, and the press is generated wherever
+the focus actually is.
+
+### R4-4 — should-fix — `docs/widgets/dialog.rst`
+
+**The refusal example taught the very pattern #428 exists to prevent.** It read
+a content widget after `show()` returned — `create_project(fields["name"].value)`
+— which is after every widget in the dialog has been destroyed. It worked only
+because `TextField` is backed by a Tk string variable, so the read happens to
+survive; the same idiom with a `bs.Select` raises `TclError: invalid command
+name ...!textentrypart`, measured.
+
+**Resolved.** The example binds the field to a `Signal` and reads that, so
+nothing needs stashing and nothing dead is read. Verified by running the example
+**verbatim** through a real modal `show()` (`development/probe_437_doc_example_runs.py`):
+the empty-field press is refused (dialog open, `result is None`), the second is
+accepted, and after `show()` returns `result == 'save'` and the signal reads what
+was typed. `development/probe_437_signal_outlives_dialog.py` carries the control
+that explains why the bad pattern looked sound — the widget read survives for a
+`TextField` and raises for a `Select`.
+
+### R4-5 — should-fix — `CHANGELOG.md`
+
+**The keypad Enter bullet claimed a state that does not occur.** It said dialogs
+leaving the keyboard on their default button were never affected, because
+buttons answer both keys already. `default_button.focus_set()` is a no-op
+(**#439**), so a freshly opened dialog leaves focus on the window itself and the
+toplevel binding is what answers Enter — precisely the dialogs where the keypad
+key did nothing. The sentence understated the fix and contradicted the branch's
+own measurement, which its tests assert.
+
+**Resolved by removal, not correction.** An accurate version would have had to
+describe #439 as though it were intended behavior. What replaces it is the part
+that is both true and useful: once you have clicked or tabbed to a button, that
+button answers both keys itself.
+
+## Filed, not fixed — #441
+
+**Enter inside a dialog's multi-line field submits the dialog.** The newline is
+inserted and then the dialog closes on top of it. Repro committed at
+`development/probe_437_enter_in_a_textarea.py`, whose `TextField` arm is the
+control — there, submitting is the binding working as intended.
+
+Pre-existing (`main`'s `Dialog` binds `<Return>` on the toplevel too) and
+**deliberately left for its own branch** (maintainer, 2026-08-11): this branch
+has already absorbed #437 and #438 on top of #428, and taking a fifth issue
+would grow the review surface again.
+
+## Also open, filed during rounds 3–4, none fixed here
+
+**#439** `default_button.focus_set()` never takes · **#440** a dialog opened
+from inside a dialog leaves the outer one non-modal · **#441** above.
+
+---
+
+## Round 4 verification — one FLAKY test, found after the round closed
+
+⚠ **The suite was not green at `e0092336`, and round 4's own verification could
+not have caught it: it ran at `70a039ce`, one commit BEFORE the fix that
+rewrote these tests.** A full `py -3.12 tests/run_gui.py` on 2026-08-11 failed
+`test_enter_on_a_focused_button_does_not_also_press_the_default` — **1 failed,
+961 passed** — at its own precondition:
+
+```
+assert top.focus_lastfor() is apply_widget, "precondition: Apply holds focus"
+E   assert <Toplevel .!toplevel7> is <Button .!toplevel7.!frame.!button2>
+```
+
+`focus_lastfor()` naming the toplevel is what Tk reports when no focus has ever
+been set inside that window — so the `focus_set()` one line above did nothing at
+all.
+
+**Not deterministic, which is what makes it worth the whole write-up.** The file
+passes alone (12/12) and the leg passed on the very next run. Measured rate:
+**1 in 5 full legs** (2 in 6 counting the `run_gui.py` run that surfaced it), and
+**0 in 60** dialogs driven back to back in a quiet process.
+
+### Root cause — Tk's `focus_set()` is a silent no-op on an unmapped widget
+
+`TkSetFocusWin` walks from the widget up to its toplevel and returns without
+setting anything if **any** window on that path is unmapped. No error, no return
+value. The miss then surfaces one line later as a focus assertion that looks
+inexplicable.
+
+Widening the assertion message and re-running the leg four times caught it in
+the act, and the diagnosis is in the message rather than in an argument:
+
+```
+precondition: Apply holds focus
+  [button mapped=0 viewable=0 parent mapped=1 top mapped=1 viewable=1 grab=.!toplevel7]
+```
+
+**The button alone is unmapped** — its parent footer, the toplevel and the modal
+grab are all up. `_drive` polls for the grab as its barrier, and the grab is set
+before the geometry manager has finished mapping the footer's *children* at idle.
+Under a loaded shared root that gap is occasionally still open when the action
+fires.
+
+### Resolved by moving the barrier, not by retrying in each test
+
+`_drive` now waits for the modal grab **and** every footer button to be mapped,
+which is what "the dialog is really up" was always meant to mean. The three
+tests that give a button focus go through a `_take_focus` helper that asserts
+`winfo_ismapped()` **before** `focus_set()`, so a recurrence names its own cause
+instead of surfacing as a focus request that inexplicably did nothing.
+
+### Control — `development/probe_437_focus_flake.py`
+
+A 1-in-5 flake is far too weak to verify a fix against, so the probe **creates**
+the condition rather than waiting for it: a pile of freshly packed widgets
+leaves the geometry manager with idle work outstanding when the dialog goes up.
+Each iteration reads the same two questions at the old barrier and at the new
+one.
+
+| | button unmapped | `focus_set` missed |
+|---|---|---|
+| old barrier — grab only | **5 / 10** | **5 / 10** |
+| new barrier — grab AND footer mapped | **0 / 10** | **0 / 10** |
+
+The two columns track one-for-one, which is what ties the failure to the
+mechanism rather than to load in general. Arm 1 is the mechanism on its own: a
+button under an unmapped parent cannot take focus, and **the same button takes
+it once the parent is mapped** — so the arm cannot be read as "focus never works
+here". Arm 2 is the quiet-process control that returns 0/60 and explains why
+this was never seen while the tests were being written.
+
+⚠ **The standing lesson, since this is the fourth instance the repo has
+recorded:** a GUI precondition that reads ambient state must be paired with a
+check that the setup took effect. Here the test asserted the *symptom* (focus is
+on the button) with nothing asserting the *precondition it depends on* (the
+button is mapped), so a silent no-op in the toolkit arrived as a mystery one
+line later. Same family as "pair any geometry assertion with a precondition" and
+"assert the INVARIANT, not the symptom".
