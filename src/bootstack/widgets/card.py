@@ -144,7 +144,7 @@ class Card(PublicContainer):
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
         # Only reached for grid layout (column/row use the flex path above).
-        _reject_legacy_child_kwargs(layout_kw, "Card")
+        _reject_legacy_child_kwargs(layout_kw, "Card", "grid cell")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
         h = layout_kw.get("horizontal") or self._horizontal_items
         v = layout_kw.get("vertical") or self._vertical_items

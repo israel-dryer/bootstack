@@ -492,7 +492,7 @@ class PublicWidgetBase:
         if placement.method == "flex":
             index = kwargs.pop("index", placement.index)
             if kwargs:
-                _reject_legacy_child_kwargs(kwargs, type(self).__name__)
+                _reject_legacy_child_kwargs(kwargs, type(self).__name__, "flex child")
                 _expand_margin(kwargs)
                 options.update(_flex_child_opts(self, kwargs))
             master.add_child(self._internal, options, index=index)

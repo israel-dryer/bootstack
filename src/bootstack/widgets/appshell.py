@@ -15,7 +15,7 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    GRID_KEYS, GRID_CHILD_ADVICE, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
+    GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
     resolve_layout_items, _expand_margin,
 )
 from bootstack.widgets._core.context import push_container, pop_container
@@ -106,7 +106,7 @@ class Page:
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
         if self._layout == "grid":
-            _reject_legacy_child_kwargs(layout_kw, "AppShell page", advice=GRID_CHILD_ADVICE)
+            _reject_legacy_child_kwargs(layout_kw, "AppShell page", "grid cell")
             _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
             h = layout_kw.get("horizontal") or self._horizontal_items

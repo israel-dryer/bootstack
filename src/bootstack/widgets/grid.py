@@ -4,7 +4,7 @@ from typing import Any
 
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    PublicContainer, GRID_KEYS, GRID_CHILD_ADVICE, grid_sticky, _reject_legacy_child_kwargs,
+    PublicContainer, GRID_KEYS, grid_sticky, _reject_legacy_child_kwargs,
 )
 from bootstack.widgets.types import (
     AccentToken, SurfaceToken, HAlign, VAlign, Padding, AutoFlow,
@@ -111,7 +111,7 @@ class Grid(PublicContainer):
         return "grid"
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        _reject_legacy_child_kwargs(layout_kw, "Grid", advice=GRID_CHILD_ADVICE)
+        _reject_legacy_child_kwargs(layout_kw, "Grid", "grid cell")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
         # Derive the cell sticky from per-child horizontal/vertical, each falling
         # back to the container default for its axis.

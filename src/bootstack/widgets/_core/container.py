@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any
+from typing import Any, Literal
 
 PACK_KEYS = frozenset({
     "side", "fill", "expand", "anchor",
@@ -247,27 +247,41 @@ GRID_CHILD_ADVICE = (
     "Use horizontal=/vertical= to align or stretch the child inside its cell — "
     + _ALIGN_ADVICE
     + ". Leftover space is claimed by weighting the row or column on the "
-    "container (the Grid's columns/rows argument), not by a kwarg on the child"
+    "container (its columns/rows arguments), not by a kwarg on the child"
 )
 
+# The kind names the child's PLACEMENT, not its parent class: the dual-mode
+# containers (Card/GroupBox/Expander/AccordionSection) are one or the other
+# depending on their `layout=`, and the page/pane containers are grid cells
+# without a `Grid` anywhere in sight.
+ChildKind = Literal["flex child", "grid cell"]
 
-def _reject_legacy_child_kwargs(
-    layout_kw: dict, where: str, *, advice: str = FLEX_CHILD_ADVICE
-) -> None:
-    """Raise on legacy pack/grid placement kwargs passed to a flex child.
+_CHILD_ADVICE: dict[str, str] = {
+    "flex child": FLEX_CHILD_ADVICE,
+    "grid cell": GRID_CHILD_ADVICE,
+}
+
+
+def _reject_legacy_child_kwargs(layout_kw: dict, where: str, kind: ChildKind) -> None:
+    """Raise on legacy pack/grid placement kwargs passed to a laid-out child.
 
     Args:
         layout_kw: the split-out layout kwargs to inspect.
         where: the call site named in the message.
-        advice: the remedy to recommend. Defaults to the flex-container one;
-            grid-cell callers must pass `GRID_CHILD_ADVICE`, because `grow=` is
-            silently dropped there.
+        kind: how this container places the child — `'flex child'` or
+            `'grid cell'`. It selects the remedy, and the two differ: a grid
+            cell drops `grow=`, so recommending it there is the silent no-op
+            issue #426 exists to remove. Required rather than defaulted,
+            because a default hands the wrong advice to any caller who forgets
+            — which is how four call sites kept the defect through its own fix.
     """
     bad = _LEGACY_CHILD_KEYS & layout_kw.keys()
     if bad:
         from bootstack.errors import BootstackError
 
-        kind = "grid cell" if advice is GRID_CHILD_ADVICE else "flex child"
+        # KeyError on an unknown kind is deliberate: a mistyped kind must fail
+        # loudly here rather than quietly pick a remedy for the other engine.
+        advice = _CHILD_ADVICE[kind]
         raise BootstackError(
             f"{where}: {', '.join(sorted(bad))} is not a valid layout option for "
             f"a {kind}. {advice} — see the layout guide."
@@ -419,7 +433,7 @@ def place_flex_child(
         child._placement = Placement("place", frame, options)
         return
 
-    _reject_legacy_child_kwargs(layout_kw, where)
+    _reject_legacy_child_kwargs(layout_kw, where, "flex child")
     _expand_margin(layout_kw)
     index = layout_kw.get("index")
     opts = _flex_child_opts(child, layout_kw)

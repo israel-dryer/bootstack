@@ -27,22 +27,20 @@ import pytest
 
 from bootstack.errors import BootstackError
 from bootstack.widgets._core.container import (
-    FLEX_CHILD_KEYS, GRID_CHILD_KEYS, GRID_CHILD_ADVICE, _LEGACY_CHILD_KEYS,
+    FLEX_CHILD_KEYS, GRID_CHILD_KEYS, _LEGACY_CHILD_KEYS,
     _reject_legacy_child_kwargs,
 )
 
 
 def _message_for(**layout_kw: object) -> str:
     with pytest.raises(BootstackError) as excinfo:
-        _reject_legacy_child_kwargs(dict(layout_kw), where="Picture")
+        _reject_legacy_child_kwargs(dict(layout_kw), "Picture", "flex child")
     return str(excinfo.value)
 
 
 def _grid_message_for(**layout_kw: object) -> str:
     with pytest.raises(BootstackError) as excinfo:
-        _reject_legacy_child_kwargs(
-            dict(layout_kw), where="Grid", advice=GRID_CHILD_ADVICE
-        )
+        _reject_legacy_child_kwargs(dict(layout_kw), "Grid", "grid cell")
     return str(excinfo.value)
 
 
@@ -124,7 +122,84 @@ def test_every_legacy_key_still_raises(legacy):
 
 def test_a_valid_flex_child_key_does_not_raise():
     """Control: the guard rejects only the legacy set, not everything."""
-    _reject_legacy_child_kwargs({"grow": 1, "horizontal": "stretch"}, where="Picture")
+    _reject_legacy_child_kwargs({"grow": 1, "horizontal": "stretch"}, "Picture", "flex child")
+
+
+# --- which containers speak which advice -------------------------------------
+#
+# The tests above drive the helper directly, so they say nothing about whether
+# a real container asks it for the right remedy. Round 1 fixed the five obvious
+# grid callers and missed four more — the dual-mode containers, which are flex
+# in their default column/row mode and grid cells under `layout="grid"`. Those
+# four kept telling users to write `grow=` and then dropping it.
+
+GRID_MODE_CONTAINERS = ["Card", "GroupBox", "AccordionSection", "Grid"]
+
+
+def _grid_mode_container(name: str, app):
+    import bootstack as bs
+
+    if name == "Card":
+        return bs.Card(parent=app, layout="grid", columns=2)
+    if name == "GroupBox":
+        return bs.GroupBox("box", parent=app, layout="grid", columns=2)
+    if name == "AccordionSection":
+        return bs.Accordion(parent=app).add("sec", layout="grid", columns=2)
+    return bs.Grid(parent=app, columns=2)
+
+
+@pytest.mark.parametrize("name", GRID_MODE_CONTAINERS)
+def test_a_container_placing_with_grid_speaks_the_grid_advice(name, app):
+    """Every container that grids its children must say so, not just `Grid`."""
+    import bootstack as bs
+
+    container = _grid_mode_container(name, app)
+    with pytest.raises(BootstackError) as excinfo:
+        bs.Label("x", parent=container, fill="x")
+    message = str(excinfo.value)
+
+    assert "grid cell" in message, (
+        f"{name} places its children with grid but calls them a flex child"
+    )
+    assert "grow=" not in message, (
+        f"{name} tells the user to write grow=, which it then drops - this is "
+        f"the #426 no-op one step further along"
+    )
+    unreal = _recommended(message) - GRID_CHILD_KEYS
+    assert not unreal, f"{name} recommends {sorted(unreal)}, which a grid cell drops"
+
+
+@pytest.mark.parametrize("name", ["Card", "GroupBox"])
+def test_the_same_container_in_column_mode_speaks_the_flex_advice(name, app):
+    """The control for the parametrization above.
+
+    Card and GroupBox are dual-mode: the advice must follow the `layout=`, not
+    the class. Without this arm, hard-wiring both to the grid advice would pass
+    the test above while breaking the default mode.
+    """
+    import bootstack as bs
+
+    container = bs.Card(parent=app) if name == "Card" else bs.GroupBox("box", parent=app)
+    with pytest.raises(BootstackError) as excinfo:
+        bs.Label("x", parent=container, fill="x")
+    message = str(excinfo.value)
+
+    assert "flex child" in message
+    assert "grow=" in message, f"{name} in column mode honors grow=; it should say so"
+
+
+def test_the_child_kind_is_required_so_a_caller_cannot_inherit_the_wrong_advice():
+    """The structural guard behind all of the above.
+
+    Four call sites kept the defect through its own fix by simply not passing
+    the remedy, and a defaulted parameter is what let them. Assert the shape,
+    not the symptom: a caller who forgets must fail loudly.
+    """
+    with pytest.raises(TypeError):
+        _reject_legacy_child_kwargs({"fill": "x"}, "Picture")
+
+    with pytest.raises(KeyError):
+        _reject_legacy_child_kwargs({"fill": "x"}, "Picture", "flex-child")
 
 
 def test_a_grid_cell_really_drops_grow_but_honors_the_alignment_keys(app):
