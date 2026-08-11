@@ -41,6 +41,19 @@ Go from nothing to something fast. The user should never need to `import tkinter
 > `REVIEW.md` are live working files for the branch in hand; this file keeps
 > standing rules and what is open; `docs/_dev/handoff-archive.md` keeps shipped
 > history.
+>
+> ⚠ **THE ROOT IS DELIBERATELY EMPTY OF BOTH RIGHT NOW (2026-08-11).** `0.3.0`
+> shipped, so its `PLAN.md` and `REVIEW.md` were archived to
+> `development/plan-428-437-438-dialogs.md` and
+> `development/review-428-437-438-dialogs.md`, matching where the #417 and #421
+> review records already live. **Create `PLAN.md` fresh for the next branch —
+> finding a stale one describing shipped work is worse than finding none.**
+>
+> ⚠ **AND CLOSE EACH ROUND WITH ITS RECORD.** Rounds 1–3 of the `0.3.0` dialog
+> work each landed a `docs(review):` commit; **round 4 did not**, so the branch sat
+> with four fix commits answering findings that existed nowhere in the repo, and
+> the record had to be reconstructed from commit messages afterwards. Writing the
+> record is the last step of a fix step, not an optional one.
 
 ---
 
@@ -84,25 +97,45 @@ on the next statement, then grep the file.
 
 ## Current state
 
-**Released:** **`0.2.3` on PyPI, tag `v0.2.3` (2026-08-08)** — titled *Import
-without IDLE*, **shipped by `release.yml`, which ran clean end to end**. Actions was
-healthy again, so none of the manual `twine` fallback was needed and `docs.yml`
-chained off the successful Release run automatically. Previous: `0.2.2`
-(2026-08-06, published **manually** during an Actions outage — that recipe is kept
-under Release flow because it will be needed again).
+**Released:** **`0.3.0` on PyPI, tag `v0.3.0` (2026-08-11)** — titled *Screen
+capture and dialog results*, **shipped by `release.yml`, which ran clean end to
+end**, with `docs.yml` chaining off it automatically. Two features and six fixes:
+`widget.capture()` (#427, #429) and the dialog-result work (#428, #437, #438).
+Previous: `0.2.3` (2026-08-08, also clean) and `0.2.2` (2026-08-06, published
+**manually** during an Actions outage — that recipe is kept under Release flow
+because it will be needed again).
+
+Every post-release step is done and was **verified rather than assumed**: PyPI
+proved with a real `pip download` (not the CDN-cached summary endpoint), the
+shipped wheel opened and checked, the GitHub Release live with both assets, docs
+returning 200, and #428's reporter told it is live via `gh issue comment`.
+
+⚠ **One check worth repeating on every release from now on: `import bootstack`
+with `idlelib` BLOCKED.** That is #430's defect, and grep is not enough to
+re-prove it — seven `idlelib` mentions survive in the wheel and all are docstring
+attributions. Block the module with a `meta_path` finder, assert the block works
+as a control, then import. It passed for `0.3.0`.
+
+**⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
+#441. Scoped 2026-08-11 (maintainer). See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
 has now been wrong about them FIVE times, in both directions.**
 
-**AUTHORITATIVE — measured 2026-08-11 on `main` at `06acd727`** (the #442 merge,
-i.e. #428/#437/#438 included), full `py -3.12 tests/run_gui.py`, **exit 0, all 19
-legs passed**:
+**AUTHORITATIVE — measured 2026-08-11 on `main` at `ab11f37c`** (the #443 merge —
+everything in `0.3.0`), full `py -3.12 tests/run_gui.py`, **exit 0, all 20 legs
+passed**:
 
 | leg | result |
 |---|---|
-| widgets+CLI, shared root | **962 passed / 14 skipped** (52 deselected; **1027 collected, 975 selected**) |
+| widgets+CLI, shared root | **962 passed / 14 skipped** (75 deselected — capture raised it from 52) |
 | data | **125 passed / 4 skipped** |
-| every leg summed (19 legs) | **1136 passed / 21 skipped** |
+| `test_capture.py` (isolated) | **23 passed** |
+| every leg summed (20 legs) | **1159 passed / 21 skipped** |
+
+The pre-capture figure at `06acd727` was **1136 / 21 over 19 legs**, same shared
+leg (962 / 14, 52 deselected) — capture adds 23 isolated tests and nothing to the
+shared one.
 
 ⚠ **The `1006 / 13` recorded here for `e0092336` was IMPOSSIBLE, and so were
 `1001 / 13` and `1005 / 13` in `REVIEW.md`'s rounds 3 and 4.** The shared leg
@@ -414,11 +447,13 @@ while the form is alive, in `_accept_press`. The same defect hit every editor
 whose display differs from its value, not only `select`: a date field handed back
 its formatted text.
 
-⚠ **`PLAN.md` and `REVIEW.md` at the repo root are this branch's live working
-files** (`REVIEW-PROTOCOL.md`), and the review record lives in
+⚠ **The plan and the full four-round review record are ARCHIVED** at
+`development/plan-428-437-438-dialogs.md` and
+`development/review-428-437-438-dialogs.md` (they were `PLAN.md` / `REVIEW.md` at
+the root while the branch was live). The per-round briefs are
 `development/review-brief-437-438-dialog-buttons.md`, `…-round3.md` and
-`…-round4.md`. **Four review rounds have run.** Read those before touching the
-branch rather than re-reviewing from scratch.
+`…-round4.md`. **Four rounds ran — 5 findings, then 8, 7 and 4.** Read those
+before reopening any of this rather than re-deriving it.
 
 **Round 4 (2026-08-11) found five things; all five are handled:**
 
@@ -564,9 +599,22 @@ from "Fixes and small additions" to stop that creep, while its description still
 said "fixes and small additions" — so the rename changed nothing. **Fix the
 description, not just the title.**
 
+⚠ **BUT THE RULE IS ONE-DIRECTIONAL, AND THIS FILE USED TO IMPLY OTHERWISE**
+(corrected by the maintainer, 2026-08-11). An addition **requires** a minor; a
+minor does **not** require additions. `Additions awaiting a minor` is a queue of
+work that *cannot* ride a patch — it is **not** a statement that minors are for
+additions, and a minor is free to carry as many plain bug fixes as it likes.
+`0.3.0` did exactly that: two additions and **six fixes**. So when a minor is
+being cut anyway, ask what else is ready rather than parking fixes for a later
+patch out of habit. The mirror-image question is just as useful and is what
+scoped `0.3.1`: **for a fix, ask whether it needs a minor at all** — if it adds no
+public surface it can ship as a patch, which is what let `0.3.0` go out on time
+with four known bugs deferred rather than held.
+
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.3.0 — Screen capture and dialog results`** — #427 (`feat/widget-capture-427`, awaiting the busy probe off macOS) · ~~#428, #437, #438~~ **MERGED via PR #442** | 1 |
+| — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
+| 1 | **`0.3.1 — Dialog keyboard and modality`** — #426, #439, #440, #441 | 4 |
 | 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -578,6 +626,11 @@ description, not just the title.**
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207, #422 | 2 |
 
+⚠ **`0.2.x — Patch line` is now MISNAMED** — the line is `0.3.x`. Its two issues
+(#207 deferred by decision, #422 test-only) were not moved, because renaming a
+milestone is the maintainer's call. Worth settling next session: rename it, or
+fold its contents into `0.3.1`.
+
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
 before you buy it); **breaks batched, not dribbled** (#383/#369/#408/#416 in ONE
@@ -588,25 +641,19 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ TEN UNMILESTONED OPEN ISSUES as of 2026-08-11** (verified against `gh`, not
-counted by hand): **#426, #431, #432, #433, #434, #436, #439, #440, #441**, and
-**#429 — which is FIXED on `feat/widget-capture-427` but stays OPEN until that
-branch merges.** ⚠ **#428 is NO LONGER unmilestoned** — the maintainer moved it,
-#437 and #438 onto `0.3.0 — Screen capture and dialog results`.
+**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-11, after the release**
+(verified against `gh`, not counted by hand): **#431, #432, #433, #434, #436.**
+Down from ten — #426/#439/#440/#441 went to `0.3.1` and #429 was milestoned into
+the release it actually shipped in.
 
-**Three of these are NEW and came out of the dialog work:** **#439** (a dialog's
-default button never actually receives focus — `focus_set()` is a no-op because
-the button is built before the window is deiconified; several tests now assert
-around it rather than on it), **#440** (opening a dialog from inside a dialog
-leaves the outer one non-modal), and **#441** (Enter in a multi-line field
-submits the dialog instead of inserting a newline). **#439 and #441 are both
-about the same guard** and are worth taking together.
 **#431/#432/#433/#434 all came out of running the macOS and Linux legs for #427**
-and are test-infrastructure failures, not user-facing: `#432` (the shared-root GUI
-leg exits silently mid-run on Linux) is the one that **still blocks #380 (CI)**
-even after `0.2.3`. **#426** contradicts this file's own layout example, which
-teaches `Use grow= / align_self=` as the good error message. **#436** is the
-`versionadded` convention, filed 2026-08-10.
+and are **test-infrastructure failures, not user-facing** — which is exactly why
+they were kept OUT of `0.3.0`: a CHANGELOG entry earns its place by being
+reachable, and a user cannot observe any of these. `#432` (the shared-root GUI leg
+exits silently mid-run on Linux) is the one that **still blocks #380 (CI)**.
+**#436** is the `versionadded` convention, filed 2026-08-10, and it carries an
+undecided question (retroactive to `0.2.x`, or forward-only) — worth answering now
+that `0.3.0` has shipped new public surface that a reader cannot date.
 
 **They are deliberately left unassigned** — the rule below says do not assign a
 milestone unasked, and none has been raised with the maintainer. **#430 was the
@@ -626,41 +673,45 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-11, evening) — `0.3.0` is now ONE branch: capture.
+### ★ START HERE (2026-08-11, end of day) — `0.3.0` SHIPPED. Nothing is in flight.
 
-**`0.2.3` shipped 2026-08-08 and every post-release step is done.** The next
-release is **`0.3.0 — Screen capture and dialog results`**, which the maintainer
-renamed and widened. **Half of it has now landed.**
+**`0.3.0 — Screen capture and dialog results` is on PyPI**, tag `v0.3.0`, shipped
+by a clean `release.yml` with the docs deploy chaining off it. **Every
+post-release step is done and verified** — see Current state for the evidence and
+for the one new check worth repeating (import with `idlelib` blocked).
 
-**✅ The dialog half is MERGED.** PR **#442**, merge commit **`06acd727`**,
-closing **#428, #437 and #438**; branch deleted (head was `38d01598`). `main` is
-green at that commit — **962 / 14** and **125 / 4**, 19 legs, exit 0. The
-CHANGELOG section on `main` is `## [Unreleased]`; promoting it is a release step.
+**There are NO branches. `main` is the only ref**, local and remote, and it is
+green: **1159 / 21 over 20 legs** at `ab11f37c`. Both merged branches and all
+backup refs are deleted (`38d01598`, `1f13cea0`, `05707330`, `89386960` recorded
+in case anything needs resurrecting).
 
-**⏭ THE ONE REMAINING BLOCKER: `feat/widget-capture-427` — `1654c60e`, pushed,
-no PR. ⚠ THE #429 FIX WAS REPLACED ON 2026-08-11** (`e4fd4af7`) — the quiet
-settle did not repaint on macOS, so `settle()` dispatches again and holds
-`tk busy` instead. **A local checkout is behind; `git fetch && git reset --hard`,
-do not pull.** Open: **run arm 3 of
-`development/probe_429_busy_during_settle.py` on Windows and Linux** (is busy
-invisible there?), then `demo_429_busy_during_settle.py` by hand, then re-run
-`verify_427_capture.py`. **That measurement needs another box — it is the whole
-remaining decision for `0.3.0`.**
+**⏭ START WITH `0.3.1 — Dialog keyboard and modality`: #426, #439, #440, #441.**
+Scoped by the maintainer at release time, on the principle that **all four are
+patch-safe** — none adds public surface — and **none is a regression from
+`0.3.0`**; all four exist in `0.2.3` too. That is what made shipping first and
+patching after the right call rather than holding the release.
 
-⚠ **#428's reporter has NOT been told anything shipped**, because nothing has:
-the fix is on `main` and unreleased. Comment on the issue after `0.3.0`, with
-`gh issue comment` (not `gh issue close --comment`, which drops it silently on a
-closed issue).
+| issue | what | size |
+|---|---|---|
+| **#426** | the layout migration error names `align_self=`/`justify_self=`, neither of which exists; the real keys are `horizontal=`/`vertical=` and only `grow=` is right | smallest — one message |
+| **#439** | `default_button.focus_set()` is a no-op, so no focus ring and Tab starts from nowhere, in a dialog whose docs promise otherwise | small, but the fix is UNVERIFIED and focus is platform-sensitive |
+| **#441** | Enter in a `TextArea` inserts the newline and then submits the dialog on top of it | needs a RULE, not another special case |
+| **#440** | a nested modal drops the outer dialog's grab permanently | largest — save/restore across `Dialog`, `MessageBox`, `QueryDialog`, `DateDialog` |
 
-After both, the standing recommendation is `Test and release confidence`
-(#407 then #380) — but **#432 blocks #380 harder than before**, since the GUI leg
-cannot complete on Linux at all.
+⚠ **#441 carries a constraint set at scoping time: keep the fix INTERNAL.** The
+issue floats three options and one of them — letting a widget *declare* it
+consumes Enter — is new public surface, which would push the whole thing to a
+minor. A bindtag allowlist or asking the focus widget whether it is multi-line
+both stay inside a patch.
 
-⚠ **Three new issues came out of the dialog work and are deliberately NOT on
-either branch: #439, #440, #441.** #439 (the default button never receives
-focus) and #441 (Enter in a multi-line field submits) are the same guard seen
-twice and are worth one branch together; #440 (a dialog opened from a dialog
-leaves the outer one non-modal) is unrelated and unexamined.
+⚠ **#426 contradicts THIS FILE**, which quotes `Use grow= / align_self=` as the
+*good* error message under Layout. Fix both together. Verified 2026-08-11:
+`bs.Picture(align_self="stretch")` raises `TclError: unknown option "-align_self"`
+while `horizontal="stretch"` and `grow=1` both construct.
+
+After `0.3.1`, the standing recommendation is still `Test and release confidence`
+(#407 then #380) — and **#432 is the blocker to attack first**, since the GUI leg
+cannot complete on Linux at all, which makes CI unbuyable.
 
 **⏭ A DESIGN IDEA WORTH CARRYING INTO THAT BRANCH (maintainer, 2026-08-11): map
 the real keys onto a virtual name with `event_add`**, so a dialog binds one
@@ -1514,6 +1565,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
+| **0.3.0** | SHIPPED 2026-08-11 (PyPI + tag `v0.3.0`), titled *Screen capture and dialog results*. **`release.yml` ran clean**, docs chained off it. **A minor carrying two additions and SIX fixes** — the release that proved the "minors are for additions" reading of this file wrong. **#427** `widget.capture(path)` writes a widget, window or app to `.png`/`.jpg`/`.pdf` (PR #443, from an external user's discussion #425) · **#429** a click during `settle()` re-entered the handler: `settle()` still dispatches, and holds `tk busy` — the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS · **#428** `FormDialog.result` returned display text instead of the value, because it read after the dialog closed and every editor was destroyed (external report, PR #442) · **#437** a refused press still recorded its result, so cancelling after a refused `DataTable` Delete **deleted the record**; validation now runs only for buttons that submit · **#438** `DialogButton.closes` meant three different things and is REMOVED, replaced by returning `False` from a command. ⚠ `tk busy` is a no-op on macOS (measured in plain tkinter — a toolkit limitation, not a wrong invocation) and real on Windows; the input guard is documented as such rather than claimed to work everywhere |
 | **0.2.3** | SHIPPED 2026-08-08 (PyPI + tag `v0.2.3`), titled *Import without IDLE*. **Published by `release.yml`, which ran clean** — Actions had recovered, so the docs deploy chained off it with no manual kick. Single issue: **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python build without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the WHOLE framework rather than degrading `CodeEditor`; `idlelib` is stdlib so it could never be a declared dependency, and the fix ports `WidgetRedirector` into `textarea/redirector.py` (PR #435). Also added a PSF attribution to `NOTICE`, scoped by measurement to `redirector.py` alone — see Current state for why the other five IDLE-derived modules are deliberately NOT listed |
 | **0.2.2** | SHIPPED 2026-08-06 (PyPI + tag `v0.2.2`), titled *DataTable group headers and row events*. **Published MANUALLY with `twine` during a GitHub Actions major outage** — `release.yml` never ran, and the docs deploy had to be kicked with `gh workflow run docs.yml` because it triggers off a successful Release run (see START HERE). #417 `<Double-1>` bound unconditionally so `on_row_double_click` fires on a read-only table (PR #423) · #418/#420 group headers no longer fire row events with an empty record · #419 deferred chevron refresh after an event-driven expand · #421 click focus on group-header and checkbox-mode rows, plus the column separator that could not be dragged in checkbox mode (PR #424). ⚠ Two behavior notes shipped under `### Changed`: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks), and a read-only table's second press no longer repeats the first press's action |
 | **0.2.1** | SHIPPED 2026-08-05 (PyPI + tag `v0.2.1`), titled *event and shortcut correctness*. #403/#404 sidebar shortcut + #406 its test coverage · #405 `Command`/`Option` modifier map (PR #411) · the #392-review cluster (PR #410, merged as a **merge commit** to keep its six one-per-issue commits): #396 `emit()`/`on()` share one `_event_target()` seam · #398 `on_visibility_alpha` self-unbind · #399 unmatched-unbind report under `BOOTSTACK_DEBUG` · #400 failed cancellation no longer reports success · **#397** dialog result fired at a destroyed widget and **#401** `'break'` from a non-interactive field — both fixed and merged but **absent from the CHANGELOG**, being unreachable from public API (root causes live in `a93a47a4` / `7e204801`) |
@@ -2171,8 +2223,14 @@ against a real signature before copying any of them.** Measured 2026-07-30 via
   checking each replacement, rather than in one blind find-and-replace.
 - **`fill=` / `expand=` on a flex child now RAISE**, they don't degrade:
   `BootstackError: fill is not a valid layout option for a Row/Column/Grid child.
-  Use grow= / align_self= (and justify_self= in a Grid) instead`. Good error —
-  trust it over this file.
+  Use grow= / align_self= (and justify_self= in a Grid) instead`. ⚠ **THAT ERROR
+  IS ITSELF WRONG, and this file used to call it a "good error — trust it over
+  this file". Do not.** It names three kwargs and only `grow=` exists; following
+  its advice verbatim produces a raw `TclError: unknown option "-align_self"`.
+  **The real per-child keys are `horizontal=` and `vertical=`.** Measured
+  2026-08-11: `bs.Picture(align_self="stretch")` raises, `horizontal="stretch"`
+  and `grow=1` both construct. Tracked as **#426**, milestoned `0.3.1` — fix the
+  message and this bullet together.
 - **Container defaults are `horizontal_items=` / `vertical_items=` /
   `grow_items=` / `weights=`.** `fill_items=`, `expand_items=`, `anchor_items=`
   and `sticky_items=` are all GONE from `Row`/`Column`/`Grid`.
