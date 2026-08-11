@@ -273,3 +273,102 @@ The #426 bullet said the message *"now names `grow=` for claiming leftover space
 **Filed rather than fixed — out of this branch's scope.** `base.py:515`: `attach()`'s grid branch filters re-attach kwargs to `GRID_KEYS` with **no** rejection at all, so `widget.attach(fill="x")` on a grid child is silently dropped, while the flex branch one line above rejects it. Same class as #426 on a different path, pre-existing, introduced by neither round. Worth an issue on the `0.3.x` patch line.
 
 **Unchanged from round 1 and still open:** `CLAUDE.md` quotes the wrong #426 message as a good error under Layout. It needs its own commit on `main`, never on this branch — and it now needs to describe **two** messages, not one corrected one. `git diff main...HEAD -- CLAUDE.md` must stay empty before merging.
+
+---
+
+## Round 3 — 2026-08-11
+
+**Scope:** `git diff main...HEAD` at **`346d7f39`**. Working tree clean at review time.
+
+**Reviewer:** a fresh agent via `/code-review`. ⚠ **It was NOT given `REVIEW.md`**, unlike round 2's reviewer, which is the whole story of this round.
+
+### The headline: 3 of 4 findings were already-triaged items re-filed
+
+**This round found one new thing.** The other three were re-reports:
+
+| finding | status before this round |
+|---|---|
+| `_key_was_consumed` / `KP_Enter` | round 1 **F1** — refuted for Windows by a physical keypress, documented as a known limit with the remedy written into the docstring |
+| `capture_grab` / unguarded `grab_current()` | round 1 **F4** — mechanism confirmed, reachability not established, **deferred by the maintainer** |
+| `attach()`'s grid branch filters silently | round 2's own record — **filed there** as out of scope, "worth an issue on the `0.3.x` patch line" |
+
+⚠ **The transferable rule: the review invocation has to carry the triage state forward, or every round re-litigates decisions that were already taken.** Round 2's reviewer was handed round 1's record and re-filed nothing; round 3's was not and re-filed three. This is a harness problem, not a reviewer problem — the cost is a round of maintainer attention spent re-reading its own deferrals.
+
+⚠ **A re-report is not automatically noise, though, and F1 is the counter-example.** What changed since round 1 is not the evidence but the *price*: round 1 deferred it as an unmeasurable X11 case, and the reviewer pointed out the remedy is one argument. Weighed against shipping a branch that changes X11 behavior on a platform neither box can test, one argument is cheap. It is fixed below. F4's price did not change, so F4 stays deferred.
+
+### H1 — `_runtime/toplevel.py:225`, a modal `bs.Window` never restores the grab — **FILED AS #444, NOT FIXED HERE**
+
+**Real, reproduced independently**, and the only genuinely new finding this round:
+
+```
+outer holds grab:       True status= local
+inner holds grab:       True
+after inner closed:     None
+outer still holds grab: False
+```
+
+**Out of this branch's scope on two counts, which is why it was filed rather than fixed.** #440 was scoped by the maintainer to `Dialog`, `MessageBox`, `QueryDialog`, `DateDialog`; and `toplevel.py` is **not in this branch's diff**, so the defect is pre-existing in `0.2.3` and `0.3.0` alike rather than a regression from the #440 work.
+
+⚠ **The reviewer's sharpest claim — that the CHANGELOG says this is fixed — is WRONG, and was checked rather than accepted.** The #440 bullet scopes itself to "any dialog button command that shows an alert, a confirmation, or a second dialog," and its `modal="app"` sentence is about restoring a window's grab *kind* (F5a's fix), not about `bs.Window` restoring anyone else's. Nothing false ships. Agents over-flag; this is the shape it takes on a finding that is otherwise sound.
+
+⚠ **But round 1's enumeration WAS one directory too tight**, and that is the third instance of this failure mode on this branch. Round 1 recorded *"no other `grab_set` exists in the package"* — where *the package* meant `dialogs/`. `grep -rn "grab_set" src/bootstack/` returns `_runtime/toplevel.py:228,230` as the only other real call site. Same shape as round 2's G1 (*"enumerate the CALL SITES, not the classes you can think of"*) and as `CLAUDE.md`'s standing "enumerate the producers" note. **The recurring error is not the enumeration — it is drawing the boundary silently.** Round 1 wrote a completeness claim whose scope word did the load-bearing work and was never stated as a limit.
+
+### H2 — `base.py`, `attach()`'s grid branch — **FILED AS #445, NOT FIXED HERE**
+
+Round 2 had already filed this in its own record. Reproduced before filing:
+
+```
+Column child  -> RAISED: Label: fill is not a valid layout option for a flex child
+Grid child    -> ACCEPTED, placement options = {'sticky': 'ewns'}
+```
+
+Pre-existing, introduced by neither round, and a one-liner now that `kind` is required.
+
+### H3 — `_key_was_consumed` asks about the widget, not the key — **FIXED**
+
+Round 1's F1, reopened on cost rather than on new evidence. The rule now takes the **keysym**, required and positional — no default, per round 2's G1 lesson that a defaulted parameter *is* the defect.
+
+**Measured against the live binding table before changing anything** — the asymmetry is real and it is one-sided:
+
+```
+TButton  <Key-Return> -> button_default_binding   <Key-KP_Enter> -> button_default_binding
+Text     <Key-Return> -> tk::TextInsert           <Key-KP_Enter> -> '# nothing'
+TEntry   <Key-Return> -> '# nothing'              <Key-KP_Enter> -> '# nothing'
+```
+
+A button answers both keys (bootstack binds both at `_runtime/app.py:150-153`); a text widget answers only `Return`. So the text branch stands down only for `Return`, and the button branch is unchanged.
+
+⚠ **The polarity is `keysym != "KP_Enter"`, not `keysym == "Return"`, deliberately.** An unrecognized keysym then reads as CONSUMED. For a text widget that is the conservative answer: standing down wrongly costs a dead key, firing wrongly costs **#441 itself** — the dialog closing on top of a newline the user just typed. Pinned by its own test so it is not "simplified" into the equality form later.
+
+**Windows behavior is unchanged**, because the platform folds the keypad key into `Return` and `keysym` is never `KP_Enter` there. **X11 is the case this exists for**, and it is the reason the fix is worth its argument: before it, this branch would have turned an X11 keypad Enter in a dialog `TextArea` from "submits the dialog" (the #441 bug) into "does nothing at all" (a dead key). Neither is right; only one of them is new.
+
+**Tests added (4).** A precondition test pinning the two Tk binding scripts, so a Tk change reports itself by name rather than as an unexplained behavioral failure; a button arm proving the symmetry; the text arm that is the fix, carrying an in-test `Return` control so it cannot pass by the widget going unread; and the unknown-keysym arm pinning the conservative polarity.
+
+⚠ **NOT REACHABLE END TO END ON WINDOWS, by either route** — synthesis yields keysym `??`/keycode 0 matching no binding, and the physical key folds. The tests drive the rule directly and say so; an end-to-end arm would pass vacuously here. `development/probe_441_kp_enter_platform.py` was updated to record that its job has changed from "decide whether to fix" to "be the arm someone runs on X11".
+
+**Control, run both ways.** With the guard disabled, **exactly one test fails** — `assert True is False` on the text/`KP_Enter` arm — while the button arm, the precondition and the unknown-keysym arm all still pass. Behavioral failure, not a broken harness.
+
+### Round 3 summary
+
+| finding | severity | outcome |
+|---|---|---|
+| H1 — modal `bs.Window` never restores the grab | medium | **filed as #444** — real, reproduced, pre-existing and out of #440's scope |
+| H2 — `attach()` drops legacy kwargs on a grid cell | low | **filed as #445** — already filed in round 2's record |
+| H3 — `_key_was_consumed` ignores the keysym | low | **fixed** + 4 tests |
+| H4 — unguarded `grab_current()` (round 1 F4) | low | **still deferred** — nothing changed |
+
+**Verification at the handover commit.** Shared leg **1011 passed / 14 skipped / 75 deselected**, exit 0. Full `py -3.12 tests/run_gui.py`: **exit 0, all 20 legs passed, summed 1208 passed / 21 skipped** — round 2's 1204 plus exactly the 4 tests above, skips unchanged. Clean `-W` docs build succeeded (`CHANGELOG.md` is `include`d by `docs/release-notes.rst`, so a CHANGELOG edit can break the build).
+
+⚠ **The selected-count ceiling reconciles, but not by the obvious sum.** Measured: `1024/1099 tests collected (75 deselected)`. The leg reports **1011 passed + 14 skipped = 1025**, which is one OVER the ceiling and looks impossible. It is not: **one of those skips happens at COLLECTION time** (`collected 1099 items / 75 deselected / 1 skipped / 1024 selected`) and is therefore not one of the 1024 items. `1011 + 13 runtime skips = 1024` exactly. Round 2's recorded "1021-selected ceiling" does not reconcile with its own `1007 + 14`; prefer the measurement over either recorded figure, per the standing rule.
+
+⚠ **A CRLF flip was caused and repaired during this round.** Rewriting the six existing `_key_was_consumed` call sites with a `pathlib` `read_text`/`write_text` pass flipped `test_dialog_enter_key.py` entirely to LF — the exact trap `CLAUDE.md` records (`repo is core.autocrlf=true`). **The rule stands and was ignored: use the Edit tool, or write bytes.**
+
+⚠ **The detection method is the part worth keeping, because the DIFF CANNOT SEE THIS.** The diffstat read 6 changed lines either way; git normalizes on read, so `git diff` is blind to a working-tree line-ending flip. The only signal is the *"LF will be replaced by CRLF the next time Git touches it"* **warning on stderr** — which is easy to skim past, and which no test or docs build would ever have surfaced. Both files were restored with a byte-level rewrite and `file` now reports CRLF for every touched file.
+
+⚠ `probe_441_kp_enter_platform.py` was also LF in the working tree and was normalized alongside it. **Whether this round caused that one was NOT established** — it may have been written LF by the session that created it. Recorded as unknown rather than blamed on the `Edit` tool, which is not known to flip endings.
+
+**Files touched:** `dialog.py`, `CHANGELOG.md`, `test_dialog_enter_key.py`, `probe_441_kp_enter_platform.py`.
+
+**Recommendation: stop reviewing here.** Rounds 1 and 2 each found defects the tests structurally could not see. Round 3 returned one out-of-scope pre-existing bug and three settled questions — the yield has gone to noise, and the two real items are tracked as #444 and #445.
+
+**Still open, unchanged since round 1:** `CLAUDE.md` quotes the wrong #426 message as a good error under Layout, and now needs to describe **two** messages. Its own commit on `main`, never on this branch; `git diff main...HEAD -- CLAUDE.md` must stay empty before merging.
