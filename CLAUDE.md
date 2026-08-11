@@ -624,12 +624,17 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.2.x — Patch line`** (rolling, FIXES ONLY) — #207, #422 | 2 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422 | 2 |
 
-⚠ **`0.2.x — Patch line` is now MISNAMED** — the line is `0.3.x`. Its two issues
-(#207 deferred by decision, #422 test-only) were not moved, because renaming a
-milestone is the maintainer's call. Worth settling next session: rename it, or
-fold its contents into `0.3.1`.
+⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
+assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
+`0.2.3` patch history — so renaming it would have relabelled shipped work as
+`0.3.x`. A **new `0.3.x — Patch line`** was created instead and the two open
+issues moved onto it (#207 deferred by decision, #422 test-only). `0.2.x` now
+reads `open=0 closed=15` and is a finished record. **The check to repeat when a
+line rolls over: `gh api repos/:owner/:repo/milestones --jq '.[]|"\(.title)
+open=\(.open_issues) closed=\(.closed_issues)"'` — closed issues make a milestone
+history, and history is not renameable.**
 
 Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
 the suite, so every release is a gamble, and #407 makes that automation cheaper
