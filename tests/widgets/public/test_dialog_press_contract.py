@@ -429,3 +429,39 @@ def test_a_form_button_command_that_accepts_still_records(app):
 
     assert ran, "precondition: the command ran at all"
     assert form.result == {"k": "typed"}, f"an accepted press recorded {form.result!r}"
+
+
+def test_a_refused_form_press_clears_the_previous_result(app):
+    """A refusal must not leave the last accepted press readable at `form.result`.
+
+    The two tests above only ever refuse from a clean form, where `result` is
+    still the `None` it was constructed with — so both pass whether or not a
+    refusal clears anything. The sequence that separates them is accept, edit,
+    refuse, which a `Form` invites in a way a `Dialog` cannot: the accepted
+    press closes a dialog, while a form keeps its button row up. Without the
+    clear, a caller reading `form.result` here gets `{'k': 'accepted'}` — data
+    the user has since changed, from a press the command declined.
+    """
+    refusing = []
+
+    def save(form):
+        return False if refusing else None
+
+    form = bs.Form(items=[_text_item()],
+                   buttons=[DialogButton(text="Save", role="primary", command=save)])
+    app._tk_root.update_idletasks()
+
+    form.set({"k": "accepted"})
+    app._tk_root.update_idletasks()
+    _press_form_button(form)
+    assert form.result == {"k": "accepted"}, (
+        f"precondition: the accepted press recorded {form.result!r}")
+
+    refusing.append(True)
+    form.set({"k": "edited"})
+    app._tk_root.update_idletasks()
+    _press_form_button(form)
+
+    assert form.data == {"k": "edited"}, (
+        f"precondition: the edit landed, data is {form.data!r}")
+    assert form.result is None, f"a refused press left {form.result!r} readable"

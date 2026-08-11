@@ -169,7 +169,9 @@ class Form(Frame):
 
     Attributes:
         result: Result value set by button commands. None until a button with a
-            `result` or `command` is pressed.
+            `result` or `command` is pressed, and back to None after a press
+            whose command refused it, so this always reflects the most recent
+            press that actually completed.
 
     Args:
         master: Parent widget.
@@ -998,6 +1000,13 @@ class Form(Frame):
             # Recording a result for a press the command declined is the shape
             # #437 removed from `Dialog`; it must not survive here.
             if spec.command and spec.command(self) is False:  # type: ignore[arg-type]
+                # Clearing matters more here than it does on a dialog. A dialog
+                # closes on the press that succeeds, so a refusal can only be
+                # read before anything was ever recorded; a form keeps its
+                # button row up, so accept -> edit -> refuse is ordinary. Left
+                # standing, `result` would hand a caller the previous accepted
+                # press's data, which the user has since edited.
+                self.result = None
                 return
             self.result = spec.result if spec.result is not None else self.data
 
