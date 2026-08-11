@@ -16,7 +16,7 @@ from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
 from bootstack.events import Subscription
 from bootstack.dialogs._impl.dialog import (
-    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, restore_grab,
+    DIALOG_RESULT, Dialog, DialogButton, capture_grab, emit_dialog_result, restore_grab,
     result_target,
 )
 from bootstack._runtime.window_utilities import AnchorPoint
@@ -129,9 +129,10 @@ class _ChromeDialog(Dialog):
             # Don't call it again here as it breaks mica effect on Windows
             previous_grab = None
             if self._mode == "modal":
-                # Remember who held the grab so it can be handed back — a
-                # nested modal must not leave its opener non-modal (#440).
-                previous_grab = self._toplevel.grab_current()
+                # Remember who held the grab, and how, so it can be handed back
+                # — a nested modal must not leave its opener non-modal (#440),
+                # nor narrow an app-modal window to a local grab.
+                previous_grab = capture_grab(self._toplevel)
                 self._toplevel.grab_set()
             try:
                 self._master.wait_window(self._toplevel)

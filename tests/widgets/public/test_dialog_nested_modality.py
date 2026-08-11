@@ -20,6 +20,8 @@ measurement over a stretch with no nested modal.
 """
 from __future__ import annotations
 
+import tkinter
+
 import pytest
 
 import bootstack as bs
@@ -45,8 +47,10 @@ def _outer(app, body):
             return
         try:
             state["before"] = top.grab_current()
+            state["kind_before"] = top.grab_status()
             body(top)
             state["after"] = top.grab_current()
+            state["kind_after"] = top.grab_status()
             state["still_modal"] = top.grab_current() is top
             state["outer"] = top
         finally:
@@ -122,6 +126,22 @@ def test_two_levels_of_nesting_hand_the_grab_back(app):
     )
 
 
+def test_the_restored_grab_is_the_same_KIND_it_was(app):
+    """Handing back WHO held the grab is not enough - the kind must survive.
+
+    Every other test here asserts identity (`grab_current() is top`), which a
+    downgraded grab passes: the right window holds it, just more weakly. That
+    gap is why a global grab could be restored as a local one unnoticed.
+    """
+    state = _outer(app, lambda top: _nest(top, 1))
+
+    assert state["kind_before"] is not None, "precondition: the outer dialog was modal"
+    assert state["kind_after"] == state["kind_before"], (
+        f"the grab came back as {state['kind_after']!r} but was "
+        f"{state['kind_before']!r} before the nested dialog"
+    )
+
+
 def test_alert_from_a_dialog_button_hands_the_grab_back(app):
     """The path actually reported: a nested modal opened by a public verb.
 
@@ -159,3 +179,118 @@ def test_no_grab_is_left_behind_once_every_dialog_has_closed(app):
         f"a grab outlived every dialog: {app._tk_root.grab_current()} — the "
         f"main window is now blocked with nothing on screen"
     )
+
+
+# --------------------------------------------------------------------------
+# The GLOBAL grab, which cannot be driven for real in a test suite.
+#
+# `bs.Window(modal="app")` takes a global grab (`_runtime/toplevel.py`), and a
+# real one confines the mouse and keyboard at the WINDOW SYSTEM level: a test
+# that failed between taking it and releasing it would lock the machine running
+# the suite out of every other application. So these drive `restore_grab`
+# directly with a stub holder that records which call it received.
+#
+# This deliberately breaks the "test public paths" rule. The reason is above,
+# and the logic being pinned is entirely ours — that the captured kind selects
+# the matching restore call. What a global grab then MEANS is Tk's, and differs
+# by window system; asserting on that would be testing the toolkit.
+# --------------------------------------------------------------------------
+
+
+class _StubHolder:
+    """Records which grab call `restore_grab` made, without taking one."""
+
+    def __init__(self, exists: bool = True, fail_global: bool = False):
+        self.calls: list[str] = []
+        self._exists = exists
+        self._fail_global = fail_global
+
+    def winfo_exists(self) -> bool:
+        return self._exists
+
+    def grab_set(self) -> None:
+        self.calls.append("local")
+
+    def grab_set_global(self) -> None:
+        if self._fail_global:
+            raise tkinter.TclError("grab failed: window not viewable")
+        self.calls.append("global")
+
+
+def test_a_global_grab_is_restored_as_a_global_grab():
+    """The defect: `grab_set()` unconditionally narrowed an app-modal window."""
+    from bootstack.dialogs._impl.dialog import restore_grab
+
+    holder = _StubHolder()
+    restore_grab((holder, "global"))
+
+    assert holder.calls == ["global"], (
+        f"a global grab was restored as {holder.calls} — an app-modal window "
+        f"would come back blocking only this application"
+    )
+
+
+def test_a_local_grab_is_still_restored_as_a_local_grab():
+    """Control: the common path must not have been widened to global."""
+    from bootstack.dialogs._impl.dialog import restore_grab
+
+    holder = _StubHolder()
+    restore_grab((holder, "local"))
+
+    assert holder.calls == ["local"]
+
+
+def test_a_failed_global_restore_degrades_to_local_rather_than_to_nothing():
+    """`grab set -global` can fail where a local grab cannot (X11, viewability).
+
+    Falling back leaves the outer dialog modal within the application. Failing
+    to no grab at all would be the #440 symptom this module exists to prevent.
+
+    ⚠ What this does and does not prove, measured both ways: it FAILS if the
+    fallback is removed (a failed global restore then records nothing), so it
+    guards the fallback. It does NOT distinguish this fix from the code before
+    it — the old version always called `grab_set()`, so it lands on the same
+    `["local"]` for the wrong reason. The test above is the one that pins the
+    actual change.
+    """
+    from bootstack.dialogs._impl.dialog import restore_grab
+
+    holder = _StubHolder(fail_global=True)
+    restore_grab((holder, "global"))
+
+    assert holder.calls == ["local"], (
+        f"a failed global restore left {holder.calls} — the outer dialog is on "
+        f"screen holding no grab, which is exactly issue #440"
+    )
+
+
+def test_a_destroyed_holder_is_not_re_grabbed():
+    """The holder can be destroyed while the inner dialog is up."""
+    from bootstack.dialogs._impl.dialog import restore_grab
+
+    holder = _StubHolder(exists=False)
+    restore_grab((holder, "global"))
+
+    assert holder.calls == []
+
+
+def test_capture_grab_reports_the_kind_and_none_when_nothing_holds_it(app):
+    """`capture_grab` must read the kind, and read it from the right window."""
+    from bootstack.dialogs._impl.dialog import capture_grab
+    import tkinter as tk
+
+    root = app._tk_root
+    assert capture_grab(root) is None, "precondition: no grab is held"
+
+    holder = tk.Toplevel(root)
+    holder.geometry("120x60+400+300")
+    holder.update()
+    try:
+        holder.grab_set()
+        captured = capture_grab(root)
+        assert captured is not None, "capture_grab missed a held grab"
+        assert captured[0] is holder
+        assert captured[1] == "local"
+    finally:
+        holder.grab_release()
+        holder.destroy()
