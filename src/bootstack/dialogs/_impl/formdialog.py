@@ -543,7 +543,13 @@ class FormDialog:
             # form, so requiring the form to be valid before the press would
             # refuse it for a reason that cannot matter.
             return True
-        if self.form and not self.form.validate():
+        # A cancel is never refused, whatever its result token says. Backing out
+        # is the one press that must always be available: `Dialog` binds Escape
+        # to this same button, so refusing it leaves a modal with no way out
+        # but the window manager. It still falls through to the capture below,
+        # which is what keeps a contradictory `role='cancel', result='ok'`
+        # button from reporting a PREVIOUS run's entries.
+        if btn.role != "cancel" and self.form and not self.form.validate():
             return False
         # Read the form while its editors are still alive. After `show()`
         # returns, the dialog and every editor in it are destroyed, and a read

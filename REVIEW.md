@@ -380,3 +380,281 @@ The branch head collected 947 in the shared leg; these changes add exactly 10 te
 
 - **`FormDialog` infers "action" from the presence of a result token, and nothing makes a caller aware of that.** F2 is closed by documentation, which is the smaller change and does not re-open the `submits` field the maintainer declined. If action buttons written without a token keep arriving, the inference is the thing to revisit — not the CHANGELOG.
 - **The keypad Enter binding has no behavioral coverage on this box.** It is assertable structurally here; a Linux run could drive it for real, since X11 carries `KP_Enter` in its keymap. Worth adding if #380's CI leg lands.
+
+# Round 3 — #428 / #437 / #438
+
+Reviewed `git diff 065ef56a..HEAD` at head `eab58129`. Read the diff, `PLAN.md`, and round 2's F1–F8; did not read the commit messages or the `## Round 2 fix step` section until after forming a view. Findings are ordered by severity.
+
+**Verdict: blocking.** Round 2's eight findings are all genuinely closed. But the scope the fix step added on its own initiative — the `<KP_Enter>` binding, which the brief itself nominates as "the thing to judge first" — is built on a premise that does not hold, and it makes a single Enter press invoke a footer button **twice**. That is the branch's own headline feature (a command refusing its press) misbehaving on the keyboard path the new documentation points readers at. Measured, with controls, in `development/probe_437_round3.py`.
+
+Convergence: round 1 found 5, round 2 found 8, round 3 finds 7 — not materially fewer, and the one blocking finding is in scope the review did not ask for. The right read is not "loop again": it is that R1/R2 should come off this branch as their own issue, at which point what remains is a clean #428/#437/#438 branch with four small findings against it.
+
+## R1 — blocking — `src/bootstack/dialogs/_impl/dialog.py:550`
+
+**One Enter (or keypad Enter) press invokes a footer button twice, and the second invoke can press a *different* button than the one that had focus.**
+
+The comment above the loop reasons that "One physical key produces one keysym, so binding both cannot invoke the button twice." That is true of the two toplevel bindings and beside the point: the second invoke does not come from the other sequence, it comes from a **`TButton` class binding that was already there**. `_runtime/app.py:141-153` installs `button_default_binding` on `bind_class("TButton", "<Key-Return>")` **and** `bind_class("TButton", "<KP_Enter>")`, and it calls `widget.invoke()` on whichever button has focus. `Dialog._create_standard_buttons` calls `default_button.focus_set()` (`dialog.py:544`), so a dialog opens with a ttk button focused. The focused button's bindtags are `['.!toplevel.!frame.!button', 'TButton', '.!toplevel', 'all']` — measured — so a real key press runs the class binding *first* and the new toplevel binding *second*.
+
+Before #437 that was invisible: the first invoke always destroyed the toplevel, and Tk abandons the remaining bindtags once the event's window is gone. **The veto is what makes the second dispatch survive** — a command returning `False` leaves the window standing, so the toplevel binding runs on a live dialog.
+
+Measured (`development/probe_437_round3.py`):
+
+| arm | what | calls |
+|---|---|---|
+| control | toplevel `<Return>`/`<KP_Enter>` unbound, class binding only | **1** |
+| shipped | as on this branch, command returns `False` | **2** |
+| shipped | command returns `None` (accepts) | 1 — the destroy aborts the second dispatch |
+
+And the worse shape, same probe: a footer of `Apply` (`role='secondary'`, command returns `False`) plus `OK` (`default=True`). Focus `Apply`, press Enter once:
+
+```
+log:    ['apply', 'ok']
+open:   0          <- the dialog closed
+result: 'ok'       <- the user pressed Apply
+```
+
+So pressing Enter on a button that *declines* its press submits the dialog through a different button and hands the caller that button's result. The user-visible version of arm 2 is milder but still wrong: a Save command that validates and calls `bs.alert(...)` before returning `False` shows the alert twice per Enter.
+
+Root cause: a `bind` on the toplevel is additive to the class binding on the widget that actually has focus, and nothing suppresses the first when the second applies.
+
+Minimal change: make the toplevel handler stand down when the event already reached a footer button, since the class binding has handled it — capture the footer's buttons and `if e.widget in buttons: return` before `b.invoke()`. That keeps Enter working while focus is in an entry (the case the toplevel binding exists for) and removes the double dispatch. Deleting the toplevel bindings instead is *not* equivalent: it would break Enter in `QueryDialog`, where focus is deliberately moved off the button.
+
+## R2 — should-fix — `CHANGELOG.md:27`, `src/bootstack/dialogs/_impl/dialog.py:545`
+
+**The keypad-Enter claim is broader than the measurement behind it.** The entry says "Only the main Enter key did… so a dialog filled in from the number pad had to be finished with the mouse or with the other Enter", and the code comment says "measured: without it the key does nothing at all in a dialog."
+
+Verified at runtime: `root.bind_class('TButton')` returns `['<<Invoke>>', '<B1-Enter>', '<B1-Leave>', '<Button-1>', '<ButtonRelease-1>', '<Enter>', '<Key-KP_Enter>', '<Key-Return>', '<Leave>']`. `<Key-KP_Enter>` is bound at class level and invokes the focused button. So in every dialog that leaves focus where `Dialog` put it — a bare `Dialog`, `MessageBox`, `FormDialog` before the user tabs into a field — **the keypad key already pressed the default button.** The dialog where it genuinely did nothing is `QueryDialog`, which moves focus to the entry (`query.py:167`), and that is the one arm 3 of `probe_437_review2_fixes.py` measures. The conclusion was generalized from the single dialog that does not represent the others — the same "narrow rather than wrong" shape round 2 flagged in F3, one round later.
+
+This matters beyond wording, because it is what R1 falls out of: had the class binding been in the picture, "bind a second sequence on the toplevel" would not have looked free.
+
+Minimal change: scope the claim to dialogs that move focus off the default button, or re-measure and restate. The bullet is also the only one in the section with no issue reference — this was scope the fix step added, so it should carry its own issue number.
+
+## R3 — should-fix — `src/bootstack/dialogs/_impl/formdialog.py:593`
+
+**The reorder that closed F3 put cancel buttons under form validation, and the dialog can no longer be dismissed.**
+
+`_button_returns_data` now answers `True` for `role='cancel', result='ok'`, and `_accept_press` (`formdialog.py:541`) uses that same answer to decide whether to run `self.form.validate()`. So the contradictory-input button F3 was about does not merely capture its own snapshot now — it is also **refused when the form is invalid**.
+
+Measured:
+
+```python
+FormDialog(items=[bs.FieldItem(key='name', label='Name', editor='text', required=True)],
+           buttons=[DialogButton(text='Close', role='cancel', result='ok'),
+                    DialogButton(text='OK', role='primary', result='ok', default=True)])
+```
+
+with the field left blank: `open_after_close_press: 1`, `open_after_escape: 1`. Pressing Close does nothing, and **Escape does nothing either** — `Dialog` binds `<Escape>` to the same cancel button (`dialog.py:554`), so both routes out of a modal window are gone and only the window manager's X remains. Before the reorder, Close returned early on the role test and closed the dialog.
+
+The new test does not see this because `_select_item()` carries no required rule, so `validate()` passes and the press goes through.
+
+Root cause: one predicate is being asked two different questions — "does this press hand back the data?" (which the token must win) and "must this press satisfy the form?" (which the role must win). F3 was right that the first must match `_resolve_result`; that does not make the second follow.
+
+Minimal change: leave `_button_returns_data` as the fix left it and exempt the cancel role from the gate in `_accept_press` — `if btn.role != "cancel" and self.form and not self.form.validate(): return False`. The capture below it still runs, so F3 stays closed. Worth a test with a `required=True` item, since the existing one cannot fail.
+
+## R4 — should-fix — `tests/widgets/public/test_dialog_press_contract.py:233`
+
+**`test_enter_presses_the_default_button` cannot see R1, because it does not send the key where a key goes.**
+
+`top.event_generate("<Return>", when="now")` makes the *toplevel* the event widget, so Tk walks the toplevel's bindtags and only the binding this diff added runs. A real press goes to the focus widget — the default button — and walks `[button, 'TButton', toplevel, 'all']`. The test therefore exercises exactly the one path that works and is structurally blind to the double dispatch, which is why an eight-test file written specifically about "what a button press means" ships with the press being wrong.
+
+Minimal change: assert `top.focus_get()` is the default button as a precondition, generate the event on that widget, and assert the command ran **exactly once** (a counter, not a boolean). Against the shipped code that fails with 2.
+
+## R5 — should-fix — `docs/widgets/dialog.rst:104`
+
+**The refusal pattern the Guide now teaches silently drops the dialog's modality.**
+
+The example calls `bs.alert("A name is required.")` and then returns `False`. Measured from inside that command: `grab_current()` is the dialog before the alert and **`None` after it**. The nested `MessageBox` takes the grab with its own `grab_set()`, and destroying it releases the grab outright rather than restoring the outer one — so from the first refused press onward, the "modal" dialog no longer blocks the parent window, while `show()` is still blocking the caller. A user can click straight back into the main window and drive the app underneath a dialog that is waiting on them.
+
+This is a framework gap rather than something the diff broke (`query._on_submit` has the same shape), but the diff is what promotes it to the recommended way to refuse a press, in the teaching layer.
+
+Minimal change: refuse without a nested modal — set the field's validation message, or `bs.toast(...)` — and if `alert` is kept, say what it costs.
+
+## R6 — nit — `docs/widgets/dialog.rst:112`
+
+**The example cannot demonstrate the sentence directly beneath it.** No button in the snippet carries `default=True`, and the paragraph that follows says the veto "applies to the :kbd:`Enter` key as well, which triggers the default button through the same command." With this dialog, Enter does nothing at all — `Dialog` installs the binding only when a spec sets `default=True` (`dialog.py:543`). The "Reading the result" example two sections up gets it right.
+
+The snippet also references `name`, `write` and `build` without defining any of them and never calls `show()` or reads `result`, where every other example on the page is self-contained — against the standing rule that doc examples are API-verified and must run.
+
+Minimal change: add `default=True` to the Save spec, and either define `name` in the builder or key the refusal off something the snippet owns.
+
+## R7 — nit — `src/bootstack/widgets/_impl/composites/form.py:997`
+
+**A refused `Form` press leaves the previous press's result standing.** The veto returns before the stamp, which is right, but `Form.result` is never cleared — so after a press the command declined, `form.result` still holds whatever the last *accepted* press wrote. Concrete: press Save with a command that accepts (`form.result == {'k': 'a'}`), edit the field, press Save again with the command now returning `False` — a caller reading `form.result` gets `{'k': 'a'}`, data the user has since changed and a press that was refused.
+
+`Dialog` has no equivalent exposure because the accepted press closes the window. `Form` keeps its button row up, so the sequence is ordinary rather than contrived.
+
+Minimal change: `self.result = None` on the refusal path, or state on `bs.Form.result` that it holds the last accepted press. Either is fine; leaving it undefined is what is worth avoiding.
+
+## Checked and clear — not worth re-deriving
+
+- **F1, F5, F6, F7, F8 are closed as claimed.** The `Form` veto matches `Dialog`'s shape; the four new `QueryDialog`/`DateDialog` tests drive the real footer widget and assert the close where it happens; the `datedialog` docstring states the grab reasoning; the Guide has the subsection; `FormDialog._normalize_buttons` now mirrors `Dialog._normalize_buttons` exactly, including the message text.
+- **F3's stale-snapshot leak has no other route.** `Dialog.show()` still resets `self.result = None` (`dialog.py:331`), so the window-X path, a plain cancel and an action token all resolve without touching `_submitted_data`. With the token checked first, every write of a data token to `dialog.result` is paired with a capture in the same press. The invariant the removed `show()` reset defended does now hold — R3 is about a second, separate consequence of the reorder, not a reason to restore it.
+- **The `query.py` deletion removed no behavior.** Confirmed independently: the bindings were on the composite frame, and the focused inner entry's bindtags are `[entry, 'TEntry', toplevel, 'all']`. Enter still reaches Submit through the toplevel binding, and the Submit spec has no `result=`, so `Dialog`'s `if s.result is not None` cannot clobber what `_on_submit` stored.
+- **No vacuity survivors in the new file beyond R4.** Every accept-path test asserts `not top.winfo_exists()` at the press; both refusal tests assert the window is still up and then leave by a second, different route. `_drive`'s `after_cancel` sweep is safe on already-fired ids.
+- **The `_drive` duplication is the right trade.** The two copies differ in the one line that matters (`dialog._dialog` vs `dialog._internal._dialog`); factoring them together would mean a helper parameterized on how deep to reach into private state, which is worse than the copy.
+
+---
+
+---
+
+## Round 3 fix step — 2026-08-10
+
+Nothing here is committed. The working tree on `fix/formdialog-select-value-428`
+at `eab58129` carries all of it, and `development/round3-fixes.patch` is a copy
+of that diff in case the tree is disturbed.
+
+Four of the seven findings are applied. R5, R6 and R7 are deliberately NOT —
+see "Still open" below. Two things were measured along the way that change what
+earlier rounds recorded, and both are written down here rather than left to be
+re-derived.
+
+### R1 — resolved by a guard, but the review's diagnosis of WHERE was wrong
+
+The defect is real and the fix is the one R1 proposed: the toplevel handler
+stands down when the key was already delivered to a button.
+`dialog.py:568` asks `bindtags` for `TButton`, through Tcl — `tk.call("bindtags",
+event.widget)` rather than `event.widget.bindtags()`, because Tkinter's
+`_substitute` hands a callback the bare path STRING whenever the target is
+absent from its widget map. `_runtime/app.py:144-148` already carries a
+`nametowidget`/`KeyError` fallback for exactly that, so it has been hit here
+before.
+
+⚠ **R1 attributed this to the `<KP_Enter>` scope creep. It is not there.**
+`_runtime/app.py` is untouched by this branch, and `main` already binds BOTH
+`<Key-Return>` and `<Key-KP_Enter>` on the `TButton` class (app.py:150-153),
+while `main`'s `Dialog` already bound `<Return>` on the toplevel. The double
+dispatch predates the branch on PLAIN Enter — every arm of
+`probe_437_round3.py` generates `<Return>`, not `<KP_Enter>`. What is new is
+the veto: on `main`, `make_command` ignores the command's return value and
+destroys the toplevel, so the first invoke always took the second dispatch with
+it. Reverting the keypad work would NOT have fixed this.
+
+⚠ **It also needs a CLICK to be reachable, not merely an open dialog** — see
+the focus finding below.
+
+### R2 — resolved by rewriting the bullet to what was measured, plus one new bullet
+
+The old bullet claimed the keypad key did nothing in any dialog. It works
+wherever a button holds focus, because the class binding covers it. The place
+it genuinely did nothing is a dialog that starts with the cursor in a field —
+`ask_string`, `ask_integer` — which is what the bullet says now.
+
+A second bullet covers R1's user-visible half. It earns a place under the
+"reachable" rule: on `0.2.3` a footer button declared `closes=False` kept the
+dialog open, so the second dispatch survived there too. `closes` is removed in
+this release, and the veto replaces it, so a caller migrating would have
+inherited the bug.
+
+⚠ **The keypad bullet had no issue reference.** (The note originally said
+neither did; the R1 bullet in fact ends `(#437)` — that was added after this
+paragraph was written.) **RESOLVED 2026-08-11: folded into #437**, at the
+maintainer's instruction, rather than filed separately. The keypad binding and
+R1's stand-down guard are now the same three lines in `press_default`, and #437
+is the button-press-contract issue — a separate issue would have tracked the
+detour (binding a key that turned out to be mostly bound already) rather than a
+defect a user hits.
+
+### R3 — resolved by excluding cancel from validation, not by reordering again
+
+`_accept_press` now reads `if btn.role != "cancel" and self.form and not
+self.form.validate()`. The cancel still falls THROUGH to the capture, which is
+what keeps R3's own earlier finding (F3) closed: a contradictory
+`role='cancel', result='ok'` button takes a fresh snapshot and so cannot report
+a previous run's entries. Refusing it was the part that had to go — `Dialog`
+binds Escape to that same button, so a refused cancel is a modal with no way
+out but the window manager.
+
+### R4 — resolved, but the test shape changed once focus was actually measured
+
+R4 said to generate on `top.focus_get()` and assert one invocation. Both halves
+needed adjusting:
+
+- `focus_get()` reports nothing unless the window is active, which the standing
+  rules in CLAUDE.md already warn about. The tests use `focus_lastfor()` for
+  assertions and address the widget structurally for `event_generate`.
+- A test with an ACCEPTING command reads one invocation whether the guard is
+  there or not — the destroy aborts the second dispatch. The command has to
+  refuse for the defect to be observable at all.
+
+Three tests now, replacing the one:
+
+| test | what it pins |
+|---|---|
+| `test_enter_presses_the_default_button` | the fresh-dialog case: nothing holds focus, the toplevel binding is the only answer, Enter still works |
+| `test_enter_on_the_default_button_invokes_it_once` | focus on the default button + a refusing command → one command run |
+| `test_enter_on_a_focused_button_does_not_also_press_the_default` | the crossfire: Apply refuses, OK must not submit on top of it |
+
+Plus `test_a_cancel_closes_even_when_the_form_cannot_be_satisfied` in
+`test_formdialog_result_value.py` for R3, which had no test at all.
+
+**Controls run, each fix reverted on its own.** The failures are behavioral,
+not incidental:
+
+```
+guard stripped     one press should run one command, ran ['ok', 'ok']
+                   Enter ran more than the focused button: ['apply', 'ok']
+cancel fix rev'd   the cancel button could not close an invalid form   (12.2s: the 10s force_close fired)
+```
+
+### ⚠ NEW — `default_button.focus_set()` at `dialog.py:544` is a NO-OP
+
+Measured on a real dialog, with nothing forced: `focus_lastfor()`, `focus_get()`
+and Tcl's own `focus` all report the TOPLEVEL, not the button. The footer is
+built before the window is deiconified and the request never takes.
+
+This is pre-existing, out of scope here, and NOT filed. It matters three ways:
+
+1. **It rescopes R1.** With no button focused, opening a dialog and pressing
+   Enter dispatches once. The double invoke needs a button to hold focus, which
+   a CLICK provides — ttk's `Press` does `focus $w` unconditionally. So the
+   reachable path is: click a button whose command refuses, then press Enter.
+   Real, but not "any dialog, any Enter".
+2. **`probe_437_round3.py` overstated its own arm.** `_invoke_arm` calls
+   `top.focus_force()` and `button.focus_set()` before generating. It measured a
+   state it created. The crossfire arm is unaffected — it focuses Apply
+   deliberately, which is the point.
+3. **Keyboard users get no focus ring and a Tab order starting from nowhere**,
+   in a dialog that documents `default=True` as "focused, triggered by Enter".
+
+### Verification — measured 2026-08-10, working tree at `eab58129` plus these changes
+
+Full `py -3.12 tests/run_gui.py`, **exit 0, all legs passed**.
+
+| leg | baseline at `eab58129` | with these changes |
+|---|---|---|
+| widgets+CLI, shared root | **1001 passed / 13 skipped** (52 deselected) | **1004 / 13** |
+| data | **123 passed / 6 skipped** | **123 / 6** |
+
+Exactly +3, matching the 3 net tests added.
+
+⚠ **The counts in `460687eb`'s commit message — `957 / 14` and `125 / 4` — are
+WRONG.** The baseline was re-measured by stashing these changes and running the
+suite at HEAD, rather than by reasoning from the recorded figure. This is the
+same failure mode CLAUDE.md records four previous instances of. Record the date
+AND the commit beside any count.
+
+### Still open for the next session
+
+Three round-3 findings are deliberately not applied, to stop the fix step
+growing scope the way round 2's did:
+
+- **R5 — `docs/widgets/dialog.rst:104`, the taught refusal pattern drops the
+  dialog's grab.** Measured: `grab_current()` is the dialog before the nested
+  `bs.alert(...)` and `None` after. This is a real bug in a pattern the branch
+  is actively teaching, and is the one of the three worth folding in.
+- **R6 — `docs/widgets/dialog.rst:112`**, no button sets `default=True` while
+  the prose says the veto applies to Enter; `name`, `write` and `build` are
+  undefined and it never calls `show()`.
+- **R7 — `form.py:997`**, the `Form` veto returns before the stamp without
+  clearing `result`, so a refused press leaves the previous accepted press's
+  data readable at `form.result`.
+
+And two decisions:
+
+- ~~**The keypad CHANGELOG bullet needs an issue number**, or folding into
+  #437.~~ **DECIDED 2026-08-11 (maintainer): folded into #437.** The bullet now
+  ends `(#437)`; no separate issue was filed. Reasoning above under the R2 fix.
+- **`focus_set()` being a no-op needs an issue.** Do not fix it on this branch.
+
+Nothing is committed. The suite is green and the controls have been run, so
+this is ready for the maintainer to test and then approve commit-by-commit.

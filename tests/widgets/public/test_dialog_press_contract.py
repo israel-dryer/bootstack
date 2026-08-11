@@ -214,13 +214,24 @@ def test_date_range_ok_is_refused_until_both_endpoints_are_picked(app):
 # --- the keypad Enter key --------------------------------------------------
 
 
-def _keypad_dialog(app):
+def _keypad_dialog(app, buttons=None):
     return Dialog(
         title="Keypad",
         content_builder=lambda: bs.Label("body"),
-        buttons=[DialogButton(text="OK", role="primary", result="ok", default=True)],
+        buttons=buttons or [DialogButton(text="OK", role="primary", result="ok", default=True)],
         parent=app._tk_root,
     )
+
+
+def _footer_widget(impl, text):
+    """The real footer button built for the spec whose text is `text`."""
+    specs = list(reversed(impl._buttons))
+    widgets = list(impl._footer.winfo_children())
+    assert len(widgets) == len(specs), "precondition: one footer button per spec"
+    for spec, widget in zip(specs, widgets):
+        if spec.text == text:
+            return widget
+    raise AssertionError(f"no footer button labelled {text!r}")
 
 
 def test_enter_presses_the_default_button(app):
@@ -230,12 +241,99 @@ def test_enter_presses_the_default_button(app):
     def hit_enter(dlg):
         top = dlg._dialog.toplevel
         assert top.winfo_ismapped(), "precondition: the dialog is on screen"
+        # A key press is delivered to the FOCUS widget, which on a freshly
+        # opened dialog is the toplevel itself — measured. `Dialog` asks for
+        # the default button to be focused, and that request does not take
+        # (the button is built before the window is deiconified), so nothing
+        # inside the window holds focus and this binding is the only thing
+        # that answers Enter. Generating on the toplevel is therefore the
+        # faithful simulation HERE, and only here; the two tests below give a
+        # button focus first, the way a click does.
+        #
+        # `focus_lastfor`, not `focus_get`: the latter reports nothing unless
+        # the window is active, which is not dependable in the shared root.
+        assert top.focus_lastfor() is top, "precondition: nothing inside holds focus"
         top.event_generate("<Return>", when="now")
 
     # This dialog IS the `Dialog`, so `_drive`'s `dialog._dialog` needs a hop.
     _drive(_Wrapped(dialog), app, hit_enter)
 
     assert dialog.result == "ok", "Enter did not press the default button"
+
+
+def test_enter_on_the_default_button_invokes_it_once(app):
+    """One press, one command run — even when the press is refused.
+
+    Two things have to be true for this to be reachable, and both are:
+
+    The button has to hold focus. A freshly opened dialog focuses nothing (see
+    above), but a CLICK focuses the button it lands on — ttk's own `Press`
+    binding does `focus $w` unconditionally. So this is the state a user is in
+    after clicking a button whose command refused the press, which is exactly
+    the state the veto was added to create. The focus is set explicitly here
+    rather than by synthesizing a click, to keep the test about the key.
+
+    And the press has to be refused. An accepted press destroys the window,
+    and the destroy aborts the second dispatch before it invokes anything —
+    measured: the same dialog with an accepting command reads one invocation
+    whether the guard is there or not.
+    """
+    calls: list[str] = []
+    dialog = _keypad_dialog(app, [DialogButton(
+        text="OK", role="primary", result="ok", default=True,
+        command=lambda dlg: (calls.append("ok"), False)[1],
+    )])
+
+    def hit_enter(dlg):
+        top = dlg._dialog.toplevel
+        assert top.winfo_ismapped(), "precondition: the dialog is on screen"
+        button = _footer_widget(dlg._dialog, "OK")
+        button.focus_set()
+        assert top.focus_lastfor() is button, "precondition: the default button has focus"
+        button.event_generate("<Return>", when="now")
+        assert calls == ["ok"], f"one press should run one command, ran {calls}"
+        assert top.winfo_exists(), "the refused press should have left the dialog open"
+        top.destroy()
+
+    _drive(_Wrapped(dialog), app, hit_enter)
+
+    assert dialog.result is None, "a refused press recorded a result"
+
+
+def test_enter_on_a_focused_button_does_not_also_press_the_default(app):
+    """Keyboard traversal: Enter presses the button you tabbed to, alone.
+
+    The crossfire case, and the damaging one — `Apply` refuses the press, so
+    without the guard the toplevel binding invokes `OK` on top of it and the
+    dialog closes reporting a submission the user never made.
+    """
+    calls: list[str] = []
+    dialog = _keypad_dialog(app, [
+        DialogButton(text="Cancel", role="cancel", result=None),
+        DialogButton(
+            text="Apply", role="secondary", result="apply",
+            command=lambda dlg: (calls.append("apply"), False)[1],
+        ),
+        DialogButton(
+            text="OK", role="primary", result="ok", default=True,
+            command=lambda dlg: calls.append("ok"),
+        ),
+    ])
+
+    def hit_enter(dlg):
+        top = dlg._dialog.toplevel
+        assert top.winfo_ismapped(), "precondition: the dialog is on screen"
+        apply_widget = _footer_widget(dlg._dialog, "Apply")
+        apply_widget.focus_set()
+        assert top.focus_lastfor() is apply_widget, "precondition: Apply holds focus"
+        apply_widget.event_generate("<Return>", when="now")
+        assert calls == ["apply"], f"Enter ran more than the focused button: {calls}"
+        assert top.winfo_exists(), "the refused press should have left the dialog open"
+        top.destroy()
+
+    _drive(_Wrapped(dialog), app, hit_enter)
+
+    assert dialog.result is None, "the default button submitted on someone else's press"
 
 
 def test_the_keypad_enter_key_is_bound_alongside_enter(app):

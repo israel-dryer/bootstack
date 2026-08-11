@@ -542,13 +542,38 @@ class Dialog:
 
         if default_button is not None:
             default_button.focus_set()
+            top = self._toplevel
+
+            def press_default(event: Any, b: Any = default_button) -> None:
+                """Press the default button, unless a button already has.
+
+                This binding lives on the toplevel, so it runs for every key
+                press anywhere in the dialog. A press delivered to a button has
+                already invoked that button by the time the bindtag walk
+                reaches here — buttons carry a class binding for Return and
+                KP_Enter — so firing again would either invoke the same button
+                twice or, with focus on some OTHER button, run the default
+                button's command on top of the one the user actually pressed.
+                Standing down is also what makes keyboard traversal mean
+                something: Enter presses the button you tabbed to.
+
+                The remaining case is the one this binding exists for — focus
+                in an entry, as in `QueryDialog`, where nothing else would
+                answer the key.
+
+                `bindtags` is read through Tcl rather than off the widget:
+                Tkinter hands a callback the bare path string, not a widget,
+                whenever the target is absent from its widget map.
+                """
+                if "TButton" in top.tk.splitlist(top.tk.call("bindtags", event.widget)):
+                    return
+                b.invoke()
+
             # The keypad Enter key reports `KP_Enter`, a separate keysym from
             # `Return` on Windows, X11 and Aqua alike, so it needs its own
-            # binding — measured: without it the key does nothing at all in a
-            # dialog. One physical key produces one keysym, so binding both
-            # cannot invoke the button twice.
+            # binding to reach the default button from an input field.
             for key in ("<Return>", "<KP_Enter>"):
-                self._toplevel.bind(key, lambda e, b=default_button: b.invoke())
+                self._toplevel.bind(key, press_default)
 
         if cancel_button is not None:
             self._toplevel.bind("<Escape>", lambda e, b=cancel_button: b.invoke())

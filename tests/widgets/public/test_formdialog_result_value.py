@@ -555,3 +555,39 @@ def test_a_removed_kwarg_names_the_button_it_came_from(app):
     with pytest.raises(ValueError, match="Invalid button mapping"):
         FormDialog(items=[_select_item()],
                    buttons=[{"text": "Apply", "closes": False}])
+
+
+def test_a_cancel_closes_even_when_the_form_cannot_be_satisfied(app):
+    """A cancel is never gated on validation — it is the way out.
+
+    `role='cancel'` with `result='ok'` is contradictory input, and the token
+    wins when the dialog resolves what to hand back; that ordering is what
+    stops such a press reporting a PREVIOUS run's entries (the test above).
+    Asking the same question to decide whether to VALIDATE put the one button
+    that must always work behind a form that could not be satisfied. `Dialog`
+    binds Escape to this same button, so refusing it leaves a modal with no
+    way out but the window manager.
+
+    The required field is left blank deliberately: the select-based items used
+    elsewhere in this file carry no rule, so they cannot fail validation and a
+    test built on them would pass either way.
+    """
+    dialog = FormDialog(
+        items=[_required_item()],
+        buttons=[DialogButton(text="Close", role="cancel", result="ok")],
+    )
+
+    closed: list[bool] = []
+
+    def press_close(impl):
+        assert impl.form is not None, "precondition: the form was built"
+        assert not impl.form.validate(), (
+            "precondition: a blank required field fails validation"
+        )
+        _press_text(impl, "Close")
+        top = impl._dialog.toplevel
+        closed.append(top is None or not top.winfo_exists())
+
+    _drive(dialog, app, press_close)
+
+    assert closed == [True], "the cancel button could not close an invalid form"
