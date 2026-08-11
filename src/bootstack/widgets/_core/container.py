@@ -218,19 +218,59 @@ class PublicContainer(PublicWidgetBase):
 # ---  Flex engine (Row / Column)  --------------------------------------------
 
 
-def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
-    """Raise on legacy pack/grid placement kwargs passed to a flex child."""
+# Per-child keys a GRID CELL honors. `grow=` is deliberately ABSENT: Grid and
+# the page/pane containers filter their child options to GRID_KEYS, so a `grow=`
+# written on one of their children is silently dropped. `sticky`/`in_` are not
+# user-facing — `sticky` is a legacy key the guard below rejects, and the cell
+# derives it from `horizontal`/`vertical` instead.
+GRID_CHILD_KEYS = (GRID_KEYS | {"horizontal", "vertical"}) - {"sticky", "in_"}
+
+_ALIGN_ADVICE = (
+    "horizontal= takes left/center/right/stretch and vertical= takes "
+    "top/center/bottom/stretch (for example horizontal=\"stretch\")"
+)
+
+# The remedy depends on HOW the container places its children, and naming the
+# wrong one is the defect this message exists to fix (issue #426). A flex
+# container honors `grow=` on the child; a grid cell drops it, so recommending
+# it there would send the user to a kwarg that does nothing — the same silent
+# no-op #426 was filed about, just one step further along.
+FLEX_CHILD_ADVICE = (
+    "Use grow= to claim leftover space along the stacking axis, or "
+    "horizontal=/vertical= to align or stretch across it — " + _ALIGN_ADVICE
+)
+
+# Container-level options are named WITHOUT a trailing `=` on purpose: the `X=`
+# spelling is reserved for per-child remedies, which is what the regression test
+# checks must be real keys.
+GRID_CHILD_ADVICE = (
+    "Use horizontal=/vertical= to align or stretch the child inside its cell — "
+    + _ALIGN_ADVICE
+    + ". Leftover space is claimed by weighting the row or column on the "
+    "container (the Grid's columns/rows argument), not by a kwarg on the child"
+)
+
+
+def _reject_legacy_child_kwargs(
+    layout_kw: dict, where: str, *, advice: str = FLEX_CHILD_ADVICE
+) -> None:
+    """Raise on legacy pack/grid placement kwargs passed to a flex child.
+
+    Args:
+        layout_kw: the split-out layout kwargs to inspect.
+        where: the call site named in the message.
+        advice: the remedy to recommend. Defaults to the flex-container one;
+            grid-cell callers must pass `GRID_CHILD_ADVICE`, because `grow=` is
+            silently dropped there.
+    """
     bad = _LEGACY_CHILD_KEYS & layout_kw.keys()
     if bad:
         from bootstack.errors import BootstackError
 
+        kind = "grid cell" if advice is GRID_CHILD_ADVICE else "flex child"
         raise BootstackError(
             f"{where}: {', '.join(sorted(bad))} is not a valid layout option for "
-            f"a Row/Column/Grid child. Use grow= to claim leftover space along "
-            f"the stacking axis, or horizontal=/vertical= to align or stretch "
-            f"across it — horizontal= takes left/center/right/stretch and "
-            f"vertical= takes top/center/bottom/stretch (for example "
-            f"horizontal=\"stretch\") — see the layout guide."
+            f"a {kind}. {advice} — see the layout guide."
         )
 
 
