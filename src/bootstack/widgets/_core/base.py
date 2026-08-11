@@ -9,6 +9,8 @@ from bootstack.events import Event, Subscription
 from bootstack.errors import ParentResolutionError
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from bootstack.scheduling import Schedule
     from bootstack.streams import Stream
 
@@ -185,6 +187,94 @@ class PublicWidgetBase:
             from bootstack.scheduling import Schedule
             self._schedule = Schedule(self._internal)
         return self._schedule
+
+    def capture(
+        self,
+        path: str | Path,
+        *,
+        inset: int = 0,
+        settle: float = 0.1,
+    ) -> Path:
+        """Save a picture of this widget to an image file.
+
+        Captures the area this widget occupies on screen — one widget, a whole
+        window, or the entire application, depending on what you call it on.
+        The file extension selects the format, so `.png`, `.jpg`, and `.pdf`
+        all work.
+
+        The widget has to be visible. A capture reads pixels from the display,
+        so the window is brought to the front first and a hidden or detached
+        widget cannot be captured at all. Any always-on-top setting the window
+        already had is left as it was found.
+
+        Pair it with a save dialog to let the user choose where it goes::
+
+            import bootstack as bs
+
+            def on_export():
+                chosen = bs.ask_save_file(initial_file="dashboard.png")
+                if chosen:
+                    app.capture(chosen)
+
+        Args:
+            path: Where to write the image. Missing parent folders are created,
+                and the extension chooses the format.
+            inset: Pixels to trim from every edge, zero or more. Use `2` on a
+                whole window to drop the native border artifact.
+            settle: Seconds to let the desktop finish repainting before the
+                pixels are read. The default covers the common case of a dialog
+                closing just beforehand. The interface pauses for this long,
+                so a second click on the control that started the capture waits
+                its turn rather than starting an overlapping one.
+
+        Returns:
+            The path that was written.
+
+        Raises:
+            BootstackError: If the widget is not visible on screen or has been
+                scrolled out of view, if `inset` is negative, if no capture
+                backend is available, or if the file cannot be written.
+
+        .. versionadded:: 0.3.0
+        """
+        from bootstack._core import capture as _capture
+        from bootstack.errors import BootstackError
+
+        target = self._internal
+        with _capture.raised(target):
+            # Settle after raising: the desktop needs a moment to repaint the
+            # newly exposed area, and a widget created moments ago is not
+            # mapped until the toolkit has processed its pending geometry.
+            _capture.settle(target, settle)
+            # Settling dispatches, so a timer that ran during it can have
+            # closed the target — and these checks cost nothing next to
+            # reading the screen. A target closed on another thread, or by a
+            # timer that ran before the capture started, has to be caught too.
+            if not _capture.still_exists(target):
+                raise BootstackError(
+                    f"{type(self).__name__} was closed while the capture was "
+                    f"waiting for the screen to settle, so there is nothing "
+                    f"left to photograph."
+                )
+            if not target.winfo_ismapped():
+                raise BootstackError(
+                    f"{type(self).__name__} is not visible on screen, so there "
+                    f"is nothing to capture. Show the window and make sure the "
+                    f"widget is neither hidden nor detached before capturing it."
+                )
+            # Being mapped is not the same as being in view: a widget scrolled
+            # out of a viewport stays mapped, and its rectangle then points at
+            # whatever else happens to be on screen there.
+            if _capture.clipped_out_of_view(target):
+                raise BootstackError(
+                    f"{type(self).__name__} has been scrolled out of view, so "
+                    f"the area it reports is no longer inside its window and "
+                    f"would photograph whatever is behind. Scroll it back into "
+                    f"view before capturing it."
+                )
+            return _capture.capture_region(
+                _capture.widget_region(target, inset), path
+            )
 
     # ----- on() — overloaded -------------------------------------------------
 

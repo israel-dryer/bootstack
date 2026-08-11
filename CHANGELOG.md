@@ -10,6 +10,10 @@ and from 0.1.0 onward the project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- **Every widget can now save a picture of itself.** `capture(path)` writes the area a widget occupies on screen to an image file and returns the path it wrote — call it on the app for the whole window, or on any single widget for just that part of it. The file extension picks the format, so `.png`, `.jpg`, and `.pdf` all work, and missing folders in the path are created for you. Pair it with `ask_save_file()` to let the user choose where the picture goes. The window is raised before the picture is taken, and an always-on-top setting the window already had is left exactly as it was found. Capturing a hidden or detached widget raises an error rather than silently saving whatever happened to be behind it. (#427)
+
 ### Changed
 
 - **A dialog button's command can now refuse its own press by returning `False`.** The dialog then records no result and stays open, where previously the return value was ignored and the press completed regardless — recording the button's result and closing the window even when the command had decided to do nothing. This is how a button rejects the input it was given: validate in the command, return `False` to keep the dialog open, return anything else to let it close. If you have a button command that returns `False` for some other reason, it will now suppress that button rather than being ignored; return `None` to keep the previous behavior. `FormDialog` already treated `False` this way for the commands you give it, so this brings the underlying `Dialog` in line with it — and `Form`'s own button row, the other place these specifications are used, honors it too, where it previously recorded a result for a press its command had just declined. A form stays on screen after a press, so a refused press there also clears any result an earlier press recorded: `form.result` is the most recent press that completed, never an older one made against data you have since edited. (#437)
