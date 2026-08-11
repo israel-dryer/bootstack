@@ -38,6 +38,20 @@ def _drive(dialog, app, action):
     a half-built dialog. `grab_set()` is the last thing `show()` does before it
     waits, which makes it the barrier. Same hazard and remedy as
     `test_formdialog_result_value.py`.
+
+    ⚠ The grab alone is NOT enough of a barrier, and this cost a flaky test.
+    The footer's buttons are mapped by the geometry manager at idle, which can
+    still be pending when the grab is up — measured under the shared-root leg,
+    where the failure carried `button mapped=0 parent mapped=1 top mapped=1
+    grab=.!toplevel7`. A widget that is not mapped cannot take focus, and Tk
+    says nothing about it: `TkSetFocusWin` walks the widget's ancestry and
+    returns without setting anything if any window on that path is unmapped. So
+    `focus_set()` was a silent no-op and the miss surfaced one line later as
+    `focus_lastfor()` still naming the toplevel. It reproduced in 1 of 5 full
+    legs and never once in 60 dialogs in a quiet process, which is why the
+    barrier is the fix rather than a retry in each test.
+    `development/probe_437_focus_flake.py` carries the mechanism and its
+    control.
     """
     root = app._tk_root
     pending: list[str] = []
@@ -47,9 +61,16 @@ def _drive(dialog, app, action):
         top = dialog._dialog.toplevel
         return top if top is not None and top.winfo_exists() else None
 
+    def footer_is_up():
+        """Every footer button mapped — see the warning in the docstring."""
+        footer = getattr(dialog._dialog, "_footer", None)
+        if footer is None or not footer.winfo_exists():
+            return False
+        return all(w.winfo_ismapped() for w in footer.winfo_children())
+
     def run(attempt=0):
         top = toplevel()
-        if top is None or top.grab_current() is not top:
+        if top is None or top.grab_current() is not top or not footer_is_up():
             if attempt < 200:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
             return
@@ -223,6 +244,21 @@ def _keypad_dialog(app, buttons=None):
     )
 
 
+def _take_focus(top, widget, label):
+    """Give a footer button focus the way a click does, and prove it took.
+
+    The mapped check comes first because `focus_set()` is a silent no-op on an
+    unmapped widget — see the warning in `_drive`. Asserting it here means a
+    recurrence names its own cause rather than surfacing one line later as a
+    focus request that inexplicably did nothing.
+    """
+    assert widget.winfo_ismapped(), f"precondition: {label} is mapped"
+    widget.focus_set()
+    # `focus_lastfor`, not `focus_get`: the latter reports nothing unless the
+    # window is active, which is not dependable in the shared root.
+    assert top.focus_lastfor() is widget, f"precondition: {label} holds focus"
+
+
 def _footer_widget(impl, text):
     """The real footer button built for the spec whose text is `text`."""
     specs = list(reversed(impl._buttons))
@@ -294,8 +330,7 @@ def test_enter_on_the_default_button_invokes_it_once(app):
         top = dlg._dialog.toplevel
         assert top.winfo_ismapped(), "precondition: the dialog is on screen"
         button = _footer_widget(dlg._dialog, "OK")
-        button.focus_set()
-        assert top.focus_lastfor() is button, "precondition: the default button has focus"
+        _take_focus(top, button, "the default button")
         button.event_generate("<Return>", when="now")
         assert calls == ["ok"], f"one press should run one command, ran {calls}"
         assert top.winfo_exists(), "the refused press should have left the dialog open"
@@ -330,8 +365,7 @@ def test_enter_on_a_focused_button_does_not_also_press_the_default(app):
         top = dlg._dialog.toplevel
         assert top.winfo_ismapped(), "precondition: the dialog is on screen"
         apply_widget = _footer_widget(dlg._dialog, "Apply")
-        apply_widget.focus_set()
-        assert top.focus_lastfor() is apply_widget, "precondition: Apply holds focus"
+        _take_focus(top, apply_widget, "Apply")
         apply_widget.event_generate("<Return>", when="now")
         assert calls == ["apply"], f"Enter ran more than the focused button: {calls}"
         assert top.winfo_exists(), "the refused press should have left the dialog open"
@@ -370,8 +404,7 @@ def test_enter_on_a_disabled_button_still_reaches_the_default(app):
         apply_widget = _footer_widget(dlg._dialog, "Apply")
         apply_widget.state(["disabled"])
         assert apply_widget.instate(["disabled"]), "precondition: Apply is disabled"
-        apply_widget.focus_set()
-        assert top.focus_lastfor() is apply_widget, "precondition: Apply holds focus"
+        _take_focus(top, apply_widget, "Apply")
 
         apply_widget.event_generate("<Return>", when="now")
 
