@@ -99,20 +99,30 @@ completes as usual:
 
 .. code-block:: python
 
+   fields = {}
+
+   def build():
+       bs.Label("Project name")
+       fields["name"] = bs.TextField()
+
    def save(dlg):
-       if not name.value:
-           bs.alert("A name is required.")
+       if not fields["name"].value:
+           bs.toast("A name is required.")
            return False        # refused: the dialog stays open
-       write(name.value)
 
    dlg = Dialog(
        title="New project",
        content_builder=build,
        buttons=[
-           DialogButton("Save",   role="primary", result="save", command=save),
+           DialogButton("Save",   role="primary", result="save", command=save,
+                        default=True),
            DialogButton("Cancel", role="cancel"),
        ],
    )
+   dlg.show()
+
+   if dlg.result == "save":
+       create_project(fields["name"].value)
 
 This is per press, not per button — the same button accepts the next press once
 the input is valid. It applies to the :kbd:`Enter` key as well, which triggers
