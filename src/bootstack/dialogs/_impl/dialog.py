@@ -182,6 +182,71 @@ def emit_dialog_result(target: Optional[tkinter.Misc], payload: dict) -> None:
 
 # --- Dialog ----------------------------------------------------------------
 
+# Bindtags whose widgets treat Enter as CONTENT rather than as a command.
+# `Text` is Tk's multi-line text class, which `TextArea` and `CodeEditor` are
+# both built on — naming the class covers them, and anything else Text-backed,
+# without listing widgets.
+_ENTER_IS_CONTENT = frozenset({"Text"})
+
+
+def _key_was_consumed(widget: Any) -> bool:
+    """Did `widget` already answer the Return key by the time it reached us?
+
+    A dialog binds Return on its TOPLEVEL so the default button can be pressed
+    from an input field. The toplevel is last in the bindtag walk, so by the
+    time that binding runs a widget-level or class-level handler has already
+    had the key — and firing the default button on top of it either invokes the
+    same button twice or runs the default button's command over the one the
+    user actually pressed.
+
+    Two kinds of widget answer Enter, and the rule names the intent rather than
+    inferring it:
+
+    * a **button** invokes. bootstack installs `TButton <Key-Return>` ->
+      `button_default_binding` at app construction (`_runtime/app.py:151`).
+    * a **multi-line text widget** inserts a newline. That is issue #441: the
+      newline went in and the dialog then closed on top of it, because the
+      guard recognized only buttons.
+
+    In both cases a DISABLED widget is the exception: its class binding runs
+    but does nothing — `invoke` is a no-op on a disabled button, and
+    `tk::TextInsert` returns early on a disabled text (both measured,
+    `development/probe_441_key_already_handled.py`). Nothing answered the key,
+    so the default button should still get it. Standing down there would leave
+    the keyboard dead for the whole dialog.
+
+    ⚠ INTERROGATING THE BINDINGS INSTEAD WAS TRIED AND IS WRONG — do not
+    re-propose it as the "general" rule. Asking whether any bindtag carries a
+    real binding for the key looks principled and misclassifies the control:
+    bootstack's own `TextField` binds `<Return>` as an instance binding to emit
+    its `submit` event, so a plain entry reads as "already handled" and
+    `ask_string()` stops submitting. Tk also binds `TEntry <Return>` to the
+    literal script `# nothing`, so a non-empty script does not mean the key was
+    handled either. Binding inspection cannot separate binds-to-notify from
+    binds-to-consume; the class name is where that intent is recorded.
+    """
+    try:
+        tags = {str(tag) for tag in widget.bindtags()}
+    except (AttributeError, tkinter.TclError):
+        # Nothing identifiable answered the key, so let the default button run
+        # rather than silently swallowing Enter for the whole dialog.
+        return False
+
+    if "TButton" in tags:
+        try:
+            return not widget.instate(["disabled"])
+        except (AttributeError, tkinter.TclError):
+            return True
+
+    if tags & _ENTER_IS_CONTENT:
+        try:
+            return str(widget.cget("state")) == "normal"
+        except (AttributeError, tkinter.TclError):
+            return True
+
+    return False
+
+
 class Dialog:
     """A flexible dialog window using the builder pattern.
 
@@ -583,12 +648,16 @@ class Dialog:
                 leave the keyboard dead for the whole dialog — which is what a
                 content button that greys itself out on click would cause.
 
+                A multi-line text widget answers Enter too, by inserting a
+                newline, and standing down for it is issue #441 — the newline
+                went in and the dialog closed on top of it. `_key_was_consumed`
+                owns that decision for both kinds of widget.
+
                 The remaining case is the one this binding exists for — focus
                 in an entry, as in `QueryDialog`, where nothing else would
                 answer the key.
                 """
-                pressed = event.widget
-                if "TButton" in pressed.bindtags() and not pressed.instate(["disabled"]):
+                if _key_was_consumed(event.widget):
                     return
                 b.invoke()
 
