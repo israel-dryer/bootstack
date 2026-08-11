@@ -84,14 +84,15 @@ class DialogButton:
     result: Any | None = None  # value assigned to dialog.result
     """Value assigned to `dialog.result` when clicked."""
 
-    closes: bool = True  # close dialog after click
-    """Whether the button closes the dialog when clicked."""
-
     default: bool = False  # default button (Enter)
     """Whether this is the default button (focused, triggered by Enter)."""
 
-    command: Callable[[Dialog], None] | None = None
-    """Callback invoked when clicked."""
+    command: Callable[[Dialog], Any] | None = None
+    """Callback invoked when clicked. Returning `False` refuses the press — no
+    result is recorded, and a dialog stays open — which is how a button rejects
+    the input it was given. Any other return value, including `None`, accepts
+    it. The same applies wherever these specifications are used, including the
+    button row of a `Form`."""
 
     accent: AccentToken | str | None = None
     """Accent token for styling (e.g. `'primary'`, `'danger'`)."""
@@ -501,11 +502,21 @@ class Dialog:
 
             def make_command(s: DialogButton):
                 def cmd():
-                    if s.command:
-                        s.command(self)
+                    # A command returning False refuses the press: the dialog
+                    # neither records a result nor closes. Without this, a
+                    # command that declines to act (a form failing validation,
+                    # say) still stamps its button's result, and that value
+                    # outlives the press — a later cancel cannot clear it,
+                    # because a cancel button's own result is None and the write
+                    # below is skipped for None.
+                    if s.command and s.command(self) is False:
+                        return
                     if s.result is not None:
                         self.result = s.result
-                    if s.closes and self._toplevel:
+                    # `winfo_exists` rather than a bare truth test: a command is
+                    # free to close the dialog itself, and destroying an already
+                    # destroyed toplevel raises.
+                    if self._toplevel and self._toplevel.winfo_exists():
                         self._toplevel.destroy()
 
                 return cmd
@@ -531,7 +542,41 @@ class Dialog:
 
         if default_button is not None:
             default_button.focus_set()
-            self._toplevel.bind("<Return>", lambda e, b=default_button: b.invoke())
+            top = self._toplevel
+
+            def press_default(event: Any, b: Any = default_button) -> None:
+                """Press the default button, unless a button already has.
+
+                This binding lives on the toplevel, so it runs for every key
+                press anywhere in the dialog. A press delivered to a button has
+                already invoked that button by the time the bindtag walk
+                reaches here — buttons carry a class binding for Return and
+                KP_Enter — so firing again would either invoke the same button
+                twice or, with focus on some OTHER button, run the default
+                button's command on top of the one the user actually pressed.
+                Standing down is also what makes keyboard traversal mean
+                something: Enter presses the button you tabbed to.
+
+                A DISABLED button is the exception: its class binding runs but
+                `invoke` does nothing, so nothing has answered the key and the
+                default button should still get it. Standing down there would
+                leave the keyboard dead for the whole dialog — which is what a
+                content button that greys itself out on click would cause.
+
+                The remaining case is the one this binding exists for — focus
+                in an entry, as in `QueryDialog`, where nothing else would
+                answer the key.
+                """
+                pressed = event.widget
+                if "TButton" in pressed.bindtags() and not pressed.instate(["disabled"]):
+                    return
+                b.invoke()
+
+            # The keypad Enter key reports `KP_Enter`, a separate keysym from
+            # `Return` on Windows, X11 and Aqua alike, so it needs its own
+            # binding to reach the default button from an input field.
+            for key in ("<Return>", "<KP_Enter>"):
+                self._toplevel.bind(key, press_default)
 
         if cancel_button is not None:
             self._toplevel.bind("<Escape>", lambda e, b=cancel_button: b.invoke())
@@ -636,11 +681,11 @@ class Dialog:
     def _style_for_role(self, role: ButtonRole) -> tuple[str | None, str | None]:
         """Return (accent, variant) tuple for a button role."""
         if role == "primary":
-            return ("primary", None)
+            return "primary", None
         if role == "secondary":
-            return ("default", None)
+            return "default", None
         if role == "danger":
-            return ("danger", None)
+            return "danger", None
         if role == "cancel":
-            return ("default", "outline")
-        return ("default", None)
+            return "default", "outline"
+        return "default", None

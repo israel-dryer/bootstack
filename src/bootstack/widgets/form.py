@@ -97,7 +97,12 @@ class Form(PublicWidgetBase):
 
     @property
     def result(self) -> Any:
-        """Value set by button commands. None until a button is pressed."""
+        """Value set by button commands.
+
+        None until a button is pressed, and None again after a press its
+        command refused — so this always reflects the most recent press that
+        completed, never one that was declined.
+        """
         return self._internal.result
 
     def get(self) -> dict[str, Any]:

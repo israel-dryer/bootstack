@@ -436,7 +436,12 @@ class FormDialog:
         on_close: Callback fired when the dialog closes by any means.
         width: Explicit form width in pixels.
         height: Explicit form height in pixels.
-        buttons: Footer button specs. Defaults to Cancel + OK.
+        buttons: Footer button specs. Defaults to Cancel + OK. A button's
+            `result=` decides whether it submits the form: `'ok'`, `'submit'`
+            and `'save'` return the entered data, and so does a button with no
+            `result=` at all. Give an action button — a Delete, say — a result
+            token of its own, and it runs without the form having to validate
+            and hands that token back instead of the data.
         min_size: Minimum dialog window size `(width, height)`.
         max_size: Maximum dialog window size `(width, height)`.
         resizable: Allow window resizing. Default `False`.

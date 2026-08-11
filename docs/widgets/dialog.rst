@@ -89,6 +89,51 @@ to when that button is clicked:
    elif dlg.result == "discard":
        discard()
 
+Refusing a press
+~~~~~~~~~~~~~~~~
+
+A button's ``command=`` can decline the press it was given. Return ``False``
+and the dialog records no result and stays open, so the user can correct the
+input and try again; return anything else — including ``None`` — and the press
+completes as usual:
+
+.. code-block:: python
+
+   name = bs.Signal("")
+
+   def build():
+       bs.Label("Project name")
+       bs.TextField(textsignal=name)
+
+   def save(dlg):
+       if not name():
+           bs.toast("A name is required.")
+           return False        # refused: the dialog stays open
+
+   dlg = Dialog(
+       title="New project",
+       content_builder=build,
+       buttons=[
+           DialogButton("Save", role="primary", result="save", command=save, default=True),
+           DialogButton("Cancel", role="cancel"),
+       ],
+   )
+   dlg.show()
+
+   if dlg.result == "save":
+       create_project(name())
+
+This is per press, not per button — the same button accepts the next press once
+the input is valid. It applies to the :kbd:`Enter` key as well, which triggers
+the default button through the same command.
+
+.. note::
+
+   Bind the content to a :class:`~bootstack.Signal` when you need its value
+   afterward, the way ``name`` is used above. ``show()`` returns once the window
+   has closed, and the widgets the builder made are gone by then — the signal
+   holds the value independently of them, so it is still there to read.
+
 Dialog modes
 ~~~~~~~~~~~~
 

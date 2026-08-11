@@ -260,7 +260,6 @@ class DateDialog:
                     text="button.ok",
                     role="primary",
                     default=True,
-                    closes=False,
                     command=lambda dlg: self._on_confirm_range(),
                 ),
             ]
@@ -318,22 +317,39 @@ class DateDialog:
 
         self._confirm(selected)
 
-    def _on_confirm_range(self) -> None:
+    def _on_confirm_range(self) -> bool:
         """Confirm the selected range when OK is clicked.
 
-        No-op (dialog stays open) until both endpoints are selected.
+        Refuses the press — leaving the dialog open — until both endpoints are
+        selected. The OK button hands that answer back to `Dialog`, which owns
+        the close.
+
+        Unlike `_confirm`, this releases no grab of its own. It does not need
+        to: `Dialog` destroys the toplevel, and Tk releases a grab held by a
+        window when that window is destroyed (measured — see
+        `development/probe_437_review2_fixes.py`). `_confirm` keeps its
+        `grab_release()` because it destroys the window itself, where the call
+        is at least self-documenting.
         """
         if not self._picker:
-            return
+            return False
         start, end = self._picker.get_range()
         if start is None or end is None:
-            return
-        self._confirm((start, end))
+            return False
+        self._record((start, end))
+        return True
 
-    def _confirm(self, result: date | Tuple[date, date]) -> None:
-        """Record the result, emit, and close the dialog."""
+    def _record(self, result: date | Tuple[date, date]) -> None:
+        """Record the result and notify listeners, without closing."""
         self._dialog.result = result
         self._emit_result(result, confirmed=True)
+
+    def _confirm(self, result: date | Tuple[date, date]) -> None:
+        """Record the result, emit, and close the dialog.
+
+        Used by the commit-on-select path, which has no button behind it.
+        """
+        self._record(result)
         if self._dialog.toplevel:
             top = self._dialog.toplevel
             try:
