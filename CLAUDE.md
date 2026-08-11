@@ -42,18 +42,37 @@ Go from nothing to something fast. The user should never need to `import tkinter
 > standing rules and what is open; `docs/_dev/handoff-archive.md` keeps shipped
 > history.
 >
-> ⚠ **THE ROOT IS DELIBERATELY EMPTY OF BOTH RIGHT NOW (2026-08-11).** `0.3.0`
-> shipped, so its `PLAN.md` and `REVIEW.md` were archived to
-> `development/plan-428-437-438-dialogs.md` and
-> `development/review-428-437-438-dialogs.md`, matching where the #417 and #421
-> review records already live. **Create `PLAN.md` fresh for the next branch —
-> finding a stale one describing shipped work is worse than finding none.**
+> ⚠ **THE ROOT CARRIES BOTH RIGHT NOW** — `PLAN.md` and `REVIEW.md` for
+> `fix/dialog-keyboard-modality` (`0.3.1`). **Archive them into `development/`
+> when it merges**, as `0.3.0`'s were
+> (`development/plan-428-437-438-dialogs.md`,
+> `development/review-428-437-438-dialogs.md`), and **create `PLAN.md` fresh for
+> the branch after — finding a stale one describing shipped work is worse than
+> finding none.**
 >
 > ⚠ **AND CLOSE EACH ROUND WITH ITS RECORD.** Rounds 1–3 of the `0.3.0` dialog
 > work each landed a `docs(review):` commit; **round 4 did not**, so the branch sat
 > with four fix commits answering findings that existed nowhere in the repo, and
 > the record had to be reconstructed from commit messages afterwards. Writing the
 > record is the last step of a fix step, not an optional one.
+>
+> ⚠ **HAND `REVIEW.md` TO THE REVIEWER, or the round re-litigates settled
+> decisions** (learned on `0.3.1`, 2026-08-11). Round 2's reviewer was given
+> round 1's record and re-filed nothing. **Round 3's was not, and three of its
+> four findings were already-triaged items** — one refuted by measurement, one
+> deferred by the maintainer, one already filed as out of scope by round 2
+> itself. That is a harness failure, not a reviewer failure, and it costs a round
+> of maintainer attention spent re-reading its own deferrals.
+>
+> ⚠ **A re-report is not automatically noise, though.** `0.3.1`'s round 3 also
+> re-raised a finding whose *evidence* had not changed but whose *price* had — a
+> one-argument fix, weighed against shipping an unmeasurable X11 behavior change.
+> It was taken. **Ask what changed: the evidence, or the cost of acting?**
+>
+> ⚠ **AND KNOW WHEN TO STOP.** `0.3.1` ran three rounds: 6 findings then 5 then
+> 4, but **real** yield was 3, 5, 1 — and round 2 existed only because round 1's
+> own fix was incomplete. **When a round returns mostly re-reports and
+> out-of-scope pre-existing bugs, the branch is done and the rest are issues.**
 
 ---
 
@@ -117,7 +136,9 @@ attributions. Block the module with a `meta_path` finder, assert the block works
 as a control, then import. It passed for `0.3.0`.
 
 **⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
-#441. Scoped 2026-08-11 (maintainer). See START HERE.
+#441. Scoped 2026-08-11 (maintainer). **BUILT, REVIEWED THREE TIMES, AND GREEN on
+`fix/dialog-keyboard-modality` — awaiting a merge decision, and the branch is NOT
+PUSHED.** See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
 has now been wrong about them FIVE times, in both directions.**
@@ -225,8 +246,11 @@ here:
   had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
   reinstalled as **1.5.1**. Check for it before assuming the release flow works.
 
-**⚠ ONE BRANCH IN FLIGHT (2026-08-11, later the same day).** The other merged —
-see below.
+**⚠ EVERYTHING IN THIS SECTION ABOUT `feat/widget-capture-427` AND
+`fix/formdialog-select-value-428` IS SHIPPED HISTORY — both are in `0.3.0`.** It
+is kept for the measurements and traps, not as live state. **The one branch in
+flight is `fix/dialog-keyboard-modality` (`0.3.1`) — see START HERE**, which is
+the only block in this file describing work that is not merged.
 
 **✅ `fix/formdialog-select-value-428` IS MERGED AND DELETED.** It went in as
 **PR #442**, **merge commit `06acd727`** (a merge commit, not a squash — same
@@ -497,8 +521,14 @@ before reopening any of this rather than re-deriving it.
 - Probe output must be **ASCII** — a check mark raised `UnicodeEncodeError` on
   this box's cp1252 console. Same rule #430 hit.
 
-**BRANCHES: `main`, `feat/widget-capture-427`** — `fix/formdialog-select-value-428`
-merged as PR #442 and was deleted local and remote on 2026-08-11.
+**⚠ THIS LINE IS STALE — see START HERE for the live answer.** As of 2026-08-11
+(later still) the refs are **`main` and `fix/dialog-keyboard-modality`**, the
+latter LOCAL ONLY. `feat/widget-capture-427` and
+`fix/formdialog-select-value-428` both shipped in `0.3.0` and are deleted.
+
+Original line, kept for the reasoning that follows it: *BRANCHES: `main`,
+`feat/widget-capture-427` — `fix/formdialog-select-value-428`
+merged as PR #442 and was deleted local and remote on 2026-08-11.*
 The `main`-only state below
 was verified 2026-08-06 after the `0.2.2` release and held until the branch above
 was pushed on 2026-08-07.
@@ -632,7 +662,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422 | 2 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445 | 4 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -686,41 +716,84 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-11, end of day) — `0.3.0` SHIPPED. Nothing is in flight.
+### ★ START HERE (2026-08-11, later still) — `0.3.1` IS BUILT AND UNDER REVIEW
 
-**`0.3.0 — Screen capture and dialog results` is on PyPI**, tag `v0.3.0`, shipped
-by a clean `release.yml` with the docs deploy chaining off it. **Every
-post-release step is done and verified** — see Current state for the evidence and
-for the one new check worth repeating (import with `idlelib` blocked).
+**`0.3.0` is on PyPI** (tag `v0.3.0`, clean `release.yml`, docs chained off it);
+every post-release step is done and verified — see Current state for the evidence
+and for the one new check worth repeating (import with `idlelib` blocked).
 
-**There are NO branches. `main` is the only ref**, local and remote, and it is
-green: **1159 / 21 over 20 legs** at `ab11f37c`. Both merged branches and all
-backup refs are deleted (`38d01598`, `1f13cea0`, `05707330`, `89386960` recorded
-in case anything needs resurrecting).
+**⚠ ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 13 commits, and it is
+NOT PUSHED.** `git ls-remote --heads origin fix/dialog-keyboard-modality` returns
+nothing, so this pointer is the ONLY record that it exists — which is exactly the
+failure mode memory `reference_handoff_blind_to_unpushed_branches` describes.
+**Push it.** `main` is at `78f107f9` and equals `origin/main`.
 
-**⏭ START WITH `0.3.1 — Dialog keyboard and modality`: #426, #439, #440, #441.**
-Scoped by the maintainer at release time, on the principle that **all four are
-patch-safe** — none adds public surface — and **none is a regression from
-`0.3.0`**; all four exist in `0.2.3` too. That is what made shipping first and
-patching after the right call rather than holding the release.
+It carries all four `0.3.1` issues — **#426, #439, #440, #441** — plus `PLAN.md`
+and `REVIEW.md` at the root. All four were scoped as **patch-safe** (none adds
+public surface) and **none is a regression from `0.3.0`**; all four exist in
+`0.2.3` too, which is what made shipping first and patching after the right call.
 
-| issue | what | size |
-|---|---|---|
-| **#426** | the layout migration error names `align_self=`/`justify_self=`, neither of which exists; the real keys are `horizontal=`/`vertical=` and only `grow=` is right | smallest — one message |
-| **#439** | `default_button.focus_set()` is a no-op, so no focus ring and Tab starts from nowhere, in a dialog whose docs promise otherwise | small, but the fix is UNVERIFIED and focus is platform-sensitive |
-| **#441** | Enter in a `TextArea` inserts the newline and then submits the dialog on top of it | needs a RULE, not another special case |
-| **#440** | a nested modal drops the outer dialog's grab permanently | largest — save/restore across `Dialog`, `MessageBox`, `QueryDialog`, `DateDialog` |
+**⏭ WHAT IS ACTUALLY LEFT: decide whether to merge.** The work is done and the
+suite is green — **1208 passed / 21 skipped, exit 0, all 20 legs**, plus a clean
+`-W` docs build. That is `main`'s 1159 plus the branch's 49 new tests.
+`git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
 
-⚠ **#441 carries a constraint set at scoping time: keep the fix INTERNAL.** The
-issue floats three options and one of them — letting a widget *declare* it
-consumes Enter — is new public surface, which would push the whole thing to a
-minor. A bindtag allowlist or asking the focus widget whether it is multi-line
-both stay inside a patch.
+**THREE REVIEW ROUNDS RAN. `REVIEW.md` on the branch is the full record — read it
+rather than re-deriving.** The yield curve is the part worth carrying:
 
-⚠ **#426 contradicts THIS FILE**, which quotes `Use grow= / align_self=` as the
-*good* error message under Layout. Fix both together. Verified 2026-08-11:
-`bs.Picture(align_self="stretch")` raises `TclError: unknown option "-align_self"`
-while `horizontal="stretch"` and `grow=1` both construct.
+| round | findings | real | what it cost |
+|---|---|---|---|
+| 1 | 6 | 3 | 2 refuted by measurement, 1 deferred by the maintainer |
+| 2 | 5 | 5 | **all five were round 1's own fix being incomplete** |
+| 3 | 4 | 1 | **three were already-triaged items re-filed** |
+
+⚠ **STOP AT THREE. The round-3 signal was 1-in-4 and the cause was a HARNESS gap,
+not code quality.** Round 2's reviewer was handed `REVIEW.md` and re-filed
+nothing; round 3's was not, and re-filed round 1's F1, round 1's maintainer-
+deferred F4, and an item round 2 had itself already filed as out of scope.
+**Carry the triage state into the reviewer or every round re-litigates decisions
+already taken.**
+
+⚠ **Round 3's one real finding was OUT OF SCOPE and is filed, not fixed —
+[#444](https://github.com/israel-dryer/bootstack/issues/444).** A modal
+`bs.Window` never restores the grab it took, so a dialog underneath it loses its
+modality. Reproduced (`outer holds grab: True` → `after inner closed: None`).
+**Pre-existing in `0.2.3` and `0.3.0`, and `_runtime/toplevel.py` is not in this
+branch's diff** — #440 was scoped to the four dialog classes. ⚠ **The reviewer
+also claimed the CHANGELOG says this is fixed; that was CHECKED and is FALSE** —
+the #440 bullet scopes itself to dialogs and its `modal="app"` sentence is about
+restoring a grab's *kind*. Nothing false ships. Agents over-flag; that is the
+shape it takes on a finding that is otherwise sound.
+
+⚠ **[#445](https://github.com/israel-dryer/bootstack/issues/445) filed the same
+way:** `attach()` drops legacy layout kwargs on a grid cell while rejecting them
+on a flex child. Pre-existing, one-liner now that `kind` is required. Both are on
+`0.3.x — Patch line`.
+
+**#441's scoping constraint held: the fix stayed INTERNAL.** The issue floated
+letting a widget *declare* it consumes Enter — new public surface, which would
+have pushed the whole thing to a minor. The shipped rule asks the bindtag **and
+the keysym**, both internal.
+
+⚠ **The keysym half was round 1's F1, refuted, then RE-OPENED ON COST rather than
+on new evidence.** Round 1 documented it as an unmeasurable X11 limit; round 3
+pointed out the remedy is one argument, weighed against shipping a branch that
+changes X11 behavior on a platform neither box can test. **Measured before
+changing anything — the asymmetry is one-sided:**
+
+```
+TButton  <Key-Return> -> button_default_binding   <Key-KP_Enter> -> button_default_binding
+Text     <Key-Return> -> tk::TextInsert           <Key-KP_Enter> -> '# nothing'
+```
+
+So a button answers both Enter keys and a text widget answers only `Return`.
+⚠ **The test is `keysym != "KP_Enter"`, NOT `== "Return"`, deliberately** — an
+unknown keysym then reads as consumed, because standing down wrongly costs a dead
+key while firing wrongly costs **#441 itself**. Pinned by its own test so it is
+not "simplified" into the equality form later. ⚠ **Windows can reach this path by
+NEITHER route** (synthesis yields keysym `??`; the physical key folds into
+`Return`), so the tests drive the rule directly and only X11 can run it end to
+end.
 
 After `0.3.1`, the standing recommendation is still `Test and release confidence`
 (#407 then #380) — and **#432 is the blocker to attack first**, since the GUI leg
@@ -1500,11 +1573,30 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
   `self._tree.insert` sites settled it in one command — three write
   `_row_map[iid] = rec` on the very next line, the fourth is the group parent. **A
   guard's safety is a property of who fills the collection, not of who reads it.**
+- **⚠ AND STATE THE BOUNDARY WHEN YOU CLAIM COMPLETENESS — the scope word is
+  where these go wrong.** Round 1 of the `0.3.1` review wrote *"no other
+  `grab_set` exists in the package"*; **the package meant `dialogs/`**, and
+  `_runtime/toplevel.py` has the only other call site — which is #444, found two
+  rounds later. Round 2 of the same review had already been bitten the same way
+  (four containers classified by the mode they happened to be constructed in).
+  **A completeness claim whose scope was never written down reads as global and
+  is checked as local.** Write the command you ran, not the conclusion:
+  `grep -rn "grab_set" src/bootstack/` is the claim.
 - **⚠ A stale METRIC in this file becomes a phantom regression signal.** A recorded
   `919 passed` went unrevised while `main` grew to 976 collected, so the next
   session read the difference as an unexplained 46-test gap in a branch that added
   2. `--collect-only -q` on both refs settled it in seconds. **Record the date and
   commit beside any count, or don't record it.**
+- **⚠ `passed + skipped` CAN LEGITIMATELY EXCEED the selected count — don't
+  "fix" it.** Measured 2026-08-11 on the shared leg: ceiling `1024/1099 tests
+  collected (75 deselected)`, result `1011 passed, 14 skipped` — a sum of 1025,
+  one OVER, which looks exactly like the impossible totals this file has carried
+  five times. It is not: **a module-level skip happens at COLLECTION time** and
+  is reported in the summary while never being one of the selected items
+  (`collected 1099 items / 75 deselected / 1 skipped / 1024 selected`).
+  `1011 + 13 runtime skips = 1024` exactly. **Read the collection line before
+  concluding a total is impossible** — and note the ceiling check is still worth
+  running, it just needs this one adjustment to be applied honestly.
 - **A control experiment separates causation from correlation.** For #392 it was
   not enough that cancelling `sub_a` silenced `sub_b`; stripping the orphaned
   binding line by hand and watching `sub_b` come back is what proved the cause. Do
@@ -1567,7 +1659,12 @@ AFTER its PR merged is **stranded** — verify it landed in `main`.
   in the test.
 - **⚠ A bulk `pathlib` rewrite flips CRLF→LF** (repo is `core.autocrlf=true`) —
   same class as the `sed -i` trap. Prefer the Edit tool; if scripting, write bytes.
-  Memory `reference_autocrlf_sed_gotcha`.
+  Memory `reference_autocrlf_sed_gotcha`. ⚠ **AND `git diff` CANNOT SEE IT.** Git
+  normalizes on read, so a whole-file flip still shows the true 6-line diffstat —
+  the ONLY signal is the *"LF will be replaced by CRLF the next time Git touches
+  it"* **warning on stderr**, which no test run and no docs build will ever
+  surface. `file <path>` reports the working-tree truth. Bit a session on
+  2026-08-11 that had this very bullet in context.
 
 ---
 
@@ -2234,16 +2331,29 @@ against a real signature before copying any of them.** Measured 2026-07-30 via
   patterns around the "HStack centering" gotcha, the layout-widget gotchas, the
   context-manager example) is wrong. **Not yet swept** — do it opportunistically,
   checking each replacement, rather than in one blind find-and-replace.
-- **`fill=` / `expand=` on a flex child now RAISE**, they don't degrade:
-  `BootstackError: fill is not a valid layout option for a Row/Column/Grid child.
-  Use grow= / align_self= (and justify_self= in a Grid) instead`. ⚠ **THAT ERROR
-  IS ITSELF WRONG, and this file used to call it a "good error — trust it over
-  this file". Do not.** It names three kwargs and only `grow=` exists; following
-  its advice verbatim produces a raw `TclError: unknown option "-align_self"`.
-  **The real per-child keys are `horizontal=` and `vertical=`.** Measured
-  2026-08-11: `bs.Picture(align_self="stretch")` raises, `horizontal="stretch"`
-  and `grow=1` both construct. Tracked as **#426**, milestoned `0.3.1` — fix the
-  message and this bullet together.
+- **`fill=` / `expand=` / `anchor=` / `sticky=` / `side=` on a layout child
+  RAISE**, they don't degrade. ⚠ **THERE ARE NOW TWO MESSAGES, and which one you
+  get depends on how the container PLACES the child — not on its class** (#426,
+  fixed on `fix/dialog-keyboard-modality`):
+  - **flex child** (`Row`, `Column`, and `Card`/`GroupBox`/`Accordion` in their
+    DEFAULT column mode) → advised `grow=` for leftover space along the stacking
+    axis, plus `horizontal=`/`vertical=` across it.
+  - **grid cell** (`Grid`, any page or pane, and any container built with
+    `layout="grid"`) → advised `horizontal=`/`vertical=` and weighting the row or
+    column on the container. ⚠ **It deliberately does NOT say `grow=`: a grid
+    cell FILTERS that kwarg away silently**, so recommending it would replace
+    advice that raises with advice that quietly does nothing.
+  ⚠ **This file was wrong about this twice and in both directions.** It first
+  called the old text a "good error — trust it over this file" when the error
+  named `align_self=`/`justify_self=`, neither of which has ever existed
+  (`bs.Picture(align_self="stretch")` raises `TclError: unknown option
+  "-align_self"`; `horizontal="stretch"` and `grow=1` both construct). Then the
+  first fix gave every container the flex advice, including four that grid.
+  **`grep -n '_reject_legacy_child_kwargs' src/` returns nine call sites** — the
+  `kind` argument is required and positional precisely so a caller who forgets
+  gets a `TypeError` rather than the wrong message reaching a user.
+  ⚠ **`attach()` is the one path still exempt** — its grid branch filters with no
+  rejection at all. Filed as **#445**, not fixed.
 - **Container defaults are `horizontal_items=` / `vertical_items=` /
   `grow_items=` / `weights=`.** `fill_items=`, `expand_items=`, `anchor_items=`
   and `sticky_items=` are all GONE from `Row`/`Column`/`Grid`.
