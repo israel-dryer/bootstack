@@ -138,18 +138,25 @@ as a control, then import. It passed for `0.3.0`.
 **⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
 #441, **and #446**, which was moved onto the milestone on 2026-08-12 because it
 gates the release (see the milestone table's note). Scoped 2026-08-11
-(maintainer). **BUILT and REVIEWED THREE TIMES on
-`fix/dialog-keyboard-modality` (pushed, head `c8bb3d17`). #446's two flakes are
-FIXED at `48dba181`, but the branch is STILL BLOCKED** — a third, unexplained
-flake turned up while verifying them, and the round 4 review of the fix has not
-run. See START HERE.
+(maintainer). **MERGED to `main` on 2026-08-12 as PR #448 (merge commit
+`d307fd2e`) after FOUR review rounds. NOT RELEASED YET** — `## [Unreleased]`
+carries all four fixes and the next job is to promote and tag it. See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
-has now been wrong about them FIVE times, in both directions.**
+has now been wrong about them SIX times, in both directions.**
 
-**AUTHORITATIVE — measured 2026-08-11 on `main` at `ab11f37c`** (the #443 merge —
-everything in `0.3.0`), full `py -3.12 tests/run_gui.py`, **exit 0, all 20 legs
-passed**:
+**AUTHORITATIVE — measured 2026-08-12 at `ba27ab58`** (the `0.3.1` branch head;
+`main` at `d307fd2e` differs from it by `CLAUDE.md` alone, so this transfers),
+full `py -3.12 tests/run_gui.py`, **exit 0, all 20 legs, summed 1250 passed / 22
+skipped**. Shared leg **1055 passed / 13 skipped** against a **1068** selected
+ceiling — `1055 + 13 = 1068` exactly, so it reconciles against its own
+collection line. Data leg **123 / 6**, which differs from the `125 / 4` below
+**environmentally**, tracking whether `pandas` is installed, because two of those
+tests skip when it is.
+
+**Previous, kept for the reasoning that refers to it — measured 2026-08-11 on
+`main` at `ab11f37c`** (the #443 merge — everything in `0.3.0`), full
+`py -3.12 tests/run_gui.py`, **exit 0, all 20 legs passed**:
 
 | leg | result |
 |---|---|
@@ -664,7 +671,7 @@ with four known bugs deferred rather than held.
 | Order | Milestone | Open |
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
-| 1 | **`0.3.1 — Dialog keyboard and modality`** — #426, #439, #440, #441, **#446** | 5 |
+| 1 | **`0.3.1 — Dialog keyboard and modality`** — MERGED to `main` (PR #448), **awaiting release**. #426/#439/#440/#441 CLOSED; **#446 still open** | 1 |
 | 2 | **`Test and release confidence`** (unnumbered) — #407 then #380, **#432 first** | 3 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -696,9 +703,16 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FOUR UNMILESTONED OPEN ISSUES as of 2026-08-12** (verified against `gh`, not
-counted by hand): **#431, #433, #434, #436.** Down from six — **#446 went to
-`0.3.1` and #432 to `Test and release confidence`** (maintainer, 2026-08-12).
+**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-12, after the merge** (verified
+against `gh`, not counted by hand): **#431, #433, #434, #436, #447.** The new one
+is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
+unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
+#432 to `Test and release confidence`** (maintainer, 2026-08-12).
+
+⚠ **`0.3.1` STILL HAS ONE OPEN ISSUE — #446 — so the milestone cannot be closed
+at release time yet.** Its two known flakes are fixed and merged and the third
+was split out to #447, so it looks resolvable; **that is the maintainer's call,
+not an assumption to act on.** Settle it as part of the release sequence.
 
 ⚠ **THAT PAIR CORRECTED A MISREADING OF THE "do not assign unasked" RULE, and
 the correction is the part worth keeping.** This file had #446 sitting
@@ -746,34 +760,76 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-12) — `0.3.1`'s TWO KNOWN FLAKES ARE FIXED; A THIRD IS OPEN, AND ROUND 4 HAS NOT RUN
+### ★ START HERE (2026-08-12, later) — `0.3.1` IS MERGED TO `main` AND NOT YET RELEASED
 
-**⏭ THE NEXT SESSION'S JOB IS THE ROUND 4 REVIEW.** It is scoped, and the brief
-is committed at **`development/review-brief-446-flakes.md`** — read that first,
-it carries the triage state so the round does not re-file what rounds 1–3 already
-settled. **Scope is the FIX DIFF, `git diff 7ef64236..48dba181`, not the
-branch.** A session that has written code never reviews code
-(`REVIEW-PROTOCOL.md`), and the session that wrote this fix is the one that wrote
-this block.
+**⏭ THE NEXT JOB IS THE `0.3.1` RELEASE.** `## [Unreleased]` on `main` carries
+all four fixes and nothing else. Promote it to
+`## [0.3.1] — Dialog keyboard and modality` **in its own commit**, then
+`py -3.12 -m bumpversion bump patch` (present and **1.5.1** as of today — it has
+vanished twice, so check), push `main` + the `v0.3.1` tag, and let `release.yml`
+run. Full sequence and every trap under Release flow.
 
-**`0.3.0` is on PyPI** (tag `v0.3.0`, clean `release.yml`, docs chained off it);
-every post-release step is done and verified — see Current state for the evidence
-and for the one new check worth repeating (import with `idlelib` blocked).
+**⛔ NOT DONE UNTIL VERIFIED, not assumed:** PyPI proved with a real
+`pip download` (**never** the CDN-cached summary endpoint), the wheel opened,
+the GitHub Release live with both assets, docs returning 200, **and `import
+bootstack` with `idlelib` BLOCKED via a `meta_path` finder** (#430's defect;
+grep is not enough). Then delete the branch, close the milestone, and comment on
+the issues.
 
-**ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 17 commits, PUSHED.**
-Head **`c8bb3d17`**, tracking `origin` (it was `7ef64236` before the #446 work).
-`main` is pushed and equal to `origin/main`.
+**PR [#448](https://github.com/israel-dryer/bootstack/pull/448) is MERGED** —
+merge commit **`d307fd2e`**, a **merge commit, not a squash**, the same call made
+for #410/#423/#424/#442. Branch head at merge was **`ba27ab58`**;
+`fix/dialog-keyboard-modality` still exists local and remote, and by convention
+is deleted **after** the release hits PyPI. Verified both ways before merging:
+ancestor of `origin/main` **and** a MERGED PR. **#426, #439, #440 and #441 are
+all CLOSED.**
 
-It carries all four `0.3.1` issues — **#426, #439, #440, #441** — plus `PLAN.md`
-and `REVIEW.md` at the root. All four were scoped as **patch-safe** (none adds
-public surface) and **none is a regression from `0.3.0`**; all four exist in
-`0.2.3` too, which is what made shipping first and patching after the right call.
+⚠ **`main`'s only difference from the commit the suite was measured at
+(`ba27ab58`) is `CLAUDE.md`** — four `docs(claude):` commits landed while the
+branch was out. Docs-only, so the counts below transfer to `main` exactly.
 
-#### ⛔ DO NOT MERGE YET — a THIRD flake is open, and round 4 has not run
+**`PLAN.md` and `REVIEW.md` ARE ARCHIVED** to
+`development/plan-426-439-440-441-dialogs.md` and
+`development/review-426-439-440-441-dialogs.md`. **The root is deliberately empty
+of both — create `PLAN.md` fresh for the next branch.**
 
-**#446's two flakes are FIXED at `48dba181`** (test-only — `src/` is untouched,
-which was verified, not assumed). **A third one is not**, and it is the reason
-the branch is still blocked.
+#### ⚠ THE DURABLE OUTCOME OF THIS BRANCH IS NOT THE FOUR FIXES
+
+**`REVIEW-PROTOCOL.md` now has a `Stopping rules` section, and it exists because
+the loop on this branch did not terminate on its own** (maintainer, 2026-08-12:
+*"you can create endless cycles of tests, bugs in tests etc... A test is meant
+for assurance. It's important, but at the same time, it is not the product."*).
+Round 3 reviewed a production fix; round 4 reviewed the **test-only** commit that
+fixed the flakes round 3's verification surfaced; round 5 would have reviewed the
+fixes to those tests. **The measured shape: ~430 production lines against ~1,300
+test lines and ~750 lines of probes and review records, over 17 commits of which
+4 are review records. Rounds 3 and 4 changed ZERO lines under `src/`.**
+
+The four gates, all mechanical because a rule needing judgment gets reasoned
+around exactly when it should bind:
+
+1. **A round is triggered by a non-empty `git diff <range> -- src/`, and by
+   nothing else.** Test-, probe- and docs-only commits are self-checked. Under
+   this gate round 4 would not have opened.
+2. **Test code is reviewed on ONE axis — what defect can it let through.** Only
+   **vacuity** (passes while the behavior is broken) and **false alarm** (fails
+   while it is fine) are actionable. Diagnostics, wording, symmetry and probe
+   ergonomics are **notes in the record, never fixes**. Under this gate round 4
+   yields 2 findings, not 5.
+3. **The round cap goes in `PLAN.md` up front** — 2 for a patch, 3 for a minor —
+   and survivors are filed as issues.
+4. **Probes are instruments, not reviewed code**, and a flake gets **one** fix
+   attempt with a mechanism-reproducing control before quarantine. The one
+   exception: a probe whose *conclusion* is cited as settled must still be shown
+   capable of finding something — a claim about evidence, not code quality.
+
+#### ✅ Round 4 RAN, and the branch closed there
+
+**#446's two flakes were FIXED at `48dba181`** (test-only — `src/` untouched,
+verified not assumed). Round 4 reviewed that diff and found **two vacuity
+defects, both fixed in `74991e55`**, plus three notes left unfixed under gate 2.
+**A third flake is still open and is now [#447](https://github.com/israel-dryer/bootstack/issues/447)** — filed rather than
+chased, under gate 4.
 
 | flake | file | before | after |
 |---|---|---|---|
@@ -841,27 +897,60 @@ five-file run both before and after). One of the two measurements is wrong and
 today's is the one that checks out against its own collection line. **This is the
 sixth time this file has carried a wrong count.** Prefer what you measure.
 
-**⏭ SO THE NEXT SESSION'S JOB, in order:** (1) **run the round 4 review** —
-scoped to `git diff 7ef64236..48dba181`, brief at
-`development/review-brief-446-flakes.md`; (2) chase flake C, which the review may
-or may not illuminate; (3) then decide the merge. #444 and #445 are deliberately
-NOT part of it.
+**⏭ SO THE NEXT JOB IS THE RELEASE** (top of this section). After it: the
+standing recommendation is `Test and release confidence`, and **#432 is the
+blocker to attack first** — the shared-root GUI leg exits silently mid-run on
+Linux, which makes CI unbuyable — then #407, then #380. **#447 is filed and can
+wait**; #444 and #445 likewise.
 
-**THREE REVIEW ROUNDS RAN. `REVIEW.md` on the branch is the full record — read it
-rather than re-deriving.** The yield curve is the part worth carrying:
+**FOUR REVIEW ROUNDS RAN. The full record is
+`development/review-426-439-440-441-dialogs.md` — read it rather than
+re-deriving.** The yield curve is the part worth carrying:
 
 | round | findings | real | what it cost |
 |---|---|---|---|
 | 1 | 6 | 3 | 2 refuted by measurement, 1 deferred by the maintainer |
 | 2 | 5 | 5 | **all five were round 1's own fix being incomplete** |
 | 3 | 4 | 1 | **three were already-triaged items re-filed** |
+| 4 | 5 | 2 | **reviewed a TEST-ONLY diff; 3 findings were about a probe's readability** |
 
-⚠ **STOP AT THREE. The round-3 signal was 1-in-4 and the cause was a HARNESS gap,
-not code quality.** Round 2's reviewer was handed `REVIEW.md` and re-filed
-nothing; round 3's was not, and re-filed round 1's F1, round 1's maintainer-
-deferred F4, and an item round 2 had itself already filed as out of scope.
-**Carry the triage state into the reviewer or every round re-litigates decisions
-already taken.**
+⚠ **The old note here said "STOP AT THREE" and blamed a harness gap. That was
+half the story and the missing half is now `REVIEW-PROTOCOL.md`'s gate 1.**
+Carrying triage state into the reviewer is still right — round 2's reviewer was
+handed `REVIEW.md` and re-filed nothing, round 3's was not and re-filed three
+settled items. But no amount of triage state stops a round that should never
+have opened, and round 4 opened on a diff with **no production code in it at
+all**. Gate the round on `git diff -- src/`; triage the findings inside it.
+
+⚠ **Round 4's two real findings were both VACUITY, and the control is worth more
+than either fix.** `_nest` in `test_dialog_nested_modality.py` gave up silently
+when its barrier never cleared — so nothing was ever nested, the outer grab was
+never displaced, and both nesting tests passed measuring nothing. `_outer`'s
+error path was unreachable for a different reason: its retry budget ran to
+10050ms while its fallback fired at 10000ms, so the fallback always won, `state`
+was left empty **with no `"error"` key**, and `assert "error" not in state`
+passed. **THE FIRST CONTROL WAS WRONG AND LOOKED RIGHT**: disabling the retry
+budget left the test passing, because the inner dialog already held the grab on
+the very first check, so the give-up path was never reached. Forcing the
+condition itself (*"pretend the grab never arrives"*) is what exercised it —
+**pre-fix the test PASSES in 8.83s**, having sat through the entire 8-second
+fallback and nested nothing; post-fix it fails naming both routes. **A control
+that does not reach the path under test is indistinguishable from a fix that
+works.**
+
+⚠ **One claim was DOWNGRADED rather than fixed, and it matters because this file
+recorded it as settled.** `probe_446_leaked_after_jobs.py` returns an empty set
+on both sides of every test if `_root()` is `None` or `after info` raises —
+indistinguishable from a clean result. So **"no test-scheduled timer survives a
+test" is UNCONTROLLED, not refuted.** The probe was left alone under gate 4; the
+claim it backs was weakened in the record instead.
+
+⚠ **`probe_446_disabled_button_enter.py` COUNTS A BARRIER TIMEOUT AS A
+REPRODUCTION** — a run where the dialog never comes up yields `calls == []` with
+no other keys, byte-identical to flake C, and the probe's own READING text then
+points at the guard when the truth is that Enter was never pressed. **Fix that
+before working #447**, or the probe will lie about the exact distinction the
+issue turns on. Recorded on the issue too.
 
 ⚠ **Round 3's one real finding was OUT OF SCOPE and is filed, not fixed —
 [#444](https://github.com/israel-dryer/bootstack/issues/444).** A modal
