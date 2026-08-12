@@ -326,6 +326,9 @@ Arms 1 and 3 are identical to each other on every leg but `test_capture`.
 
 **`gh` is not installed on the WSL box, there is no `GH_TOKEN`/`GITHUB_TOKEN`,
 and `git credential fill` has nothing for github.com.** So the follow-up issue
-has to be opened from the Windows box. A ready-to-paste body is in the session
-that produced this file; the substance is section 1 above, which stands on its
-own.
+has to be opened from the Windows box.
+
+**The draft is committed at `development/issue-draft-appshell-mod1-x11.md`**,
+with the `gh issue create` command to file it. It is in the repo rather than in
+a session transcript on purpose -- this project has already lost one handoff
+artifact and one whole patch to a scratch directory.
