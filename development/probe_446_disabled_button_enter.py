@@ -31,6 +31,45 @@ from bootstack.dialogs._impl import dialog as dialog_mod
 
 RUNS = 40
 
+# Exceptions raised INSIDE a Tk callback, which Python cannot otherwise see.
+#
+# ⚠ This is the candidate reading the guard cannot rule out. The toplevel's
+# Return binding ends in `b.invoke()`; if anything in that callback raises,
+# tkinter routes it to `report_callback_exception`, which PRINTS and returns.
+# The binding then completes having done nothing, and the only trace left in
+# the test is `calls == []` -- the exact symptom, with the cause on stderr
+# where no assertion looks. A Tcl-level failure in a binding or `after` script
+# is invisible in the same way and lands on `bgerror` instead. Both are
+# collected here so a failing run names its own cause.
+_TK_ERRORS: list[str] = []
+
+
+def _install_error_collectors(root):
+    """Capture both invisible failure channels. Returns an undo callable."""
+    import traceback
+
+    original = root.report_callback_exception
+
+    def on_callback_exception(exc, val, tb):
+        _TK_ERRORS.append(
+            "callback: " + "".join(traceback.format_exception_only(exc, val)).strip()
+        )
+
+    def on_bgerror(*args):
+        _TK_ERRORS.append(f"bgerror: {' '.join(str(a) for a in args)}")
+
+    root.report_callback_exception = on_callback_exception
+    root.tk.createcommand("bgerror", on_bgerror)
+
+    def undo():
+        root.report_callback_exception = original
+        try:
+            root.tk.deletecommand("bgerror")
+        except tkinter.TclError:
+            pass
+
+    return undo
+
 
 def _footer_widget(impl, text):
     specs = list(reversed(impl._buttons))
@@ -57,11 +96,13 @@ def _run_once(root, trace: dict) -> dict:
         ],
         parent=root,
     )
-    seen: dict = {"calls": calls}
+    seen: dict = {"calls": calls, "acted": False}
     pending: list[str] = []
     trace.clear()
+    _TK_ERRORS.clear()
 
     def act(top):
+        seen["acted"] = True
         apply_widget = _footer_widget(dialog, "Apply")
         apply_widget.state(["disabled"])
         seen["apply_disabled"] = bool(apply_widget.instate(["disabled"]))
@@ -79,17 +120,25 @@ def _run_once(root, trace: dict) -> dict:
         if top.winfo_exists():
             top.destroy()
 
+    # ⚠ 120 attempts = 6050ms, BELOW `force_close`'s 8s. A budget that outlasts
+    # its fallback can never report anything: the fallback destroys the dialog,
+    # `show()` returns, the `finally` cancels the retries, and the give-up
+    # branch never runs.
     def run(attempt=0):
         top = dialog.toplevel
         if top is None or not top.winfo_exists() or top.grab_current() is not top:
-            if attempt < 200:
+            if attempt < 120:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
+            else:
+                seen["barrier"] = "the dialog never took the modal grab"
             return
         footer = dialog._footer
         if not (footer.winfo_children()
                 and all(w.winfo_ismapped() for w in footer.winfo_children())):
-            if attempt < 200:
+            if attempt < 120:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
+            else:
+                seen["barrier"] = "the footer buttons never mapped"
             return
         try:
             act(top)
@@ -101,6 +150,7 @@ def _run_once(root, trace: dict) -> dict:
     def force_close():
         top = dialog.toplevel
         if top is not None and top.winfo_exists():
+            seen.setdefault("barrier", "still up after 8s, the fallback closed it")
             top.destroy()
 
     pending.append(root.after(50, run))
@@ -113,6 +163,8 @@ def _run_once(root, trace: dict) -> dict:
                 root.after_cancel(job)
             except tkinter.TclError:
                 pass
+    if _TK_ERRORS:
+        seen["tk_errors"] = list(_TK_ERRORS)
     return seen
 
 
@@ -140,30 +192,50 @@ def main() -> int:
         return answer
 
     dialog_mod._key_was_consumed = traced
+    undo_collectors = _install_error_collectors(root)
     try:
         print("Enter on a DISABLED footer button, repeated in one process.")
         print(f"runs={RUNS}\n")
         bad = 0
+        never_acted = 0
         for i in range(RUNS):
             seen = _run_once(root, trace)
             calls = seen.get("calls")
-            ok = calls == ["ok"]
-            if not ok:
+            # ⚠ A run that never pressed Enter is NOT a reproduction, and
+            # counting it as one is how this probe used to lie. Its `seen` is
+            # `{"calls": []}` -- byte-identical to the flake -- so a barrier
+            # that never cleared read as "the key vanished between the two"
+            # and sent the reader at the guard instead of at the harness.
+            if not seen.get("acted"):
+                never_acted += 1
+                print(f"  run {i:2d}  NOT MEASURED  {seen.get('barrier', 'unknown')}")
+                continue
+            if calls != ["ok"]:
                 bad += 1
                 print(f"  run {i:2d}  FAIL calls={calls}")
                 for key in sorted(seen):
-                    if key != "calls":
+                    if key not in ("calls", "acted"):
                         print(f"          {key}: {seen[key]}")
-        print(f"\nfailures: {bad}/{RUNS}")
+        measured = RUNS - never_acted
+        print(f"\nfailures: {bad}/{measured} measured "
+              f"({never_acted}/{RUNS} never pressed Enter and prove nothing)")
         print("\n" + "=" * 72)
         print("READING")
         print("=" * 72)
         print(
-            "guard_ran False on a failing run means the key never reached the"
-            "\ntoplevel binding at all -- a delivery problem, not a guard one."
-            "\nguard_ran True with guard_answer True means the guard called the"
-            "\npress consumed, which for a DISABLED button is the #441 round-4"
-            "\ndefect returning. Either way the failing run names its own cause."
+            "NOT MEASURED is not a failure. It means the dialog never came up,"
+            "\nso Enter was never pressed and the run says nothing either way."
+            "\nOnly the measured runs count.\n"
+            "\nOn a MEASURED failure, read in this order:\n"
+            "\n  tk_errors present -> the binding RAN and something in it raised."
+            "\n    tkinter prints a callback exception and returns, so the press"
+            "\n    completes having done nothing and the test sees only calls==[]."
+            "\n    This is the candidate reading the guard cannot rule out."
+            "\n  guard_ran False    -> the key never reached the toplevel binding,"
+            "\n    a delivery problem rather than a guard one."
+            "\n  guard_ran True and guard_answer True -> the guard called the press"
+            "\n    consumed, which for a DISABLED button is the #441 round-4 defect"
+            "\n    returning."
         )
         if bad == 0:
             print(
@@ -173,6 +245,7 @@ def main() -> int:
             )
     finally:
         dialog_mod._key_was_consumed = real_guard
+        undo_collectors()
         root.destroy()
     return 0
 
