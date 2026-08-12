@@ -200,6 +200,79 @@ and a reviewer should not have to re-derive them.
   for a refusal anyway. Reverting it to `bs.alert(...)` is not required by this
   fix.
 
+## Addendum — #446, the two flakes (2026-08-12)
+
+Written before the fix, same rule as the rest of this file. Round 3 handed over
+a branch that reports **exit 0, all 20 legs, 1208 passed** and is still not
+stable: two order-dependent failures live in this branch's own new test files,
+at **1 in 12** and **1 in 8**. Both are test defects rather than defects in the
+code under test — which is a claim to be *proved*, not assumed, so each fix
+below is required to leave the production diff untouched.
+
+**The method is fixed in advance, because the rates make the obvious method
+useless.** At 1-in-8 a clean run is the EXPECTED outcome of a broken branch, so
+re-running proves nothing and "it passed ten times" is not evidence. Each flake
+gets a control that **creates** the condition and reports a rate, the
+`probe_437_focus_flake.py` pattern. A fix is accepted only when the control
+moves from a nonzero rate to zero on the same probe.
+
+### Flake A — a leaked `after` timer destroys an unrelated toplevel
+
+`test_dialog_nested_modality.py`, dying with `bad window path name` on
+`deiconify()` inside a later `show()`. The dialog's own toplevel is gone
+between construction and positioning, which nothing in that test touches.
+
+**Hypothesis: a timer queued by an earlier test in the same process fires
+during this one and destroys whatever it finds.** That is #397's mechanism
+exactly, and `CLAUDE.md` already records it. The suspicious shape is a
+scheduled callback that destroys a window it looks UP rather than one it was
+handed — `test_alert_from_a_dialog_button_hands_the_grab_back` destroys
+`root.grab_current()`, which in a later test resolves to that test's dialog.
+
+⚠ **This is a hypothesis and reading will not settle it.** Three of the five
+dialog files schedule timers; `_outer` leaves its `after(300, drive)` handle
+uncaptured and `_nest` leaves `after(200, drive)` uncaptured, either of which
+could be the real one. **Measure which timers actually survive a test** — a
+per-test snapshot of pending jobs via `after info` names the leaker directly.
+Do not fix a timer merely because it looks wrong.
+
+**Fix shape:** capture every `after` handle and cancel it in a `finally`, the
+rule `CLAUDE.md` already states and `test_dialog_press_contract.py` already
+follows. Where a callback destroys a looked-up window, it must also verify the
+window is the one the test is entitled to destroy.
+
+### Flake B — the barrier does not cover the widget under test
+
+`test_query_dialog_focuses_its_entry_not_the_default_button`, with focus on
+the **toplevel** rather than the entry — the #437 signature.
+
+**The barrier is the defect, and it is a scope error rather than a timing
+one.** `_drive` waits for the grab AND for every FOOTER child to be mapped.
+That was the right barrier for `test_dialog_press_contract.py`, where the
+widget under test IS a footer button. Here the widget under test is the
+QueryDialog **entry**, which lives in the content area — nothing in the barrier
+says anything about it. Focus is deferred to the target's own `<Map>`
+(`_focus_when_mapped`), so sampling before the entry maps reads the toplevel,
+and the failure surfaces as a focus assertion with no visible connection to
+mapping.
+
+**Fix shape:** the barrier waits for the widget that initial focus actually
+targets — `_focus_target or _default_button` — to be mapped, in addition to the
+grab and the footer.
+
+⚠ **The vacuity risk has to be checked, because the barrier now mentions the
+same widget the assertion is about.** Waiting for MAPPED is not waiting for
+FOCUSED: pre-fix code focused the button from `_build_footer` while the window
+was withdrawn, so it would still fail against this barrier. **Prove it** by
+running the strengthened test against the pre-fix source; if it passes, the
+barrier has swallowed the test and a different one is needed.
+
+### Invariant for both
+
+**The production diff does not change.** If either fix turns out to need a
+change under `src/`, the flake was a real defect and this addendum is wrong —
+stop and re-scope rather than editing the test until it is quiet.
+
 ## Out of scope
 
 - **#436** (`versionadded` convention) — undecided question, not scoped here.

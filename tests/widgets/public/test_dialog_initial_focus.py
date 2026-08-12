@@ -20,6 +20,11 @@ children at idle. Polling on the grab alone therefore samples the window before
 focus can have landed, and the test fails for a reason that has nothing to do
 with the fix. `_drive` below waits for the grab AND for every footer child to
 be mapped, the same barrier `test_dialog_press_contract.py` uses.
+
+⚠ AND THAT WAS STILL TOO NARROW — it is a barrier over the FOOTER, while the
+widget under test here is sometimes in the CONTENT. It shipped flaky at 1 in 8
+(issue #446). `_drive` now also waits for whatever `show()` resolved initial
+focus onto. See `focus_target_is_up()`.
 """
 from __future__ import annotations
 
@@ -57,9 +62,35 @@ def _drive(dialog, app, action, show=None):
         children = footer.winfo_children()
         return bool(children) and all(w.winfo_ismapped() for w in children)
 
+    def focus_target_is_up():
+        """The widget initial focus TARGETS is mapped — see the warning below.
+
+        ⚠ The footer being mapped does not imply this, and assuming it did cost
+        a flaky test (issue #446, 1 failure in 8 runs of the shared leg).
+        `QueryDialog` claims `_focus_target` for its entry, which lives in the
+        CONTENT subtree — a different part of the widget tree that the footer
+        check says nothing about. Focus is deferred to the target's own `<Map>`
+        (`Dialog._focus_when_mapped`), so sampling before the entry maps reads
+        the toplevel and the test fails on focus for a reason that is really
+        about mapping.
+
+        Measured in `development/probe_446_barrier_scope.py`: with the footer
+        barrier alone the entry was still unmapped in **4 of 12** dialogs and
+        focus missed in exactly those same 4; waiting for this as well took it
+        to **0 of 12**, the two columns tracking one-for-one.
+
+        `None` when no spec asked for focus — a dialog with no default button
+        and no content claim has nothing to wait for, and must not hang here.
+        """
+        target = dialog._focus_target or dialog._default_button
+        if target is None:
+            return True
+        return bool(target.winfo_exists()) and bool(target.winfo_ismapped())
+
     def run(attempt=0):
         top = toplevel()
-        if top is None or top.grab_current() is not top or not footer_is_up():
+        if (top is None or top.grab_current() is not top
+                or not footer_is_up() or not focus_target_is_up()):
             if attempt < 200:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
             return

@@ -17,6 +17,13 @@ normally looks like, so a test that only asserts the outer dialog is modal
 after nesting can pass for the wrong reason if the driving never nested
 anything. `test_a_dialog_keeps_its_grab_when_nothing_nests` is the same
 measurement over a stretch with no nested modal.
+
+⚠ The `state["before"] is state["outer"]` preconditions below are now
+GUARANTEED by `_outer`'s barrier, which waits for that grab before it measures
+anything (see its docstring, and issue #446). They are kept because they state
+what the measurement rests on, but they can no longer fail — the barrier
+timing out is what reports a dialog that never became modal, and it does so by
+name rather than as a confusing assertion one line later.
 """
 from __future__ import annotations
 
@@ -31,14 +38,41 @@ pytestmark = pytest.mark.gui
 
 
 def _outer(app, body):
-    """A modal dialog that runs `body(top)` once it is up, then closes."""
+    """A modal dialog that runs `body(top)` once it is up, then closes.
+
+    ⚠ POLLS FOR THE MODAL GRAB. It must not drive on a fixed delay, and that
+    cost a flaky test (issue #446, 1 failure in 12 runs of the shared leg).
+
+    `show()` creates the toplevel, then builds the footer and the content, then
+    positions the window, and only then calls `grab_set()`. Building and
+    positioning both pump the event loop, so a timer scheduled with a fixed
+    delay can fire while `show()` is still partway through — and this driver
+    DESTROYS the toplevel. `show()` then carried on into `_position_dialog` and
+    deiconified a window that no longer existed:
+
+        dialog.py:930: in _position_dialog
+            self._toplevel.deiconify()
+        E   TclError: bad window path name ".!toplevel7"
+
+    The grab is the barrier because it is the LAST thing `show()` does before
+    it waits, so a driver holding for it cannot act on a half-built dialog.
+    Same hazard and same remedy as `_drive` in `test_dialog_press_contract.py`;
+    this helper was the one that had not adopted it.
+
+    Reproduced deterministically in `development/probe_446_fixed_delay_lands_mid_show.py`
+    by forcing the build to outlast the delay: **10/10 with the fixed delay,
+    0/10 with this barrier**, against 0/10 for the fixed delay in a quiet
+    process — which is exactly why a green suite run did not show it.
+    """
+    root = app._tk_root
     dialog = Dialog(
         title="outer",
         content_builder=lambda: bs.Label("outer"),
         buttons=[DialogButton(text="OK", role="primary", result="ok")],
-        parent=app._tk_root,
+        parent=root,
     )
     state: dict = {}
+    pending: list[str] = []
 
     def drive():
         top = dialog.toplevel
@@ -57,33 +91,55 @@ def _outer(app, body):
             if top.winfo_exists():
                 top.destroy()
 
-    guard = app._tk_root.after(10000, lambda: (
-        dialog.toplevel.destroy()
-        if dialog.toplevel is not None and dialog.toplevel.winfo_exists()
-        else None
-    ))
+    def run(attempt=0):
+        top = dialog.toplevel
+        if top is None or not top.winfo_exists() or top.grab_current() is not top:
+            if attempt < 200:
+                pending.append(root.after(50, lambda: run(attempt + 1)))
+            else:
+                state["error"] = "the outer dialog never took the modal grab"
+            return
+        drive()
+
+    def force_close():
+        top = dialog.toplevel
+        if top is not None and top.winfo_exists():
+            top.destroy()
+
+    pending.append(root.after(50, run))
+    pending.append(root.after(10000, force_close))
     try:
-        app._tk_root.after(300, drive)
         dialog.show()
     finally:
         # The root outlives this test; a timer left queued fires during a later
         # one and would destroy an unrelated Toplevel.
-        app._tk_root.after_cancel(guard)
+        for job in pending:
+            root.after_cancel(job)
 
     assert "error" not in state, state["error"]
     return state
 
 
 def _nest(parent_top, depth: int) -> None:
-    """Open `depth` modal dialogs inside one another, closing from the inside."""
+    """Open `depth` modal dialogs inside one another, closing from the inside.
+
+    Polls for the inner dialog's own grab, for the reason in `_outer` — a fixed
+    delay here races `inner.show()` in exactly the same way.
+
+    ⚠ Schedules on the ROOT, not on `parent_top`. An `after` job is a command
+    owned by the widget it is scheduled on, so a job left pending on a dialog
+    that is then destroyed fires as an orphan with nothing Python can see.
+    """
     if depth == 0:
         return
+    root = parent_top.nametowidget(".")
     inner = Dialog(
         title=f"inner {depth}",
         content_builder=lambda: bs.Label("inner"),
         buttons=[DialogButton(text="Close", role="primary", result=None)],
         parent=parent_top,
     )
+    pending: list[str] = []
 
     def drive():
         top = inner.toplevel
@@ -93,8 +149,26 @@ def _nest(parent_top, depth: int) -> None:
         if top.winfo_exists():
             top.destroy()
 
-    parent_top.after(200, drive)
-    inner.show()
+    def run(attempt=0):
+        top = inner.toplevel
+        if top is None or not top.winfo_exists() or top.grab_current() is not top:
+            if attempt < 200:
+                pending.append(root.after(50, lambda: run(attempt + 1)))
+            return
+        drive()
+
+    def force_close():
+        top = inner.toplevel
+        if top is not None and top.winfo_exists():
+            top.destroy()
+
+    pending.append(root.after(50, run))
+    pending.append(root.after(8000, force_close))
+    try:
+        inner.show()
+    finally:
+        for job in pending:
+            root.after_cancel(job)
 
 
 def test_a_dialog_keeps_its_grab_when_nothing_nests(app):
@@ -152,16 +226,26 @@ def test_alert_from_a_dialog_button_hands_the_grab_back(app):
     root = app._tk_root
 
     def body(top):
+        # ⚠ This is the one driver here that destroys a window it LOOKS UP
+        # rather than one it was handed, so a job of its left queued would
+        # destroy whatever holds the grab in a LATER test. Every handle is
+        # cancelled in the `finally` for that reason, not for tidiness.
+        pending: list[str] = []
+
         def dismiss(attempt=0):
             holder = root.grab_current()
             if holder is not None and holder is not top:
                 holder.destroy()
                 return
             if attempt < 100:
-                root.after(50, lambda: dismiss(attempt + 1))
+                pending.append(root.after(50, lambda: dismiss(attempt + 1)))
 
-        root.after(50, dismiss)
-        bs.alert("nested", parent=top)
+        pending.append(root.after(50, dismiss))
+        try:
+            bs.alert("nested", parent=top)
+        finally:
+            for job in pending:
+                root.after_cancel(job)
 
     state = _outer(app, body)
 
