@@ -210,7 +210,7 @@ root, and Windows/macOS talk to win32/aqua directly.
 All three are **window-manager-independent** -- they behave the same with and
 without one -- so none of them belongs in this issue.
 
-### 1. `test_bare_b_does_not_toggle_the_sidebar` -- real, Linux, deterministic
+### 1. `test_bare_b_does_not_toggle_the_sidebar` -- a TEST bug, not a product bug
 
 ```
 assert expanded._field.text == "b"
@@ -218,12 +218,49 @@ E  AssertionError: assert '' == 'b'
 ```
 
 Fails in **all three arms**, including WSLg with a real compositor, and **5 runs
-out of 5** on its own. The handoff guessed this was separate; it is, and it is
-now stronger than a guess -- a window manager does not fix it. A `b` typed into a
-focused field does not reach the field on this platform.
+out of 5** on its own. So it is separate from #447, as the handoff guessed.
 
-**This one is worth its own issue.** I have not filed it; that is the
-maintainer's call.
+⚠ **My first pass called this "real, Linux, deterministic" and implied the
+product was at fault. That was wrong, and the test file said so on line 20.**
+The test synthesizes `state=8` to stand in for "NumLock is on":
+
+```python
+_MOD1 = 8   # Tk's Mod1 bit -- set by NumLock on Windows, by Alt on X11.
+expanded._entry_widget.event_generate("<KeyPress-b>", state=_MOD1)
+assert expanded._field.text == "b"
+```
+
+That comment is the whole story. Bit 3 is `Mod1`, and **what `Mod1` means is a
+property of the X server's modifier map, not of Tk.** On Windows it carries
+NumLock, which does not suppress typing. On X11 it is **Alt** -- and an Entry
+correctly refuses to insert a character while Alt is held, because that is the
+Alt+b accelerator, not text.
+
+Measured, with a control, by `development/probe_447b_mod1_alt_on_x11.py`
+(identical under WSLg and under Xvfb + `xfwm4`):
+
+```
+modifier map: mod1  Alt_L, Alt_R, Meta_L | mod2  Num_Lock
+
+state=0   -> field='b'    plain b (CONTROL)
+state=8   -> field=''     Mod1: NumLock on Windows, Alt on X11 -- what the test sends
+state=16  -> field='b'    Mod2: what X11 actually uses for NumLock
+```
+
+The X server names it outright: `mod1` is Alt, `mod2` is `Num_Lock`. The control
+arm types, so the probe is capable of observing an insert; the failure is the
+modifier, not the harness.
+
+**An empty field on X11 is therefore CORRECT toolkit behavior.** The assertion
+encodes a Windows-only premise. `AppShell` is fine -- the test's *first*
+assertion (`sidebar_mode == "expanded"`) passes on every arm, which is the half
+that actually guards the #403/#404 regression.
+
+Same class as the `hidpi` failure below: a test that is right on Windows and
+unportable off it. The NumLock premise needs to be expressed per-platform
+(`Mod2` on X11) or the typing half gated to Windows.
+
+**This is worth its own issue.** I could not file it -- see the note at the end.
 
 ### 2. `test_field_hidpi_padding` (2 tests) -- a test bug, this box only
 
@@ -278,4 +315,17 @@ Arms 1 and 3 are identical to each other on every leg but `test_capture`.
 
 - `development/probe_447_wm_present.py` -- the window-manager control. Reports a
   different answer per arm; that is the point.
+- `development/probe_447b_mod1_alt_on_x11.py` -- the `Mod1`-is-Alt control for
+  the `bare_b` test. Carries a plain-`b` control arm, so a non-insert is the
+  modifier rather than a dead harness.
 - `development/report-447-linux-focus.md` -- this file.
+
+---
+
+## ⚠ The issue for `bare_b` was NOT filed -- this box cannot
+
+**`gh` is not installed on the WSL box, there is no `GH_TOKEN`/`GITHUB_TOKEN`,
+and `git credential fill` has nothing for github.com.** So the follow-up issue
+has to be opened from the Windows box. A ready-to-paste body is in the session
+that produced this file; the substance is section 1 above, which stands on its
+own.
