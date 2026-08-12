@@ -136,7 +136,9 @@ attributions. Block the module with a `meta_path` finder, assert the block works
 as a control, then import. It passed for `0.3.0`.
 
 **⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
-#441. Scoped 2026-08-11 (maintainer). **BUILT and REVIEWED THREE TIMES on
+#441, **and #446**, which was moved onto the milestone on 2026-08-12 because it
+gates the release (see the milestone table's note). Scoped 2026-08-11
+(maintainer). **BUILT and REVIEWED THREE TIMES on
 `fix/dialog-keyboard-modality` (pushed, head `7ef64236`) — but BLOCKED ON #446,
 two order-dependent flakes in its own new test files that a green full-suite run
 did not show.** See START HERE.
@@ -653,8 +655,8 @@ with four known bugs deferred rather than held.
 | Order | Milestone | Open |
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
-| 1 | **`0.3.1 — Dialog keyboard and modality`** — #426, #439, #440, #441 | 4 |
-| 2 | **`Test and release confidence`** (unnumbered) — #407 then #380 | 2 |
+| 1 | **`0.3.1 — Dialog keyboard and modality`** — #426, #439, #440, #441, **#446** | 5 |
+| 2 | **`Test and release confidence`** (unnumbered) — #407 then #380, **#432 first** | 3 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
@@ -685,30 +687,40 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ SIX UNMILESTONED OPEN ISSUES as of 2026-08-11, end of session**
-(verified against `gh`, not counted by hand): **#431, #432, #433, #434, #436,
-#446.** Down from ten — #426/#439/#440/#441 went to `0.3.1` and #429 was
-milestoned into the release it actually shipped in.
+**⚠ FOUR UNMILESTONED OPEN ISSUES as of 2026-08-12** (verified against `gh`, not
+counted by hand): **#431, #433, #434, #436.** Down from six — **#446 went to
+`0.3.1` and #432 to `Test and release confidence`** (maintainer, 2026-08-12).
 
-**#446 is the newest and the one that MATTERS RIGHT NOW** — the two `0.3.1`
-flakes, see START HERE. It is unmilestoned only because of the standing rule not
-to assign one unasked; **it is a plausible merge blocker for `0.3.1`** and wants
-a decision rather than a default.
+⚠ **THAT PAIR CORRECTED A MISREADING OF THE "do not assign unasked" RULE, and
+the correction is the part worth keeping.** This file had #446 sitting
+unmilestoned while simultaneously describing it as a merge blocker for `0.3.1`,
+and #432 unmilestoned while describing it as the blocker for #380. **That is
+incoherent on the file's own terms: a milestone answers WHEN SOMETHING SHIPS, so
+an issue that gates a release has already had its milestone decided by the thing
+it blocks.** The maintainer put it directly — *"I'm not sure why you would think
+this doesn't belong in a milestone that gates that milestone release."*
 
-**#431/#432/#433/#434 all came out of running the macOS and Linux legs for #427**
+**The rule is narrower than it was being applied.** "Do not assign a milestone
+unasked" guards against making SCOPE calls for the maintainer — deciding that a
+piece of optional work belongs in a release. It was never about a blocker, whose
+placement is a fact rather than a choice. **The test: would shipping the
+milestone without this issue be a decision, or a defect?** A defect means it
+belongs on the milestone; a decision means ask. #430 is the same shape from the
+other side — the maintainer said "we release this with 0.2.3", which decided it.
+
+**#431/#433/#434 all came out of running the macOS and Linux legs for #427**
 and are **test-infrastructure failures, not user-facing** — which is exactly why
 they were kept OUT of `0.3.0`: a CHANGELOG entry earns its place by being
-reachable, and a user cannot observe any of these. `#432` (the shared-root GUI leg
-exits silently mid-run on Linux) is the one that **still blocks #380 (CI)**.
-**#436** is the `versionadded` convention, filed 2026-08-10, and it carries an
-undecided question (retroactive to `0.2.x`, or forward-only) — worth answering now
-that `0.3.0` has shipped new public surface that a reader cannot date.
+reachable, and a user cannot observe any of these. **They gate nothing, so they
+stay unassigned** — that is the rule working, not the exception. **#436** is the
+`versionadded` convention, filed 2026-08-10, and it carries an undecided question
+(retroactive to `0.2.x`, or forward-only) — worth answering now that `0.3.0` has
+shipped new public surface that a reader cannot date.
 
-**They are deliberately left unassigned** — the rule below says do not assign a
-milestone unasked, and none has been raised with the maintainer. **#430 was the
-exception and it was explicit**: the maintainer said "we release this with 0.2.3",
-which decided the milestone, so it was assigned to `0.2.x — Patch line` and shipped.
-Absent that kind of direct instruction, leave them alone.
+⚠ **#432 moving onto `Test and release confidence` also fixes the ORDER inside
+that milestone.** It is listed as #407 then #380, but #432 is the blocker to
+attack first: the shared-root GUI leg cannot complete on Linux at all, which
+makes CI unbuyable until it is fixed.
 
 **ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
 counted by hand) — the deviation this file used to flag was closed. The maintainer
@@ -716,7 +728,10 @@ assigned #417, #418, #419, #420, #421 and #422 to `0.2.x — Patch line` in one 
 all six are bug fixes on existing public API and **none adds public surface**, which
 is the test for the patch line. #417 came from an external user; the other five were
 filed by us while fixing it. ⚠ **Do not assign a milestone unasked** — that rule
-still stands, this was an explicit decision.
+still stands for work whose membership is a SCOPE call, which this was (an
+explicit decision). ⚠ **It does NOT cover a blocker** — see the correction above:
+if the milestone cannot ship until the issue is fixed, its placement is already
+determined and leaving it unassigned just hides the gate.
 ⚠ **A bullet in this file is not proof an issue is open** — #222, #234
 and #379 all sat here as open work after being closed; check the state first.
 Check with:
