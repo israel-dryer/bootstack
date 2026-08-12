@@ -684,7 +684,7 @@ with four known bugs deferred rather than held.
 | Order | Milestone | Open |
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
-| 1 | **`0.3.1 — Dialog keyboard and modality`** — MERGED to `main` (PR #448), **awaiting release**. #426/#439/#440/#441 CLOSED; **#446 still open** | 1 |
+| — | ~~**`0.3.1 — Dialog keyboard and modality`**~~ — **SHIPPED 2026-08-12, milestone CLOSED**: #426, #439, #440, #441, #446 | 0 |
 | 2 | **`Test and release confidence`** (unnumbered) — **#407 DONE**; #380 next, **#432 to re-test first** | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
@@ -694,7 +694,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445 | 4 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, **#447, #449** | 6 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -716,8 +716,8 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ SIX UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
-against `gh`, not counted by hand): **#431, #433, #434, #436, #447, #449.** The new one
+**⚠ FOUR UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
+against `gh`, not counted by hand): **#431, #433, #434, #436.** #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
 is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
 unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
 #432 to `Test and release confidence`** (maintainer, 2026-08-12).
@@ -775,6 +775,24 @@ Check with:
 
 ### ★ START HERE (2026-08-12, end of day) — `0.3.1` SHIPPED, #407 MERGED. Nothing is in flight.
 
+**STATE OF THE WORLD, so nothing below has to be pieced together:**
+
+| | |
+|---|---|
+| `main` | **`9738227c`**, pushed, equal to `origin/main`. The ONLY ref, local and remote |
+| suite | **exit 0, all 20 legs, 1250 passed / 22 skipped, 88s** at `288d2596` |
+| root | **NO `PLAN.md`, NO `REVIEW.md`** — both archived. Create `PLAN.md` fresh for the next branch |
+| released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
+| open milestones | 10, and they agree 1:1 with the table below |
+
+⚠ **`REVIEW-PROTOCOL.md` GAINED A `Stopping rules` SECTION ON 2026-08-12 — READ
+IT BEFORE ANY REVIEW.** Four mechanical gates, written because this project spent
+four review rounds on the `0.3.1` branch and round 4 reviewed a **test-only**
+commit whose fixes would have earned a round 5. The one that bites first: **a
+round is triggered by a non-empty `git diff <range> -- src/` and by nothing
+else.** #407 was its first application and opened **zero** rounds against a
+declared cap of 2.
+
 **⏭ THE NEXT JOB IS #380 (CI), AND IT JUST GOT CHEAP.** The whole suite now runs
 in **66–88s** rather than the ~5 minutes it used to, because #407 landed. Take
 the `Test and release confidence` workstream: **#380 first now, not #407** —
@@ -829,15 +847,18 @@ keeping the auto-generated `## What's Changed` tail. **The tag was NOT moved** �
 never move a tag a release has already run on. If this happens again, that is
 the recipe.
 
-⚠ **`0.3.1`'s MILESTONE IS STILL OPEN** because **#446 is still open** on it.
-Its two known flakes shipped and the third became #447, so it looks resolvable —
-**that is the maintainer's call, not an assumption to act on.**
+✅ **`0.3.1`'s MILESTONE IS CLOSED** (maintainer, 2026-08-12), reading
+`open=0 closed=5`. **#446 was CLOSED rather than moved**, because its scope was
+exactly the two flakes and both shipped in `48dba181`; the third became #447.
+Anything unfinished went to **`0.3.x — Patch line`** — #447 and #449 — which is
+consistent with #422 already sitting there, so a test-only issue on the patch
+line is not a new precedent.
 
 **PR [#448](https://github.com/israel-dryer/bootstack/pull/448) is MERGED** —
 merge commit **`d307fd2e`**, a **merge commit, not a squash**, the same call made
 for #410/#423/#424/#442. Branch head at merge was **`ba27ab58`**;
-`fix/dialog-keyboard-modality` still exists local and remote, and by convention
-is deleted **after** the release hits PyPI. Verified both ways before merging:
+`fix/dialog-keyboard-modality` is **DELETED** local and remote (that SHA is the
+one to resurrect from). Verified both ways before merging:
 ancestor of `origin/main` **and** a MERGED PR. **#426, #439, #440 and #441 are
 all CLOSED.**
 
