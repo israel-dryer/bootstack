@@ -139,9 +139,10 @@ as a control, then import. It passed for `0.3.0`.
 #441, **and #446**, which was moved onto the milestone on 2026-08-12 because it
 gates the release (see the milestone table's note). Scoped 2026-08-11
 (maintainer). **BUILT and REVIEWED THREE TIMES on
-`fix/dialog-keyboard-modality` (pushed, head `7ef64236`) — but BLOCKED ON #446,
-two order-dependent flakes in its own new test files that a green full-suite run
-did not show.** See START HERE.
+`fix/dialog-keyboard-modality` (pushed, head `c8bb3d17`). #446's two flakes are
+FIXED at `48dba181`, but the branch is STILL BLOCKED** — a third, unexplained
+flake turned up while verifying them, and the round 4 review of the fix has not
+run. See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
 has now been wrong about them FIVE times, in both directions.**
@@ -170,9 +171,17 @@ selected count, and checking a reported total against it takes one command:**
 `pytest <paths> -m "not isolated" --collect-only -q | tail -2`. That single check
 would have caught three of the five wrong figures this file has carried.
 
-⚠ **The `123 / 6` data-leg flag is RESOLVED: it was wrong, not environmental.**
-Measured `125 / 4` on every one of six runs on 2026-08-11 — five on the branch
-head and one on merged `main`. Nothing moved from passed to skipped.
+⚠ **THE `123 / 6` DATA-LEG FLAG IS ENVIRONMENTAL AFTER ALL — this file's
+"RESOLVED: it was wrong, not environmental" was itself wrong** (measured
+2026-08-12). Both figures are real and the difference tracks **whether `pandas`
+is installed on the box**: two tests in `test_readers.py` / `test_writers.py`
+SKIP with *"pandas installed - gating path not exercised"*, i.e. they run only
+when it is ABSENT. `pandas` is installed here now and the leg reads **123 passed /
+6 skipped**; on 2026-08-11 it was not, and the same leg read `125 / 4`.
+`pyarrow` and `tables` are absent on both dates and account for the other four
+skips. **So neither number is a defect, and a session seeing either should
+check the optional deps rather than re-flagging it.** `py -3.12 -c "import
+pandas"` settles it in one command.
 
 Previous, kept because the reasoning below refers to it — measured 2026-08-10 on
 `feat/widget-capture-427` at **`bdbdd097`**: widgets+CLI **932 / 14**, data
@@ -737,57 +746,106 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-11, end of session) — `0.3.1` IS BUILT AND BLOCKED ON TWO FLAKES
+### ★ START HERE (2026-08-12) — `0.3.1`'s TWO KNOWN FLAKES ARE FIXED; A THIRD IS OPEN, AND ROUND 4 HAS NOT RUN
+
+**⏭ THE NEXT SESSION'S JOB IS THE ROUND 4 REVIEW.** It is scoped, and the brief
+is committed at **`development/review-brief-446-flakes.md`** — read that first,
+it carries the triage state so the round does not re-file what rounds 1–3 already
+settled. **Scope is the FIX DIFF, `git diff 7ef64236..48dba181`, not the
+branch.** A session that has written code never reviews code
+(`REVIEW-PROTOCOL.md`), and the session that wrote this fix is the one that wrote
+this block.
 
 **`0.3.0` is on PyPI** (tag `v0.3.0`, clean `release.yml`, docs chained off it);
 every post-release step is done and verified — see Current state for the evidence
 and for the one new check worth repeating (import with `idlelib` blocked).
 
-**ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 15 commits, PUSHED.**
-Head **`7ef64236`**, tracking `origin`. `main` is **`a8eadc2c`** and equals
-`origin/main`. Both were pushed at the end of this session — an earlier version
-of this block said the branch was local-only, which is no longer true.
+**ONE BRANCH IN FLIGHT: `fix/dialog-keyboard-modality`, 17 commits, PUSHED.**
+Head **`c8bb3d17`**, tracking `origin` (it was `7ef64236` before the #446 work).
+`main` is pushed and equal to `origin/main`.
 
 It carries all four `0.3.1` issues — **#426, #439, #440, #441** — plus `PLAN.md`
 and `REVIEW.md` at the root. All four were scoped as **patch-safe** (none adds
 public surface) and **none is a regression from `0.3.0`**; all four exist in
 `0.2.3` too, which is what made shipping first and patching after the right call.
 
-#### ⛔ DO NOT MERGE YET — read this first
+#### ⛔ DO NOT MERGE YET — a THIRD flake is open, and round 4 has not run
 
-**The branch has TWO low-rate flakes, filed as
-[#446](https://github.com/israel-dryer/bootstack/issues/446), and they were found
-AFTER a green full-suite run.** Both live in round 1's new dialog test files, both
-are order-dependent on the shared root, and **each file passes alone**:
+**#446's two flakes are FIXED at `48dba181`** (test-only — `src/` is untouched,
+which was verified, not assumed). **A third one is not**, and it is the reason
+the branch is still blocked.
 
-| test | file | rate observed |
-|---|---|---|
-| `test_the_restored_grab_is_the_same_KIND_it_was` | `test_dialog_nested_modality.py` | **1 in 12** at `7ef64236` |
-| `test_query_dialog_focuses_its_entry_not_the_default_button` | `test_dialog_initial_focus.py` | **1 in 8** at `346d7f39` |
+| flake | file | before | after |
+|---|---|---|---|
+| A `test_the_restored_grab_is_the_same_KIND_it_was` | `test_dialog_nested_modality.py` | 1 in 12 | **fixed** |
+| B `test_query_dialog_focuses_its_entry_not_the_default_button` | `test_dialog_initial_focus.py` | 1 in 8 | **fixed** |
+| C `test_enter_on_a_disabled_button_still_reaches_the_default` | `test_dialog_press_contract.py` | not seen in 12 | **1 in 37, UNEXPLAINED** |
 
-Flake A dies with `TclError: bad window path name` on `deiconify()` inside
-`dialog.show()` — the dialog's own toplevel destroyed out from under it, which is
-the signature this file already attributes to **a leaked `after` timer firing
-during a later test** (#397 did exactly that). Flake B puts focus on the
-**toplevel** instead of the entry, which is the signature of the **#437 flake** —
-`focus_set()` silently no-ops against an unmapped widget and the miss surfaces one
-assertion later. Both mechanisms are already written up in this file; neither is
-chased down.
+⚠ **NEITHER FIXED FLAKE HAD THE CAUSE THIS FILE PREDICTED, and the leaked-timer
+prediction was WRONG rather than merely incomplete.** It was measured first and
+refuted — `probe_446_leaked_after_jobs.py` shows no test-scheduled timer survives
+a test. **A named prior is a hypothesis, not a diagnosis**, which is the opposite
+of what the previous version of this block said ("both have a named prior with a
+worked fix, so neither should need re-deriving").
+
+- **Flake A was a FIXED DELAY where the other files poll.**
+  `test_dialog_nested_modality.py` drove on `after(300, drive)`. `show()` creates
+  the toplevel, builds the footer and content, positions the window, and only
+  **then** grabs — and building and positioning both pump the event loop, so the
+  timer fires mid-`show()`, the driver destroys the toplevel, and `show()`
+  deiconifies a window that is gone. **The grab is the barrier because it is the
+  last thing `show()` does before it waits.** Forced 10/10 → 0/10 in
+  `probe_446_fixed_delay_lands_mid_show.py`, against 0/10 for the same fixed
+  delay in a quiet process.
+- **Flake B was a barrier SCOPE error, not a timing one.** `_drive` waited for
+  the grab and for every **footer** child to map — correct where the widget under
+  test is a footer button, useless here, where it is `QueryDialog`'s entry in the
+  **content** subtree. Measured 4/12 unmapped at the old barrier and the same
+  4/12 focus misses, tracking one-for-one → **0/12** once the barrier waits for
+  the resolved focus target (`probe_446_barrier_scope.py`).
+
+⚠ **FLAKE C IS THE OPEN QUESTION AND MUST NOT BE CLOSED BY RE-RUNNING.** Enter on
+a disabled footer button reached **neither** it nor the default button
+(`calls == []`), which reading the guard cannot explain — `_key_was_consumed`
+returns `not instate(["disabled"])`, i.e. False, for a disabled button. It does
+not reproduce in a quiet process (**0/40**,
+`probe_446_disabled_button_enter.py`, already instrumented to separate "the
+toplevel binding never ran" from "it ran and `invoke()` did nothing"), and 25
+instrumented runs did not catch it again. **Whether the timing change in the fix
+exposed it is UNKNOWN** — it appeared once in 37 post-fix runs and zero times in
+12 pre-fix runs, which is too little to attribute either way. Record it as
+unknown; do not let a later session inherit a guess as a fact.
 
 ⚠ **THE LESSON, and it is the same one `0.3.0` round 4 paid for: `run_gui.py`
-EXIT 0 IS NOT EVIDENCE OF STABILITY.** This branch reports **1208 passed / 21
-skipped, exit 0, all 20 legs**, plus a clean `-W` docs build — and still has two
-flakes. At 1-in-8 a full green run is the *expected* outcome of a broken branch.
-**Do not re-run to check; re-running is how both of these hid.** The #437 control
-is the pattern: a probe that **CREATES** the condition and reports a rate
-(old barrier 5/10, new barrier 0/10), not one that looks for the symptom.
+EXIT 0 IS NOT EVIDENCE OF STABILITY.** The branch reported **1208 passed / 21
+skipped, exit 0, all 20 legs**, plus a clean `-W` docs build — and had two flakes
+then and one now. At 1-in-8 a full green run is the *expected* outcome of a
+broken branch. **Do not re-run to check; re-running is how all three of these
+hid.** The #437 control is the pattern: a probe that **CREATES** the condition
+and reports a rate, not one that looks for the symptom. Both #446 fixes were
+accepted on exactly that evidence, and flake C is unresolved precisely because
+nothing has yet made it happen on demand.
 
 **Reproduction is in #446** — the five dialog files in one pytest process, eight
 or more times. `git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
 
-**⏭ SO THE NEXT SESSION'S JOB, in order:** (1) chase #446's two mechanisms — both
-have a named prior with a worked fix, so neither should need re-deriving;
-(2) then decide the merge. #444 and #445 are deliberately NOT part of it.
+**AUTHORITATIVE COUNTS, measured 2026-08-12 at `48dba181`** — full
+`py -3.12 tests/run_gui.py`, **exit 0, all 20 legs, summed 1250 passed / 22
+skipped**; shared leg **1055 passed / 13 skipped**, against a ceiling measured
+the same day at **1068** selected (1143 collected, 75 deselected). `1055 + 13 =
+1068` exactly, so it reconciles against its own ceiling.
+
+⚠ **That does NOT reconcile with round 3's recorded `1011 / 14` against a `1024`
+ceiling, at a commit whose test count this fix did not change** (61 tests in the
+five-file run both before and after). One of the two measurements is wrong and
+today's is the one that checks out against its own collection line. **This is the
+sixth time this file has carried a wrong count.** Prefer what you measure.
+
+**⏭ SO THE NEXT SESSION'S JOB, in order:** (1) **run the round 4 review** —
+scoped to `git diff 7ef64236..48dba181`, brief at
+`development/review-brief-446-flakes.md`; (2) chase flake C, which the review may
+or may not illuminate; (3) then decide the merge. #444 and #445 are deliberately
+NOT part of it.
 
 **THREE REVIEW ROUNDS RAN. `REVIEW.md` on the branch is the full record — read it
 rather than re-deriving.** The yield curve is the part worth carrying:
