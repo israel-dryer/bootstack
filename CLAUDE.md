@@ -685,7 +685,7 @@ with four known bugs deferred rather than held.
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
 | — | ~~**`0.3.1 — Dialog keyboard and modality`**~~ — **SHIPPED 2026-08-12, milestone CLOSED**: #426, #439, #440, #441, #446 | 0 |
-| 2 | **`Test and release confidence`** (unnumbered) — **#407 DONE**; #380 next, **#432 to re-test first** | 2 |
+| 2 | **`Test and release confidence`** (unnumbered) — **#407 DONE**; **#380 IN FLIGHT (PR #451)**; **#432 did NOT reproduce — close or re-scope it** | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
@@ -716,8 +716,8 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FOUR UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
-against `gh`, not counted by hand): **#431, #433, #434, #436.** #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
+**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
+against `gh`, not counted by hand): **#431, #433, #434, #436, #452.** #452 is the macOS CI hang, filed today and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
 is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
 unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
 #432 to `Test and release confidence`** (maintainer, 2026-08-12).
@@ -773,17 +773,77 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-12, end of day) — `0.3.1` SHIPPED, #407 MERGED. Nothing is in flight.
+### ★ START HERE (2026-08-12, PAUSED MID-#380) — CI EXISTS AND HAS ALREADY EARNED ITS KEEP
+
+**⏸ THE SESSION PAUSED WAITING ON A LINUX BOX.** Nothing is broken and nothing
+is half-written; the next move is simply blocked on a measurement only a Linux
+machine can take. Read the two blocks marked ⏭ below and you are current.
+
+**⏭ RESUME POINT 1 — the WSL agent's answer on #447.** A brief is committed at
+**`development/handoff-447-linux-focus.md`**. It asks ONE question: does the
+dialog focus/Enter cluster fail on X11 generally, or only under `xvfb-run`,
+**which has no window manager at all**? `focus_lastfor()` returning the EMPTY
+STRING is not "the wrong widget" — it is "nothing in this toplevel ever held
+focus", which is what a missing WM produces. Xvfb-only means a one-line CI fix
+and the product is fine; failing under a compositor too means **a product bug in
+`0.3.1`'s dialog keyboard work on Linux**, a platform we publish for, invisible
+to both boxes here.
+
+**⏭ RESUME POINT 2 — then merge or fix PR #451.** It is open and deliberately
+NOT merged: its CI is green on Windows, headless and docs, and **red on both
+Linux legs** with the #447 cluster. Merging a red workflow trains everyone to
+ignore it. The maintainer chose to understand Linux first (2026-08-12).
 
 **STATE OF THE WORLD, so nothing below has to be pieced together:**
 
 | | |
 |---|---|
-| `main` | **`9738227c`**, pushed, equal to `origin/main`. The ONLY ref, local and remote |
-| suite | **exit 0, all 20 legs, 1250 passed / 22 skipped, 88s** at `288d2596` |
-| root | **NO `PLAN.md`, NO `REVIEW.md`** — both archived. Create `PLAN.md` fresh for the next branch |
+| `main` | **`d6c90534`**, pushed. Green |
+| branch | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH |
+| suite on `main` | **exit 0, 20 legs, 1250 passed / 22 skipped, 88s** at `288d2596` |
+| suite on the branch | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — see the count reconciliation below |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived. Create `PLAN.md` fresh for the next branch |
 | released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
 | open milestones | 10, and they agree 1:1 with the table below |
+
+⚠ **THE BRANCH'S 1449 IS NOT A REGRESSION IN EITHER DIRECTION — it reconciles
+exactly:** `1250` + **25** files under `tests/widgets/` that `testpaths` never
+collected + **166** in `tests/test_public_surface.py`, which had never run
+anywhere + **8** for `test_tk9_scaling_baseline.py`, which now runs TWICE (once
+in the headless leg to prove it needs no display, once in the shared leg as
+before). **Both of those first two had literally never been executed by any
+automated run**, locally or otherwise, which is what #380 asked to fix.
+
+#### ⚠ WHAT CI FOUND ON ITS VERY FIRST RUN (run `31591527788`)
+
+| job | result |
+|---|---|
+| `headless` (no display, root creation BLOCKED) | ✅ |
+| `tests` windows py3.13 | ✅ |
+| `docs` `-W` | ✅ |
+| `tests` ubuntu py3.12 **and** py3.13 | ❌ **7 failures, identical on both** |
+| `tests` macos py3.13 | ⛔ **HUNG — 90 minutes for a 90-second suite** |
+
+- **The Linux failures are the #447 cluster** — `focus_lastfor()` returning `''`,
+  Enter reaching neither the focused button nor the default. Same shape measured
+  at 4/50 on Windows and never explained. **This is the first near-deterministic
+  reproduction the issue has ever had.** See RESUME POINT 1.
+- ✅ **#432 DID NOT REPRODUCE.** The Linux leg **ran all 33 legs to completion**
+  and reported normally — it did not exit silently mid-run. #407 appears to have
+  removed it. **#432 should be closed or re-scoped on this evidence**; it was the
+  blocker on this whole workstream.
+- ⛔ **The macOS hang is [#452](https://github.com/israel-dryer/bootstack/issues/452).**
+  Setup and the Tk-version report both succeeded, then the suite never returned.
+  #380 had flagged Tk-on-Aqua as unverified on GitHub runners; that is answered.
+  **The leg is REMOVED from the matrix** rather than left hanging, and **every
+  job now sets `timeout-minutes`** — without them that hang would have burned to
+  GitHub's 6-hour default. ⚠ **Step 3 of #452 first: does a bare
+  `tkinter.Tk()` even complete on the runner?** That control decides how the
+  rest reads.
+- ⚠ **One more Linux failure is deliberately NOT filed yet:**
+  `test_appshell_shortcuts::test_bare_b_does_not_toggle_the_sidebar`
+  (`assert '' == 'b'`). It is focus-shaped too, so it may share #447's cause;
+  filing now risks a duplicate the WSL run would immediately merge.
 
 ⚠ **`REVIEW-PROTOCOL.md` GAINED A `Stopping rules` SECTION ON 2026-08-12 — READ
 IT BEFORE ANY REVIEW.** Four mechanical gates, written because this project spent
@@ -793,10 +853,10 @@ round is triggered by a non-empty `git diff <range> -- src/` and by nothing
 else.** #407 was its first application and opened **zero** rounds against a
 declared cap of 2.
 
-**⏭ THE NEXT JOB IS #380 (CI), AND IT JUST GOT CHEAP.** The whole suite now runs
-in **66–88s** rather than the ~5 minutes it used to, because #407 landed. Take
-the `Test and release confidence` workstream: **#380 first now, not #407** —
-that one is done.
+**#380 IS IN FLIGHT, NOT PENDING** — PR #451, branch `ci/test-workflow-380`. It
+became affordable because #407 took the suite from ~5 minutes to ~1. The
+workflow is written, verified locally, and has run once; what is left is the
+Linux question above, not more authoring.
 
 ⚠ **DO NOT DESIGN #380 FROM SCRATCH. `D:\Development\ttkbootstrap` HAS ALREADY
 SOLVED IT** (maintainer's pointer, 2026-08-12). Same maintainer, same shared-root
