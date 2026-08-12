@@ -36,6 +36,15 @@ from bootstack.dialogs import Dialog, DialogButton
 
 pytestmark = pytest.mark.gui
 
+# Where `_nest` reports a barrier it never cleared.
+#
+# ⚠ Module-level because `_nest` is reached through `_outer`'s `body`, which the
+# tests pass as a bare `lambda top: ...` — there is no return path from inside
+# it back to the test. `_outer` clears this on entry and copies it into the
+# state it returns, so a nested dialog that never became modal fails the test
+# that nested it instead of silently measuring nothing.
+_NEST_PROBLEMS: list[str] = []
+
 
 def _outer(app, body):
     """A modal dialog that runs `body(top)` once it is up, then closes.
@@ -73,6 +82,7 @@ def _outer(app, body):
     )
     state: dict = {}
     pending: list[str] = []
+    _NEST_PROBLEMS.clear()
 
     def drive():
         top = dialog.toplevel
@@ -94,7 +104,14 @@ def _outer(app, body):
     def run(attempt=0):
         top = dialog.toplevel
         if top is None or not top.winfo_exists() or top.grab_current() is not top:
-            if attempt < 200:
+            # ⚠ 150 attempts = 7550ms, deliberately BELOW `force_close`'s 10s.
+            # At 200 the budget ran to 10050ms, so `force_close` always won the
+            # race: it destroyed the toplevel, `show()` returned, the `finally`
+            # below cancelled the remaining retries, and this branch never got
+            # to run. `state` was then empty with no `"error"` key, so the
+            # assert at the bottom PASSED and every test reading `state` died
+            # with a bare `KeyError` instead.
+            if attempt < 150:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
             else:
                 state["error"] = "the outer dialog never took the modal grab"
@@ -104,6 +121,14 @@ def _outer(app, body):
     def force_close():
         top = dialog.toplevel
         if top is not None and top.winfo_exists():
+            # Reaching here at all means the measurement never completed —
+            # either the grab never arrived, or `body` was still running. Both
+            # invalidate the result, so say so rather than closing quietly.
+            state.setdefault(
+                "error",
+                "the outer dialog was still up after 10s - the barrier never "
+                "cleared, or the body driving it never finished",
+            )
             top.destroy()
 
     pending.append(root.after(50, run))
@@ -116,7 +141,13 @@ def _outer(app, body):
         for job in pending:
             root.after_cancel(job)
 
+    state["nest_problems"] = list(_NEST_PROBLEMS)
+
     assert "error" not in state, state["error"]
+    assert not state["nest_problems"], (
+        f"a nested dialog never became modal, so nothing was nested and this "
+        f"measurement proves nothing: {state['nest_problems']}"
+    )
     return state
 
 
@@ -129,6 +160,12 @@ def _nest(parent_top, depth: int) -> None:
     ⚠ Schedules on the ROOT, not on `parent_top`. An `after` job is a command
     owned by the widget it is scheduled on, so a job left pending on a dialog
     that is then destroyed fires as an orphan with nothing Python can see.
+
+    ⚠ Reports a barrier it never cleared into `_NEST_PROBLEMS`, which `_outer`
+    asserts on. Giving up quietly here means nothing was ever nested, so the
+    outer grab was never displaced and every test that nests passes measuring
+    nothing — the exact vacuity the control test at the top of this module
+    exists to catch, arriving by a different route.
     """
     if depth == 0:
         return
@@ -152,14 +189,24 @@ def _nest(parent_top, depth: int) -> None:
     def run(attempt=0):
         top = inner.toplevel
         if top is None or not top.winfo_exists() or top.grab_current() is not top:
-            if attempt < 200:
+            # ⚠ 120 attempts = 6050ms, below `force_close`'s 8s for the reason
+            # given in `_outer.run` — a budget that outlasts the fallback can
+            # never report anything.
+            if attempt < 120:
                 pending.append(root.after(50, lambda: run(attempt + 1)))
+            else:
+                _NEST_PROBLEMS.append(
+                    f"the inner dialog at depth {depth} never took the modal grab"
+                )
             return
         drive()
 
     def force_close():
         top = inner.toplevel
         if top is not None and top.winfo_exists():
+            _NEST_PROBLEMS.append(
+                f"the inner dialog at depth {depth} was still up after 8s"
+            )
             top.destroy()
 
     pending.append(root.after(50, run))
