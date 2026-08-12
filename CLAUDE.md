@@ -145,14 +145,27 @@ carries all four fixes and the next job is to promote and tag it. See START HERE
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
 has now been wrong about them SIX times, in both directions.**
 
-**AUTHORITATIVE — measured 2026-08-12 at `ba27ab58`** (the `0.3.1` branch head;
-`main` at `d307fd2e` differs from it by `CLAUDE.md` alone, so this transfers),
+**AUTHORITATIVE — measured 2026-08-12 on `main` at `288d2596`** (the #407 merge),
 full `py -3.12 tests/run_gui.py`, **exit 0, all 20 legs, summed 1250 passed / 22
-skipped**. Shared leg **1055 passed / 13 skipped** against a **1068** selected
-ceiling — `1055 + 13 = 1068` exactly, so it reconciles against its own
-collection line. Data leg **123 / 6**, which differs from the `125 / 4` below
-**environmentally**, tracking whether `pandas` is installed, because two of those
-tests skip when it is.
+skipped**, wall clock **88s**. Shared leg **1055 passed / 13 skipped** against a
+**1068** selected ceiling — `1055 + 13 = 1068` exactly, so it reconciles against
+its own collection line. Data leg **123 / 6**, which differs from the `125 / 4`
+below **environmentally**, tracking whether `pandas` is installed, because two of
+those tests skip when it is.
+
+⚠ **THE COUNTS DID NOT MOVE ACROSS #407; THE CLOCK DID.** Same 1250 / 22 before
+and after, which is the point — a harness fix that changed a count would have
+been skipping something into passing. What changed, measured on this box with
+the same command either side:
+
+| | before #407 | after |
+|---|---|---|
+| shared leg (`tests/widgets/public tests/cli -m "not isolated"`) | **215s** | **56s** |
+| full `run_gui.py` | ~5 min | **66–88s** |
+
+That is a larger win than the **144s → 80s** this file recorded when the root
+cause was first diagnosed — so prefer these, and re-measure rather than trusting
+either.
 
 **Previous, kept for the reasoning that refers to it — measured 2026-08-11 on
 `main` at `ab11f37c`** (the #443 merge — everything in `0.3.0`), full
@@ -672,7 +685,7 @@ with four known bugs deferred rather than held.
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
 | 1 | **`0.3.1 — Dialog keyboard and modality`** — MERGED to `main` (PR #448), **awaiting release**. #426/#439/#440/#441 CLOSED; **#446 still open** | 1 |
-| 2 | **`Test and release confidence`** (unnumbered) — #407 then #380, **#432 first** | 3 |
+| 2 | **`Test and release confidence`** (unnumbered) — **#407 DONE**; #380 next, **#432 to re-test first** | 2 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
@@ -703,8 +716,8 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-12, after the merge** (verified
-against `gh`, not counted by hand): **#431, #433, #434, #436, #447.** The new one
+**⚠ SIX UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
+against `gh`, not counted by hand): **#431, #433, #434, #436, #447, #449.** The new one
 is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
 unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
 #432 to `Test and release confidence`** (maintainer, 2026-08-12).
@@ -760,21 +773,65 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-12, later) — `0.3.1` IS MERGED TO `main` AND NOT YET RELEASED
+### ★ START HERE (2026-08-12, end of day) — `0.3.1` SHIPPED, #407 MERGED. Nothing is in flight.
 
-**⏭ THE NEXT JOB IS THE `0.3.1` RELEASE.** `## [Unreleased]` on `main` carries
-all four fixes and nothing else. Promote it to
-`## [0.3.1] — Dialog keyboard and modality` **in its own commit**, then
-`py -3.12 -m bumpversion bump patch` (present and **1.5.1** as of today — it has
-vanished twice, so check), push `main` + the `v0.3.1` tag, and let `release.yml`
-run. Full sequence and every trap under Release flow.
+**⏭ THE NEXT JOB IS #380 (CI), AND IT JUST GOT CHEAP.** The whole suite now runs
+in **66–88s** rather than the ~5 minutes it used to, because #407 landed. Take
+the `Test and release confidence` workstream: **#380 first now, not #407** —
+that one is done.
 
-**⛔ NOT DONE UNTIL VERIFIED, not assumed:** PyPI proved with a real
-`pip download` (**never** the CDN-cached summary endpoint), the wheel opened,
-the GitHub Release live with both assets, docs returning 200, **and `import
-bootstack` with `idlelib` BLOCKED via a `meta_path` finder** (#430's defect;
-grep is not enough). Then delete the branch, close the milestone, and comment on
-the issues.
+⚠ **DO NOT DESIGN #380 FROM SCRATCH. `D:\Development\ttkbootstrap` HAS ALREADY
+SOLVED IT** (maintainer's pointer, 2026-08-12). Same maintainer, same shared-root
+design, and its `tests/conftest.py` says outright that it followed bootstack's
+approach. Its `.github/workflows/ci.yml` is close to a drop-in answer:
+
+- a matrix of **ubuntu / windows / macos** plus the **floor Python** from
+  `pyproject.toml`, with **`fail-fast: false`** and the reason written into the
+  file — a green Linux run was once read as a green suite while Windows was red;
+- **`xvfb-run -a -s "-screen 0 1280x1024x24 -dpi 96"`** on Linux only, with a
+  comment explaining the `-dpi 96`: Xvfb otherwise reports ~100 dpi, a real ~1.05
+  scaling factor, too small to hit the quarter-step snap and large enough to
+  round asset geometry up a pixel;
+- a per-job step that **REPORTS the Tk build** (`tcl=… tk=…`) rather than
+  letting anyone infer it from the Python version;
+- `concurrency` with `cancel-in-progress`, and a separate `-W` docs job;
+- an optional dependency **deliberately not installed**, so the fallback path is
+  the one under test.
+
+⚠ **One idea there is worth stealing into `conftest` regardless of CI:** it pins
+Tk scaling to baseline in the fixture, which "demotes CI's `-dpi 96` from
+load-bearing to belt-and-braces." bootstack has pixel-exact tests too, and a
+developer's laptop at 125% is the same hazard. **Not done — its own change.**
+
+**⏭ AND RE-TEST #432 BEFORE SCOPING IT.** The shared-root GUI leg exiting
+silently mid-run on Linux was most likely the widget accumulation #407 has now
+removed. **It may simply not reproduce.** Neither box here can check that;
+it needs a Linux run, which is also the first thing #380's Linux leg would tell
+you.
+
+#### ✅ `0.3.1 — Dialog keyboard and modality` IS ON PyPI (2026-08-12)
+
+Tag `v0.3.1`, **`release.yml` ran clean** (build, publish, release all green) and
+`docs.yml` chained off it. **Every post-release step is done and VERIFIED, not
+assumed:** PyPI proved with a real `pip download` of the wheel (never the
+CDN-cached summary endpoint), the shipped wheel opened and **imported with
+`idlelib` BLOCKED via a `meta_path` finder, with a control asserting the block
+was real** (#430's defect — grep is not enough, seven `idlelib` mentions survive
+in the wheel as docstring attributions), `WidgetRedirector` confirmed as
+bootstack's own module, `NOTICE` present at `dist-info/licenses/` with the PSF
+attribution, the GitHub Release live with both assets, and `bootstack.org`
+returning 200.
+
+⚠ **A CHANGELOG WORDING FIX LANDED AFTER THE TAG, so the two disagree by design.**
+`v0.3.1` carries the pre-fix text; `main` carries the corrected text; the
+**GitHub Release body was edited to match with `gh release edit --notes-file`**,
+keeping the auto-generated `## What's Changed` tail. **The tag was NOT moved** —
+never move a tag a release has already run on. If this happens again, that is
+the recipe.
+
+⚠ **`0.3.1`'s MILESTONE IS STILL OPEN** because **#446 is still open** on it.
+Its two known flakes shipped and the third became #447, so it looks resolvable —
+**that is the maintainer's call, not an assumption to act on.**
 
 **PR [#448](https://github.com/israel-dryer/bootstack/pull/448) is MERGED** —
 merge commit **`d307fd2e`**, a **merge commit, not a squash**, the same call made
@@ -1493,28 +1550,42 @@ Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
 
 ### Then — standing infrastructure work
 
-- **#407 harness leak-fix — UNBLOCKED NOW (#392 shipped in 0.2.0).** ⚠ **Tracked
-  under #407 as of 2026-08-04.** It used to be described here under **#379, which
-  is CLOSED** — so the best-understood piece of open work in this file had no open
-  issue at all and was one handoff-reset away from vanishing. The real root cause
-  of the order-dependence was found and deliberately left out: `conftest._region()`
-  returns `_region_root`, which on a decorated App **is the root**, so
-  `_snapshot`/`_reset_scene` never look inside the App's `_content_frame` — **the
-  scene reset has been a no-op for content widgets for the entire life of the
-  shared-root harness**, and every test's widgets pile up all session. Fixing it
-  makes PageStack pass with no `isolated` marker and cuts the widget leg
-  **144s → 80s**. Held back because it exposed **#392** — **shipped in 0.2.0, so
-  that blocker is gone** — plus a second latent bug that is still open
-  (`test_select_change_event_value_space` picking up 5 change events from earlier
-  tests — looks like stale bindtag bindings surviving destroy while Tk recycles
-  widget path names; not chased down). Own branch. **This is the best-understood
-  piece of open work in the file** — root cause known, payoff measured.
-  ⚠ **The patch is LOST.** It was saved to a per-session temp `scratchpad/`, not
-  into the repo — searched every session dir under
-  `%LOCALAPPDATA%\Temp\claude\D--Development-bootstack\`, nothing. **It must be
-  re-derived from the root cause above, which is fully recorded.** Lesson: a
-  handoff artifact belongs in `development/` (persistent) — a bare `scratchpad/`
-  path in this file does NOT survive the session.
+- ~~**#407 harness leak-fix**~~ — **✅ DONE, merged 2026-08-12 as PR #450 (merge
+  commit `288d2596`). CLOSED.** The recorded root cause was exactly right and is
+  worth keeping because it explains the shape: `conftest._region()` returned
+  `_region_root`, which on a decorated App **is the root**, so
+  `_snapshot`/`_reset_scene` walked the root's children twice and never looked
+  inside `App._content_frame` — **the scene reset had been a no-op for content
+  widgets for the entire life of the shared-root harness.** Measured before the
+  fix with five labels: **0 of 5 visible to the walk.** `_region()` now prefers
+  `_content_frame`; the whole change is 26 lines, 25 of them the comment.
+  Control both arms in one process: `development/probe_407_scene_reset.py`.
+  Plan archived at `development/plan-407-scene-reset.md`.
+  - ⚠ **The payoff BEAT the recorded figure: shared leg 215s → 56s** (this file
+    said 144s → 80s), full suite ~5 min → 66–88s, counts unchanged at 1250 / 22.
+  - ⚠ **PageStack STILL needs its `isolated` marker.** That half of the
+    prediction did NOT hold — removing it does not break PageStack, it surfaces
+    the unrelated select test below.
+  - ⚠ **The second latent bug surfaced and is filed as
+    [#449](https://github.com/israel-dryer/bootstack/issues/449), not fixed.**
+    `test_select_change_event_value_space` pins an exact event list against an
+    asynchronous change; ~1 in 10 full runs, 0 in 6 shared-leg runs, 0 in 10 solo
+    runs. **Two candidate causes are now RULED OUT by measurement:** it is not a
+    `Select` emitting at construction (0 events with `bind_all` installed before
+    the widget is built, with or without `value=`), and it is not an event leaked
+    by the reset destroying a widget (arm 2 of the probe: 0 leaked, drain or no
+    drain). ⚠ **This file must not repeat the withdrawn guess that `Select`
+    emits a `None` change at construction — it does not.** The remaining
+    hypothesis is stale bindings surviving destroy while Tk recycles path names,
+    and it is UNTESTED.
+  - ⚠ **A drain of the Tk event queue was added to `_reset_scene` and then
+    REMOVED.** Three full runs with it were green and three without were green
+    too, which decides nothing at a 1-in-10 rate; the probe that creates the
+    condition refuted the hypothesis outright. **The refuting arm is committed so
+    it is not re-proposed.** Lesson worth more than the fix: keeping a change
+    because the suite happens to be green is the trap.
+  - ⚠ **#447's flake rate went 4/50 → 2/50, which SETTLES NOTHING** — inside
+    noise at that sample size. Recorded as unchanged.
 
 - **#380 — CI test workflow.** `.github/workflows/` still has only `docs.yml` +
   `release.yml`, so **nothing runs the suite**; every Tk 9 bug so far was found by
@@ -1894,6 +1965,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
+| **0.3.1** | SHIPPED 2026-08-12 (PyPI + tag `v0.3.1`), titled *Dialog keyboard and modality*. **`release.yml` ran clean**, docs chained off it. Four fixes, no new public surface — the mirror-image call to `0.3.0`: a fix needs a minor only if it ADDS surface, so these rode the patch line rather than being held. **#441** Enter in a dialog's multi-line field inserted its newline and the dialog then closed on top of it; Enter is now text where it means text and a command everywhere else, keypad key included · **#440** a nested modal took the grab and released it entirely instead of handing it back, leaving the outer dialog modal in appearance only while you could drive the app underneath it · **#439** the default button's `focus_set()` ran while the window was still hidden, where Tk silently ignores it, so dialogs opened with nothing focused and no Tab origin · **#426** the layout migration error recommended `align_self=`/`justify_self=`, renamed before release and never shipped, so following it produced a second error naming an option you never wrote. ⚠ The CHANGELOG wording was corrected AFTER the tag, so `v0.3.1` and `main` differ by design and the GitHub Release body was edited to match — the tag was NOT moved. ⚠ Four review rounds ran and round 4 should not have; that is what produced `REVIEW-PROTOCOL.md`'s Stopping rules |
 | **0.3.0** | SHIPPED 2026-08-11 (PyPI + tag `v0.3.0`), titled *Screen capture and dialog results*. **`release.yml` ran clean**, docs chained off it. **A minor carrying two additions and SIX fixes** — the release that proved the "minors are for additions" reading of this file wrong. **#427** `widget.capture(path)` writes a widget, window or app to `.png`/`.jpg`/`.pdf` (PR #443, from an external user's discussion #425) · **#429** a click during `settle()` re-entered the handler: `settle()` still dispatches, and holds `tk busy` — the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS · **#428** `FormDialog.result` returned display text instead of the value, because it read after the dialog closed and every editor was destroyed (external report, PR #442) · **#437** a refused press still recorded its result, so cancelling after a refused `DataTable` Delete **deleted the record**; validation now runs only for buttons that submit · **#438** `DialogButton.closes` meant three different things and is REMOVED, replaced by returning `False` from a command. ⚠ `tk busy` is a no-op on macOS (measured in plain tkinter — a toolkit limitation, not a wrong invocation) and real on Windows; the input guard is documented as such rather than claimed to work everywhere |
 | **0.2.3** | SHIPPED 2026-08-08 (PyPI + tag `v0.2.3`), titled *Import without IDLE*. **Published by `release.yml`, which ran clean** — Actions had recovered, so the docs deploy chained off it with no manual kick. Single issue: **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python build without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the WHOLE framework rather than degrading `CodeEditor`; `idlelib` is stdlib so it could never be a declared dependency, and the fix ports `WidgetRedirector` into `textarea/redirector.py` (PR #435). Also added a PSF attribution to `NOTICE`, scoped by measurement to `redirector.py` alone — see Current state for why the other five IDLE-derived modules are deliberately NOT listed |
 | **0.2.2** | SHIPPED 2026-08-06 (PyPI + tag `v0.2.2`), titled *DataTable group headers and row events*. **Published MANUALLY with `twine` during a GitHub Actions major outage** — `release.yml` never ran, and the docs deploy had to be kicked with `gh workflow run docs.yml` because it triggers off a successful Release run (see START HERE). #417 `<Double-1>` bound unconditionally so `on_row_double_click` fires on a read-only table (PR #423) · #418/#420 group headers no longer fire row events with an empty record · #419 deferred chevron refresh after an event-driven expand · #421 click focus on group-header and checkbox-mode rows, plus the column separator that could not be dragged in checkbox mode (PR #424). ⚠ Two behavior notes shipped under `### Changed`: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks), and a read-only table's second press no longer repeats the first press's action |
