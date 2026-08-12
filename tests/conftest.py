@@ -37,7 +37,32 @@ def _session_app():
 
 
 def _region(app):
-    """The container widgets parent into (the app's content region)."""
+    """The container widgets parent into (the app's content region).
+
+    ⚠ `_content_frame` FIRST, and that ordering is the whole of #407.
+    `_region_root` on a decorated `App` **is the root**, so asking for it
+    returned a container whose only child is the content frame itself — which is
+    permanent scaffolding and therefore in `keep`. The reset walked the root's
+    children twice, found nothing new, and stopped, while every widget a test
+    built sat one level deeper inside `_content_frame`. Measured before the fix,
+    with five labels created the way a test creates them: **0 of 5 visible to
+    the walk**. So the scene reset never tore down a content widget for the
+    entire life of the shared-root harness, and every test's widgets survived
+    the whole session.
+
+    ⚠ Do NOT "simplify" this back to a single attribute. ttkbootstrap's
+    equivalent fixture snapshots `app.winfo_children()` and is correct there
+    precisely because its `Window` IS the root and tests parent straight into
+    it; bootstack interposes a frame, so the same expression is one level too
+    shallow. Same design, different tree.
+    """
+    content = getattr(app, "_content_frame", None)
+    if content is not None:
+        try:
+            if content.winfo_exists():
+                return content
+        except Exception:
+            pass
     return getattr(app, "_region_root", app._tk_root)
 
 
