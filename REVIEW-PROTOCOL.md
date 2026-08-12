@@ -82,3 +82,68 @@ Continues in the same session as the review, after REVIEW.md is written.
 
 If fix diffs are not shrinking each round, the branch was too large or the spec
 too underdetermined. Split the work smaller rather than prompting harder.
+
+## Stopping rules
+
+The loop above terminates only if something bounds it. Severity triage is not
+enough on its own — there is always another finding, and a review that reviews
+its own previous round's output never runs out of work. These four gates are
+mechanical on purpose; a rule that needs judgment gets reasoned around at
+exactly the moment it is supposed to bind.
+
+### 1. A round is triggered by a PRODUCTION diff, not by a commit
+
+Before opening a round, run:
+
+```
+git diff <pre-fix-sha>..HEAD -- src/
+```
+
+**Empty means there is no round.** A commit that changes only tests, probes, or
+documentation is self-checked by the session that wrote it and goes no further.
+
+This is the gate the 0.3.1 dialog branch was missing. Round 4 there reviewed a
+test-only commit, produced five findings about test diagnostics, and would have
+produced a round 5 reviewing the fixes to those — while the four issues the
+branch existed for had been fixed and verified since round 3.
+
+### 2. Test code is reviewed on ONE axis: what defect can it let through?
+
+Only two classes of finding about a test are actionable:
+
+- **Vacuity** — the test can pass while the behavior it names is broken.
+- **False alarm** — the test can fail while the behavior is fine (a flake).
+
+Everything else about test code — diagnostic quality, error-message wording,
+symmetry between helpers, probe ergonomics — is a **note in the record, never a
+fix**. Write it down and move on.
+
+A test's whole value is the production defect it catches, so that is the only
+axis it earns review time on. Reviewing a test as code means reviewing the
+instrument instead of the thing being measured, and an instrument can always be
+made nicer — which is precisely why it does not terminate.
+
+### 3. Declare a round cap in PLAN.md, before implementation
+
+**2 rounds for a patch branch, 3 for a minor.** When the cap is reached,
+surviving findings are filed as issues, not fixed on the branch.
+
+Set it before there are any findings. A cap chosen afterward is chosen by the
+session that wants one more round.
+
+### 4. Probes are instruments; a flake gets ONE attempt
+
+Probes under `development/` are committed as a record of what was measured.
+They are **not reviewed code** and do not get findings filed against them.
+
+⚠ The exception that still matters: if a probe's *conclusion* is cited as
+settled — especially a refutation, where the probe reports finding nothing —
+then the record must show the probe was capable of finding something. That is a
+claim about evidence, not about code quality, and it belongs in the review
+record rather than in a fix commit.
+
+A flake gets **one** fix attempt, and it must come with a control that
+reproduces the mechanism rather than a re-run that happens to come back clean.
+If that attempt does not settle it, the test is quarantined and the flake is
+filed as an issue. A second round of harness surgery on the same flake is the
+loop this section exists to stop.

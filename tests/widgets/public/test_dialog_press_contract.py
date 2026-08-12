@@ -278,15 +278,13 @@ def test_enter_presses_the_default_button(app):
         top = dlg._dialog.toplevel
         assert top.winfo_ismapped(), "precondition: the dialog is on screen"
         # A key press is delivered to the FOCUS widget, so the press is
-        # generated wherever the focus actually is. On this box that is the
-        # toplevel itself — measured: `Dialog` asks for the default button to
-        # be focused and the request does not take, because the button is built
-        # before the window is deiconified (#439). The subject of this test is
-        # that Enter reaches the default button, which holds either way, so the
-        # precondition admits both rather than pinning the defect: fixing #439,
-        # or a platform where the request does take, must not turn this into a
-        # precondition failure. The two tests below give a button focus
-        # explicitly, the way a click does.
+        # generated wherever the focus actually is. Since #439 that is the
+        # default button: `Dialog` defers the request to the button's <Map>,
+        # because asking while the window is still withdrawn was a silent
+        # no-op. The subject of this test is that Enter reaches the default
+        # button, which holds either way, so the precondition deliberately
+        # still admits the toplevel too — a platform whose window manager maps
+        # later must not turn this into a precondition failure.
         #
         # `focus_lastfor`, not `focus_get`: the latter reports nothing unless
         # the window is active, which is not dependable in the shared root.
@@ -308,12 +306,14 @@ def test_enter_on_the_default_button_invokes_it_once(app):
 
     Two things have to be true for this to be reachable, and both are:
 
-    The button has to hold focus. A freshly opened dialog focuses nothing (see
-    above), but a CLICK focuses the button it lands on — ttk's own `Press`
-    binding does `focus $w` unconditionally. So this is the state a user is in
-    after clicking a button whose command refused the press, which is exactly
-    the state the veto was added to create. The focus is set explicitly here
-    rather than by synthesizing a click, to keep the test about the key.
+    The button has to hold focus. Since #439 a freshly opened dialog focuses
+    its default button, so this is now also the state a dialog OPENS in — it
+    used to be reachable only by clicking, since ttk's own `Press` binding does
+    `focus $w` unconditionally. Either way it is the state a user is in after
+    clicking a button whose command refused the press, which is exactly the
+    state the veto was added to create. The focus is set explicitly here rather
+    than by synthesizing a click or relying on the open state, to keep the test
+    about the key.
 
     And the press has to be refused. An accepted press destroys the window,
     and the destroy aborts the second dispatch before it invokes anything —

@@ -106,7 +106,7 @@ class Page:
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
         if self._layout == "grid":
-            _reject_legacy_child_kwargs(layout_kw, "AppShell page")
+            _reject_legacy_child_kwargs(layout_kw, "AppShell page", "grid cell")
             _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
             h = layout_kw.get("horizontal") or self._horizontal_items

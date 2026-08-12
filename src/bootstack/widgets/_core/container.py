@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any
+from typing import Any, Literal
 
 PACK_KEYS = frozenset({
     "side", "fill", "expand", "anchor",
@@ -218,16 +218,73 @@ class PublicContainer(PublicWidgetBase):
 # ---  Flex engine (Row / Column)  --------------------------------------------
 
 
-def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
-    """Raise on legacy pack/grid placement kwargs passed to a flex child."""
+# Per-child keys a GRID CELL honors. `grow=` is deliberately ABSENT: Grid and
+# the page/pane containers filter their child options to GRID_KEYS, so a `grow=`
+# written on one of their children is silently dropped. `sticky`/`in_` are not
+# user-facing — `sticky` is a legacy key the guard below rejects, and the cell
+# derives it from `horizontal`/`vertical` instead.
+GRID_CHILD_KEYS = (GRID_KEYS | {"horizontal", "vertical"}) - {"sticky", "in_"}
+
+_ALIGN_ADVICE = (
+    "horizontal= takes left/center/right/stretch and vertical= takes "
+    "top/center/bottom/stretch (for example horizontal=\"stretch\")"
+)
+
+# The remedy depends on HOW the container places its children, and naming the
+# wrong one is the defect this message exists to fix (issue #426). A flex
+# container honors `grow=` on the child; a grid cell drops it, so recommending
+# it there would send the user to a kwarg that does nothing — the same silent
+# no-op #426 was filed about, just one step further along.
+FLEX_CHILD_ADVICE = (
+    "Use grow= to claim leftover space along the stacking axis, or "
+    "horizontal=/vertical= to align or stretch across it — " + _ALIGN_ADVICE
+)
+
+# Container-level options are named WITHOUT a trailing `=` on purpose: the `X=`
+# spelling is reserved for per-child remedies, which is what the regression test
+# checks must be real keys.
+GRID_CHILD_ADVICE = (
+    "Use horizontal=/vertical= to align or stretch the child inside its cell — "
+    + _ALIGN_ADVICE
+    + ". Leftover space is claimed by weighting the row or column on the "
+    "container (its columns/rows arguments), not by a kwarg on the child"
+)
+
+# The kind names the child's PLACEMENT, not its parent class: the dual-mode
+# containers (Card/GroupBox/Expander/AccordionSection) are one or the other
+# depending on their `layout=`, and the page/pane containers are grid cells
+# without a `Grid` anywhere in sight.
+ChildKind = Literal["flex child", "grid cell"]
+
+_CHILD_ADVICE: dict[str, str] = {
+    "flex child": FLEX_CHILD_ADVICE,
+    "grid cell": GRID_CHILD_ADVICE,
+}
+
+
+def _reject_legacy_child_kwargs(layout_kw: dict, where: str, kind: ChildKind) -> None:
+    """Raise on legacy pack/grid placement kwargs passed to a laid-out child.
+
+    Args:
+        layout_kw: the split-out layout kwargs to inspect.
+        where: the call site named in the message.
+        kind: how this container places the child — `'flex child'` or
+            `'grid cell'`. It selects the remedy, and the two differ: a grid
+            cell drops `grow=`, so recommending it there is the silent no-op
+            issue #426 exists to remove. Required rather than defaulted,
+            because a default hands the wrong advice to any caller who forgets
+            — which is how four call sites kept the defect through its own fix.
+    """
     bad = _LEGACY_CHILD_KEYS & layout_kw.keys()
     if bad:
         from bootstack.errors import BootstackError
 
+        # KeyError on an unknown kind is deliberate: a mistyped kind must fail
+        # loudly here rather than quietly pick a remedy for the other engine.
+        advice = _CHILD_ADVICE[kind]
         raise BootstackError(
             f"{where}: {', '.join(sorted(bad))} is not a valid layout option for "
-            f"a Row/Column/Grid child. Use grow= / align_self= (and justify_self= "
-            f"in a Grid) instead — see the layout guide."
+            f"a {kind}. {advice} — see the layout guide."
         )
 
 
@@ -376,7 +433,7 @@ def place_flex_child(
         child._placement = Placement("place", frame, options)
         return
 
-    _reject_legacy_child_kwargs(layout_kw, where)
+    _reject_legacy_child_kwargs(layout_kw, where, "flex child")
     _expand_margin(layout_kw)
     index = layout_kw.get("index")
     opts = _flex_child_opts(child, layout_kw)

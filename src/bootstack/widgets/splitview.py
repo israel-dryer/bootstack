@@ -92,7 +92,7 @@ class SplitPane:
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
-            _reject_legacy_child_kwargs(layout_kw, "SplitPane")
+            _reject_legacy_child_kwargs(layout_kw, "SplitPane", "grid cell")
             _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
             h = layout_kw.get("horizontal") or self._horizontal_items

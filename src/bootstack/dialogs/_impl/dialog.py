@@ -182,6 +182,187 @@ def emit_dialog_result(target: Optional[tkinter.Misc], payload: dict) -> None:
 
 # --- Dialog ----------------------------------------------------------------
 
+def capture_grab(widget: Any) -> tuple[Any, str | None] | None:
+    """Record who holds the modal grab and HOW, for `restore_grab` to hand back.
+
+    Returns `None` when nothing holds the grab — the outermost case, which needs
+    no restore. Otherwise returns the holder paired with its grab KIND.
+
+    ⚠ Call this BEFORE taking the grab. Once another window grabs, the previous
+    holder's `grab_status()` reads `None`, so a kind read afterwards is always
+    wrong — measured, and the reason this pairing exists as one function rather
+    than two steps a caller has to sequence correctly.
+
+    The kind matters because Tk has two: `bs.Window(modal="app")` takes a GLOBAL
+    grab, and restoring that as a local one silently narrows the window's
+    modality (it would block only this application). Reading the kind back from
+    Tk rather than assuming it keeps this correct on every window system without
+    a platform branch — whatever Tk reported, we hand back.
+    """
+    holder = widget.grab_current()
+    if holder is None:
+        return None
+    try:
+        kind = holder.grab_status()
+    except (AttributeError, tkinter.TclError):
+        # Fall back to the narrower grab rather than guessing global.
+        kind = "local"
+    return (holder, kind)
+
+
+def restore_grab(previous: tuple[Any, str | None] | None) -> None:
+    """Hand the modal grab back to whatever held it before this dialog took it.
+
+    Tk releases a grab when the window holding it is destroyed, but it does NOT
+    restore the grab that window displaced. So a modal opened from inside
+    another modal — `bs.alert()` from a dialog button command, or
+    `QueryDialog._on_submit` — took the grab over and then dropped it on the
+    floor when it closed. The OUTER dialog was left on screen and still
+    blocking its caller inside `show()`, yet holding no grab at all: the user
+    could click straight back into the main window and drive the app
+    underneath it, against a dialog that was modal in appearance only
+    (issue #440).
+
+    Pass the token `capture_grab()` returned. `None` means nothing held the
+    grab, which is the outermost case and needs no restore.
+
+    A failure here is deliberately swallowed. This runs on a teardown path,
+    where the previous holder may itself have been destroyed while the inner
+    dialog was up, or the whole interpreter may be going down — and a dialog
+    that has already closed must not raise on its way out. It is LOGGED rather
+    than passed over in silence, because a failed restore is the very defect
+    this function exists to prevent (#440): the outer dialog stays on screen
+    holding nothing.
+
+    ⚠ A global restore can fail where a local one cannot — `grab set -global`
+    is the call Tk's viewability rule guards, and on X11 it can also lose to
+    another client. That is the one way this is riskier than always restoring
+    a local grab, so a failed global restore DEGRADES TO LOCAL rather than to
+    nothing: modal within the application is imperfect, but it is not the #440
+    symptom.
+    """
+    if previous is None:
+        return
+    holder, kind = previous
+    try:
+        if not holder.winfo_exists():
+            return
+        if kind == "global":
+            try:
+                holder.grab_set_global()
+            except tkinter.TclError:
+                _log_grab_failure("could not restore a global grab; falling back to local")
+                holder.grab_set()
+        else:
+            holder.grab_set()
+    except (AttributeError, tkinter.TclError):
+        _log_grab_failure("could not restore the previous dialog's grab")
+
+
+def _log_grab_failure(message: str) -> None:
+    """Report a grab failure without ever raising from a teardown path."""
+    from bootstack._runtime.utility import debug_log_exception
+
+    debug_log_exception(message)
+
+
+# Bindtags whose widgets treat Enter as CONTENT rather than as a command.
+# `Text` is Tk's multi-line text class, which `TextArea` and `CodeEditor` are
+# both built on — naming the class covers them, and anything else Text-backed,
+# without listing widgets.
+_ENTER_IS_CONTENT = frozenset({"Text"})
+
+
+def _key_was_consumed(widget: Any, keysym: str) -> bool:
+    """Did `widget` already answer this Enter key by the time it reached us?
+
+    A dialog binds Return on its TOPLEVEL so the default button can be pressed
+    from an input field. The toplevel is last in the bindtag walk, so by the
+    time that binding runs a widget-level or class-level handler has already
+    had the key — and firing the default button on top of it either invokes the
+    same button twice or runs the default button's command over the one the
+    user actually pressed.
+
+    Two kinds of widget answer Enter, and the rule names the intent rather than
+    inferring it:
+
+    * a **button** invokes. bootstack installs `TButton <Key-Return>` ->
+      `button_default_binding` at app construction (`_runtime/app.py:151`).
+    * a **multi-line text widget** inserts a newline. That is issue #441: the
+      newline went in and the dialog then closed on top of it, because the
+      guard recognized only buttons.
+
+    In both cases a DISABLED widget is the exception: its class binding runs
+    but does nothing — `invoke` is a no-op on a disabled button, and
+    `tk::TextInsert` returns early on a disabled text (both measured,
+    `development/probe_441_key_already_handled.py`). Nothing answered the key,
+    so the default button should still get it. Standing down there would leave
+    the keyboard dead for the whole dialog.
+
+    ⚠ THE KEY MATTERS, NOT ONLY THE WIDGET — which is why `keysym` is required
+    rather than defaulted. The two Enter keys are equivalent to a button and are
+    NOT equivalent to a text widget. Measured against the live binding table:
+
+        TButton  <Key-Return> -> button_default_binding
+        TButton  <Key-KP_Enter> -> button_default_binding   (both, app.py:150)
+        Text     <Key-Return> -> tk::TextInsert
+        Text     <Key-KP_Enter> -> '# nothing'
+
+    Tk binds `Text <KP_Enter>` to the literal script `# nothing`
+    (`tk8.6/text.tcl:308`, unconditional — it is in the block that stops the
+    generic `<Key>` binding inserting `%A`, which for that key is `\r` rather
+    than `\n`). So wherever the keypad key arrives as its own keysym a text
+    widget inserts NOTHING, and reporting it consumed would leave that key dead
+    for the whole dialog. Windows never reaches this: it FOLDS the keypad key
+    into `Return` (see the binding site below), so `keysym` is `Return` there
+    and the text branch behaves as it always has. X11 reports `KP_Enter`
+    separately and is the case this scoping exists for. Aqua is unmeasured and
+    needs no measurement — both of its possible answers are handled.
+
+    ⚠ The text branch tests `keysym != "KP_Enter"` rather than
+    `keysym == "Return"`, deliberately. An unrecognized keysym then reads as
+    CONSUMED, which is the conservative answer for a text widget: standing down
+    wrongly costs a dead key, while firing wrongly costs #441 itself — the
+    dialog closing on top of a newline the user just typed. The button branch
+    has no such asymmetry, both keys invoking there.
+
+    ⚠ INTERROGATING THE BINDINGS INSTEAD WAS TRIED AND IS WRONG — do not
+    re-propose it as the "general" rule. Asking whether any bindtag carries a
+    real binding for the key looks principled and misclassifies the control:
+    bootstack's own `TextField` binds `<Return>` as an instance binding to emit
+    its `submit` event, so a plain entry reads as "already handled" and
+    `ask_string()` stops submitting. Tk also binds `TEntry <Return>` to the
+    literal script `# nothing`, so a non-empty script does not mean the key was
+    handled either. Binding inspection cannot separate binds-to-notify from
+    binds-to-consume; the class name is where that intent is recorded.
+    """
+    try:
+        tags = {str(tag) for tag in widget.bindtags()}
+    except (AttributeError, tkinter.TclError):
+        # Nothing identifiable answered the key, so let the default button run
+        # rather than silently swallowing Enter for the whole dialog.
+        return False
+
+    if "TButton" in tags:
+        try:
+            return not widget.instate(["disabled"])
+        except (AttributeError, tkinter.TclError):
+            return True
+
+    if tags & _ENTER_IS_CONTENT:
+        if keysym == "KP_Enter":
+            # `Text <KP_Enter>` is the literal script `# nothing`, so nothing
+            # was inserted whatever the widget's state — the default button
+            # should still get the key rather than it dying here.
+            return False
+        try:
+            return str(widget.cget("state")) == "normal"
+        except (AttributeError, tkinter.TclError):
+            return True
+
+    return False
+
+
 class Dialog:
     """A flexible dialog window using the builder pattern.
 
@@ -283,6 +464,13 @@ class Dialog:
         self._footer: _Frame | None = None
         self._border_frame: _Frame | None = None
 
+        # Who gets focus when the window comes up. `_focus_target` is the
+        # override a content builder can claim (QueryDialog's entry); the
+        # default button is the fallback. Resolved once in `show()`, after
+        # content is built, so the two cannot race — see `_focus_when_mapped`.
+        self._default_button: _Button | None = None
+        self._focus_target: Widget | None = None
+
         self.result: Any = None
 
     # --------------------------------------------------------------- API
@@ -333,6 +521,16 @@ class Dialog:
         self._create_toplevel(modal=modal)
         self._build_footer()
         self._build_content()
+
+        # Resolve initial focus once, now that both halves exist. A content
+        # widget that claimed `_focus_target` wins; otherwise the default
+        # button takes it, which is what `DialogButton.default` promises.
+        # Deferred to <Map> because the window is still withdrawn here and
+        # `focus_set()` is a silent no-op until it is not (issue #439).
+        focus_target = self._focus_target or self._default_button
+        if focus_target is not None:
+            self._focus_when_mapped(focus_target)
+
         self._position_dialog(
             position=position,
             anchor_to=_resolve_anchor_target(anchor_to),
@@ -353,9 +551,18 @@ class Dialog:
             # sheet window class; calling grab_set on top of that is fine
             # but unnecessary. Plain modal mode still uses grab to block
             # interaction with the parent on platforms without a sheet.
+            previous_grab = None
             if self._mode in ("modal", "sheet"):
+                # Remember who held the grab, and how, so it can be handed back
+                # — a nested modal must not leave its opener non-modal (#440),
+                # nor narrow an app-modal window to a local grab. Captured
+                # before grab_set(), which is the only order that works.
+                previous_grab = capture_grab(self._toplevel)
                 self._toplevel.grab_set()
-            self._master.wait_window(self._toplevel)
+            try:
+                self._master.wait_window(self._toplevel)
+            finally:
+                restore_grab(previous_grab)
 
     @property
     def toplevel(self) -> Toplevel | None:
@@ -541,7 +748,10 @@ class Dialog:
             return
 
         if default_button is not None:
-            default_button.focus_set()
+            # Recorded, not focused here: `show()` resolves focus after the
+            # content is built, so a content widget asking for initial focus
+            # is not overruled by build order (issue #439).
+            self._default_button = default_button
             top = self._toplevel
 
             def press_default(event: Any, b: Any = default_button) -> None:
@@ -563,18 +773,46 @@ class Dialog:
                 leave the keyboard dead for the whole dialog — which is what a
                 content button that greys itself out on click would cause.
 
+                A multi-line text widget answers Enter too, by inserting a
+                newline, and standing down for it is issue #441 — the newline
+                went in and the dialog closed on top of it. `_key_was_consumed`
+                owns that decision for both kinds of widget.
+
+                It is handed the KEYSYM as well as the widget because a text
+                widget answers only the main Enter key: Tk binds its keypad
+                twin to a no-op script, so standing down for that one would
+                leave it dead. A button answers both.
+
                 The remaining case is the one this binding exists for — focus
                 in an entry, as in `QueryDialog`, where nothing else would
                 answer the key.
                 """
-                pressed = event.widget
-                if "TButton" in pressed.bindtags() and not pressed.instate(["disabled"]):
+                if _key_was_consumed(event.widget, event.keysym):
                     return
                 b.invoke()
 
-            # The keypad Enter key reports `KP_Enter`, a separate keysym from
-            # `Return` on Windows, X11 and Aqua alike, so it needs its own
-            # binding to reach the default button from an input field.
+            # The keypad Enter key needs its own binding to reach the default
+            # button from an input field -- but only where the window system
+            # reports it separately, which is NOT everywhere. Measured with a
+            # real keypress, alternating against the main Enter key as a
+            # control (`development/probe_441_kp_enter_platform.py`):
+            #
+            # * Windows FOLDS it into `Return` -- keysym `Return`, keycode 13,
+            #   char `\r`, byte-identical to the main Enter key -- so this
+            #   binding never fires there. Synthesis is no help either: win32
+            #   cannot map the keysym back to a keycode and `event_generate`
+            #   delivers keysym `??` with keycode 0, matching no binding at
+            #   all. Both routes to this path are closed on Windows, so no
+            #   test there can cover it.
+            # * X11 reports `KP_Enter` as a distinct keysym. That is the case
+            #   this binding exists for.
+            # * Aqua is unmeasured.
+            #
+            # Binding both is harmless where the two coincide. Where they do
+            # NOT, the keysym is threaded into `_key_was_consumed` so a text
+            # widget stands down only for the key it actually inserts for --
+            # Tk's `Text <KP_Enter>` is a no-op script, so treating the two
+            # alike would kill the keypad key inside a dialog TextArea.
             for key in ("<Return>", "<KP_Enter>"):
                 self._toplevel.bind(key, press_default)
 
@@ -582,6 +820,54 @@ class Dialog:
             self._toplevel.bind("<Escape>", lambda e, b=cancel_button: b.invoke())
         else:
             self._toplevel.bind("<Escape>", lambda e: self._toplevel.destroy())
+
+    @staticmethod
+    def _focus_when_mapped(widget: Widget) -> None:
+        """Focus `widget` once it is actually mapped.
+
+        `focus_set()` is a SILENT no-op while the widget's toplevel is
+        withdrawn: `TkSetFocusWin` walks the ancestry and returns without
+        setting anything, reporting nothing. Footer buttons are built from
+        `_build_footer`, which runs while `_create_toplevel` still has the
+        window withdrawn, so focusing the default button there never took —
+        `focus_lastfor()` kept naming the toplevel, leaving keyboard users
+        with no focus ring and a Tab order starting from nowhere, in a dialog
+        documented as focusing its default button (issue #439).
+
+        Waiting for the widget's own `<Map>` states that precondition instead
+        of guessing a delay. Measured on Windows
+        (`development/probe_439_focus_timing.py`): the button is still
+        unmapped once `deiconify()` AND `update_idletasks()` have both
+        returned, so neither is a usable barrier. Asking after the toplevel is
+        deiconified happens to work — Tk defers a request made against a
+        mapped toplevel — but that deferral is a Tk implementation detail and
+        window managers map asynchronously, so the explicit wait is what
+        travels off this box.
+
+        Binding on the widget rather than scheduling on the root is
+        deliberate: a `<Map>` binding is torn down with the widget it is on,
+        so a dialog closed before it ever maps leaves nothing pending. An
+        `after` timer would outlive the widget and fire as an orphan.
+        """
+        if widget.winfo_ismapped():
+            widget.focus_set()
+            return
+
+        def on_map(_event: Any = None) -> None:
+            # One-shot: the default button should not reclaim focus every time
+            # the dialog is unmapped and remapped (minimize/restore), which
+            # would yank focus off whatever the user had tabbed to.
+            try:
+                widget.unbind("<Map>", bind_id)
+            except tkinter.TclError:
+                pass
+            try:
+                if widget.winfo_exists():
+                    widget.focus_set()
+            except tkinter.TclError:
+                pass
+
+        bind_id = widget.bind("<Map>", on_map, add="+")
 
     def _position_dialog(
             self,

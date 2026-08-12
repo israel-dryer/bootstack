@@ -16,7 +16,8 @@ from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
 from bootstack.events import Subscription
 from bootstack.dialogs._impl.dialog import (
-    DIALOG_RESULT, Dialog, DialogButton, emit_dialog_result, result_target,
+    DIALOG_RESULT, Dialog, DialogButton, capture_grab, emit_dialog_result, restore_grab,
+    result_target,
 )
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets._impl.composites.calendar import Calendar
@@ -78,6 +79,22 @@ class _ChromeDialog(Dialog):
         self._build_content()
         self._build_footer()
 
+        # This override duplicates `Dialog.show()` rather than extending it, so
+        # the initial-focus resolution has to be repeated here — see
+        # `Dialog._focus_when_mapped` (issue #439).
+        #
+        # This reaches only RANGE mode. Single-date mode commits the moment a
+        # date is clicked and so builds no footer buttons (see `__init__`),
+        # leaving `_default_button` None; nothing sets `_focus_target` for the
+        # raw calendar content either. So `ask_date()` still opens with focus on
+        # the toplevel itself, exactly as before — measured, not assumed. Giving
+        # the single-date calendar a real focus target is a separate change,
+        # since it would put a focus ring on a day cell and make the arrow keys
+        # move the selection.
+        focus_target = self._focus_target or self._default_button
+        if focus_target is not None:
+            self._focus_when_mapped(focus_target)
+
         self._position_dialog(
             position=position,
             anchor_to=anchor_to,
@@ -110,9 +127,17 @@ class _ChromeDialog(Dialog):
         if modal:
             # transient() is already called in Dialog._create_toplevel()
             # Don't call it again here as it breaks mica effect on Windows
+            previous_grab = None
             if self._mode == "modal":
+                # Remember who held the grab, and how, so it can be handed back
+                # — a nested modal must not leave its opener non-modal (#440),
+                # nor narrow an app-modal window to a local grab.
+                previous_grab = capture_grab(self._toplevel)
                 self._toplevel.grab_set()
-            self._master.wait_window(self._toplevel)
+            try:
+                self._master.wait_window(self._toplevel)
+            finally:
+                restore_grab(previous_grab)
 
     def _on_focus_out(self, event: tkinter.Event):
         if self._suppress_focus_out:

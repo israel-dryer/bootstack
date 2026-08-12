@@ -111,7 +111,7 @@ class Grid(PublicContainer):
         return "grid"
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        _reject_legacy_child_kwargs(layout_kw, "Grid")
+        _reject_legacy_child_kwargs(layout_kw, "Grid", "grid cell")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
         # Derive the cell sticky from per-child horizontal/vertical, each falling
         # back to the container default for its axis.

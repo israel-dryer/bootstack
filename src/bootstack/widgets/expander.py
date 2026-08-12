@@ -166,7 +166,7 @@ class Expander(PublicContainer):
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
-            _reject_legacy_child_kwargs(layout_kw, "Expander")
+            _reject_legacy_child_kwargs(layout_kw, "Expander", "grid cell")
             _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
             h = layout_kw.get("horizontal") or self._horizontal_items
@@ -284,7 +284,7 @@ class AccordionSection:
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
-            _reject_legacy_child_kwargs(layout_kw, "AccordionSection")
+            _reject_legacy_child_kwargs(layout_kw, "AccordionSection", "grid cell")
             _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
             h = layout_kw.get("horizontal") or self._horizontal_items
