@@ -372,3 +372,61 @@ A button answers both keys (bootstack binds both at `_runtime/app.py:150-153`); 
 **Recommendation: stop reviewing here.** Rounds 1 and 2 each found defects the tests structurally could not see. Round 3 returned one out-of-scope pre-existing bug and three settled questions — the yield has gone to noise, and the two real items are tracked as #444 and #445.
 
 **Still open, unchanged since round 1:** `CLAUDE.md` quotes the wrong #426 message as a good error under Layout, and now needs to describe **two** messages. Its own commit on `main`, never on this branch; `git diff main...HEAD -- CLAUDE.md` must stay empty before merging.
+
+---
+
+## Round 4 — 2026-08-12 — **THE LAST ROUND. The branch closes here.**
+
+Scope was `git diff 7ef64236..48dba181`, the #446 flake fixes. **`git diff 7ef64236..48dba181 -- src/` is empty**, verified, so the premise that both flakes were test defects holds.
+
+### The headline: this round should not have existed, and that is now a written rule
+
+Round 3 already ended with *"stop reviewing here."* Round 4 ran anyway, on a **test-only commit**, and returned five findings of which three are about how a probe reads. Reviewing it would have produced a round 5 reviewing the fixes to those tests, and so on: the loop had no termination condition, because a round was triggered by *a commit existing* rather than by production code changing.
+
+**Four stopping rules were added to `REVIEW-PROTOCOL.md` as a result** (maintainer, 2026-08-12): a round is triggered by a non-empty `git diff -- src/` and by nothing else; test code is reviewed only for **vacuity** and **false alarm**, with everything else recorded as a note; a round cap goes in `PLAN.md` up front (2 for a patch, 3 for a minor) and survivors become issues; and probes are instruments, not reviewed code, with one fix attempt per flake before quarantine. Under gate 1 this round would not have opened. Under gate 2 it yields two findings, not five.
+
+⚠ **The measurable cost, recorded so the trade is visible:** this branch is **~430 production lines** against ~1,300 test lines and ~750 lines of probes and review records, over 17 commits of which 4 are review records. The production work — #426, #439, #440, #441 — was complete and verified at round 3. Rounds 3 and 4 changed **zero** lines under `src/`.
+
+### One mechanism check that VALIDATES the widened barrier
+
+`Tk_MapWindow` dispatches a child's `MapNotify` **synchronously** through `Tk_HandleEvent` (Tk generates it itself for non-toplevels), and defers mapping children until the master maps — measured here, a child of a withdrawn toplevel reads `winfo_ismapped() == 0`. So `focus_target_is_up()` returning true genuinely implies `_focus_when_mapped`'s handler has already run. **The barrier is sound on every window system, not only the one it was measured on.** Recorded because it is the kind of thing a later round would otherwise re-derive.
+
+### I1 — `test_dialog_nested_modality.py:152` — vacuity — **FIXED**
+
+`_nest`'s barrier gave up **silently**: `run` had no `else` arm, unlike `_outer`. An inner dialog that never took the grab meant nothing nested, so the outer grab was never displaced and `test_a_nested_modal_hands_the_grab_back` and `test_two_levels_of_nesting_hand_the_grab_back` both passed measuring nothing — the exact vacuity the control test at the top of the module exists to catch, arriving by a different route. It reports into `_NEST_PROBLEMS` now, which `_outer` asserts on.
+
+⚠ **The control matters more than the fix, and the FIRST control was wrong.** Disabling the retry budget (`attempt < 0`) left the test **passing**, because the inner dialog already held the grab on the very first check — the give-up path was never reached, so the control proved nothing. Forcing the condition itself (`if True:`, "pretend the grab never arrives") is what exercised it. **Measured both ways: pre-fix the test PASSES in 8.83s** — it sat through the entire 8-second fallback, nested nothing, and still reported success — **post-fix it fails naming both the exhausted barrier and the fallback.** A control that does not reach the code path under test is indistinguishable from a fix that works.
+
+### I2 — `test_dialog_nested_modality.py:110` — vacuity — **FIXED**
+
+`_outer`'s error path was unreachable in practice. The retry budget reached `attempt == 200` at t≈10050ms while `force_close` fired at t=10000ms, so the fallback always won: it destroyed the toplevel, `show()` returned, the `finally` cancelled the remaining retries, and `state` was left empty **with no `"error"` key** — so `assert "error" not in state` passed. Four tests then died with a bare `KeyError` and `test_no_grab_is_left_behind_once_every_dialog_has_closed`, which reads no state, passed vacuously. Both budgets now sit below their fallbacks (150 attempts / 7550ms under 10s; 120 / 6050ms under 8s) **and** `force_close` records the timeout with `setdefault`, so neither route can close quietly.
+
+### I3 — `probe_446_disabled_button_enter.py:150` — **NOTED, NOT FIXED**
+
+The probe for this round's open question counts a barrier timeout as a reproduction: a run where `act` never fires yields `calls == []` with no other keys, byte-identical to the flake being hunted — and the probe's own READING text would then send the reader at the guard ("a delivery problem") rather than at the harness. **Real, and correctly described.** Not fixed under gate 4: it is an instrument, and the flake it serves is being filed rather than chased further on this branch. **Whoever picks up that issue must fix this first, or the probe will lie to them.**
+
+### I4 — `probe_446_leaked_after_jobs.py:92` — **NOTED, NOT FIXED**
+
+The zero result has no positive control: if `_root()` returns `None` or `after info` raises, `_pending()` returns empty on both sides of every test and the output is indistinguishable from a clean result. This is the standing *"a probe that finds nothing must be proven able to find something"* rule, landing on the probe that backs a **refutation** the brief lists as settled. Under gate 4 the probe is not fixed, **but the claim it supports is downgraded here: "no test-scheduled timer survives a test" is now recorded as UNCONTROLLED, not settled.** That is the gate-4 exception — a claim about evidence, not about code quality.
+
+### I5 — `test_dialog_initial_focus.py:94` — **NOTED, NOT FIXED**
+
+The widened barrier adds a way to time out without a way to say so; exhaustion surfaces as `KeyError: 'focused'`, naming neither the barrier nor which of the three conditions never held, in the file whose stated aim is that a recurrence names its own cause. Diagnostic quality, so a note under gate 2. Worth doing if that file is opened for another reason; not worth a commit of its own.
+
+### The third flake — **FILED, not chased**
+
+`test_enter_on_a_disabled_button_still_reaches_the_default` failed once in 37 post-fix runs with `calls == []`. Filed as an issue with the full state: 0/12 pre-fix, 1/37 post-fix, 0/40 in a quiet process, 25 further instrumented runs clean, and the two candidate steps already separated by the probe. **Not chased here, under gate 4's one-attempt rule and the brief's own warning that a clean batch is the expected outcome either way.** ⚠ It is also why I3 must be fixed before that issue is worked.
+
+### Round 4 summary
+
+| finding | class | outcome |
+|---|---|---|
+| I1 — `_nest` gives up silently | vacuity | **fixed**, control measured both ways |
+| I2 — `_outer`'s error path unreachable | vacuity | **fixed** |
+| I3 — the probe counts a timeout as a reproduction | diagnostics | **noted** — blocks the flake issue, not this branch |
+| I4 — the leaked-timer refutation has no positive control | evidence | **noted**, and the claim downgraded to uncontrolled |
+| I5 — focus barrier cannot name its own timeout | diagnostics | **noted** |
+
+**Verification.** Five-file reproduction **61 passed, exit 0** — the same 61 as before the fix, so no test was added or removed. `test_dialog_nested_modality.py` alone: **11 passed**. The fix is confined to one test file, 49 insertions and 2 deletions; `git diff -- src/` is empty for it.
+
+**No round 5.** Gate 1 forbids it: this round's fix touches no production code.
