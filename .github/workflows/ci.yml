@@ -35,6 +35,8 @@ jobs:
   headless:
     name: headless (no display)
     runs-on: ubuntu-latest
+    # Runs in seconds. A minute is generous and caps a hang.
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
 
@@ -75,6 +77,11 @@ jobs:
   tests:
     name: tests (${{ matrix.os }}, py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
+    # ⚠ The suite takes ~90s locally and ~75s on a Linux runner. This cap
+    # exists because the FIRST run of this workflow had a macOS job still
+    # going at 90 MINUTES, hung inside the suite. Without it a hang burns to
+    # GitHub's 6-hour default.
+    timeout-minutes: 15
     strategy:
       # Never let one platform's failure hide another's. This project has twice
       # read a green run on one box as a green suite -- and the whole reason
@@ -87,10 +94,15 @@ jobs:
             python: "3.13"
           - os: windows-latest
             python: "3.13"
-          # aqua is the third windowing system and behaves differently enough to
-          # have had its own fixes (the Tk 9 dpi baseline, native popup chrome).
-          - os: macos-latest
-            python: "3.13"
+          # ⚠ NO macOS LEG, and this was MEASURED rather than assumed. #380
+          # flagged that Tk-on-Aqua was unverified on GitHub's runners; the
+          # first run of this workflow answered it. Install and the Tk report
+          # both succeeded, then "Run the suite" HUNG - still going at 90
+          # minutes for a suite that takes 90 SECONDS locally. aqua is a
+          # platform we support and this leg is wanted, but a hanging job is
+          # worse than no job: it teaches people to ignore the workflow and it
+          # burns a runner for hours. Tracked separately; re-add it with a
+          # timeout once the hang is understood.
           # The floor declared in pyproject.toml, so a 3.13+ construct cannot
           # slip in unnoticed.
           - os: ubuntu-latest
@@ -151,6 +163,7 @@ jobs:
   docs:
     name: docs (-W)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 
