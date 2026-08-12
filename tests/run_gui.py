@@ -41,6 +41,46 @@ ISOLATED = [
     # pushed them — measured at y~2810 on a 956px-tall screen — and every grab
     # asks for a region no monitor covers. A fresh root keeps them on screen.
     "tests/widgets/public/test_capture.py",
+    # ⚠ Everything below sits DIRECTLY under tests/widgets/, which `testpaths`
+    # does not list — so until #380 these 12 files (25 tests) were collected by
+    # NOTHING. Not by `pytest`, not by this runner, not by CI, which did not
+    # exist. They were dead coverage, not failing coverage: every one passes on
+    # its own, which is why nobody noticed.
+    #
+    # They belong here rather than in `testpaths` because each builds its own
+    # root, which is precisely what this list is for.
+    "tests/widgets/test_icon_image_props.py",
+    "tests/widgets/test_rebuild_regressions.py",
+    "tests/widgets/test_shell_collapse.py",
+    "tests/widgets/test_shell_custompanel.py",
+    "tests/widgets/test_shell_groups.py",
+    "tests/widgets/test_shell_layout.py",
+    "tests/widgets/test_shell_listnav.py",
+    "tests/widgets/test_shell_nav.py",
+    "tests/widgets/test_shell_toolbar.py",
+    "tests/widgets/test_shell_treenav.py",
+    "tests/widgets/test_shell_twotier.py",
+    "tests/widgets/test_toolbar_drag.py",
+]
+
+# Display-free legs. These never build a Tk root, so they run anywhere — CI runs
+# them as their own job with no display at all, which is what makes that job
+# meaningful rather than decorative.
+#
+# ⚠ An ALLOWLIST, deliberately, not `-m "not gui"`. That marker selects 741
+# tests and yields 494 errors with root creation blocked, because most of them
+# still pull the session `app` fixture (#380). Worse, some tests DO run headless
+# and report garbage: `Treeview.bbox()` returns `''` rather than raising until
+# the window is mapped, so a geometry assertion without a display compares
+# nothing to nothing and passes.
+HEADLESS = [
+    # The guard for the curated public namespace (PR #104), which the widget
+    # review standard lists as a verify step -- and which `testpaths` also never
+    # collected. 166 tests that had never run in any automated way.
+    "tests/test_public_surface.py",
+    # Monkeypatches platform.system() and tkinter.TkVersion, so it needs neither
+    # a display nor a Tk 9 build. This is the leg that would have caught #375.
+    "tests/widgets/public/test_tk9_scaling_baseline.py",
 ]
 
 # Modules that construct a fresh root PER TEST (e.g. an App-config factory
@@ -78,6 +118,11 @@ SHARED_GROUPS = [
 def main() -> int:
     extra = sys.argv[1:]
     failed = []
+
+    # 0) Display-free legs. Cheap, and first so a namespace break is reported
+    #    before three minutes of GUI work rather than after it.
+    if _run([*HEADLESS, *extra]) != 0:
+        failed.append("headless: " + " ".join(HEADLESS))
 
     # 1) Shared-root suite, each group in its own process (not isolated tests).
     for group in SHARED_GROUPS:
