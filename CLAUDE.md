@@ -143,20 +143,47 @@ gates the release (see the milestone table's note). Scoped 2026-08-11
 carries all four fixes and the next job is to promote and tag it. See START HERE.
 
 **`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
-has now been wrong about them SIX times, in both directions.**
+has now been wrong about them SEVEN times, in both directions.**
 
-**AUTHORITATIVE — measured 2026-08-12 on `main` at `288d2596`** (the #407 merge),
-full `py -3.12 tests/run_gui.py`, **exit 0, all 20 legs, summed 1250 passed / 22
-skipped**, wall clock **88s**. Shared leg **1055 passed / 13 skipped** against a
-**1068** selected ceiling — `1055 + 13 = 1068` exactly, so it reconciles against
-its own collection line. Data leg **123 / 6**, which differs from the `125 / 4`
-below **environmentally**, tracking whether `pandas` is installed, because two of
-those tests skip when it is.
+**AUTHORITATIVE — derived 2026-08-13 from a measurement on
+`fix/select-read-only-453` at `872aa862`**, full `py -3.12 tests/run_gui.py`,
+**exit 0, all 20 legs**, `pandas` ABSENT:
 
-⚠ **THE COUNTS DID NOT MOVE ACROSS #407; THE CLOCK DID.** Same 1250 / 22 before
-and after, which is the point — a harness fix that changed a count would have
-been skipping something into passing. What changed, measured on this box with
-the same command either side:
+| | branch, measured | `main`, derived |
+|---|---|---|
+| summed, 20 legs | **1225 passed / 21 skipped** | **1208 passed / 21 skipped** |
+| shared leg | **1028 / 14** against **1041** selected | **1011 / 14** against **1024** selected |
+| data leg | **125 / 4** | same |
+
+**The derivation is exact and is the whole point** — the branch adds ONE test
+file of 17 tests and `git diff --stat 288d2596..HEAD -- tests/` proves nothing
+else under `tests/` changed since the #407 merge, every other commit being
+`docs(*)`. So subtract 17. The shared leg reconciles against its own collection
+line the documented way: `collected 1116 / 75 deselected / 1 skipped / 1041
+selected`, and `1028 passed + 13 runtime skips = 1041`, the 14th skip being the
+collection-time one that is summarized but never selected.
+
+⚠ **THE `1250 / 22` AND `1055 / 13` AGAINST `1068` THIS FILE CARRIED FOR `main`
+WERE WRONG — that is the seventh time, and it was a DOUBLE error, since the file
+also disputed the right number and picked the wrong one.** It flagged round 3's
+`1011 / 14` against a `1024` ceiling as irreconcilable and kept `1068`. `1011 /
+14 / 1024` is exactly what today's measurement derives, and `1208 / 21` is
+exactly what this file already records for the `0.3.1` branch. Both surviving
+figures were the correct ones all along. **A count that reconciles against its
+own collection line is still only self-consistent — it does not prove the run
+selected everything it should have.** The check that caught this is cheaper than
+the one that missed it: `git diff --stat <baseline>..HEAD -- tests/`, which
+bounds how much the count is ALLOWED to have moved.
+
+Data leg **125 / 4** here because `pandas` is absent (`py -3.12 -c "import
+pandas"` → `ModuleNotFoundError`); it reads **123 / 6** when `pandas` is
+installed, two tests running only when it is missing. Check the optional dep
+before re-flagging that pair.
+
+⚠ **THE COUNTS DID NOT MOVE ACROSS #407; THE CLOCK DID.** Same totals before and
+after, which is the point — a harness fix that changed a count would have been
+skipping something into passing. What changed, measured on this box with the
+same command either side:
 
 | | before #407 | after |
 |---|---|---|
@@ -800,19 +827,24 @@ ignore it. The maintainer chose to understand Linux first (2026-08-12).
 |---|---|
 | `main` | **`d6c90534`**, pushed. Green |
 | branch | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH |
-| suite on `main` | **exit 0, 20 legs, 1250 passed / 22 skipped, 88s** at `288d2596` |
-| suite on the branch | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — see the count reconciliation below |
+| suite on `main` | **exit 0, 20 legs, 1208 passed / 21 skipped** (corrected 2026-08-13; the `1250 / 22` here was wrong) |
+| suite on the branch | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **now SUSPECT, see below** |
 | root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived. Create `PLAN.md` fresh for the next branch |
 | released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
 | open milestones | 10, and they agree 1:1 with the table below |
 
-⚠ **THE BRANCH'S 1449 IS NOT A REGRESSION IN EITHER DIRECTION — it reconciles
-exactly:** `1250` + **25** files under `tests/widgets/` that `testpaths` never
-collected + **166** in `tests/test_public_surface.py`, which had never run
-anywhere + **8** for `test_tk9_scaling_baseline.py`, which now runs TWICE (once
-in the headless leg to prove it needs no display, once in the shared leg as
-before). **Both of those first two had literally never been executed by any
-automated run**, locally or otherwise, which is what #380 asked to fix.
+⚠ **THIS RECONCILIATION RESTED ON THE WRONG BASE AND MUST BE RE-MEASURED BEFORE
+IT IS QUOTED.** It read: `1250` + **25** tests under `tests/widgets/` that
+`testpaths` never collected + **166** in `tests/test_public_surface.py`, which
+had never run anywhere + **8** for `test_tk9_scaling_baseline.py`, which now
+runs TWICE (once in the headless leg to prove it needs no display, once in the
+shared leg as before) = `1449`. **The `1250` base is wrong — `main` is `1208`**
+(corrected 2026-08-13), so the same three additions predict **`1407`**, not
+`1449`. Either the branch total or one of the addends is off by 42. **Both
+halves need a fresh `py -3.12 tests/run_gui.py` on `ci/test-workflow-380`; do
+not repair the arithmetic by picking whichever number makes it close.** The
+substance is untouched — the 25 and the 166 had literally never been executed by
+any automated run, which is what #380 asked to fix.
 
 #### ⚠ WHAT CI FOUND ON ITS VERY FIRST RUN (run `31591527788`)
 
@@ -1023,17 +1055,21 @@ nothing has yet made it happen on demand.
 **Reproduction is in #446** — the five dialog files in one pytest process, eight
 or more times. `git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
 
-**AUTHORITATIVE COUNTS, measured 2026-08-12 at `48dba181`** — full
-`py -3.12 tests/run_gui.py`, **exit 0, all 20 legs, summed 1250 passed / 22
-skipped**; shared leg **1055 passed / 13 skipped**, against a ceiling measured
-the same day at **1068** selected (1143 collected, 75 deselected). `1055 + 13 =
-1068` exactly, so it reconciles against its own ceiling.
+⚠ **THE COUNTS THIS BLOCK RECORDED FOR `48dba181` WERE WRONG — see the corrected
+table under `main` is GREEN.** It claimed **1250 / 22** summed and a shared leg
+of **1055 / 13** against a **1068** ceiling, and dismissed round 3's `1011 / 14`
+against `1024` as the irreconcilable one. **Round 3 was right**; the real figures
+are **1208 / 21** summed and **1011 / 14** against **1024**, derived 2026-08-13
+by measuring a later branch and subtracting the only test file added since.
 
-⚠ **That does NOT reconcile with round 3's recorded `1011 / 14` against a `1024`
-ceiling, at a commit whose test count this fix did not change** (61 tests in the
-five-file run both before and after). One of the two measurements is wrong and
-today's is the one that checks out against its own collection line. **This is the
-sixth time this file has carried a wrong count.** Prefer what you measure.
+⚠ **The reasoning that produced the wrong number is the part worth keeping,
+because it looked airtight:** `1055 + 13 = 1068` reconciles against its own
+collection line, which this file treats as the check that settles a disputed
+count. **It does not.** Self-consistency proves the run summed correctly, not
+that it selected the right population — a wrong ceiling reconciles just as
+neatly as a right one. Bound the movement instead:
+`git diff --stat <baseline>..HEAD -- tests/` says how much the count is ALLOWED
+to have changed, and it is one command.
 
 **⏭ SO THE NEXT JOB IS THE RELEASE** (top of this section). After it: the
 standing recommendation is `Test and release confidence`, and **#432 is the
