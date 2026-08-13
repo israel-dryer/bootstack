@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.3.2] — Read-only select fields
 
 ### Fixed
 
@@ -403,6 +403,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.3.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.3.2
 [0.3.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.3.1
 [0.3.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.3.0
 [0.2.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.2.3
