@@ -136,3 +136,175 @@ no such failure mode. Added the reason to the property docstring so it is not
 the existing 13 in `tests/widgets/public/test_select_read_only.py`. The control
 was run the required way: `src/` reverted, the new tests run against the
 unfixed source, 4 of 5 failing behaviorally with the symptoms quoted above.
+
+---
+
+## Round 2 — 2026-08-13 — **the cap; the branch closes here**
+
+Reviewed `git diff main...HEAD` at `6d3c7f56`, the reviewer handed round 1's
+record per the standing rule. Four findings: one medium, three low. Three fixed,
+one filed. A fifth defect was found during the fix step and is recorded below
+with the rest.
+
+`PLAN.md` declares a cap of **2**, so this is the last round. The fixes below
+touch `src/`, which gate 1 would otherwise read as a trigger — the cap is what
+stops it, and the survivor is filed rather than reviewed.
+
+---
+
+### F1 — `timefield.py:117` — **medium**
+
+`TimeField(read_only=True)` was discarded at construction.
+
+**Root cause.** Round 1's F1 fixed the `read_only` **setter** and left the
+constructor sending `internal_kwargs["state"] = "readonly"` — the same write,
+through the same doomed path, one scope up. A `TimeEntry` is always built
+`allow_custom_values=True, enable_search=True`, so `_apply_interaction_state()`
+at the end of `SelectBox.__init__` recomputes `typeable=True` and writes
+`['!readonly']` over it before `__init__` returns. No test constructed a
+read-only `TimeField`; all four of round 1's use the setter, which is exactly
+why round 1's own fix looked complete.
+
+**Resolution.** `internal_kwargs["readonly"] = read_only`, mirroring
+`select.py:125`. The `elif` went with it: `disabled` no longer shadows
+`read_only`, so both are set and clearing `disabled` cannot hand back an
+unlocked field.
+
+Control, five arms in one process, committed at
+`development/probe_453_timefield_read_only_ctor.py`:
+
+```
+pre-fix   arm 1  read_only=False  typeable=True   popup=True   states=()
+post-fix  arm 1  read_only=True   typeable=False  popup=False  states=('readonly',)
+```
+
+Arms 2–4 (the setter, a plain field, `disabled` alone) read identically either
+way, so arm 1's difference is behavioral rather than a broken harness.
+
+Regression tests: `test_timefield_read_only_at_construction_is_not_discarded`,
+`test_timefield_disabled_and_read_only_together_at_construction`, plus
+`test_timefield_construction_defaults_to_typeable` as the control that lets the
+first one's assertions come out the other way. Pre-fix: 2 failed, 18 passed.
+
+---
+
+### F2 — `timefield.py:166` — **low**
+
+The `read_only` getter read the derived ttk state while its setter wrote the
+flag — the getter shape #453 was filed for, on the property the same diff had
+just fixed at the other end.
+
+**Verified reachable, but only through the escape hatch.** The value setter
+clears and restores the ttk `readonly` state around a write, and anything
+observing inside that window sees the wrong answer:
+
+```
+during timefield var trace   read_only=False    <- derived read
+during select var trace      read_only=True     <- reads the flag
+```
+
+Through documented public surface — a time-typed `Signal` subscriber,
+`on_change` — it never diverges: 5 of 5 observations `True`. So this was a
+latent wrong answer, not a live user bug. Recorded that way rather than as the
+stronger claim.
+
+**Resolution.** `bool(self._internal.cget("readonly"))`, matching `Select`. The
+correctness argument for a one-line change: today the derived read agrees only
+because a `TimeEntry` is `allow_custom_values=True` forever, so
+`typeable == not _readonly` by coincidence of two constants.
+
+Regression test:
+`test_timefield_read_only_reports_the_setting_not_the_derived_state`. It drives
+a textvariable trace, which fires synchronously inside the write, so the test
+reproduces the mechanism deterministically rather than racing a symptom.
+Pre-fix: `AssertionError: read_only answered [False] during a value write`.
+
+---
+
+### F3 — `_impl/composites/selectbox.py:210` — **low** — FILED, NOT FIXED
+
+`Field.enable()`, `disable()` and `readonly()` write the ttk `readonly` state
+directly and none re-derives, against `_apply_interaction_state`'s own
+docstring: *"the ttk `readonly` state is an OUTPUT of this method, never
+storage."*
+
+Measured on `bs.Select(["A","B"], read_only=True)` followed by
+`_internal.enable()`: entry states `('readonly',)` → `()`, so the entry becomes
+freely typeable while `read_only` still reports `True` and the re-lit arrow is
+inert (`_popup_allowed()` is `False`).
+
+**Not fixed, deliberately.** Widened the reviewer's grep from `src/` to `src`,
+`tests` and `development`: **zero callers anywhere in the repo**. The public
+`disabled` setter routes through `configure(state=)` → `_delegate_state`, which
+already re-derives. So closing it means writing three overrides against a hole
+nothing reaches, on the branch whose point is that the invariant now lives in
+one place.
+
+Filed together with `PLAN.md`'s out-of-scope item *"`Field.readonly()` never
+clears the readonly state"* — same three methods, same file, one issue.
+
+---
+
+### F4 — `select.py:287` — **low**
+
+The public `read_only` docstring carried `#453`, `cget` vs `configure`, and
+"the delegating form of `configure` answers a query with a 5-tuple" into the
+rendered API Reference.
+
+**This reverses a round 1 decision, on the maintainer's instruction
+(2026-08-13).** F3 of round 1 resolved with *"added the reason to the property
+docstring so it is not 'simplified' back later"* — correct instinct, wrong
+surface. `Select` is autodoc'd `:members:`, so it shipped Tkinter vocabulary to
+users on a page describing a framework that exists to hide it.
+
+**Resolution.** Docstring reduced to what the property means; the maintenance
+warning moved verbatim into a `#` comment above the `return`, where it still
+guards against the "simplification" round 1 was protecting. Verified in the
+rebuilt site rather than assumed: `grep -rlE "cget|instate|5-tuple|textvariable"
+docs/_build/html --include=*.html` returns nothing.
+
+---
+
+### F5 — `timefield.py:55` — **found during the fix step, not by the reviewer**
+
+`TimeField`'s constructor doc for `read_only` read *"free-text entry is blocked;
+user must pick from the dropdown."* That is the pre-#453 misunderstanding
+written down as documentation, and F1 made it actively false — the dropdown is
+precisely what read-only now closes. It renders on the public page, so a user
+would have been told the opposite of what the widget does.
+
+Rewritten to match `select.py:62`'s, in `TimeField`'s vocabulary (clock button,
+time list), and checked in the rebuilt HTML.
+
+Worth carrying: F4 and F5 are the same defect class — a docstring that outlived
+its code — but F4 leaked *toolkit detail* while F5 leaked *stale behavior*. The
+second is the more expensive kind, because nothing about it looks wrong to a
+reader.
+
+---
+
+### Verification
+
+Full `py -3.12 tests/run_gui.py` at the fixed head: **exit 0, all 20 legs**,
+summed **1229 passed / 21 skipped**. Shared leg **1032 passed / 14 skipped
+against 1045 selected**, which reconciles the documented way — `1032 + 13`
+runtime skips = 1045, the 14th being the collection-time skip that is summarized
+but never selected.
+
+Count reconciliation against `main`, run because this file has been wrong about
+counts seven times: `main` selects **1024**, the branch selected **1041** before
+this round (main + 17), and **1045** after — exactly the four tests added here.
+Nothing was silently dropped.
+
+⚠ Round 1's verification block records **33 legs**; this branch has **20**.
+33 is `ci/test-workflow-380`'s leg count. The passed figure it quotes (1023) is
+consistent with this branch at that commit, so the leg count looks like a
+transcription error rather than a different checkout — but prefer a measured
+number over either.
+
+Clean docs build: `rm -rf docs/_build && sphinx-build -W --keep-going` exit 0,
+warning-free.
+
+Control run the required way for every behavioral fix: `src/` reverted, the new
+tests run against the unfixed source, each failing with the symptom quoted under
+its finding.
