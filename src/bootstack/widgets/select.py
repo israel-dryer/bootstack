@@ -59,8 +59,12 @@ class Select(PublicWidgetBase):
             before it scrolls (height is `max_visible_items * row_height`).
             Group headers and separators consume some of that budget, so the
             count is approximate. `None` (default) uses the built-in cap.
-        read_only: If `True`, value is visible but the popup cannot be
-            opened.
+        read_only: If `True`, the value is visible but cannot be changed —
+            neither the dropdown arrow nor a click in the field opens the
+            option list, and the arrow is dimmed to show it. Takes precedence
+            over `searchable` and `allow_custom_values` while set, and restores
+            them when cleared. Unlike `disabled`, the field keeps its normal
+            appearance and stays in the tab order. Defaults to `False`.
         disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
         accent: Accent token applied to the focus ring.
@@ -118,6 +122,7 @@ class Select(PublicWidgetBase):
             "allow_custom_values": allow_custom_values,
             "group_by":            group_by,
             "max_visible_items":   max_visible_items,
+            "readonly": read_only
         }
         if value is not None:
             internal_kwargs["value"] = value
@@ -131,8 +136,6 @@ class Select(PublicWidgetBase):
             internal_kwargs["required"] = True
         if disabled:
             internal_kwargs["state"] = "disabled"
-        elif read_only:
-            internal_kwargs["state"] = "readonly"
         if width is not None:
             internal_kwargs["width"] = width
         if accent is not None:
@@ -282,12 +285,18 @@ class Select(PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
-        """Whether the field is visible but the popup cannot be opened."""
-        return str(self._entry_widget().cget("state")) == "readonly"
+        """Whether the field is visible but the popup cannot be opened.
+
+        Reads the setting, not the widget's internal state. A `Select` is
+        already untypeable by default — that is not the same as read-only, and
+        reading it as though it were is what made this report `True` for every
+        select (#453).
+        """
+        return bool(self._internal.configure("readonly"))
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
-        self._internal.configure(state="readonly" if v else "normal")
+        self._internal.configure(readonly=bool(v))
 
     @property
     def disabled(self) -> bool:
