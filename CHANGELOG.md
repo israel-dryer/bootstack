@@ -12,7 +12,7 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
-- A read-only `Select` can no longer be changed. `read_only=True` was accepted and then ignored: clicking the field's text area still opened the option list and picked a new value, while the dropdown arrow greyed out — which made the field look read-only without being it. The list now stays shut from both the arrow and the text area, and `read_only` keeps working when combined with `searchable` or `allow_custom_values`, which previously discarded it outright. Reading `select.read_only` also reports the setting now rather than an internal state, so an ordinary `Select` no longer claims to be read-only when nobody asked for it. ([#453](https://github.com/israel-dryer/bootstack/issues/453))
+- A read-only `Select` can no longer be changed. `read_only=True` was accepted and then ignored: clicking the field's text area still opened the option list and picked a new value, while the dropdown arrow greyed out — which made the field look read-only without being it. The list now stays shut from both the arrow and the text area, and `read_only` keeps working when combined with `searchable` or `allow_custom_values`, which previously discarded it outright. Reading `select.read_only` also reports the setting now rather than an internal state, so an ordinary `Select` no longer claims to be read-only when nobody asked for it. `TimeField` is built on the same internals and carried the same defect on its own `read_only`, both when passed to the constructor and when set afterwards; a locked time field now really is locked, and its time list stays shut. ([#453](https://github.com/israel-dryer/bootstack/issues/453))
 
 ## [0.3.1] — Dialog keyboard and modality
 

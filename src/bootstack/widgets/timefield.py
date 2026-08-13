@@ -52,8 +52,10 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             way to bind a time field.
         required: If `True`, field cannot be left empty.
         disabled: If `True`, field is non-interactive.
-        read_only: If `True`, free-text entry is blocked; user must pick
-            from the dropdown.
+        read_only: If `True`, the time is visible but cannot be changed —
+            typing is blocked, and neither the clock button nor a click in the
+            field opens the time list. Unlike `disabled`, the field keeps its
+            normal appearance and stays in the tab order. Defaults to `False`.
         width: Width in character cells.
         accent: Accent color applied to the focus ring. Default `'primary'`.
         density: Widget density.
@@ -111,10 +113,14 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["message"] = message
         if required:
             internal_kwargs["required"] = True
+        # Read-only rides its own option, not `state="readonly"` — the internal
+        # here is a select, where the ttk `readonly` state is an OUTPUT of the
+        # interaction state ("no free typing") and is re-derived at the end of
+        # construction, so a state write is overwritten before anyone sees it
+        # (#453). Same shape as the setter below and as `Select`.
+        internal_kwargs["readonly"] = read_only
         if disabled:
             internal_kwargs["state"] = "disabled"
-        elif read_only:
-            internal_kwargs["state"] = "readonly"
         if width is not None:
             internal_kwargs["width"] = width
         if accent is not None:
@@ -162,8 +168,14 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
-        """Whether the field is read-only (selectable but not editable)."""
-        return self._internal._entry.instate(("readonly",))
+        """Whether the field is read-only — the time shows but cannot be changed."""
+        # Report the setting, not the state derived from it. The two agree at
+        # rest, but the derivation is cleared and restored around a programmatic
+        # value write, so reading it answers `False` for a locked field from
+        # inside that window (#453). Same reason `Select.read_only` reads the
+        # setting; `cget`, never `configure(name)`, which answers a query with a
+        # truthy 5-tuple.
+        return bool(self._internal.cget("readonly"))
 
     @read_only.setter
     def read_only(self, v: bool) -> None:

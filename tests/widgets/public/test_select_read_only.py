@@ -9,6 +9,8 @@ Every test here fails against the pre-fix source for a BEHAVIORAL reason, not
 an `AttributeError` — `read_only` was accepted and ignored before, so nothing
 raises either way.
 """
+import datetime
+
 import bootstack as bs
 
 
@@ -274,3 +276,54 @@ def test_timefield_read_only_survives_a_disabled_round_trip(app):
     tf.disabled = False
     assert tf.disabled is False
     assert tf.read_only is True
+
+
+def test_timefield_read_only_at_construction_is_not_discarded(app):
+    # The setter was the only path covered above, and it was the only one
+    # fixed. The constructor sent state="readonly", which the interaction
+    # state re-derives away before `__init__` returns — so a field asked to
+    # be locked came back freely typeable, with its time list still opening.
+    tf = bs.TimeField(read_only=True, parent=app)
+    assert tf.read_only is True
+    assert tf._internal._entry.instate(["readonly"]) is True
+    assert tf._internal._popup_allowed() is False
+
+
+def test_timefield_construction_defaults_to_typeable(app):
+    # Control for the test above: a plain TimeField allows custom values, so
+    # the assertions there have to be able to come out the other way.
+    tf = bs.TimeField(parent=app)
+    assert tf.read_only is False
+    assert tf._internal._entry.instate(["readonly"]) is False
+    assert tf._internal._popup_allowed() is True
+
+
+def test_timefield_read_only_reports_the_setting_not_the_derived_state(app):
+    # The ttk `readonly` state is cleared and restored around a programmatic
+    # value write, so a getter reading that state answers `False` for a locked
+    # field from inside the window. A textvariable trace lands squarely in it,
+    # and fires synchronously, so this is deterministic rather than a race.
+    tf = bs.TimeField(read_only=True, parent=app)
+    seen = []
+    tf._internal._entry.textvariable.trace_add(
+        "write", lambda *a: seen.append(tf.read_only)
+    )
+
+    tf.value = datetime.time(9, 30)
+
+    assert seen, "the trace never fired — the window was never entered"
+    assert all(seen), f"read_only answered {seen} during a value write"
+    assert tf.read_only is True
+
+
+def test_timefield_disabled_and_read_only_together_at_construction(app):
+    # `disabled` used to shadow `read_only` in an elif. Both are set now, so
+    # clearing the disabled state must not hand back an unlocked field.
+    tf = bs.TimeField(disabled=True, read_only=True, parent=app)
+    assert tf.disabled is True
+    assert tf.read_only is True
+
+    tf.disabled = False
+    assert tf.disabled is False
+    assert tf.read_only is True
+    assert tf._internal._popup_allowed() is False
