@@ -721,7 +721,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, **#447, #449** | 6 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449, **#453 (IN FLIGHT, PR #454)** | 7 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -743,8 +743,10 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FIVE UNMILESTONED OPEN ISSUES as of 2026-08-12, end of day** (verified
-against `gh`, not counted by hand): **#431, #433, #434, #436, #452.** #452 is the macOS CI hang, filed today and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
+**⚠ FIVE UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
+not counted by hand: **#431, #433, #434, #436, #452.** Unchanged since
+2026-08-12; #453 was filed onto `0.3.x — Patch line` by the maintainer, so it
+never joined this list. #452 is the macOS CI hang, filed today and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
 is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
 unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
 #432 to `Test and release confidence`** (maintainer, 2026-08-12).
@@ -800,11 +802,48 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-12, PAUSED MID-#380) — CI EXISTS AND HAS ALREADY EARNED ITS KEEP
+### ★ START HERE (2026-08-13) — #453 IS IN FLIGHT AND WAITING ON REVIEW ROUND 2
 
-**⏸ THE SESSION PAUSED WAITING ON A LINUX BOX.** Nothing is broken and nothing
-is half-written; the next move is simply blocked on a measurement only a Linux
-machine can take. Read the two blocks marked ⏭ below and you are current.
+**⏭ THE NEXT ACTION IS A REVIEW, AND IT NEEDS A FRESH SESSION.** PR
+[#454](https://github.com/israel-dryer/bootstack/pull/454) is open —
+`fix/select-read-only-453` → `main`, head **`6d3c7f56`**, `Closes #453`. Round 1
+ran and its three findings are fixed; **round 2 has not run**, and it opens
+legitimately under `REVIEW-PROTOCOL.md` gate 1 because the round-1 fix commit
+`937b0aa2` has a non-empty `git diff -- src/`.
+
+**The brief is committed at `development/review-brief-453-round2.md`** and
+carries the scope, the triage state, the settled decisions, and the
+measurements not to re-derive. `PLAN.md` and `REVIEW.md` live ON THAT BRANCH.
+**`PLAN.md` declares a cap of 2, so round 2 is the last one** — survivors are
+filed as issues, not fixed.
+
+⚠ **DO NOT RUN THE REVIEW FROM THE SESSION THAT WROTE THE FIX, AND NOTE THAT
+`/code-review` LAUNCHES AS A FORK.** A fork inherits the full conversation
+context, including the implementer's reasoning about why each fix was right —
+which is precisely what the protocol's session boundary exists to keep out.
+`/clear` first, then review. Round 1 was clean only because nothing had been
+written yet.
+
+**What #453 was:** `read_only=True` on a `Select` was accepted and ignored. The
+arrow greyed out, so the field looked read-only, while a click in the text area
+still opened the list and changed the value; `select.read_only` read `True` for
+every `Select` ever built. The entry's ttk `readonly` state was doing double
+duty as the widget's own "no free typing" flag and was recomputed
+unconditionally, discarding the request. It is **derived, never storage** now.
+
+⚠ **Round 1's blocking finding is the one worth carrying, because it is a shape
+this design invites:** making the ttk state an OUTPUT re-derived after every
+write silently killed `TimeField.read_only`, whose setter wrote
+`state="readonly"` onto a `SelectBox` internal — the applier wrote
+`['!readonly']` straight back over it inside the same call. `main` reported
+`True`; the branch reported `False`. **When a piece of state becomes derived,
+every existing writer of it becomes a no-op, and the ones outside the file are
+invisible.** `grep -rn 'state="readonly"' src/` found all seven; only
+`TimeField` wraps a select.
+
+**⏸ #380 IS PAUSED, NOT ABANDONED** — it is blocked on a measurement only a
+Linux box can take. Read the two blocks marked ⏭ below and you are current on
+it.
 
 **⏭ RESUME POINT 1 — the WSL agent's answer on #447.** A brief is committed at
 **`development/handoff-447-linux-focus.md`**. It asks ONE question: does the
@@ -825,13 +864,16 @@ ignore it. The maintainer chose to understand Linux first (2026-08-12).
 
 | | |
 |---|---|
-| `main` | **`d6c90534`**, pushed. Green |
-| branch | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH |
+| `main` | **`7ff25930`**, pushed. Green |
+| branch, ACTIVE | **`fix/select-read-only-453`** (PR #454), pushed, head **`6d3c7f56`**. `PLAN.md` + `REVIEW.md` live ON THAT BRANCH. **Awaiting review round 2** |
+| branch, PAUSED | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH |
 | suite on `main` | **exit 0, 20 legs, 1208 passed / 21 skipped** (corrected 2026-08-13; the `1250 / 22` here was wrong) |
-| suite on the branch | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **now SUSPECT, see below** |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived. Create `PLAN.md` fresh for the next branch |
-| released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
+| suite on `fix/select-read-only-453` | **exit 0, 20 legs, 1225 passed / 21 skipped** at `872aa862` — the +17 is its one new test file |
+| suite on `ci/test-workflow-380` | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **now SUSPECT, see below** |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — both belong to the #453 branch. Archive them into `development/` when it merges |
+| released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` EXISTS AGAIN, on the #453 branch, carrying its one `### Fixed` bullet |
 | open milestones | 10, and they agree 1:1 with the table below |
+| `pandas` | **ABSENT on this box now**, so the data leg reads `125 / 4`. It read `123 / 6` on 2026-08-12. Documented environmental pair, not a discrepancy |
 
 ⚠ **THIS RECONCILIATION RESTED ON THE WRONG BASE AND MUST BE RE-MEASURED BEFORE
 IT IS QUOTED.** It read: `1250` + **25** tests under `tests/widgets/` that
