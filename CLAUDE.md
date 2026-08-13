@@ -721,7 +721,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449, **#453 (IN FLIGHT, PR #454)** | 7 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 is CLOSED and cut as `0.3.2`**, so the milestone reads `open=6 closed=1` — it is a rolling line, so it does NOT close when a patch ships | 6 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -743,18 +743,24 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-**⚠ FIVE UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
-not counted by hand: **#431, #433, #434, #436, #452.** Unchanged since
-2026-08-12; #453 was filed onto `0.3.x — Patch line` by the maintainer, so it
-never joined this list. #452 is the macOS CI hang, filed today and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
+**⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
+not counted by hand: **#431, #433, #434, #436, #452, #455.** #455 is the one
+that moved: the survivor of #453's round 2 (`Field.enable()/disable()/readonly()`
+writing the ttk readonly state without re-deriving), left unassigned because it
+gates nothing — `0.3.2` ships without it, so its placement is a scope call, not
+a fact already decided by a blocker. #453 itself was filed onto
+`0.3.x — Patch line` by the maintainer, so it never joined this list. #452 is the macOS CI hang, filed 2026-08-12 and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
 is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
 unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
 #432 to `Test and release confidence`** (maintainer, 2026-08-12).
 
-⚠ **`0.3.1` STILL HAS ONE OPEN ISSUE — #446 — so the milestone cannot be closed
-at release time yet.** Its two known flakes are fixed and merged and the third
-was split out to #447, so it looks resolvable; **that is the maintainer's call,
-not an assumption to act on.** Settle it as part of the release sequence.
+⚠ **STALE, and left here only for the rule it produced: this said "`0.3.1` STILL
+HAS ONE OPEN ISSUE — #446 — so the milestone cannot be closed at release
+time."** It was settled on 2026-08-12 — **#446 was CLOSED rather than moved**,
+because its scope was exactly the two flakes and both shipped in `48dba181`; the
+third became #447, which went to `0.3.x — Patch line`. `0.3.1`'s milestone reads
+`open=0 closed=5` and is closed. **The open-milestone list is the cross-check on
+the table above and they agree 1:1 — trust `gh`, not a paragraph.**
 
 ⚠ **THAT PAIR CORRECTED A MISREADING OF THE "do not assign unasked" RULE, and
 the correction is the part worth keeping.** This file had #446 sitting
@@ -802,44 +808,125 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-13) — #453 IS IN FLIGHT AND WAITING ON REVIEW ROUND 2
+### ★ START HERE (2026-08-13) — `0.3.2` IS CUT AND READY TO TAG; #380 STILL PAUSED
 
-**⏭ THE NEXT ACTION IS A REVIEW, AND IT NEEDS A FRESH SESSION.** PR
-[#454](https://github.com/israel-dryer/bootstack/pull/454) is open —
-`fix/select-read-only-453` → `main`, head **`6d3c7f56`**, `Closes #453`. Round 1
-ran and its three findings are fixed; **round 2 has not run**, and it opens
-legitimately under `REVIEW-PROTOCOL.md` gate 1 because the round-1 fix commit
-`937b0aa2` has a non-empty `git diff -- src/`.
+**⏭ THE NEXT ACTION IS THE RELEASE, AND IT IS TWO COMMANDS.** `#453` is merged,
+archived and closed; `main` is green; the CHANGELOG is promoted. What remains:
 
-**The brief is committed at `development/review-brief-453-round2.md`** and
-carries the scope, the triage state, the settled decisions, and the
-measurements not to re-derive. `PLAN.md` and `REVIEW.md` live ON THAT BRANCH.
-**`PLAN.md` declares a cap of 2, so round 2 is the last one** — survivors are
-filed as issues, not fixed.
+```
+py -3.12 -m bumpversion bump patch      # pyproject.toml 0.3.1 -> 0.3.2, commits, tags
+git push origin main --follow-tags      # release.yml fires on the v* tag
+```
 
-⚠ **DO NOT RUN THE REVIEW FROM THE SESSION THAT WROTE THE FIX, AND NOTE THAT
-`/code-review` LAUNCHES AS A FORK.** A fork inherits the full conversation
-context, including the implementer's reasoning about why each fix was right —
-which is precisely what the protocol's session boundary exists to keep out.
-`/clear` first, then review. Round 1 was clean only because nothing had been
-written yet.
+**Already done, so do NOT redo it:** `## [Unreleased]` was promoted to
+`## [0.3.2] — Read-only select fields` **in its own commit** (`214c1a6a`) with
+its `[0.3.2]:` link definition added at the bottom — bumpversion commits only
+`pyproject.toml`, so a rename swept in afterwards ships notes still saying
+`## [Unreleased]`. **The extraction was verified against the real file, not a
+simulation:** title `0.3.2 — Read-only select fields`, body starting at
+`### Fixed`, no link definitions leaked in.
 
-**What #453 was:** `read_only=True` on a `Select` was accepted and ignored. The
-arrow greyed out, so the field looked read-only, while a click in the text area
-still opened the list and changed the value; `select.read_only` read `True` for
-every `Select` ever built. The entry's ttk `readonly` state was doing double
-duty as the widget's own "no free typing" flag and was recomputed
-unconditionally, discarding the request. It is **derived, never storage** now.
+⚠ **`bump-my-version` reports `1.5.0` on this box today.** This file recorded
+`1.5.1` on 2026-08-08 and it has vanished entirely once before, so **check it
+exists before assuming the release flow works** — that is now twice the version
+has moved under us and once it was simply gone.
 
-⚠ **Round 1's blocking finding is the one worth carrying, because it is a shape
-this design invites:** making the ttk state an OUTPUT re-derived after every
-write silently killed `TimeField.read_only`, whose setter wrote
-`state="readonly"` onto a `SelectBox` internal — the applier wrote
-`['!readonly']` straight back over it inside the same call. `main` reported
-`True`; the branch reported `False`. **When a piece of state becomes derived,
-every existing writer of it becomes a no-op, and the ones outside the file are
-invisible.** `grep -rn 'state="readonly"' src/` found all seven; only
-`TimeField` wraps a select.
+**Then the post-release checks, every one VERIFIED rather than assumed:** a real
+`pip download` (never the CDN-cached `/pypi/bootstack/json` summary endpoint),
+the shipped wheel opened and **imported with `idlelib` BLOCKED via a `meta_path`
+finder, with a control asserting the block itself works** (#430's defect — seven
+`idlelib` mentions survive in the wheel as docstring attributions, so grep proves
+nothing), the GitHub Release live with both assets, and `bootstack.org`
+returning 200. **`docs.yml` chains off a SUCCESSFUL `release.yml` run** — if
+that run is not green the site silently stays on `0.3.1`; kick it with
+`gh workflow run docs.yml --ref main`.
+
+⚠ **AND TELL THE REPORTER.** #453 came from **`bLynnb2762`**, the same external
+reporter as #428, and they have not been told anything. Post with
+**`gh issue comment 453`** — `gh issue close --comment` **silently drops the
+comment on an already-closed issue** and warns only about the close.
+
+**Then the housekeeping, which is what this section keeps having to reconstruct:**
+add the `0.3.2` row to `Recently shipped`, rewrite this START HERE around
+whatever comes next, and leave the root without a `PLAN.md` until a branch needs
+one. `0.3.x — Patch line` is a **rolling** milestone and does NOT close when a
+patch ships — only numbered release milestones do.
+
+#### What `0.3.2` contains, and what it does not
+
+**One user-facing fix: #453.** `read_only=True` on a `Select` was accepted and
+ignored — the arrow greyed out so the field *looked* read-only while a click in
+the text area still opened the list and changed the value, and
+`select.read_only` read `True` for every `Select` ever built. The entry's ttk
+`readonly` state was doing double duty as the widget's own "no free typing" flag
+and was recomputed unconditionally, discarding the request. It is **derived,
+never storage** now. `TimeField` rides the same internals and is fixed with it.
+
+⚠ **#407 also landed since `v0.3.1` and deliberately has NO CHANGELOG entry** —
+it is test-harness only, and an entry earns its place by being reachable. Do not
+"fix" its absence.
+
+#### ⚠ The two findings from this branch worth carrying — do NOT re-derive
+
+**1. When a piece of state becomes DERIVED, every existing writer of it becomes
+a silent no-op — and the writers outside the file are invisible.** Making the
+ttk state an OUTPUT re-derived after every write killed `TimeField.read_only`,
+whose setter wrote `state="readonly"` onto a `SelectBox` internal; the applier
+wrote `['!readonly']` back over it inside the same call. `main` reported `True`,
+the branch `False`. `grep -rn 'state="readonly"' src/` found all seven writers;
+only `TimeField` wraps a select.
+
+⚠ **Round 1 fixed that setter and MISSED THE CONSTRUCTOR, one scope up, doing
+the identical write.** `bs.TimeField(read_only=True)` still came back freely
+typeable with its time list open, because every existing test drove the setter.
+**Round 2 found it. The lesson is that a fix to a property is not a fix to the
+setting** — enumerate the ways the value can arrive (constructor, setter,
+`configure`) and pin each.
+
+**2. A docstring outlives its code, and the expensive half is not the obvious
+one.** Two shipped in this branch. `select.py`'s `read_only` docstring carried
+`cget`, `configure` and "a 5-tuple" into the **rendered API Reference** — Tkinter
+vocabulary on a page describing a framework that exists to hide it. Worse,
+`TimeField`'s constructor doc said read-only means *"the user must pick from the
+dropdown"* — the pre-#453 reading, which the fix made **actively false**, on a
+published page. ⚠ **The toolkit leak looks wrong to any reader; the stale
+behavior looks authoritative.** Check both when a fix changes what an option
+means, and verify in the BUILT html:
+`grep -rlE "cget|instate|5-tuple|textvariable" docs/_build/html --include=*.html`.
+
+⚠ **The `select.py` half REVERSED a round 1 decision, on the maintainer's
+instruction** — round 1 had deliberately put that warning *in* the docstring so
+the call would not be "simplified" back later. Right instinct, wrong surface: it
+is for whoever edits the line, not whoever reads the docs, so it moved verbatim
+into a `#` comment. **Do not put it back.**
+
+#### Two review rounds ran, against a declared cap of 2
+
+Record archived at **`development/review-453-select-read-only.md`**, plan at
+**`development/plan-453-select-read-only.md`**. Yield **3 findings then 4**, plus
+a fifth found during round 2's fix step. ⚠ **Round 2's fixes touched `src/`,
+which gate 1 would read as a trigger for a round 3 — the CAP is what stopped it,
+and the survivor was filed instead.** That is the stopping rule working; it is
+the first branch where it bound.
+
+**The survivor is [#455](https://github.com/israel-dryer/bootstack/issues/455)**
+— `Field.enable()/disable()/readonly()` write the ttk readonly state without
+re-deriving, merged with `PLAN.md`'s out-of-scope item that
+`Field.readonly(False)` disables the field instead of clearing read-only.
+**Latent: zero callers in `src`, `tests` or `development`**, and the public
+`disabled` setter already routes through `_delegate_state`, which re-derives.
+Left **unmilestoned** — it gates nothing, so its placement is a scope call.
+
+**#383 gained a THIRD gap** ([comment](https://github.com/israel-dryer/bootstack/issues/383#issuecomment-5283453605)):
+the two in its body are about bad **values**, this one is about unknown **names**
+— `bs.TextField(bogus_xyz=1)` constructs silently while the internal
+`Field(master, bogus_xyz=1)` raises `TclError`, so **the public layer is the
+less strict of the two**. Mechanism measured: wrappers build `internal_kwargs`
+from named parameters only and `**kwargs` exists to feed
+`_split_layout_kwargs`, so leftovers are never read and never reach the internal.
+⚠ **It does NOT reuse `validate_choice`** (the name never reaches a validator),
+and the obvious home — the shared split seam — needs the wrappers that
+legitimately forward `**kwargs` counted first.
 
 **⏸ #380 IS PAUSED, NOT ABANDONED** — it is blocked on a measurement only a
 Linux box can take. Read the two blocks marked ⏭ below and you are current on
@@ -864,27 +951,42 @@ ignore it. The maintainer chose to understand Linux first (2026-08-12).
 
 | | |
 |---|---|
-| `main` | **`7ff25930`**, pushed. Green |
-| branch, ACTIVE | **`fix/select-read-only-453`** (PR #454), pushed, head **`6d3c7f56`**. `PLAN.md` + `REVIEW.md` live ON THAT BRANCH. **Awaiting review round 2** |
-| branch, PAUSED | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH |
-| suite on `main` | **exit 0, 20 legs, 1208 passed / 21 skipped** (corrected 2026-08-13; the `1250 / 22` here was wrong) |
-| suite on `fix/select-read-only-453` | **exit 0, 20 legs, 1225 passed / 21 skipped** at `872aa862` — the +17 is its one new test file |
-| suite on `ci/test-workflow-380` | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **now SUSPECT, see below** |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — both belong to the #453 branch. Archive them into `development/` when it merges |
-| released | `0.3.1` on PyPI, milestone closed. `## [Unreleased]` EXISTS AGAIN, on the #453 branch, carrying its one `### Fixed` bullet |
+| `main` | **`214c1a6a`**, pushed. Green. Carries #453 (PR #454, merge commit `6c32acfe`) and the `0.3.2` CHANGELOG promotion |
+| branch, PAUSED | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH. **The only branch alive** |
+| suite on `main` | **exit 0, 20 legs, 1229 passed / 21 skipped**, measured 2026-08-13 at `03d981f1`. Shared leg **1032 / 14 against 1045 selected** — `1032 + 13` runtime skips = 1045, the 14th being the collection-time skip that is summarized but never selected |
+| suite on `ci/test-workflow-380` | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **still SUSPECT, see below** |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/` at `03d981f1`. **Create `PLAN.md` fresh for the next branch** |
+| released | `0.3.1` on PyPI. **`0.3.2` is promoted in the CHANGELOG but NOT tagged** — that is the next action, above |
 | open milestones | 10, and they agree 1:1 with the table below |
 | `pandas` | **ABSENT on this box now**, so the data leg reads `125 / 4`. It read `123 / 6` on 2026-08-12. Documented environmental pair, not a discrepancy |
+
+⚠ **`1208 → 1229` IS +21 EXACTLY, WHICH IS `test_select_read_only.py`.** That is
+the whole delta and it reconciles against the shared leg's own collection line,
+so nothing was silently dropped or skipped into passing. **Prefer a number you
+just measured over one written here — this file has now been wrong about counts
+seven times.** The check is one command:
+`pytest tests/widgets/public tests/cli -m "not isolated" --collect-only -q | tail -2`.
+
+⚠ **Round 1 of the #453 review recorded `33 legs` for a branch that has 20.**
+33 is `ci/test-workflow-380`'s leg count; the passed figure it quoted was
+consistent with the branch it was actually on, so it reads as a transcription
+slip rather than a different checkout. **Recorded because a wrong leg count is
+how a wrong total gets believed.**
 
 ⚠ **THIS RECONCILIATION RESTED ON THE WRONG BASE AND MUST BE RE-MEASURED BEFORE
 IT IS QUOTED.** It read: `1250` + **25** tests under `tests/widgets/` that
 `testpaths` never collected + **166** in `tests/test_public_surface.py`, which
 had never run anywhere + **8** for `test_tk9_scaling_baseline.py`, which now
 runs TWICE (once in the headless leg to prove it needs no display, once in the
-shared leg as before) = `1449`. **The `1250` base is wrong — `main` is `1208`**
+shared leg as before) = `1449`. **The `1250` base is wrong — `main` was `1208`**
 (corrected 2026-08-13), so the same three additions predict **`1407`**, not
-`1449`. Either the branch total or one of the addends is off by 42. **Both
-halves need a fresh `py -3.12 tests/run_gui.py` on `ci/test-workflow-380`; do
-not repair the arithmetic by picking whichever number makes it close.** The
+`1449`. Either the branch total or one of the addends is off by 42. ⚠ **And the
+base has MOVED AGAIN since: `main` is `1229` now that #453 landed, so the
+prediction is `1428` against that.** Neither figure closes the gap; the point is
+that the branch total was never reconciled. **Both halves need a fresh
+`py -3.12 tests/run_gui.py` on `ci/test-workflow-380`, taken after rebasing it
+on today's `main`; do not repair the arithmetic by picking whichever number
+makes it close.** The
 substance is untouched — the 25 and the 166 had literally never been executed by
 any automated run, which is what #380 asked to fix.
 
