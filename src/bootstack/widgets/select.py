@@ -285,17 +285,17 @@ class Select(PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
-        """Whether the field is visible but the popup cannot be opened.
+        """Whether the field is read-only — the value shows but cannot be changed.
 
-        Reads the setting, not the widget's internal state. A `Select` is
-        already untypeable by default — that is not the same as read-only, and
-        reading it as though it were is what made this report `True` for every
-        select (#453).
-
-        Read it with `cget`, never `configure(name)`: the delegating form of
-        `configure` answers a query with a 5-tuple, which is unconditionally
-        truthy and would silently restore the #453 behavior.
+        An ordinary `Select` already refuses free typing, which is not the same
+        thing. A read-only one also keeps the option list shut, from both the
+        dropdown button and the field itself.
         """
+        # Report the setting, never the state derived from it — reporting the
+        # derivation is what made every select claim to be read-only (#453).
+        # Read it with `cget`, never `configure(name)`: the delegating form of
+        # `configure` answers a query with a 5-tuple, which is unconditionally
+        # truthy and would silently restore that behavior.
         return bool(self._internal.cget("readonly"))
 
     @read_only.setter
