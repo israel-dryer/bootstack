@@ -167,7 +167,11 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
-        self._internal.configure(state="readonly" if v else "normal")
+        # Route through the `readonly` option, not `state="readonly"`. The
+        # internal here is a select, where the ttk `readonly` state is an
+        # OUTPUT of the interaction state ("no free typing") and is re-derived
+        # on every change — so a state write is overwritten immediately (#453).
+        self._internal.configure(readonly=bool(v))
 
     # ----- Methods -----
 

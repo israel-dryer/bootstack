@@ -291,8 +291,12 @@ class Select(PublicWidgetBase):
         already untypeable by default — that is not the same as read-only, and
         reading it as though it were is what made this report `True` for every
         select (#453).
+
+        Read it with `cget`, never `configure(name)`: the delegating form of
+        `configure` answers a query with a 5-tuple, which is unconditionally
+        truthy and would silently restore the #453 behavior.
         """
-        return bool(self._internal.configure("readonly"))
+        return bool(self._internal.cget("readonly"))
 
     @read_only.setter
     def read_only(self, v: bool) -> None:

@@ -110,7 +110,6 @@ class SelectBox(Field):
         # `_sync_addon_state()`, which this class overrides to read them.
         self._readonly = readonly
         self._search_enabled = enable_search
-        self._show_dropdown_button = show_dropdown_button
         # Localization mode for option display (entry face + popup rows). None
         # defers to the app's localize_mode; False keeps the raw labels.
         self._localize = kwargs.pop('localize', None)
@@ -156,6 +155,9 @@ class SelectBox(Field):
         # click there has to place a text cursor rather than open the list, so
         # the button becomes the sole way in. `show_dropdown_button=False` is
         # honored only while the entry is NOT typeable.
+        #
+        # This decision is made ONCE, here. A later `configure()` that turns
+        # typing on does NOT insert a button the caller asked not to build.
         if self._entry_is_typeable() or show_dropdown_button:
             self._insert_dropdown_button()
 
@@ -187,9 +189,6 @@ class SelectBox(Field):
             return False
         return not self.entry_widget.instate(['disabled'])
 
-    def _has_dropdown_button(self) -> bool:
-        return 'dropdown' in self._addons
-
     def _insert_dropdown_button(self) -> None:
         """Add the dropdown addon, marked read-only safe.
 
@@ -218,10 +217,6 @@ class SelectBox(Field):
         """
         typeable = self._entry_is_typeable()
         self.entry_widget.state(['!readonly'] if typeable else ['readonly'])
-
-        # A runtime switch into typing must not leave the list unreachable.
-        if typeable and not self._has_dropdown_button():
-            self._insert_dropdown_button()
 
         # Only a click that actually opens the list should advertise itself.
         if typeable or not self._popup_allowed():

@@ -205,3 +205,72 @@ def test_search_forces_the_dropdown_button_like_custom_values_does(app):
     )
     box.pack()
     assert "dropdown" in box._addons
+
+
+def test_a_runtime_flip_does_not_build_a_button_that_was_refused(app):
+    # The mirror of the test above, and the boundary between them: membership
+    # is decided ONCE, at construction. Turning typing on later must not insert
+    # a button the caller explicitly refused — the reachability rule buys its
+    # exception at build time, where the caller can still see the trade.
+    from bootstack.widgets._impl.composites.selectbox import SelectBox
+
+    box = SelectBox(
+        app._child_master(),
+        items=["A", "B"],
+        show_dropdown_button=False,
+    )
+    box.pack()
+    assert "dropdown" not in box._addons
+
+    box.configure(allow_custom_values=True)
+    assert "dropdown" not in box._addons
+
+    box.configure(enable_search=True)
+    assert "dropdown" not in box._addons
+
+
+# --------------------------------------------------------------------------
+# TimeField: the same setting reached through a different public property
+# --------------------------------------------------------------------------
+# `TimeField` is the only field family member whose internal is a SelectBox,
+# so it is the only one whose `read_only` had to stop writing the ttk state.
+# The state is an OUTPUT of the interaction rules now and is re-derived on
+# every change, so writing it was overwritten within the same call.
+
+def test_timefield_read_only_is_not_discarded(app):
+    tf = bs.TimeField(parent=app)
+    tf.read_only = True
+    assert tf.read_only is True
+    assert tf._internal._entry.instate(["readonly"]) is True
+
+
+def test_timefield_read_only_closes_the_list(app):
+    # The point of the property: a locked field must not offer the time list.
+    tf = bs.TimeField(parent=app)
+    tf.read_only = True
+    assert tf._internal._popup_allowed() is False
+
+
+def test_timefield_clearing_read_only_restores_typing(app):
+    # A TimeEntry is built with allow_custom_values=True, so clearing read-only
+    # must give typing back rather than leaving a permanently locked field.
+    #
+    # Passes against the unfixed source too, and only because BOTH writes were
+    # no-ops there — it pins the end state, not the transition. The three tests
+    # around it are the ones that fail behaviorally pre-fix.
+    tf = bs.TimeField(parent=app)
+    tf.read_only = True
+    tf.read_only = False
+    assert tf.read_only is False
+    assert tf._internal._entry.instate(["readonly"]) is False
+
+
+def test_timefield_read_only_survives_a_disabled_round_trip(app):
+    # Clearing `disabled` sends state="normal". Read-only is held as its own
+    # flag now, so it is re-derived rather than cleared as a side effect.
+    tf = bs.TimeField(parent=app)
+    tf.read_only = True
+    tf.disabled = True
+    tf.disabled = False
+    assert tf.disabled is False
+    assert tf.read_only is True
