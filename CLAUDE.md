@@ -116,7 +116,18 @@ on the next statement, then grep the file.
 
 ## Current state
 
-**Released:** **`0.3.0` on PyPI, tag `v0.3.0` (2026-08-11)** — titled *Screen
+**Released:** **`0.3.2` on PyPI, tag `v0.3.2` (2026-08-13)** — titled *Read-only
+select fields*, one fix (#453) on the patch line, `release.yml` clean and docs
+chained off it. **See START HERE for its verification and the tag-vs-`main`
+divergence.** Then `0.3.1` (2026-08-12, *Dialog keyboard and modality*, four
+fixes).
+
+⚠ **THE PARAGRAPH BELOW IS `0.3.0`'s AND IS KEPT FOR ITS DETAIL, NOT AS THE
+CURRENT RELEASE.** Two releases have shipped since. Same for most of this
+section — **`Recently shipped` and START HERE are the current ones; this block is
+history with the warnings still attached.**
+
+**`0.3.0` on PyPI, tag `v0.3.0` (2026-08-11)** — titled *Screen
 capture and dialog results*, **shipped by `release.yml`, which ran clean end to
 end**, with `docs.yml` chaining off it automatically. Two features and six fixes:
 `widget.capture()` (#427, #429) and the dialog-result work (#428, #437, #438).
@@ -808,51 +819,66 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-13) — `0.3.2` IS CUT AND READY TO TAG; #380 STILL PAUSED
+### ★ START HERE (2026-08-13) — `0.3.2` IS ON PyPI; #380 IS THE NEXT WORK
 
-**⏭ THE NEXT ACTION IS THE RELEASE, AND IT IS TWO COMMANDS.** `#453` is merged,
-archived and closed; `main` is green; the CHANGELOG is promoted. What remains:
+**⏭ THE NEXT ACTION IS #380, AND IT IS BLOCKED ON A MEASUREMENT ONLY A LINUX BOX
+CAN TAKE.** Nothing is half-finished: `0.3.2` shipped clean, `main` is green, the
+root has no `PLAN.md`, and the only live branch is `ci/test-workflow-380`. Read
+the two ⏭ RESUME POINTs below and you are current.
 
-```
-py -3.12 -m bumpversion bump patch      # pyproject.toml 0.3.1 -> 0.3.2, commits, tags
-git push origin main --follow-tags      # release.yml fires on the v* tag
-```
+⚠ **ONE ITEM IS THE MAINTAINER'S, NOT YOURS: telling `bLynnb2762` that #453 is
+live.** They took it on 2026-08-13 (*"I'll respond to the user"*). **Do not post
+it as well** — a duplicate to an external reporter is worse than a late one. If
+you ever do post one, use `gh issue comment 453`; `gh issue close --comment`
+silently drops the comment on an already-closed issue and warns only about the
+close.
 
-**Already done, so do NOT redo it:** `## [Unreleased]` was promoted to
-`## [0.3.2] — Read-only select fields` **in its own commit** (`214c1a6a`) with
-its `[0.3.2]:` link definition added at the bottom — bumpversion commits only
-`pyproject.toml`, so a rename swept in afterwards ships notes still saying
-`## [Unreleased]`. **The extraction was verified against the real file, not a
-simulation:** title `0.3.2 — Read-only select fields`, body starting at
-`### Fixed`, no link definitions leaked in.
+#### ✅ `0.3.2 — Read-only select fields` IS ON PyPI (2026-08-13)
 
-⚠ **`bump-my-version` reports `1.5.0` on this box today.** This file recorded
-`1.5.1` on 2026-08-08 and it has vanished entirely once before, so **check it
-exists before assuming the release flow works** — that is now twice the version
-has moved under us and once it was simply gone.
+Tag `v0.3.2`, **`release.yml` ran clean** (build, publish, GitHub Release all
+green) and **`docs.yml` chained off it automatically** — no manual kick. One
+user-facing fix, #453, on the patch line because it adds no public surface.
 
-**Then the post-release checks, every one VERIFIED rather than assumed:** a real
-`pip download` (never the CDN-cached `/pypi/bootstack/json` summary endpoint),
-the shipped wheel opened and **imported with `idlelib` BLOCKED via a `meta_path`
-finder, with a control asserting the block itself works** (#430's defect — seven
-`idlelib` mentions survive in the wheel as docstring attributions, so grep proves
-nothing), the GitHub Release live with both assets, and `bootstack.org`
-returning 200. **`docs.yml` chains off a SUCCESSFUL `release.yml` run** — if
-that run is not green the site silently stays on `0.3.1`; kick it with
-`gh workflow run docs.yml --ref main`.
+**Every post-release check was VERIFIED, not assumed:** PyPI read from
+`/pypi/bootstack/0.3.2/json` (never the CDN-cached summary endpoint) **and** a
+real `pip download`; the wheel opened and the #453 fix confirmed *inside it*;
+`import bootstack` with **`idlelib` BLOCKED by a `meta_path` finder, with a
+control asserting the block itself bites** (#430); provenance asserted so the
+test could not silently import the editable working tree; `WidgetRedirector`
+confirmed as bootstack's own module; `NOTICE` at `dist-info/licenses/`; the
+GitHub Release live with both assets; `bootstack.org` 200.
 
-⚠ **AND TELL THE REPORTER.** #453 came from **`bLynnb2762`**, the same external
-reporter as #428, and they have not been told anything. Post with
-**`gh issue comment 453`** — `gh issue close --comment` **silently drops the
-comment on an already-closed issue** and warns only about the close.
+⚠ **THE `idlelib` GREP CAME BACK POSITIVE AND WAS A FALSE ALARM — this is why
+the meta_path test exists.** A substring search for `from idlelib` matched
+**`"borrowed from idlelib/parenmatch.py"`**, prose inside a docstring
+attribution. All seven mentions in the wheel are attributions; none is an import
+statement. **Do not re-prove #430 with grep, in either direction.**
 
-**Then the housekeeping, which is what this section keeps having to reconstruct:**
-add the `0.3.2` row to `Recently shipped`, rewrite this START HERE around
-whatever comes next, and leave the root without a `PLAN.md` until a branch needs
-one. `0.3.x — Patch line` is a **rolling** milestone and does NOT close when a
-patch ships — only numbered release milestones do.
+⚠ **`bump-my-version` reported `1.5.0` today** where this file recorded `1.5.1`
+on 2026-08-08, and it had vanished entirely once before. **Check it exists
+before assuming the release flow works.**
 
-#### What `0.3.2` contains, and what it does not
+⚠ **`v0.3.2` AND `main` DIFFER BY DESIGN, exactly as `0.3.1` did.** The
+CHANGELOG entry was **reworded after the tag** (`c2ff50fb`): it was accurate —
+every claim traced to a named test — but written in the framework's vocabulary
+rather than the reader's (*"rather than an internal state"*, *"built on the same
+internals"*), which is the implementation detail the same day's review had just
+stripped out of the `Select` docstring. **The GitHub Release body was edited to
+match with `gh release edit --notes-file`**, built by running
+`release_notes.extract` against the corrected file and splicing the
+auto-generated `## What's Changed` tail back verbatim, with an assertion
+refusing to overwrite if that tail was missing. **THE TAG WAS NOT MOVED** —
+never move a tag a release has already run on. If it happens again, that is the
+recipe.
+
+⚠ **The lesson worth keeping: verifying the EXTRACTION is not reviewing the
+NOTES.** Checking that the title carries its suffix, the body starts at
+`### Fixed` and no link definitions leaked is mechanics. Nobody had read the
+bullet as a user reads it until the maintainer asked, and by then it was
+published. **Read the entry as its audience before promoting the section**, and
+remember the audience is someone asking "was I affected?".
+
+#### What `0.3.2` contained, and what it did not
 
 **One user-facing fix: #453.** `read_only=True` on a `Select` was accepted and
 ignored — the arrow greyed out so the field *looked* read-only while a click in
@@ -951,12 +977,12 @@ ignore it. The maintainer chose to understand Linux first (2026-08-12).
 
 | | |
 |---|---|
-| `main` | **`214c1a6a`**, pushed. Green. Carries #453 (PR #454, merge commit `6c32acfe`) and the `0.3.2` CHANGELOG promotion |
+| `main` | **`c2ff50fb`**, pushed. Green. `0.3.2` is released from `c311a9c4`; the one commit after it is the CHANGELOG rewording, which is why `v0.3.2` and `main` differ |
 | branch, PAUSED | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH. **The only branch alive** |
-| suite on `main` | **exit 0, 20 legs, 1229 passed / 21 skipped**, measured 2026-08-13 at `03d981f1`. Shared leg **1032 / 14 against 1045 selected** — `1032 + 13` runtime skips = 1045, the 14th being the collection-time skip that is summarized but never selected |
+| suite on `main` | **exit 0, 20 legs, 1229 passed / 21 skipped**, measured 2026-08-13 at `03d981f1`. Shared leg **1032 / 14 against 1045 selected** — `1032 + 13` runtime skips = 1045, the 14th being the collection-time skip that is summarized but never selected. **Everything on `main` since that commit is CHANGELOG, CLAUDE.md and the version bump, so the figure transfers** |
 | suite on `ci/test-workflow-380` | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **still SUSPECT, see below** |
 | root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/` at `03d981f1`. **Create `PLAN.md` fresh for the next branch** |
-| released | `0.3.1` on PyPI. **`0.3.2` is promoted in the CHANGELOG but NOT tagged** — that is the next action, above |
+| released | **`0.3.2` on PyPI, tag `v0.3.2`, shipped 2026-08-13 and fully verified.** `## [Unreleased]` is ABSENT again — the next fix commit re-creates it |
 | open milestones | 10, and they agree 1:1 with the table below |
 | `pandas` | **ABSENT on this box now**, so the data leg reads `125 / 4`. It read `123 / 6` on 2026-08-12. Documented environmental pair, not a discrepancy |
 
@@ -2226,6 +2252,7 @@ Full detail (root causes, decisions, gotchas) is in
 
 | Release | Contents |
 |---|---|
+| **0.3.2** | SHIPPED 2026-08-13 (PyPI + tag `v0.3.2`), titled *Read-only select fields*. **`release.yml` ran clean**, docs chained off it. One user-facing fix on the patch line, no new public surface. **#453** (external report, `bLynnb2762`) — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list and changed the value, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty as the widget's own "no free typing" flag and was recomputed unconditionally; it is **derived, never storage** now, and `TimeField` is fixed with it, from the constructor and the property both. ⚠ #407 also landed since `v0.3.1` and deliberately carries NO entry — test-harness only. ⚠ The CHANGELOG was reworded AFTER the tag, so `v0.3.2` and `main` differ by design and the Release body was edited to match; the tag was NOT moved |
 | **0.3.1** | SHIPPED 2026-08-12 (PyPI + tag `v0.3.1`), titled *Dialog keyboard and modality*. **`release.yml` ran clean**, docs chained off it. Four fixes, no new public surface — the mirror-image call to `0.3.0`: a fix needs a minor only if it ADDS surface, so these rode the patch line rather than being held. **#441** Enter in a dialog's multi-line field inserted its newline and the dialog then closed on top of it; Enter is now text where it means text and a command everywhere else, keypad key included · **#440** a nested modal took the grab and released it entirely instead of handing it back, leaving the outer dialog modal in appearance only while you could drive the app underneath it · **#439** the default button's `focus_set()` ran while the window was still hidden, where Tk silently ignores it, so dialogs opened with nothing focused and no Tab origin · **#426** the layout migration error recommended `align_self=`/`justify_self=`, renamed before release and never shipped, so following it produced a second error naming an option you never wrote. ⚠ The CHANGELOG wording was corrected AFTER the tag, so `v0.3.1` and `main` differ by design and the GitHub Release body was edited to match — the tag was NOT moved. ⚠ Four review rounds ran and round 4 should not have; that is what produced `REVIEW-PROTOCOL.md`'s Stopping rules |
 | **0.3.0** | SHIPPED 2026-08-11 (PyPI + tag `v0.3.0`), titled *Screen capture and dialog results*. **`release.yml` ran clean**, docs chained off it. **A minor carrying two additions and SIX fixes** — the release that proved the "minors are for additions" reading of this file wrong. **#427** `widget.capture(path)` writes a widget, window or app to `.png`/`.jpg`/`.pdf` (PR #443, from an external user's discussion #425) · **#429** a click during `settle()` re-entered the handler: `settle()` still dispatches, and holds `tk busy` — the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS · **#428** `FormDialog.result` returned display text instead of the value, because it read after the dialog closed and every editor was destroyed (external report, PR #442) · **#437** a refused press still recorded its result, so cancelling after a refused `DataTable` Delete **deleted the record**; validation now runs only for buttons that submit · **#438** `DialogButton.closes` meant three different things and is REMOVED, replaced by returning `False` from a command. ⚠ `tk busy` is a no-op on macOS (measured in plain tkinter — a toolkit limitation, not a wrong invocation) and real on Windows; the input guard is documented as such rather than claimed to work everywhere |
 | **0.2.3** | SHIPPED 2026-08-08 (PyPI + tag `v0.2.3`), titled *Import without IDLE*. **Published by `release.yml`, which ran clean** — Actions had recovered, so the docs deploy chained off it with no manual kick. Single issue: **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python build without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the WHOLE framework rather than degrading `CodeEditor`; `idlelib` is stdlib so it could never be a declared dependency, and the fix ports `WidgetRedirector` into `textarea/redirector.py` (PR #435). Also added a PSF attribution to `NOTICE`, scoped by measurement to `redirector.py` alone — see Current state for why the other five IDLE-derived modules are deliberately NOT listed |
