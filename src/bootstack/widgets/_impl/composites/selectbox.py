@@ -1,4 +1,4 @@
-from tkinter import Toplevel
+from tkinter import TclError, Toplevel
 
 from typing_extensions import Unpack
 
@@ -44,6 +44,7 @@ class SelectBox(Field):
             enable_search: bool = False,
             group_by: str = None,
             max_visible_items: int = None,
+            readonly: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
         """Args:
@@ -60,6 +61,12 @@ class SelectBox(Field):
             message: Optional helper/error message shown below the field.
             allow_custom_values: If True, the entry is editable so users can type
                 arbitrary values in addition to choosing from the list.
+            readonly: If True, the value is visible but cannot be changed — no
+                typing and no popup, from the dropdown button or the entry. It
+                suppresses `allow_custom_values`/`enable_search` rather than
+                discarding them, so clearing it restores whichever was asked
+                for. Distinct from `state='disabled'`, which also dims the
+                whole field and drops it out of the tab order.
             show_dropdown_button: If True (default), the dropdown button is shown. This option is
                 ignored if custom values are allowed.
             dropdown_button_icon: The icon to display on the dropdown button.
@@ -95,6 +102,14 @@ class SelectBox(Field):
             width: Width of the entry in characters.
             required: If True, field cannot be empty.
         """
+        # On select, readonly means the popup does not open and no typing, but allow_custom_values by itself
+        # without readonly just means standard combobox behavior.
+        #
+        # Every input the interaction state is derived from is set BEFORE
+        # `super().__init__()`, because Field's constructor calls
+        # `_sync_addon_state()`, which this class overrides to read them.
+        self._readonly = readonly
+        self._search_enabled = enable_search
         # Localization mode for option display (entry face + popup rows). None
         # defers to the app's localize_mode; False keeps the raw labels.
         self._localize = kwargs.pop('localize', None)
@@ -126,7 +141,6 @@ class SelectBox(Field):
         # Re-translate the displayed text + option maps on a live locale switch.
         self.winfo_toplevel().bind('<<LocaleChanged>>', self._on_locale_changed_refresh, add='+')
 
-        self._search_enabled = enable_search
         self._group_by = group_by
         self._max_visible_items = max_visible_items
         self._popup_open = False
@@ -137,24 +151,98 @@ class SelectBox(Field):
         self._item_labels = []
         self._group_headers = []
 
-        # Add dropdown button if needed
-        if allow_custom_values or show_dropdown_button:
-            self.insert_addon(
-                Button,
-                position="after",
-                name="dropdown",
-                icon=self._dropdown_button_icon,
-                icon_only=True,
-                command=self._on_dropdown_click
-            )
+        # A typeable entry is the only way the popup can lose an entrance: a
+        # click there has to place a text cursor rather than open the list, so
+        # the button becomes the sole way in. `show_dropdown_button=False` is
+        # honored only while the entry is NOT typeable.
+        #
+        # This decision is made ONCE, here. A later `configure()` that turns
+        # typing on does NOT insert a button the caller asked not to build.
+        if self._entry_is_typeable() or show_dropdown_button:
+            self._insert_dropdown_button()
 
-        # Configure entry state based on search and custom value settings
-        if allow_custom_values or enable_search:
-            self.entry_widget.state(['!readonly'])
+        # Bind click-to-open unconditionally and gate it inside the handler.
+        # Binding on the transition instead would mean unbinding on the way
+        # back, and a released tkinter binding name is reused immediately, so a
+        # deferred unbind can delete a different, live binding (cost a critical
+        # defect in #392).
+        self.entry_widget.bind('<Button-1>', self._on_entry_click, add='+')
+
+        self._apply_interaction_state()
+
+    # ----- Interaction state: typing, popup, dropdown button -----
+
+    def _entry_is_typeable(self) -> bool:
+        """Whether the user may type into the entry.
+
+        Read-only SUPPRESSES free typing rather than discarding it, so clearing
+        it restores whatever `allow_custom_values`/`enable_search` asked for
+        instead of falling back to a plain select.
+        """
+        if self._readonly:
+            return False
+        return bool(self._allow_custom_values or self._search_enabled)
+
+    def _popup_allowed(self) -> bool:
+        """Whether the option list may open, from either entrance."""
+        if self._readonly:
+            return False
+        return not self.entry_widget.instate(['disabled'])
+
+    def _insert_dropdown_button(self) -> None:
+        """Add the dropdown addon, marked read-only safe.
+
+        `active_when_readonly=True` stops `Field` dimming it for the ttk
+        `readonly` state, which on a select only means "no free typing" and is
+        the default. Dimming for a genuine read-only select is applied in
+        `_sync_addon_state` instead, off `_readonly`.
+        """
+        self.insert_addon(
+            Button,
+            position="after",
+            name="dropdown",
+            icon=self._dropdown_button_icon,
+            icon_only=True,
+            command=self._on_dropdown_click,
+            active_when_readonly=True,
+        )
+
+    def _apply_interaction_state(self) -> None:
+        """Recompute everything derived from readonly / custom values / search.
+
+        The ttk `readonly` state is an OUTPUT of this method, never storage.
+        It doubles as the widget's own "no free typing" flag, and writing it
+        from more than one place is exactly what let a caller's `read_only`
+        be silently overwritten (#453).
+        """
+        typeable = self._entry_is_typeable()
+        self.entry_widget.state(['!readonly'] if typeable else ['readonly'])
+
+        # Only a click that actually opens the list should advertise itself.
+        if typeable or not self._popup_allowed():
+            self.entry_widget.configure(cursor='')
         else:
-            # Set entry to readonly but keep dropdown button enabled
-            self.entry_widget.state(['readonly'])
-            self.after_idle(self._bind_readonly_selection_on_click)
+            self.entry_widget.configure(cursor='hand2')
+
+        self._sync_addon_state()
+
+    def _sync_addon_state(self, event: Any = None) -> None:
+        """Match the addons to the field state, then apply the read-only rule.
+
+        `Field` dims every addon while the entry is `readonly`, assuming an
+        addon mutates the value. Here `readonly` is also how "no free typing"
+        is expressed and the dropdown is the primary interaction, so it opts
+        out via `active_when_readonly` and is dimmed from here on the real
+        read-only flag instead.
+        """
+        super()._sync_addon_state(event)
+        button = self._addons.get('dropdown')
+        if button is None:
+            return
+        try:
+            button.configure(state='!disabled' if self._popup_allowed() else 'disabled')
+        except TclError:
+            pass
 
     # ----- Option normalization + value<->text mapping -----
 
@@ -332,19 +420,29 @@ class SelectBox(Field):
 
     def _on_dropdown_click(self):
         """Handle dropdown button click by focusing entry then showing popup."""
+        if not self._popup_allowed():
+            return
         self.entry_widget.focus_set()
         self._show_selection_options()
 
-    def _bind_readonly_selection_on_click(self):
-        """Bind entry click to show popup when in readonly mode."""
-        self.entry_widget.configure(cursor="hand2")
-        self.entry_widget.bind('<Button-1>', lambda _: self.after_idle(self._show_selection_options), add='+')
+    def _on_entry_click(self, _event: Any = None) -> None:
+        """Open the list when a click on the entry cannot mean anything else.
+
+        Bound for the widget's whole life and gated here, because a typeable
+        entry has to place a text cursor instead — and rebinding on every
+        transition risks deleting a recycled binding name (#392).
+        """
+        if self._entry_is_typeable() or not self._popup_allowed():
+            return
+        self.after_idle(self._show_selection_options)
 
     def _show_selection_options(self):
         """Create and display the popup list of selectable items."""
         if not self._records or self._popup_open:
             return
-        if self.entry_widget.instate(['disabled']):
+        # Both entrances gate on this too; it is repeated here so no future
+        # caller can reach the popup around them.
+        if not self._popup_allowed():
             return
 
         self._popup_open = True
@@ -954,10 +1052,7 @@ class SelectBox(Field):
             return self._allow_custom_values
         else:
             self._allow_custom_values = value
-            if value or self._search_enabled:
-                self.entry_widget.state(['!readonly'])
-            else:
-                self.readonly(True)
+            self._apply_interaction_state()
         return None
 
     @configure_delegate('enable_search')
@@ -967,11 +1062,35 @@ class SelectBox(Field):
             return self._search_enabled
         else:
             self._search_enabled = value
-            if value or self._allow_custom_values:
-                self.entry_widget.state(['!readonly'])
-            else:
-                self.readonly(True)
+            self._apply_interaction_state()
         return None
+
+    @configure_delegate('readonly')
+    def _delegate_readonly(self, value: bool = None):
+        """Get or set read-only: the value is visible but cannot be changed.
+
+        Distinct from a plain select, which is already untypeable but whose
+        list still opens, and from `disabled`, which additionally dims the
+        field and drops it out of the tab order.
+        """
+        if value is None:
+            return self._readonly
+        self._readonly = bool(value)
+        self._apply_interaction_state()
+        return None
+
+    @configure_delegate('state')
+    def _delegate_state(self, value=None):
+        """Apply the field state, then re-derive what read-only owns.
+
+        `Field` writes `readonly`/`normal` straight onto the entry, so
+        `state='normal'` — which is what clearing `disabled` sends — would
+        otherwise silently clear a read-only select as well.
+        """
+        result = super()._delegate_state(value)
+        if value is not None:
+            self._apply_interaction_state()
+        return result
 
     @configure_delegate('group_by')
     def _delegate_group_by(self, value=None):
