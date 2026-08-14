@@ -94,9 +94,78 @@ outside those **never runs**, in CI or locally:
 ⚠ **A first CI run that fails is a RESULT, not a setback.** The whole point is
 that nothing has ever run this suite anywhere but two developer machines.
 
+## AMENDMENT (2026-08-14) — the Linux leg, after the WSL box reported
+
+The first CI run was the "result, not a setback" this plan anticipated. It came
+back red on both Linux legs, and answering *why* is what the WSL box was briefed
+to do. It has now reported, so the branch takes on exactly what is needed to make
+the Linux leg green — and nothing else.
+
+**#447 was out of scope above and now is not.** That is not scope creep: the
+answer turned out to be a property of the *workflow this branch authors*, not of
+the product. There is no way to land a Linux leg without deciding what display it
+runs on.
+
+### What changed, and why each is here
+
+1. **`ci.yml` starts a window manager.** Under X11 it is the window manager, not
+   the server, that assigns input focus to a newly mapped top-level window. Bare
+   `xvfb-run` starts none, so a dialog is mapped but never focused and the
+   toplevel's `<Return>` binding has nothing to fire against. Measured on WSL
+   across three arms with only the window manager varying: **7 dialog failures
+   without one, 0 with one**, deterministic in both directions.
+   ⚠ The poll on `_NET_SUPPORTING_WM_CHECK` is load-bearing. A window manager
+   that fails to start silently reproduces #447 exactly, which reads as a product
+   bug — that false result was measured once already on the WSL box.
+2. **#434 / #431 — the NumLock bit is resolved per platform.** Bit 8 is `Mod1`,
+   and what `Mod1` carries is the platform's business: NumLock on Windows, **Alt
+   on X11**, Command on Aqua. Hardcoding 8 asserted a different key on each
+   platform. Verified the replacement bit is genuinely delivered (`state seen =
+   16`) rather than dropped, so the test still carries a real modifier instead of
+   quietly becoming a copy of the no-modifier control beside it.
+3. **#433 — `cget("padding")[0]` read through `str()`.** Tk 8.6.12 on Ubuntu
+   hands back a `_tkinter.Tcl_Obj` where other builds return a string. The
+   padding is identical; only the binding's surfacing of it differs.
+4. **`test_capture_restores_a_window_that_was_not_topmost`.** Not previously
+   filed, and **only a window manager can expose it**: the test skips where
+   always-on-top is not honored, so bare Xvfb never ran it. Always-on-top is a
+   request answered asynchronously, which `_pin` already polls for on the way in
+   — the assertion did not on the way out. Measured: the restore lands in ~1 ms,
+   but the immediate read still returns the old value. **Product code is
+   correct**; `capture.py` restores only what it changed. Non-vacuity confirmed by
+   disabling that restore and watching the polled assertion still fail.
+
+### `src/` IS UNTOUCHED — gate 1 therefore opens no round
+
+`git diff main...HEAD -- src/` is empty, verified rather than assumed. Every
+change above is `.github/` or `tests/`. Under `REVIEW-PROTOCOL.md` gate 1 that is
+**zero review rounds**, against the cap of 2 declared at the top of this file.
+
+### Measured, on the WSL box, at `5921dc41`
+
+Ubuntu 22.04.5, Python 3.13.11, Tk 8.6.12, `pandas` absent (so the data leg reads
+125 / 4 — the documented environmental pair, not a discrepancy). 33 legs.
+
+| arm | exit | passed | failed | skipped |
+|---|---|---|---|---|
+| Xvfb **+ window manager** | 0 | **1427** | **0** | 22 |
+| Xvfb **bare** — what CI does today | 1 | 1418 | **7** | 24 |
+
+⚠ **It reconciles against itself**: `1418 + 7 failed + 2 extra skips = 1427`,
+the two extra skips being the capture topmost tests standing down where no window
+manager honors always-on-top. And the 7 are exactly the #447 cluster, so **the
+test fixes above did not mask it** — remove the window manager and it returns.
+
+⚠ **This does NOT reconcile with the `1449` recorded for this branch earlier**,
+which CLAUDE.md already flags as never having been reconciled. 1427 is a Linux
+figure and the 1449 was not; platform gating differs, so they are not the same
+quantity. **Do not repair the arithmetic by picking whichever number closes the
+gap** — re-measure per platform. CI's own matrix now reports all three.
+
 ## Explicitly out of scope
 
 Marker cleanup to grow the headless job (#380 records the 494 errors), the macOS
-Tk 9 leg (#378), #432 itself beyond reading what CI reports, #447/#449, and
-pinning Tk scaling in `conftest` — that last one is worth doing and is its own
-change, because it alters what every pixel-exact test measures.
+Tk 9 leg (#378), #452 (the macOS runner hang) beyond leaving that leg out, #432
+itself beyond reading what CI reports, #449, and pinning Tk scaling in `conftest`
+— that last one is worth doing and is its own change, because it alters what
+every pixel-exact test measures.
