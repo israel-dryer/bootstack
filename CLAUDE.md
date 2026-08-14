@@ -76,7 +76,41 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 ---
 
-## Environment — TWO MACHINES. Check which one you are on first.
+## Environment — THREE MACHINES. Check which one you are on first.
+
+**WSL box** (`/home/iddryer/bootstack`, Ubuntu 22.04.5 on WSL2) — **the ONLY box
+that can run the Linux leg**, which is why #447 was answerable at all. Set up
+2026-08-14; a previous session's environment had been lost, so **verify before
+assuming**:
+
+- **`python` does not exist and `python3` is 3.10.12, below the 3.12 floor.** Use
+  **`/home/iddryer/.virtualenvs/bootstack/bin/python`** — Python **3.13.11**,
+  Tk **8.6.12**, editable install, pytest 9.1.1. ⚠ Confirm provenance before
+  trusting a run: it must print `/home/iddryer/bootstack/src/bootstack`.
+- ⚠ **`pandas` is ABSENT here**, so the data leg reads **`125 / 4`**. That is the
+  documented environmental pair, not a discrepancy.
+- ⚠ **NO passwordless sudo, and `openbox` is NOT installed.** `xfwm4`, `xvfb-run`
+  and `xprop` are. CI uses `openbox`; local arms use `xfwm4`, and the control
+  proves a window manager is present rather than which one it is.
+- ⚠ **`gh` is not installed for Linux — use the WINDOWS binary**,
+  `"/mnt/c/Program Files/GitHub CLI/gh.exe"`, authenticated as `israel-dryer`
+  with `repo` + `workflow` scopes. It cannot read WSL paths, so pass bodies via
+  **`--body-file -`** on stdin, never a `/home/...` path.
+- **git can push**: `credential.helper` is set globally to
+  `/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe`. Fetch works
+  without it because the repo is public — **a successful fetch is not evidence
+  that push works.**
+- ⚠ **Files in this repo are CRLF and `git diff` CANNOT SEE a flip to LF.** A
+  `sed -i` with a `$`-anchored pattern **silently matches nothing** here. Use the
+  Edit tool, or rewrite in binary mode; check with `file <path>`.
+- ⚠ **Run the Linux suite WITH a window manager**, or you reproduce #447 and
+  think you found a product bug. Poll `_NET_SUPPORTING_WM_CHECK`; never `sleep`.
+- **Screen capture is not measurable under WSLg** — Weston places windows at
+  coordinates like `(-32730, -32709)` where no screen covers them, so
+  `test_capture` fails there with `X get_image failed`. Run it under Xvfb.
+
+**⚠ Still NO Tk 9 on any of the three boxes.** All are 8.6. The Tk 9 scroll/DPI
+contract remains unexercised, and #376/#378 remain unverifiable.
 
 **Windows box** (`D:\Development\bootstack`): the checked-in `.venv` is **STALE**
 — it points at a `Python314\python.exe` that fails with *"Access is denied"*. Use
@@ -754,6 +788,14 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
+⚠ **THREE OF THESE ARE FIXED ON `ci/test-workflow-380` AND THE PR DOES NOT
+AUTO-CLOSE THEM — #431, #433, #434.** That was deliberate, not an oversight.
+#433 and #434 are complete, direct fixes and can close on merge. **#431 is the
+judgment call**: its "fix" is that the test now SKIPS on Aqua, because a platform
+with no NumLock modifier cannot meaningfully assert what NumLock does — defensible
+and honest, but it is a maintainer's call whether that closes the issue or
+re-scopes it. **Decide it at merge; do not let it close silently.**
+
 **⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
 not counted by hand: **#431, #433, #434, #436, #452, #455.** #455 is the one
 that moved: the survivor of #453's round 2 (`Field.enable()/disable()/readonly()`
@@ -819,12 +861,107 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-13) — `0.3.2` IS ON PyPI; #380 IS THE NEXT WORK
+### ★ START HERE (2026-08-14) — CI IS GREEN ON ALL FIVE JOBS; PR #451 IS READY TO MERGE
 
-**⏭ THE NEXT ACTION IS #380, AND IT IS BLOCKED ON A MEASUREMENT ONLY A LINUX BOX
-CAN TAKE.** Nothing is half-finished: `0.3.2` shipped clean, `main` is green, the
-root has no `PLAN.md`, and the only live branch is `ci/test-workflow-380`. Read
-the two ⏭ RESUME POINTs below and you are current.
+**⏭ THE NEXT ACTION IS TO MERGE PR #451.** It is green — all five jobs, both
+Linux legs included — and it is the only thing in flight. Both ⏭ RESUME POINTs
+that gated it are ANSWERED; they are kept below for their reasoning, not as live
+work.
+
+**⚠ THIS SESSION RAN FROM A THIRD MACHINE — A WSL BOX — AND IT IS SET UP NOW.**
+See the Environment section. It is the only box that can run the Linux leg, and
+its previous session's environment had been lost; a venv at
+`/home/iddryer/.virtualenvs/bootstack` now carries an editable install, and WSL
+git is wired to the Windows credential manager so it can push and use `gh.exe`.
+
+#### What closed the Linux question
+
+**#447's CI reproduction is a MISSING WINDOW MANAGER, not a product bug.** Under
+X11 it is the window manager, not the server, that assigns input focus to a newly
+mapped top-level window. Bare `xvfb-run` starts none, so a dialog is mapped but
+never focused and the toplevel's `<Return>` binding has nothing to fire against.
+**`focus_lastfor()` returning the EMPTY STRING was the tell** — not "focus is on
+the wrong widget" but "nothing in this toplevel ever held focus". Same
+silent-no-op family as the fixed #437 flake.
+
+Measured with only the window manager varying — same kernel, distro, Tk, Python
+and commit: **7 dialog failures without one, 0 with one**, deterministic in both
+directions. **So the `0.3.1` dialog keyboard work is fine on X11.**
+
+⚠ **BUT #447 IS NOT CLOSED, AND MUST NOT BE CLOSED ON THIS.** It was reported as
+a **Windows** flake at ~4/50, on a machine that HAS a window manager, and nothing
+here explains that. "The same condition needs a race where a WM exists" is a
+**hypothesis, not a measurement** — recorded as one on the issue. PR #451 removes
+the CI reproduction; the Windows flake stays open.
+
+#### What PR #451 now carries, beyond the workflow itself
+
+| # | change | issue |
+|---|---|---|
+| 1 | `ci.yml` installs and starts `openbox`, polling `_NET_SUPPORTING_WM_CHECK` | #447 |
+| 2 | the NumLock bit resolved per platform instead of hardcoded `8` | **#434, #431** |
+| 3 | `cget("padding")[0]` read through `str()`, for Tk's `Tcl_Obj` | **#433** |
+| 4 | the capture topmost-restore assertion waits for the WM to answer | — |
+
+⚠ **THE POLL IS LOAD-BEARING — do not replace it with a `sleep`.** A window
+manager that fails to start leaves the suite on an unmanaged display and
+reproduces #447 **exactly**, which reads as a product bug rather than a broken
+step. That false result was measured once already, when `xfwm4 --daemon` silently
+failed to start and the arm came back **byte-identical** to the no-WM arm. Both
+arms of the guard were exercised before committing: no WM exits 1 loudly, a real
+one runs the payload.
+
+⚠ **#4 WAS NOT PREVIOUSLY FILED, AND ONLY A WINDOW MANAGER CAN EXPOSE IT.** That
+test *skips* where always-on-top is not honored, so bare Xvfb never ran it — it
+is newly reachable, not a regression. Always-on-top is answered asynchronously,
+which `_pin()` already polls for on the way IN; the assertion did not on the way
+OUT. **The restore lands in ~1 ms and the immediate read still returns the old
+value.** Product code is correct and untouched. Non-vacuity confirmed by
+disabling that restore and watching the polled assertion still fail — **not** by
+re-running.
+
+**AUTHORITATIVE — measured 2026-08-14 on `ci/test-workflow-380` at `5921dc41`**,
+WSL box, Ubuntu 22.04.5, Python 3.13.11, Tk 8.6.12, `pandas` ABSENT (so the data
+leg reads `125 / 4`), 33 legs:
+
+| arm | exit | passed | failed | skipped |
+|---|---|---|---|---|
+| Xvfb **+ window manager** | 0 | **1427** | **0** | 22 |
+| Xvfb **bare** — what CI did | 1 | 1418 | **7** | 24 |
+
+⚠ **IT RECONCILES AGAINST ITSELF: `1418 + 7 failed + 2 extra skips = 1427`**, the
+two extra skips being the capture topmost tests standing down where no WM honors
+always-on-top. And the 7 are exactly the #447 cluster, so **the test fixes did
+not mask it** — remove the window manager and it returns. CI agrees: its Linux
+shared leg reads `1032 passed, 14 skipped, 75 deselected`, identical to local.
+
+⚠ **THE `1449` RECORDED FOR THIS BRANCH IS STILL UNRECONCILED AND IS NOT THE SAME
+QUANTITY.** 1427 is a **Linux** figure; 1449 was not, and platform gating differs.
+**Do not close the gap by picking whichever number makes the arithmetic work** —
+the matrix reports all three platforms now, so re-measure per platform. This
+file has been wrong about counts seven times; that is how.
+
+#### ⚠ A DUPLICATE ISSUE WAS ALMOST FILED, AND THE NEAR-MISS IS THE LESSON
+
+`development/issue-draft-appshell-mod1-x11.md` was committed on 2026-08-12 saying
+the `bare_b` issue was unfiled and should be opened from the Windows box. **It
+was a duplicate — #434 has existed since 2026-08-08**, carrying the same
+Mod1-is-Alt diagnosis, and the report's finding 2 was already **#433**. The draft
+is **deleted**; the report carries a correction header.
+
+**The scope word is where it went wrong, again.** "Not yet filed" was true of
+that *session* and not of the *tracker*, and nothing wrote down which was meant.
+Same shape as `0.3.1` round 1's *"no other `grab_set` exists in the package"*,
+where "the package" silently meant `dialogs/` and #444 was two rounds away.
+⚠ **Committing the draft was still the RIGHT call** — that box genuinely had no
+`gh` and no credential, and a guessed issue number would have been worse.
+
+#### ✅ #432 DID NOT REPRODUCE — decide it, don't re-scope it blind
+
+Both Linux legs ran **all 33 legs to completion** and reported normally, twice
+now. #407 appears to have removed it. It was the stated blocker on this whole
+workstream, so **closing or re-scoping it is a maintainer call that is now
+cheap to make.**
 
 ⚠ **ONE ITEM IS THE MAINTAINER'S, NOT YOURS: telling `bLynnb2762` that #453 is
 live.** They took it on 2026-08-13 (*"I'll respond to the user"*). **Do not post
@@ -954,9 +1091,14 @@ from named parameters only and `**kwargs` exists to feed
 and the obvious home — the shared split seam — needs the wrappers that
 legitimately forward `**kwargs` counted first.
 
-**⏸ #380 IS PAUSED, NOT ABANDONED** — it is blocked on a measurement only a
-Linux box can take. Read the two blocks marked ⏭ below and you are current on
-it.
+**✅ #380 IS NO LONGER PAUSED — the measurement was taken on 2026-08-14 and PR
+#451 is GREEN.** The two blocks marked ⏭ below are ANSWERED and are kept for
+their reasoning only. See START HERE.
+
+**✅ RESUME POINT 1 — ANSWERED 2026-08-14: Xvfb-only, the missing window manager
+IS the bug.** Report at `development/report-447-linux-focus.md` (read its
+CORRECTION header first). Original text follows, for the reasoning that framed
+the question correctly.
 
 **⏭ RESUME POINT 1 — the WSL agent's answer on #447.** A brief is committed at
 **`development/handoff-447-linux-focus.md`**. It asks ONE question: does the
@@ -967,6 +1109,12 @@ focus", which is what a missing WM produces. Xvfb-only means a one-line CI fix
 and the product is fine; failing under a compositor too means **a product bug in
 `0.3.1`'s dialog keyboard work on Linux**, a platform we publish for, invisible
 to both boxes here.
+
+**✅ RESUME POINT 2 — ANSWERED 2026-08-14: FIXED, not merged. PR #451 is green on
+all five jobs** (run `31797591244`), both Linux legs included. **Merging it is
+the next action.** The instinct recorded below was right and is worth keeping:
+understanding Linux first is what turned a red leg into a one-step workflow fix
+instead of a hunt through the dialog code.
 
 **⏭ RESUME POINT 2 — then merge or fix PR #451.** It is open and deliberately
 NOT merged: its CI is green on Windows, headless and docs, and **red on both
