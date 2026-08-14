@@ -686,9 +686,14 @@ later RENAMED to `0.3.0 — Screen capture and dialog results` and widened to ca
 #428, #437 and #438** — capture no longer ships alone.
 
 After it, pick
-from the table below; the standing recommendation is the unnumbered
-`Test and release confidence` workstream (**#407** then **#380**), and **#390** is a
-decision that can be taken at any time. ⚠ **The milestones have been RENUMBERED
+from the table below. ⚠ **The standing recommendation named here for months —
+the unnumbered `Test and release confidence` workstream (#407 then #380) — is
+DONE and its milestone is CLOSED (2026-08-14).** The live recommendation is at
+START HERE: **#452**, because CI now covers ubuntu and windows and not macOS.
+After that the next numbered milestone is `0.4.0 — Strictness and value types`
+(#383, #369, #408, #416), deliberately batched so users get one migration rather
+than four. **#390** remains a decision that can be taken at any time, and is
+still the cheapest item on the board. ⚠ **The milestones have been RENUMBERED
 TWICE — read the CURRENT table below, never a number quoted in older prose.**
 Restructured and renumbered 2026-08-05, then renumbered again 2026-08-07 when
 `0.3.0 — Screen capture` was inserted ahead of the strictness batch. Two
@@ -757,7 +762,7 @@ with four known bugs deferred rather than held.
 |---|---|---|
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
 | — | ~~**`0.3.1 — Dialog keyboard and modality`**~~ — **SHIPPED 2026-08-12, milestone CLOSED**: #426, #439, #440, #441, #446 | 0 |
-| 2 | **`Test and release confidence`** (unnumbered) — **#407 DONE**; **#380 IN FLIGHT (PR #451)**; **#432 did NOT reproduce — close or re-scope it** | 2 |
+| — | ~~**`Test and release confidence`**~~ — **DONE 2026-08-14, milestone CLOSED** at `open=0 closed=3`: #407, #380 (PR #451), #432 (did not reproduce) | 0 |
 | 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
@@ -788,13 +793,22 @@ that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
 `test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
 Reasoning also in memory `project_roadmap_milestones`.
 
-⚠ **THREE OF THESE ARE FIXED ON `ci/test-workflow-380` AND THE PR DOES NOT
-AUTO-CLOSE THEM — #431, #433, #434.** That was deliberate, not an oversight.
-#433 and #434 are complete, direct fixes and can close on merge. **#431 is the
-judgment call**: its "fix" is that the test now SKIPS on Aqua, because a platform
-with no NumLock modifier cannot meaningfully assert what NumLock does — defensible
-and honest, but it is a maintainer's call whether that closes the issue or
-re-scopes it. **Decide it at merge; do not let it close silently.**
+⚠ **RESOLVED 2026-08-14 — but the list below is now STALE by three.** #432, #433
+and #434 are CLOSED; **#431 is deliberately still OPEN.** So the live unmilestoned
+set is **#431, #436, #452, #455**.
+
+⚠ **#431 IS OPEN ON PURPOSE AND IS WAITING ON A DECISION, not on work.** Its fix
+landed with #434's — the NumLock bit resolves per windowing system — but on aqua
+it **SKIPS**, because macOS has no NumLock modifier for `Mod1` to carry and
+asserting anything about bit 8 there would be asserting something about Command,
+which `test_command_binding_exists_only_on_macos` already covers directly. So the
+test cannot be made meaningful on Aqua and now says so out loud. **That resolves
+the failure; whether it resolves the issue is a scope call.** Close it if "no
+longer fails, and says why" is the wanted outcome; re-scope it if macOS should
+have positive coverage of the bare-`b` path, which would need a premise other
+than NumLock. ⚠ **And it is UNVERIFIED on a real Aqua build** — the skip is driven
+by `tk windowingsystem`, read from Tk rather than cached, but nobody has watched
+that branch be taken. Fold it into the #452 trip.
 
 **⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
 not counted by hand: **#431, #433, #434, #436, #452, #455.** #455 is the one
@@ -861,12 +875,55 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-14) — CI IS GREEN ON ALL FIVE JOBS; PR #451 IS READY TO MERGE
+### ★ START HERE (2026-08-14, end of day) — CI EXISTS AND IS GREEN. #452 IS NEXT, ON A macOS BOX.
 
-**⏭ THE NEXT ACTION IS TO MERGE PR #451.** It is green — all five jobs, both
-Linux legs included — and it is the only thing in flight. Both ⏭ RESUME POINTs
-that gated it are ANSWERED; they are kept below for their reasoning, not as live
-work.
+**⏭ THE NEXT ACTION IS #452 — the macOS CI hang — AND IT NEEDS A macOS BOX**
+(maintainer, 2026-08-14: *"macos will be on another machine"*). A brief is at the
+end of this section. **Nothing else is in flight**: PR #451 merged, the branch is
+deleted, the root has no `PLAN.md`, and `Test and release confidence` is CLOSED.
+
+**STATE OF THE WORLD:**
+
+| | |
+|---|---|
+| `main` | **`cb93da83`**, pushed. The ONLY branch — see the ⚠ on stale local refs below |
+| CI | **`ci.yml` is LIVE on `main` and green** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452) |
+| suite | **exit 0, 33 legs, 1427 passed / 22 skipped** on Linux with a WM, measured 2026-08-14 at `5921dc41` |
+| root | **NO `PLAN.md`, NO `REVIEW.md`.** Create `PLAN.md` fresh for the next branch |
+| released | `0.3.2` on PyPI. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
+| open milestones | **9** — `Test and release confidence` closed at `open=0 closed=3` |
+
+⚠ **#380 SHIPPED WITH NO CHANGELOG ENTRY, AND THAT IS CORRECT — do not "fix" it.**
+CI is not reachable by any user, and an entry earns its place by being reachable.
+Same call as #407. #433 and #434 rode along on the same reasoning.
+
+⚠ **PR #451 OPENED ZERO REVIEW ROUNDS, and that was the protocol working.** Gate 1
+triggers on a non-empty `git diff <range> -- src/`; this branch's was empty at
+every point, verified rather than assumed. Declared cap 2, actual 0 — **the second
+branch in a row where gate 1 held**, after #407. There is no `REVIEW.md` to
+archive because no round was opened.
+
+⚠ **BUT GATE 1 HAS A GAP THIS BRANCH WALKED THROUGH, and it should be settled
+before the next infrastructure branch.** Gate 1 exempts commits that change "only
+tests, probes, or documentation". **`.github/` is none of those three**, and
+`ci.yml` was this branch's actual deliverable — the trigger is defined
+mechanically as the `src/` diff, so it read as no-round, but the *reasoning*
+behind the exemption (reviewing test instruments never terminates) does not cover
+a CI workflow. It was raised with the maintainer rather than resolved silently.
+**The mitigating fact: a workflow is checked by RUNNING, and this one ran green
+on the real runners.** That is stronger evidence than a reading review — but it
+is not the same thing, and gate 1 should say which it means.
+
+#### ⚠ ONE THING WAS NOT VERIFIED — read before trusting the capture leg
+
+**The capture leg reported `21 passed / 2 skipped` on CI against `22 / 1`
+locally.** The likely reason is the ordering artifact `_pin()` documents in its
+own docstring — a refused always-on-top request still leaves a record, so the two
+topmost tests behave differently depending on which ran first. **That was NOT
+confirmed on the runner.** The alternative is that `openbox` (CI) and `xfwm4`
+(local, because this box has no `openbox` and no passwordless sudo) differ on
+whether they honor always-on-top. Neither reading was measured. **Do not cite the
+capture leg's count as settled until someone does.**
 
 **⚠ THIS SESSION RAN FROM A THIRD MACHINE — A WSL BOX — AND IT IS SET UP NOW.**
 See the Environment section. It is the only box that can run the Linux leg, and
@@ -1236,6 +1293,46 @@ silently mid-run on Linux was most likely the widget accumulation #407 has now
 removed. **It may simply not reproduce.** Neither box here can check that;
 it needs a Linux run, which is also the first thing #380's Linux leg would tell
 you.
+
+#### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
+
+**The job:** CI now covers ubuntu and windows and **not macOS**, because the leg
+ran **90 minutes for a 90-second suite** and was removed rather than left
+hanging. aqua is a platform this project publishes for and it is now the only one
+with zero automated coverage, so the value of #380 is capped until this closes.
+
+**What is already known, so it is not re-derived:**
+
+- Setup and the Tk-version report both **succeeded**; then "Run the suite" never
+  returned. So Python and Tk installed fine — it is not a provisioning failure.
+- **Every job now sets `timeout-minutes`**, so a retry costs 15 minutes rather
+  than GitHub's 6-hour default. That was added in `5921dc41` precisely so this is
+  affordable to iterate on.
+- #380 had already flagged Tk-on-Aqua as **unverified** on GitHub runners. That
+  is now answered in the negative, at least as the suite currently runs.
+
+**⏭ STEP 1, AND IT DECIDES HOW EVERYTHING ELSE READS: does a bare
+`tkinter.Tk()` even complete on the runner?** Not the suite — one root, one
+`update()`, one `destroy()`, with a timeout. A hang there means aqua needs
+something a headless runner does not give it (a window server session), and the
+answer is a different runner configuration rather than anything in the suite. A
+pass there means the hang is ours, and the next step is bisecting which leg
+blocks.
+
+⚠ **This is debug-by-push and there is no way around it** — no box this project
+has is a GitHub macOS runner. Budget for that: make each push answer one
+question, and write the question into the workflow step name so the log reads as
+an experiment rather than a rerun.
+
+⚠ **The local macOS box is NOT a substitute and will mislead you.** It has a
+window server, a logged-in session and Tk 8.6; the runner has none of the first
+two. **The whole #447 lesson transfers: a display without the thing that manages
+windows behaves differently from one with it, and the difference is invisible
+until measured.** If the local box passes, that is not evidence about the runner.
+
+⚠ **#431 is waiting on a macOS answer too** and is cheap to fold in — its fix
+skips on aqua, and nobody has *observed* that branch being taken on a real Aqua
+build. See the ⚠ under the unmilestoned list.
 
 #### ✅ `0.3.1 — Dialog keyboard and modality` IS ON PyPI (2026-08-12)
 
