@@ -117,11 +117,15 @@ jobs:
 
       # The suite never blocks on input, but nearly every test builds a real Tk
       # root, so x11 needs a display and Tk's own shared libraries.
+      #
+      # `openbox` is not decoration — see the "Run the suite (Linux)" step below.
+      # `x11-utils` supplies `xprop`, which is how that step proves the window
+      # manager actually came up instead of assuming it did.
       - name: Install Tk and a virtual display
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb tk
+          sudo apt-get install -y --no-install-recommends xvfb tk openbox x11-utils
 
       - name: Install
         run: |
@@ -140,6 +144,22 @@ jobs:
       # get their own process; bare pytest gives them one shared one. The runner
       # also reaches the legs `testpaths` does not list.
       #
+      # A WINDOW MANAGER IS REQUIRED, and bare `xvfb-run` does not start one.
+      # Under X11 it is the window manager, not the server, that assigns input
+      # focus to a newly mapped top-level window. With none running, a dialog is
+      # mapped but never focused, `focus_set()` inside it silently no-ops, and
+      # the toplevel's <Return> binding has nothing to fire against — which is
+      # the whole of #447. Measured on WSL: same kernel, distro, Tk, Python and
+      # commit, seven dialog failures with no window manager and zero with one,
+      # deterministic in both directions.
+      #
+      # ⚠ Do NOT replace the poll with `sleep`. A window manager that fails to
+      # start leaves the suite running on an unmanaged display and reproduces
+      # #447 exactly, which reads as a product bug rather than a broken step —
+      # that false result was measured once already. `_NET_SUPPORTING_WM_CHECK`
+      # is the difference between "we started a window manager" and "a window
+      # manager is running", so a missing one fails the job loudly and early.
+      #
       # -dpi 96 is load-bearing, not decoration. `detect_scale_factor()` is
       # `winfo_fpixels('1i')/72`, so under Xvfb it returns whatever DPI the
       # virtual screen was given. Xvfb's default is around 75, which puts
@@ -147,7 +167,19 @@ jobs:
       # padding-scaling bug structurally invisible.
       - name: Run the suite (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a -s "-screen 0 1280x1024x24 -dpi 96" python tests/run_gui.py -q
+        run: |
+          xvfb-run -a -s "-screen 0 1280x1024x24 -dpi 96" sh -c '
+            openbox &
+            for i in $(seq 1 50); do
+              xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q "window id" && break
+              sleep 0.2
+            done
+            xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q "window id" || {
+              echo "::error::No window manager on the virtual display. The dialog"
+              echo "::error::focus suite cannot pass without one - see #447."
+              exit 1
+            }
+            exec python tests/run_gui.py -q'
 
       # Windows and macOS talk to win32 and to aqua directly, so there is no
       # display to set up.
