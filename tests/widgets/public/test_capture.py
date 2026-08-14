@@ -170,6 +170,27 @@ def _pin(root, timeout: float = 0.5) -> bool:
     return False
 
 
+def _topmost_settles_to(root, expected: bool, timeout: float = 0.5) -> bool:
+    """Poll `-topmost` until it reaches `expected`, and report what it ended at.
+
+    The mirror of `_pin`'s poll, for the way back out. Always-on-top is a
+    request the window manager answers asynchronously, and that is as true of
+    clearing it as of setting it — so a single read taken right after a capture
+    can see the state the window manager has not caught up to yet. Measured on
+    X11: the restore lands in about a millisecond, but a read taken immediately
+    still returns the old value, which failed this test on every Linux run while
+    passing on Windows and macOS, where the attribute is answered synchronously.
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        root.update()
+        if bool(root.attributes("-topmost")) == expected:
+            return expected
+        if time.monotonic() >= deadline:
+            return bool(root.attributes("-topmost"))
+        time.sleep(0.01)
+
+
 def test_capture_restores_a_window_that_was_not_topmost(shown_app, tmp_path):
     """Capturing raises the window; it must put the setting back afterward."""
     root = shown_app.tk
@@ -184,7 +205,7 @@ def test_capture_restores_a_window_that_was_not_topmost(shown_app, tmp_path):
 
     bs.Label("restore me").capture(tmp_path / "restore.png", settle=0)
 
-    assert not root.attributes("-topmost")
+    assert not _topmost_settles_to(root, False)
 
 
 def test_capture_leaves_a_deliberately_topmost_window_pinned(shown_app, tmp_path):
