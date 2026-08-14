@@ -15,6 +15,18 @@ import bootstack as bs
 from bootstack._runtime.utility import _ScalingState, scale_padding_floor
 
 
+def _first_pad(widget) -> int:
+    """The first element of a widget's `padding`, as an int.
+
+    Tk hands the element back as a `_tkinter.Tcl_Obj` on some builds (8.6.12 on
+    Ubuntu 22.04) and as a string on others, so `int()` alone raises `TypeError`
+    on the former — #433. `str()` normalizes both, since `Tcl_Obj.__str__` yields
+    the same text the other platforms return directly. The padding itself is
+    identical either way; only the binding's surfacing of it differs.
+    """
+    return int(str(widget.cget("padding")[0]))
+
+
 def test_scale_padding_floor_never_below_base():
     # Below the baseline (low DPI) it must hold the tuned base, not shrink — a
     # smaller gap clips the rounded corners.
@@ -41,14 +53,14 @@ def test_field_padding_tracks_dpi(app):
     # The TextField's TField frame padding is built from scale_padding_floor.
     _ScalingState.set_scale_factor(1.0)
     low = bs.TextField(label="a")
-    low_pad = low._internal._field.cget("padding")[0]
+    low_pad = _first_pad(low._internal._field)
 
     _ScalingState.set_scale_factor(2.667)
     high = bs.TextField(label="b")
-    high_pad = high._internal._field.cget("padding")[0]
+    high_pad = _first_pad(high._internal._field)
 
-    assert int(high_pad) > int(low_pad)
-    assert int(low_pad) >= 5
+    assert high_pad > low_pad
+    assert low_pad >= 5
 
 
 @pytest.mark.gui
@@ -57,4 +69,4 @@ def test_textarea_padding_tracks_dpi(app):
     _ScalingState.set_scale_factor(2.667)
     ta = bs.TextArea(label="notes")
     assert ta._internal._field_frame is not None
-    assert int(ta._internal._field_frame.cget("padding")[0]) > 5
+    assert _first_pad(ta._internal._field_frame) > 5

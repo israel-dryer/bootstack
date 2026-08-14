@@ -1,0 +1,220 @@
+name: CI
+
+# Nothing ran this suite anywhere but two developer machines. Every Tk 9 bug so
+# far (#372, #375, #376) was found by a user or by hand, and `release.yml` will
+# happily publish a red tree. This is #380.
+#
+# It became affordable rather than merely desirable when #407 landed: the full
+# suite went from roughly five minutes to about a minute, because the shared-root
+# scene reset started actually resetting the scene.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push supersedes an in-flight run on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The cheapest useful signal, and the only job that needs no display at all.
+  #
+  # ⚠ An explicit ALLOWLIST (`HEADLESS` in tests/run_gui.py), never `-m "not
+  # gui"`. That marker selects 741 tests and produces 494 errors with root
+  # creation blocked, because most of them still pull the session `app` fixture.
+  # Worse, some tests run headless and report GARBAGE rather than failing:
+  # `Treeview.bbox()` returns `''` instead of raising until the window is
+  # mapped, so a geometry assertion with no display compares nothing to nothing
+  # and passes. Growing this job means fixing markers first (#380), not
+  # loosening the filter.
+  headless:
+    name: headless (no display)
+    runs-on: ubuntu-latest
+    # Runs in seconds. A minute is generous and caps a hang.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # tkinter must be importable even though no root is ever created here.
+      - name: Install Tk
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tk
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest
+
+      # Root creation is BLOCKED, so a test that quietly grew a display
+      # dependency fails here instead of silently becoming a GUI test.
+      - name: Run the display-free legs
+        run: |
+          python - <<'PY'
+          import sys, tkinter, pytest
+          sys.path.insert(0, "tests")
+          from run_gui import HEADLESS
+
+          def blocked(self, *a, **k):
+              raise RuntimeError(
+                  "this leg runs with no display: a test here must never build a Tk root"
+              )
+
+          tkinter.Tk.__init__ = blocked
+          raise SystemExit(pytest.main([*HEADLESS, "-q", "-p", "no:cacheprovider"]))
+          PY
+
+  tests:
+    name: tests (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    # ⚠ The suite takes ~90s locally and ~75s on a Linux runner. This cap
+    # exists because the FIRST run of this workflow had a macOS job still
+    # going at 90 MINUTES, hung inside the suite. Without it a hang burns to
+    # GitHub's 6-hour default.
+    timeout-minutes: 15
+    strategy:
+      # Never let one platform's failure hide another's. This project has twice
+      # read a green run on one box as a green suite -- and the whole reason
+      # this workflow exists is that two developer machines were the only thing
+      # ever running it.
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.13"
+          - os: windows-latest
+            python: "3.13"
+          # ⚠ NO macOS LEG, and this was MEASURED rather than assumed. #380
+          # flagged that Tk-on-Aqua was unverified on GitHub's runners; the
+          # first run of this workflow answered it. Install and the Tk report
+          # both succeeded, then "Run the suite" HUNG - still going at 90
+          # minutes for a suite that takes 90 SECONDS locally. aqua is a
+          # platform we support and this leg is wanted, but a hanging job is
+          # worse than no job: it teaches people to ignore the workflow and it
+          # burns a runner for hours. Tracked separately; re-add it with a
+          # timeout once the hang is understood.
+          # The floor declared in pyproject.toml, so a 3.13+ construct cannot
+          # slip in unnoticed.
+          - os: ubuntu-latest
+            python: "3.12"
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      # The suite never blocks on input, but nearly every test builds a real Tk
+      # root, so x11 needs a display and Tk's own shared libraries.
+      #
+      # `openbox` is not decoration — see the "Run the suite (Linux)" step below.
+      # `x11-utils` supplies `xprop`, which is how that step proves the window
+      # manager actually came up instead of assuming it did.
+      - name: Install Tk and a virtual display
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb tk openbox x11-utils
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest
+
+      # Which Tk line a runner carries is not something to infer from the Python
+      # version: the aqua dpi baseline and the scroll-event contract both differ
+      # between 8.6 and 9, and this project has no Tk 9 box at all. Record it.
+      - name: Report the Tk build
+        run: python -c "import sys, tkinter; print(f'{sys.platform} python={sys.version.split()[0]} tcl={tkinter.TclVersion} tk={tkinter.TkVersion}')"
+
+      # ⚠ `run_gui.py`, NOT bare pytest. Destroying a Tk root and creating
+      # another in-process crashes natively, so a handful of modules must each
+      # get their own process; bare pytest gives them one shared one. The runner
+      # also reaches the legs `testpaths` does not list.
+      #
+      # A WINDOW MANAGER IS REQUIRED, and bare `xvfb-run` does not start one.
+      # Under X11 it is the window manager, not the server, that assigns input
+      # focus to a newly mapped top-level window. With none running, a dialog is
+      # mapped but never focused, `focus_set()` inside it silently no-ops, and
+      # the toplevel's <Return> binding has nothing to fire against — which is
+      # the whole of #447. Measured on WSL: same kernel, distro, Tk, Python and
+      # commit, seven dialog failures with no window manager and zero with one,
+      # deterministic in both directions.
+      #
+      # ⚠ Do NOT replace the poll with `sleep`. A window manager that fails to
+      # start leaves the suite running on an unmanaged display and reproduces
+      # #447 exactly, which reads as a product bug rather than a broken step —
+      # that false result was measured once already. `_NET_SUPPORTING_WM_CHECK`
+      # is the difference between "we started a window manager" and "a window
+      # manager is running", so a missing one fails the job loudly and early.
+      #
+      # -dpi 96 is load-bearing, not decoration. `detect_scale_factor()` is
+      # `winfo_fpixels('1i')/72`, so under Xvfb it returns whatever DPI the
+      # virtual screen was given. Xvfb's default is around 75, which puts
+      # ui_scale below 1.0, floors every padding at base, and makes a
+      # padding-scaling bug structurally invisible.
+      - name: Run the suite (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a -s "-screen 0 1280x1024x24 -dpi 96" sh -c '
+            openbox &
+            for i in $(seq 1 50); do
+              xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q "window id" && break
+              sleep 0.2
+            done
+            xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q "window id" || {
+              echo "::error::No window manager on the virtual display. The dialog"
+              echo "::error::focus suite cannot pass without one - see #447."
+              exit 1
+            }
+            exec python tests/run_gui.py -q'
+
+      # Windows and macOS talk to win32 and to aqua directly, so there is no
+      # display to set up.
+      - name: Run the suite
+        if: runner.os != 'Linux'
+        run: python tests/run_gui.py -q
+
+  # `docs.yml` only deploys AFTER a successful release, so a broken
+  # cross-reference currently sits on `main` unnoticed until release day.
+  #
+  # ⚠ Clean build every time. An incremental Sphinx build MASKS warnings, which
+  # is why this checks out fresh and never caches `docs/_build`.
+  docs:
+    name: docs (-W)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # autodoc imports the package, which imports tkinter.
+      - name: Install Tk
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tk
+
+      # The same install `docs.yml` uses, so the check and the deploy cannot
+      # drift into testing different dependency sets.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[docs]"
+
+      - name: Build
+        run: python -m sphinx -b html -W --keep-going -q docs _ci_docs_build
