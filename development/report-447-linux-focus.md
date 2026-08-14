@@ -6,6 +6,41 @@ box unless it says otherwise. **No product code was changed on this pass.**
 
 ---
 
+## ⚠ CORRECTION (2026-08-14) — read before acting on the closing sections
+
+The measurements in this report all held. **Two of its follow-up claims did
+not**, both because the box that wrote it had no `gh` and so could not check
+what was already on the tracker.
+
+- **The `bare_b` issue was ALREADY FILED as #434**, on 2026-08-08 from an
+  earlier Linux run, and #434 already carries the Mod1-is-Alt diagnosis and a
+  bare-`tk.Entry` measurement. The draft this report told a later session to file
+  was therefore a **duplicate, and has been deleted rather than opened.** #431 is
+  the same premise seen from macOS.
+- **Finding 2, the `hidpi` / `Tcl_Obj` failure, was ALREADY FILED as #433**, same
+  date, same reason.
+
+**The lesson is the one this project keeps paying for in a new costume: a
+completeness claim needs its scope written down.** "Not yet filed" was true of
+*this session*, not of *the tracker*, and the report did not distinguish them.
+The command that settles it is one line — `gh issue list --state open` — and it
+was unavailable rather than skipped, which is why the draft was committed instead
+of guessed at. That part was right.
+
+**All of it is now fixed and merged-pending in PR #451**, verified by CI run
+`31797591244`, green on all five jobs: the window manager is started on the CI
+display, and #434/#431 and #433 are fixed as test-portability changes. A fourth
+failure this report listed under `test_capture` — the topmost-restore assertion —
+turned out to be reachable **only** once a window manager exists, and is fixed
+there too.
+
+⚠ **#447 itself is NOT closed by that PR.** This report answers the CI
+reproduction. The original Windows flake at ~4/50 happened on a machine that has
+a window manager, and nothing here explains it; the paragraph below suggesting it
+does is a **hypothesis**, and is labelled one on the issue.
+
+---
+
 ## The verdict
 
 # It is Xvfb-only. The missing window manager IS the bug.
