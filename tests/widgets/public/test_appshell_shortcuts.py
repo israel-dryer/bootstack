@@ -5,8 +5,10 @@ into a field: Tk resolves the `Command` modifier word to `Mod1` on Windows and
 X11, and Windows reports `Mod1` for NumLock, so a `<Command-b>` binding left
 unguarded off macOS matched every unmodified `b` on a machine with NumLock on.
 
-The NumLock bit is supplied explicitly (`state=8`) rather than being taken from
-the host, so the test reproduces the reported failure on any machine.
+The NumLock bit is supplied explicitly rather than being taken from the host, so
+the test reproduces the reported failure on a machine whose NumLock is off — but
+*which* bit means NumLock is a property of the platform, so it is resolved per
+windowing system rather than hardcoded. See `_numlock_bit`.
 """
 
 from __future__ import annotations
@@ -17,8 +19,28 @@ import bootstack as bs
 
 pytestmark = pytest.mark.isolated
 
-# Tk's Mod1 bit — set by NumLock on Windows, by Alt on X11.
-_MOD1 = 8
+
+def _numlock_bit(widget) -> int | None:
+    """The modifier bit this platform reports for NumLock, or None if it has none.
+
+    Bit 8 is Tk's `Mod1`, but what `Mod1` carries is decided by the platform, not
+    by Tk. Windows reports NumLock there — which is the whole of #403, since an
+    unguarded `<Command-b>` binding normalizes to `<Mod1-b>` off macOS and so
+    matched every bare `b` on a machine with NumLock on. X11 binds `Mod1` to Alt
+    and puts NumLock on `Mod2`, bit 16 (`xmodmap -pm` names it outright). Aqua
+    reports Command on bit 8.
+
+    So hardcoding 8 asserts a different key on each platform: `Alt-b` on X11,
+    which correctly inserts nothing, and `Cmd-B` on Aqua, which is the real
+    shortcut. Both were filed — #434 and #431 — as the same wrong premise seen
+    from two platforms.
+    """
+    winsys = widget.tk.call("tk", "windowingsystem")
+    if winsys == "x11":
+        return 16
+    if winsys == "aqua":
+        return None
+    return 8
 
 
 @pytest.fixture(scope="module")
@@ -66,9 +88,12 @@ def test_modifier_shortcut_toggles_the_sidebar(expanded):
 
 
 def test_bare_b_does_not_toggle_the_sidebar(expanded):
-    # A plain "b" — no modifier, but carrying the NumLock bit that Windows
-    # reports as Mod1. Typing must reach the field and leave the sidebar alone.
-    expanded._entry_widget.event_generate("<KeyPress-b>", state=_MOD1)
+    # A plain "b" — no modifier, but carrying this platform's NumLock bit.
+    # Typing must reach the field and leave the sidebar alone.
+    numlock = _numlock_bit(expanded._entry_widget)
+    if numlock is None:
+        pytest.skip("Aqua has no NumLock modifier — bit 8 there is Command, the real shortcut")
+    expanded._entry_widget.event_generate("<KeyPress-b>", state=numlock)
     expanded._internal.update()
     assert expanded.sidebar_mode == "expanded"
     assert expanded._field.text == "b"
