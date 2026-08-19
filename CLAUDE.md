@@ -690,24 +690,36 @@ from the table below. ⚠ **The standing recommendation named here for months �
 the unnumbered `Test and release confidence` workstream (#407 then #380) — is
 DONE and its milestone is CLOSED (2026-08-14).** The live recommendation is at
 START HERE: **#452**, because CI now covers ubuntu and windows and not macOS.
-After that the next numbered milestone is `0.4.0 — Strictness and value types`
-(#383, #369, #408, #416), deliberately batched so users get one migration rather
-than four. **#390** remains a decision that can be taken at any time, and is
+After that the next numbered milestone is **`0.4.0 — Signal binding on fields`**
+(#458, #459, #460, #461), cut 2026-08-19 and already half-built — #458's branch
+has passed round 1. Then `0.5.0 — Strictness and value types` (#383, #369, #408,
+#416), deliberately batched so users get one migration rather than four.
+**#390** remains a decision that can be taken at any time, and is
 still the cheapest item on the board. ⚠ **The milestones have been RENUMBERED
-TWICE — read the CURRENT table below, never a number quoted in older prose.**
+THREE TIMES — read the CURRENT table below, never a number quoted in older
+prose.**
 Restructured and renumbered 2026-08-05, then renumbered again 2026-08-07 when
 `0.3.0 — Screen capture` was inserted ahead of the strictness batch. Two
 generations of stale numbers are therefore in circulation:
 
 | written before | says | now means |
 |---|---|---|
-| 2026-08-05 | `0.3.0 — Guided flows` | `0.6.0 — Guided flows` |
-| 2026-08-05 | `0.4.0 — Power-user interactions` | `0.7.0 — Power-user interactions` |
-| 2026-08-05 | `0.5.0 — Structured editing` | `0.8.0 — Structured editing` |
-| 2026-08-05 | `0.6.0 — Argument and value strictness` | `0.4.0 — Strictness and value types` |
-| 2026-08-07 | `0.3.0 — Strictness and value types` | `0.4.0 — Strictness and value types` |
-| 2026-08-07 | `0.4.0 — Form, signals, and composite authoring` | `0.5.0 — …` |
-| 2026-08-07 | `0.5.0 / 0.6.0 / 0.7.0` | `0.6.0 / 0.7.0 / 0.8.0` |
+| 2026-08-05 | `0.3.0 — Guided flows` | `0.7.0 — Guided flows` |
+| 2026-08-05 | `0.4.0 — Power-user interactions` | `0.8.0 — Power-user interactions` |
+| 2026-08-05 | `0.5.0 — Structured editing` | `0.9.0 — Structured editing` |
+| 2026-08-05 | `0.6.0 — Argument and value strictness` | `0.5.0 — Strictness and value types` |
+| 2026-08-07 | `0.3.0 — Strictness and value types` | `0.5.0 — Strictness and value types` |
+| 2026-08-07 | `0.4.0 — Form, signals, and composite authoring` | `0.6.0 — …` |
+| 2026-08-07 | `0.5.0 / 0.6.0 / 0.7.0` | `0.7.0 / 0.8.0 / 0.9.0` |
+| **before 2026-08-19** | `0.4.0 — Strictness and value types` | `0.5.0 — Strictness and value types` |
+| **before 2026-08-19** | `0.5.0 / 0.6.0 / 0.7.0 / 0.8.0` | `0.6.0 / 0.7.0 / 0.8.0 / 0.9.0` |
+
+⚠ **THE 2026-08-19 ROW IS THE THIRD RENUMBERING, and unlike the first two it was
+NOT a restructuring** — nothing was re-scoped. A new minor (`0.4.0 — Signal
+binding on fields`) was inserted ahead of the chain because the signal work was
+ready and the strictness batch is not started, and everything above it shifted
+one step. The renames were done top-down (`0.8.0`→`0.9.0` first) so no title ever
+collided with a live one; issue attachments are unaffected by a milestone rename.
 
 ⚠ **Prose further down this file still quotes the OLD numbers in places** (e.g.
 "#369 and #383 are milestoned `0.6.0 — Argument and value strictness`"). Those
@@ -763,15 +775,16 @@ with four known bugs deferred rather than held.
 | — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
 | — | ~~**`0.3.1 — Dialog keyboard and modality`**~~ — **SHIPPED 2026-08-12, milestone CLOSED**: #426, #439, #440, #441, #446 | 0 |
 | — | ~~**`Test and release confidence`**~~ — **DONE 2026-08-14, milestone CLOSED** at `open=0 closed=3`: #407, #380 (PR #451), #432 (did not reproduce) | 0 |
-| 3 | **`0.4.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
-| 4 | **`0.5.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
-| 5 | **`0.6.0 — Guided flows`** — #311, #312 | 2 |
-| 6 | **`0.7.0 — Power-user interactions`** — #315, #316 | 2 |
-| 7 | **`0.8.0 — Structured editing`** — #192, #314 | 2 |
+| 3 | **`0.4.0 — Signal binding on fields`** — #458, #459, #460, #461. **NEW, cut 2026-08-19**, and the next release out the door | 4 |
+| 4 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
+| 5 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
+| 6 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
+| 7 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
+| 8 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 and #456 are CLOSED** (cut as `0.3.2`, and merged as PR #457), so the milestone reads **`open=6 closed=2`** — verified against `gh` 2026-08-19, not counted by hand. It is a rolling line, so it does NOT close when a patch ships. ⚠ **#458 is the one in flight and is NOT on this milestone** — it is unmilestoned, because placing it is a scope call nobody has made | 6 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 and #456 are CLOSED** (cut as `0.3.2`, and merged as PR #457), so the milestone reads **`open=6 closed=2`** — verified against `gh` 2026-08-19 (latest), not counted by hand. It is a rolling line, so it does NOT close when a patch ships. ⚠ **#460 was briefly placed here and then MOVED to `0.4.0`** when the signal work was collected into one minor — if an older paragraph says #460 is on the patch line, that paragraph is stale | 6 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -810,8 +823,11 @@ than NumLock. ⚠ **And it is UNVERIFIED on a real Aqua build** — the skip is 
 by `tk windowingsystem`, read from Tk rather than cached, but nobody has watched
 that branch be taken. Fold it into the #452 trip.
 
-**⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-19**,
-not counted by hand: **#431, #436, #452, #455, #458, #459.** ⚠ **The list below
+**⚠ FOUR UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-19
+(latest)**, not counted by hand: **#431, #436, #452, #455.** All four PREDATE
+this work. **#458, #459, #460 and #461 all went onto the new
+`0.4.0 — Signal binding on fields`**, so the list is back to where it was before
+the signal work started. ⚠ **The list below
 is the 2026-08-13 one and names #433 and #434, which are now CLOSED; the two
 that replaced them are #458 (the `Select` signal fix, in flight) and #459 (the
 `TimeField` seed-emit it surfaced).** Original text follows.
@@ -880,18 +896,42 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-19, later) — #457 IS MERGED. #458 IS IN FLIGHT AND AWAITS ITS ROUND 1 REVIEW.
+### ★ START HERE (2026-08-19, latest) — #458 HAS HAD ITS ROUND 1, AND IT IS NOW A MINOR: `0.4.0 — Signal binding on fields`.
 
-**⏭ THE NEXT ACTION IS A FRESH SESSION REVIEWING `fix/select-signal-value-458`.**
-The implementing session wrote the code, so by `REVIEW-PROTOCOL.md`'s core rule it
-**cannot** review it. Round 1 has not run. **Read
-`development/review-brief-458-select-signal.md` and `PLAN.md` on that branch
-first** — the brief carries the maintainer's settled decisions and the
-measurements already taken, which is the handoff `0.3.1` lost a whole round to.
+**✅ ROUND 1 RAN and the branch is clean.** Four findings, **none in production
+code** — one real test defect (fixed), one false claim in `PLAN.md` (corrected),
+one withdrawn on re-examination, one out of scope and belonging to #390. The
+record is **`REVIEW.md` on the branch**; read it rather than re-deriving, and
+note that F3 and F4 are written up specifically so a round 2 does not re-file
+them.
 
-⚠ **Do not open a PR yet, and do not merge.** The protocol runs the review
-rounds first; #456 shipped that way. **Do not touch the branch outside a review
-step** either.
+**✅ THE RELEASE LINE IS DECIDED (maintainer, 2026-08-19): #458 does NOT ride the
+patch line. A new minor `0.4.0 — Signal binding on fields` was cut and carries
+#458, #459, #460 and #461** — *"if possible, I'd like to roll in 458, 459, 460,
+and 461 to this patch release"*, answered by cutting the minor that can legally
+hold all four rather than by bending the patch line.
+
+⚠ **TWO SEPARATE REASONS FORCED THE MINOR, and the weaker one is the famous
+one.** Round 1's F2 found that #458 **adds public surface** — inheriting
+`ValueSignalMixin` gives `Select` a public `signal` property `main` does not have
+(`hasattr` is `False` there, `True` here) — and the standing rule is that an
+addition needs a minor even when nothing breaks. **But #461 is the stronger
+reason: it BREAKS WORKING CODE.** Seeding a `SelectButton` signal with an
+option's **label** works correctly today and is the only spelling that does, so
+it is necessarily what any current user is using; fixing #461 makes it wrong.
+That is #381's shape exactly, and #381 needed a minor for it. **Do not
+re-litigate this as "#458 was only an addition"** — the addition was never the
+binding constraint.
+
+⚠ **Gate 1 does NOT open a round 2.** The fix step touched `tests/` and
+`PLAN.md` only, so `git diff main...HEAD -- src/` is byte-identical to what
+round 1 reviewed (still `select.py` alone, 34/7). **The cap of 2 is unspent** —
+a round 2 is available if the milestone decision changes the code, and is
+otherwise not owed.
+
+⚠ **Still NO PR, and do not merge before the decision above.** The protocol runs
+the rounds first; #456 shipped that way. **Do not touch the branch outside a
+review step** either.
 
 **⏭ AFTER #458, THE NEXT ACTION IS #452 — the macOS CI hang** (maintainer,
 2026-08-14: *"macos will be on another machine"*). The brief at the end of this
@@ -902,14 +942,14 @@ section is unchanged and still current.
 | | |
 |---|---|
 | `main` | **`5b009456`** — #457 merged as `0aad8427`, then the #456 plan/review archived into `development/`. No product change since the merge |
-| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`028e7cc0`**, pushed. **NO PR yet, round 1 not run.** `PLAN.md` and the review brief live ON THAT BRANCH |
+| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`6db756b1`**, pushed. **NO PR yet. Round 1 HAS RUN**; `PLAN.md`, `REVIEW.md` and the review brief all live ON THAT BRANCH |
 | ✅ SHIPPED to `main` | **#456** (PR #457, merge `0aad8427`) — `DataTable(context_menus=)` now reaches the widget, and `on_row_right_click` is decoupled from it |
 | suite, `main` | **1443 passed / 21 skipped** on the **Windows** box, py 3.12, `pandas` absent — **derived** 2026-08-19, not directly measured (see the branch row). Linux at `5921dc41` read `1427 / 22`; those are different platforms and not comparable |
-| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, measured at `1f9a62d1`, Windows, py 3.12. `1443 + 15 = 1458` and it reconciles — the branch's only change under `tests/` is one new file of 15 tests |
+| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, **re-measured 2026-08-19 after round 1's fix step**, at `6db756b1`, Windows, py 3.12, `pandas` absent. Identical to the pre-round figure at `1f9a62d1`, which is the expected result — the fix step edited a test BODY, it did not add or remove a test. Shared leg reconciles against its own collection line: `collected 1150 / 75 deselected / 1 skipped / 1075 selected`, and `1062 passed + 13 runtime skips = 1075`. ⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the collection line — sum the per-leg summary lines only** |
 | CI | **`ci.yml` LIVE and green on `main`** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). Triggers on push to `main` and on `pull_request` only — so **#458 has NO CI yet**, having no PR |
 | root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/plan-456-context-menus.md` and `development/review-456-context-menus.md`. `PLAN.md` exists only on the #458 branch |
 | released | `0.3.2` on PyPI. `## [Unreleased]` is PRESENT on `main` again, carrying #456; the #458 branch adds a second bullet to it |
-| open milestones | **9**. #458 is unmilestoned — it is a fix on existing public surface, so the patch line is the obvious home, but that is a scope call and was not made unasked |
+| open milestones | **10**, verified against `gh` — one more than before, because `0.4.0 — Signal binding on fields` was created and **everything from the old `0.4.0` up was renumbered one step** (see the stale-number table below; this is the THIRD renumbering). #458, #459, #460 and #461 are all on it, so the unmilestoned list is back to its four pre-existing members |
 
 #### ⏭ #458 — a `Select` bound to a `Signal` bound the TEXT, not the value
 
@@ -985,6 +1025,71 @@ FIXED:** `TimeField` has the identical seed-emit behavior. **Pre-existing** — 
 has bound through `ValueSignalMixin` since `d05ecd8a`, long before this branch.
 Measured with both controls (`TimeField(value=)` is quiet; the `NumberField` and
 `DateField` siblings are quiet). Unmilestoned: it gates nothing.
+
+#### ✅ Round 1 ran 2026-08-19 — four findings, NONE in production code
+
+Record is **`REVIEW.md` on the branch**. Two commits answer it: `37b871a9` (the
+test fix) and `6db756b1` (the record plus the `PLAN.md` correction).
+
+| # | what | outcome |
+|---|---|---|
+| F1 | the read-only test never drove a signal write, so the path this branch ADDS was untested | **FIXED** |
+| F2 | `PLAN.md` claimed the branch adds no public surface; `.signal` says otherwise | **CORRECTED** — and it moved the release line |
+| F3 | the exact-list `<<Change>>` assertion shares #449's known-flaky shape | **RAISED, THEN WITHDRAWN** |
+| F4 | clearing a signal-bound `Select` leaves the signal stale | **OUT OF SCOPE — it is #390** |
+
+⚠ **F3 IS THE ONE WORTH READING BEFORE RE-FILING ANYTHING.** The fix looked
+obvious — relax `assert seen == ["2", "3"]` to the set-equality form the sibling
+at `test_select_options.py:290` uses — and it was **withdrawn**, because the
+"exactly once" half is the guard against the two-way binding feeding its own
+write back as a second change, which is a regression *this branch* could
+plausibly introduce. The sibling relaxed for a reason that does not transfer:
+`SelectButton`'s `StringVar` legitimately emits more than once per set, and
+`Select` does not. **Relaxing would have traded real coverage of the branch's own
+risk for a flake that has never been observed in this test.** The #449 linkage is
+recorded instead, so if it ever does flake the cause is already named.
+
+⚠ **F4 is #390 and MUST NOT be re-filed.** `_sync_value_set` and `_to_signal`
+both return early on `None` (`_core/field_mixin.py:318` and `:293`), and that
+file is **not in this branch's diff** — measured on `main` with `NumberField`,
+which has bound through the mixin since `d05ecd8a`: `value = None` leaves the
+signal reading `7`. For `Select` it *is* a directional change (the old text-space
+wiring pushed `''` on clear), but the direction is toward consistency with
+`NumberField`/`DateField`/`TimeField`. ⚠ **The reviewer's accompanying claim that
+the new docs "state the contract as unconditional in both directions" was CHECKED
+and is overstated** — `docs/widgets/select.rst:233` describes seeding a value and
+picking an option and says nothing about clearing. Nothing false ships.
+
+**✅ TWO UNRELATED DEFECTS WERE FOUND WHILE VERIFYING, AND ARE FILED, NOT FIXED:**
+
+- **[#461](https://github.com/israel-dryer/bootstack/issues/461) — `SelectButton`
+  has this SAME defect, unfixed.** Identical `signal → textsignal` wiring at
+  `selectbutton.py:84`. Measured on `main` with decoupled options: seeding with
+  the **label** works (`text='Two' value='2' selection={...}`), seeding with the
+  **value** — what `value=` takes and what the docstring at `:39` promises —
+  gives `text='2' value='2' selection=None`, and `sel.value = "3"` writes the
+  *label* `'Three'` back into the signal. ⚠ **Narrower than #458**: plain
+  `list[str]` options are unaffected, and `<<Change>>` does fire, so it lacks
+  #458's silent half. **On `0.4.0` — and it is the reason that milestone is a
+  MINOR**, because the label spelling works today (see START HERE).
+- **[#460](https://github.com/israel-dryer/bootstack/issues/460) — eight widgets
+  annotate `.signal` as `Signal | None` and can never return `None`.** The
+  wrappers forward with `getattr(self._internal, 'signal', None)`, but the
+  internal is a **property that lazily creates on first access**
+  (`_impl/mixins/signal_mixin.py:92` and `:211`), so the default is dead code and
+  the `| None` is **unreachable, not merely unobserved**. On `0.4.0`, its own
+  branch — it was briefly on the patch line before the four were collected. ⚠ **Do not "fix" `TextArea`, `CodeEditor`, or the
+  `ValueSignalMixin` trio** — they genuinely return `None`. `Slider` is the
+  honest exemplar: it delegates directly and annotates no `None`.
+
+⚠ **`.signal` MEANS TWO DIFFERENT THINGS ACROSS THE PUBLIC API, and #458 widens
+the split rather than causing it.** Text-space: `TextField`, `PasswordField`,
+`PathField`, `SpinnerField`, `TextArea`, `CodeEditor`, `SelectButton`.
+Value-space (the mixin): `NumberField`, `DateField`, `TimeField`, and now
+`Select`. So after this branch `Select.signal` returns `None` when unbound while
+its nearest sibling `SelectButton.signal` returns a live signal, under the same
+name and the same annotation. **That is the real content of #460 and #461 taken
+together**, and it is a family decision nobody has made.
 
 ⚠ **ON MERGE: archive `PLAN.md` to `development/plan-458-select-signal.md` and
 `REVIEW.md` to `development/review-458-select-signal.md`, then create `PLAN.md`
