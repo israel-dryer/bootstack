@@ -2,7 +2,7 @@
 
 **Branch:** `fix/select-signal-value-458` · **Base:** `main` @ `5b009456`
 **Issue:** [#458](https://github.com/israel-dryer/bootstack/issues/458) (external report, `bLynnb2762`)
-**Release line:** `0.3.x — Patch line`. Adds no public surface and does not raise where working code used to succeed.
+**Release line:** `0.3.x — Patch line`, pending the note below. Does not raise where working code used to succeed — `textsignal=` was silently discarded before, so nothing could have depended on it. ⚠ **It does add one piece of public surface**, corrected in round 1: inheriting `ValueSignalMixin` gives `Select` a public `signal` property, which `main` does not have (`hasattr` is `False` there, `True` here). Small — nine public wrappers already define that property and three more inherit it from the same mixin, so this closes a family gap rather than introducing a concept — but the standing rule is that an addition requires a minor even when nothing breaks. **Left as a maintainer call; see `REVIEW.md` F2.**
 **Round cap: 2** (patch branch, REVIEW-PROTOCOL.md gate 3). Declared before implementation. Survivors at the cap are filed as issues, not fixed here.
 
 ---
