@@ -771,7 +771,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449, **#456**. **#453 is CLOSED and cut as `0.3.2`**, so the milestone reads `open=7 closed=1` — it is a rolling line, so it does NOT close when a patch ships. ⚠ **#456 is the one in flight** (PR #457); the maintainer filed it here, so its placement was never a scope call | 7 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 and #456 are CLOSED** (cut as `0.3.2`, and merged as PR #457), so the milestone reads **`open=6 closed=2`** — verified against `gh` 2026-08-19, not counted by hand. It is a rolling line, so it does NOT close when a patch ships. ⚠ **#458 is the one in flight and is NOT on this milestone** — it is unmilestoned, because placing it is a scope call nobody has made | 6 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -810,7 +810,12 @@ than NumLock. ⚠ **And it is UNVERIFIED on a real Aqua build** — the skip is 
 by `tk windowingsystem`, read from Tk rather than cached, but nobody has watched
 that branch be taken. Fold it into the #452 trip.
 
-**⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-13**,
+**⚠ SIX UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-19**,
+not counted by hand: **#431, #436, #452, #455, #458, #459.** ⚠ **The list below
+is the 2026-08-13 one and names #433 and #434, which are now CLOSED; the two
+that replaced them are #458 (the `Select` signal fix, in flight) and #459 (the
+`TimeField` seed-emit it surfaced).** Original text follows.
+
 not counted by hand: **#431, #433, #434, #436, #452, #455.** #455 is the one
 that moved: the survivor of #453's round 2 (`Field.enable()/disable()/readonly()`
 writing the ttk readonly state without re-deriving), left unassigned because it
@@ -875,38 +880,120 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-19) — PR #457 IS OPEN AND UNREVIEWED. THE MAINTAINER WILL COME BACK TO IT.
+### ★ START HERE (2026-08-19, later) — #457 IS MERGED. #458 IS IN FLIGHT AND AWAITS ITS ROUND 1 REVIEW.
 
-**⏭ THE NEXT ACTION IS THE MAINTAINER'S REVIEW OF PR #457 (#456)** — they opened it
-and said outright *"I can't review it now, so I'll have to come back to it."*
-**Do not merge it, and do not start a review round on it** — one round already ran
-and the branch closed at one against a cap of two (see below). **Do not touch the
-branch either**: the standing rule is that a branch under review is not edited in
-place, and the maintainer's own reading is still pending.
+**⏭ THE NEXT ACTION IS A FRESH SESSION REVIEWING `fix/select-signal-value-458`.**
+The implementing session wrote the code, so by `REVIEW-PROTOCOL.md`'s core rule it
+**cannot** review it. Round 1 has not run. **Read
+`development/review-brief-458-select-signal.md` and `PLAN.md` on that branch
+first** — the brief carries the maintainer's settled decisions and the
+measurements already taken, which is the handoff `0.3.1` lost a whole round to.
 
-**⏭ AFTER #457 MERGES, THE NEXT ACTION IS #452 — the macOS CI hang** (maintainer,
-2026-08-14: *"macos will be on another machine"*). A brief is at the end of this
-section, and it is unchanged. ⚠ **THE SESSION THAT WROTE THIS WAS ON THE macOS
-BOX** — `/Users/israeldryer/PycharmProjects/bootstack`, `.venv` Python 3.14.0,
-Tk 8.6, real display. So #452 is reachable from here now, but **read the brief's
-warning first: the local box is NOT a substitute for a GitHub runner** and will
-mislead you if you treat a local pass as evidence.
+⚠ **Do not open a PR yet, and do not merge.** The protocol runs the review
+rounds first; #456 shipped that way. **Do not touch the branch outside a review
+step** either.
+
+**⏭ AFTER #458, THE NEXT ACTION IS #452 — the macOS CI hang** (maintainer,
+2026-08-14: *"macos will be on another machine"*). The brief at the end of this
+section is unchanged and still current.
 
 **STATE OF THE WORLD:**
 
 | | |
 |---|---|
-| `main` | **`2a55ff96` plus this docs commit.** No product change since `2a55ff96` — the #456 work is all on the branch |
-| branch, IN FLIGHT | **`fix/datatable-context-menus-456`**, head **`5176eebb`**, pushed. **PR [#457](https://github.com/israel-dryer/bootstack/pull/457) OPEN, unreviewed.** `PLAN.md` and `REVIEW.md` live ON THAT BRANCH |
-| CI | **`ci.yml` is LIVE and green on `main`** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). It triggers on push to `main` and on `pull_request` only |
-| CI on #457 | ✅ **GREEN — run `32259593088`, all 5 jobs**: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **So the branch is verified on Linux and Windows, not just the macOS box it was written on** |
-| suite, `main` | **exit 0, 33 legs, 1427 passed / 22 skipped** on Linux with a WM, measured 2026-08-14 at `5921dc41`. Not re-measured since |
-| suite, branch | **68 passed** across the three test files the branch touches, measured 2026-08-19 at `5176eebb` on the macOS box. ⚠ **The FULL suite was NOT re-run after the review round** — see the ⚠ below |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — they are on the branch. Create `PLAN.md` fresh for any OTHER branch you start |
-| released | `0.3.2` on PyPI. `## [Unreleased]` is ABSENT on `main`; **the branch re-creates it**, carrying #456 |
-| open milestones | **9**. #456 is on `0.3.x — Patch line`, which reads `open=7 closed=1` until it merges |
+| `main` | **`5b009456`** — #457 merged as `0aad8427`, then the #456 plan/review archived into `development/`. No product change since the merge |
+| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`028e7cc0`**, pushed. **NO PR yet, round 1 not run.** `PLAN.md` and the review brief live ON THAT BRANCH |
+| ✅ SHIPPED to `main` | **#456** (PR #457, merge `0aad8427`) — `DataTable(context_menus=)` now reaches the widget, and `on_row_right_click` is decoupled from it |
+| suite, `main` | **1443 passed / 21 skipped** on the **Windows** box, py 3.12, `pandas` absent — **derived** 2026-08-19, not directly measured (see the branch row). Linux at `5921dc41` read `1427 / 22`; those are different platforms and not comparable |
+| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, measured at `1f9a62d1`, Windows, py 3.12. `1443 + 15 = 1458` and it reconciles — the branch's only change under `tests/` is one new file of 15 tests |
+| CI | **`ci.yml` LIVE and green on `main`** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). Triggers on push to `main` and on `pull_request` only — so **#458 has NO CI yet**, having no PR |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/plan-456-context-menus.md` and `development/review-456-context-menus.md`. `PLAN.md` exists only on the #458 branch |
+| released | `0.3.2` on PyPI. `## [Unreleased]` is PRESENT on `main` again, carrying #456; the #458 branch adds a second bullet to it |
+| open milestones | **9**. #458 is unmilestoned — it is a fix on existing public surface, so the patch line is the obvious home, but that is a scope call and was not made unasked |
 
-#### ⏭ #456 / PR #457 — what it is, and what is left
+#### ⏭ #458 — a `Select` bound to a `Signal` bound the TEXT, not the value
+
+**External report from `bLynnb2762`** (the same reporter as #428 and #453), against
+`0.3.2`. `Select` mapped its public `signal=` onto the internal **`textsignal=`**,
+which installs the `Signal`'s Tk variable **as the entry's textvariable** — so
+writes landed straight in the display text, bypassing both `_resolve_display()`
+(the value-to-label map the `value=` path uses) and the entry's commit path.
+
+⚠ **ONE WIRING LINE, TWO SYMPTOMS — and the reported one is the milder.**
+**A**, reported: decoupled `(text, value)` options displayed the raw value, so
+`Signal('2')` showed `2` where `value='2'` showed `Two`. **B**, NOT reported and
+worse: a signal write moved the display but not the selection, so
+`.value`/`.selection` kept reporting the previous option and **no `<<Change>>`
+fired** — on plain `list[str]` options too, and it did not self-heal (survives a
+`<Return>`; only a real pick resyncs). The field showed one option and reported
+another indefinitely.
+
+**Fixed by binding through `ValueSignalMixin`**, as `DateField`/`NumberField`/
+`TimeField` already do — `TimeField` on these same `SelectBox` internals. That
+mixin binds through the `value` property, the one path that maps value to label,
+keeps the committed value in step, and emits `<<Change>>`. **The two symptoms are
+not separable**: any fix for B must bind through `value`, and that binding is
+inherently value-space.
+
+⚠ **`signal=` IS NOW VALUE-SPACE. That is a deliberate, maintainer-approved
+behavior change** (2026-08-19), taken over two alternatives that were put
+explicitly (keep text-space and fix only the sync; or add a `textsignal=` escape
+hatch, which would have forced a minor). **Both directions moved** —
+`sel.value = '2'` used to write the label `'Two'` into the signal and now writes
+`'2'`. **Do not re-litigate it.**
+
+⚠ **THE ARCHAEOLOGY IS WRITTEN UP IN `PLAN.md` — do not re-derive it.** Short
+version, because the shape recurs: `4b50f2f2` (2026-05-31) renamed `text_signal=`
+to `signal=` and left the wiring text-space, which was harmless while options were
+plain strings. `ee3345d4` (2026-06-10) split the two spaces by adding decoupled
+options and routed only `value=` through the new map. **Then `d05ecd8a`
+(2026-06-12) built `ValueSignalMixin` and skipped `Select`** — its design doc
+says why, verbatim (`docs/_dev/field-value-dtype.md:55`): *"`Select` already had
+`signal=`."* **The sweep checked the kwarg's NAME, not which space it bound, and
+the rename 12 days earlier is exactly what made it pass that check.**
+
+⚠ **THIS IS THE THIRD "the internal was right, the wrapper was the defect" IN A
+ROW** — #383's third gap (leftover `**kwargs` never read), #456 (`context_menus`
+discarded as a layout key), now #458 (delivered to the wrong internal parameter).
+The existing check (`git show main:<wrapper> | grep <kwarg>`) catches **absence**.
+It does not catch **the wrong destination**, which is what this was.
+
+⚠ **A REGRESSION WAS FOUND AND AVOIDED MID-IMPLEMENTATION — keep this.** The
+mixin seeds by assigning `value`, and `SelectBox`'s setter **emits**, so binding a
+signal fired `<<Change>>` at construction where `value=` does not. **The event is
+QUEUED**, so a handler bound on the line *after* the constructor still receives
+it once the loop turns — and the reporter's own snippet binds `on_change` to
+`bs.toast`, so their app would have **toasted on startup**. Suppressed for the
+seed only, and pinned by a test.
+
+⚠ **`_suppress_changed_event` NOW HAS ITS FIRST WRITER.** It sat at
+`selectbox.py:1212` read-but-never-set anywhere in `src/`. This branch is the only
+caller, so there is nothing to compare against and the `try/finally` is the only
+thing clearing it.
+
+⚠ **ONE TEST FAILS PRE-FIX WITH `AttributeError`, NOT BEHAVIORALLY** —
+`test_destroying_the_field_releases_the_signal_subscription` asserts on
+`_value_sub`, which does not exist before the branch. Argued in `PLAN.md` as
+unavoidable for a guard on new machinery. **Stated out loud rather than smoothed
+over**, because this project's standard is that a pre-fix failure should be
+behavioral — and because an earlier draft of the record claimed the wrong
+pre-fix tally (`10 failed / 5 passed`) until it was actually measured
+(**11 failed / 4 passed**).
+
+**✅ [#459](https://github.com/israel-dryer/bootstack/issues/459) FILED, NOT
+FIXED:** `TimeField` has the identical seed-emit behavior. **Pre-existing** — it
+has bound through `ValueSignalMixin` since `d05ecd8a`, long before this branch.
+Measured with both controls (`TimeField(value=)` is quiet; the `NumberField` and
+`DateField` siblings are quiet). Unmilestoned: it gates nothing.
+
+⚠ **ON MERGE: archive `PLAN.md` to `development/plan-458-select-signal.md` and
+`REVIEW.md` to `development/review-458-select-signal.md`, then create `PLAN.md`
+fresh.** Comment on #458 with `gh issue comment` after the *release*, not the
+merge — `gh issue close --comment` silently drops it on an already-closed issue.
+
+---
+
+#### ✅ #456 / PR #457 — MERGED 2026-08-19 as `0aad8427`. Kept for its lessons.
 
 **The bug:** `DataTable`'s `context_menus` option was documented, shown in the
 widget guide, and had **no effect** — every table offered both right-click menus
@@ -941,7 +1028,7 @@ it was always passable, just inert. Premise corrected, decision unchanged. The
 SemVer counter-argument (#381 needed a **minor** because it raises where it used
 to accept) is written out in `REVIEW.md` with the distinction that defeats it.
 
-**Still open on this branch: ONLY the maintainer's review.** The round is closed,
+**MERGED — nothing open. The line below described the pre-merge state.** The round is closed,
 the record is written, the tree is clean, and **CI came back green on all five
 jobs**. ⚠ **That green also answers a real prior worry, so do not re-raise it:**
 `test_datatable_right_click_event.py` synthesizes `<Button-3>`, and this file
