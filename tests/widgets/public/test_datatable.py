@@ -787,3 +787,55 @@ def test_group_chevron_tracks_double_click(shown_app):
     opened, chevron_open = _chevron_state(impl, header)
     assert opened, "control failed — the double-click did not leave the group expanded"
     assert chevron_open, "group is expanded after a double-click but its chevron is drawn collapsed"
+
+
+# --------------------------------------------------------------------------- context menus
+
+# #456: `context_menus` was documented on the public widget and taught in
+# `docs/widgets/datatable.rst`, but was not a parameter of `DataTable.__init__`.
+# It fell into `**kwargs`, went to `_split_layout_kwargs` as though it were a
+# layout option, and was discarded without error -- so every table kept the
+# default `'all'` and `context_menus='none'` still showed both menus.
+#
+# The internal was never at fault (control in
+# `development/probe_456_context_menus.py`), so these assert the wrapper
+# forwards the value, through the two predicates the click path consults rather
+# than the raw attribute.
+
+CONTEXT_MENU_GATES = [
+    ("all", True, True),
+    ("headers", True, False),
+    ("rows", False, True),
+    ("none", False, False),
+]
+
+
+@pytest.mark.parametrize("value,header,row", CONTEXT_MENU_GATES, ids=[c[0] for c in CONTEXT_MENU_GATES])
+def test_context_menus_reaches_the_header_and_row_gates(app, value, header, row):
+    table = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus=value)
+    impl = table._internal
+
+    assert impl._header_context_enabled() is header
+    assert impl._row_context_enabled() is row
+
+
+def test_context_menus_defaults_to_all(app):
+    """The compatibility invariant: an omitted argument must not change anything.
+
+    Every DataTable ever constructed passes through this path, so a default that
+    drifted would turn a fix into a silent behavior change for every caller.
+    """
+    table = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}])
+    impl = table._internal
+
+    assert impl._context_menus == "all"
+    assert impl._header_context_enabled() is True
+    assert impl._row_context_enabled() is True
+
+
+# A test asserting that `'none'` leaves `<Button-3>` unbound lived here and has
+# been REMOVED rather than repaired. It read the binding as a proxy for "no menu
+# appears", and that proxy stopped being true on purpose: the right-click is now
+# bound for every value so `on_row_right_click` keeps firing, and only the menu
+# is gated. What it was really trying to pin is covered directly, by driving a
+# real right-click, in `test_datatable_right_click_event.py`.

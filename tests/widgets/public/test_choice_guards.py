@@ -70,6 +70,10 @@ BAD = [
     ("DataTable.selection_mode", lambda: bs.DataTable(rows=[{"id": 1}], selection_mode="multiple"), "selection_mode"),
     ("DataTable.sorting_mode", lambda: bs.DataTable(rows=[{"id": 1}], sorting_mode="multi"), "sorting_mode"),
     ("DataTable.paging_mode", lambda: bs.DataTable(rows=[{"id": 1}], paging_mode="paged"), "paging_mode"),
+    # #456. Checked strictly against the lowercase set even though the internal
+    # would .lower() this one in — a near-miss disables every menu silently
+    # rather than taking the other branch, which is worse than the usual case.
+    ("DataTable.context_menus", lambda: bs.DataTable(rows=[{"id": 1}], context_menus="None"), "context_menus"),
     ("ListView.selection_mode", lambda: bs.ListView(items=[{"id": 1}], selection_mode="multiple"), "selection_mode"),
     ("Tree.selection_mode", lambda: bs.Tree(selection_mode="multiple"), "selection_mode"),
     ("Gallery.selection_mode", lambda: bs.Gallery(selection_mode="multiple"), "selection_mode"),
@@ -94,6 +98,8 @@ def test_invalid_mode_raises_naming_the_argument(app, label, make, param):
 # Every valid value must still construct — the guard must not narrow what works.
 GOOD = [
     ("DataTable", lambda m: bs.DataTable(rows=[{"id": 1}], selection_mode=m), SELECTION_MODES),
+    ("DataTable.context_menus", lambda m: bs.DataTable(rows=[{"id": 1}], context_menus=m),
+     ("none", "headers", "rows", "all")),
     ("ListView", lambda m: bs.ListView(items=[{"id": 1}], selection_mode=m), SELECTION_MODES),
     ("Tree", lambda m: bs.Tree(selection_mode=m), SELECTION_MODES),
     ("Gallery", lambda m: bs.Gallery(selection_mode=m), SELECTION_MODES),

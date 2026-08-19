@@ -1156,8 +1156,12 @@ class TableView(Frame):
         # only (add='+'), so it fires solely when the tree has focus and never
         # clobbers dialog/menu/search Escape handling, which own their own focus.
         self._tree.bind("<Escape>", lambda _e: self.deselect_all(), add="+")
-        if self._context_menus != "none":
-            bind_right_click(self._tree, self._on_tree_context)
+        # Bound unconditionally, for the same reason as the double-click below:
+        # `on_row_right_click` is public API and does not depend on the built-in
+        # menus. `context_menus` chooses which menus the table offers, not
+        # whether a right-click is reported, so the dispatch runs either way and
+        # only the menu is gated (`_on_row_context`).
+        bind_right_click(self._tree, self._on_tree_context)
         # Bound unconditionally: `on_row_double_click` is public API and does not
         # depend on editing. The handler itself gates the built-in edit dialog on
         # `_editing['updating']`, so editing behavior is unchanged.
@@ -1682,8 +1686,6 @@ class TableView(Frame):
         self._row_menu = menu
 
     def _on_row_context(self, event) -> None:
-        if not self._row_context_enabled():
-            return
         iid = self._tree.identify_row(event.y)
         col_id = self._tree.identify_column(event.x)
         try:
@@ -1700,6 +1702,11 @@ class TableView(Frame):
         self._context_iid = iid
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
+        # Only the built-in menu is gated. The event above is reported for every
+        # `context_menus` value, so "no row menu" does not mean "no right-click"
+        # -- handling the gesture yourself stays available.
+        if not self._row_context_enabled():
+            return
         self._row_menu_col = col_idx
         self._ensure_row_menu()
         self._row_menu.show(position=(event.x_root, event.y_root))
@@ -3031,16 +3038,15 @@ class TableView(Frame):
 
     # ------------------------------------------------------------------ Context dispatch
     def _on_tree_context(self, event) -> None:
-        if self._context_menus == "none":
-            return
         region = self._tree.identify_region(event.x, event.y)
         if region == "heading":
             if not self._header_context_enabled():
                 return
             self._on_header_context(event)
         else:
-            if not self._row_context_enabled():
-                return
+            # Deliberately not gated here: `_on_row_context` reports the
+            # right-click through `<<RowRightClick>>` first and gates only the
+            # menu it would show. The header side has no such event.
             self._on_row_context(event)
 
     def _on_selection_event(self, _event=None) -> None:

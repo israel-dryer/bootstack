@@ -90,6 +90,10 @@ class DataTable(PublicWidgetBase):
             plain click toggles the row (no Ctrl/Shift needed). Has no effect in
             `'single'` mode (the row highlight is enough) or while grouped, where
             the slot holds the group's expand/collapse control. Default `False`.
+        context_menus: Which right-click menus to offer — `'all'` (default),
+            `'headers'` for the column-header menu only (sort, align, reorder,
+            hide, group), `'rows'` for the row menu only (filter by value, edit,
+            delete), or `'none'` to disable both. Default `'all'`.
         id_field: Record field used as the stable row identity. When your rows
             carry this field (default `'id'`), its value becomes the row id used
             by `select_rows`, events, and `update_rows`/`delete_rows`, so your own
@@ -129,6 +133,7 @@ class DataTable(PublicWidgetBase):
         show_status_bar: bool = True,
         show_column_chooser: bool = False,
         show_selection_controls: bool = False,
+        context_menus: Literal["none", "headers", "rows", "all"] = "all",
         id_field: str = "id",
         form: FormOptions | None = None,
         parent: Any = None,
@@ -137,6 +142,15 @@ class DataTable(PublicWidgetBase):
         validate_choice(selection_mode, SELECTION_MODES, param="selection_mode", widget="DataTable")
         validate_choice(sorting_mode, ("single", "none"), param="sorting_mode", widget="DataTable")
         validate_choice(paging_mode, ("standard", "virtual"), param="paging_mode", widget="DataTable")
+        # Checked strictly against the lowercase set, though the internal would
+        # accept 'NONE' via its own .lower(). Without this, a near-miss disables
+        # every menu silently: 'nones' fails BOTH _header_context_enabled() and
+        # _row_context_enabled(), so the table comes up with no context menu at
+        # all and no error, which reads as a broken widget rather than a typo
+        # (#456). Do not "simplify" this to match the internal's tolerance.
+        validate_choice(
+            context_menus, ("none", "headers", "rows", "all"), param="context_menus", widget="DataTable"
+        )
         self._parent = self._resolve_parent(parent)
         self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)
@@ -160,6 +174,7 @@ class DataTable(PublicWidgetBase):
             "show_table_status": show_status_bar,
             "show_column_chooser": show_column_chooser,
             "show_selection_controls": show_selection_controls,
+            "context_menus": context_menus,
             "id_field": id_field,
         }
         if columns is not None:
