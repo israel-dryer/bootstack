@@ -143,9 +143,11 @@ class DataTable(PublicWidgetBase):
         validate_choice(sorting_mode, ("single", "none"), param="sorting_mode", widget="DataTable")
         validate_choice(paging_mode, ("standard", "virtual"), param="paging_mode", widget="DataTable")
         # Checked strictly against the lowercase set, though the internal would
-        # accept 'NONE' via its own .lower(). A near-miss here disables every menu
-        # silently: 'nones' passes the != 'none' bind guard but fails both the
-        # header and row predicates, which reads as a broken widget (#456).
+        # accept 'NONE' via its own .lower(). Without this, a near-miss disables
+        # every menu silently: 'nones' fails BOTH _header_context_enabled() and
+        # _row_context_enabled(), so the table comes up with no context menu at
+        # all and no error, which reads as a broken widget rather than a typo
+        # (#456). Do not "simplify" this to match the internal's tolerance.
         validate_choice(
             context_menus, ("none", "headers", "rows", "all"), param="context_menus", widget="DataTable"
         )
