@@ -771,7 +771,7 @@ with four known bugs deferred rather than held.
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 is CLOSED and cut as `0.3.2`**, so the milestone reads `open=6 closed=1` — it is a rolling line, so it does NOT close when a patch ships | 6 |
+| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449, **#456**. **#453 is CLOSED and cut as `0.3.2`**, so the milestone reads `open=7 closed=1` — it is a rolling line, so it does NOT close when a patch ships. ⚠ **#456 is the one in flight** (PR #457); the maintainer filed it here, so its placement was never a scope call | 7 |
 
 ⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
 assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
@@ -875,23 +875,135 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-14, end of day) — CI EXISTS AND IS GREEN. #452 IS NEXT, ON A macOS BOX.
+### ★ START HERE (2026-08-19) — PR #457 IS OPEN AND UNREVIEWED. THE MAINTAINER WILL COME BACK TO IT.
 
-**⏭ THE NEXT ACTION IS #452 — the macOS CI hang — AND IT NEEDS A macOS BOX**
-(maintainer, 2026-08-14: *"macos will be on another machine"*). A brief is at the
-end of this section. **Nothing else is in flight**: PR #451 merged, the branch is
-deleted, the root has no `PLAN.md`, and `Test and release confidence` is CLOSED.
+**⏭ THE NEXT ACTION IS THE MAINTAINER'S REVIEW OF PR #457 (#456)** — they opened it
+and said outright *"I can't review it now, so I'll have to come back to it."*
+**Do not merge it, and do not start a review round on it** — one round already ran
+and the branch closed at one against a cap of two (see below). **Do not touch the
+branch either**: the standing rule is that a branch under review is not edited in
+place, and the maintainer's own reading is still pending.
+
+**⏭ AFTER #457 MERGES, THE NEXT ACTION IS #452 — the macOS CI hang** (maintainer,
+2026-08-14: *"macos will be on another machine"*). A brief is at the end of this
+section, and it is unchanged. ⚠ **THE SESSION THAT WROTE THIS WAS ON THE macOS
+BOX** — `/Users/israeldryer/PycharmProjects/bootstack`, `.venv` Python 3.14.0,
+Tk 8.6, real display. So #452 is reachable from here now, but **read the brief's
+warning first: the local box is NOT a substitute for a GitHub runner** and will
+mislead you if you treat a local pass as evidence.
 
 **STATE OF THE WORLD:**
 
 | | |
 |---|---|
-| `main` | **`cb93da83`**, pushed. The ONLY branch — see the ⚠ on stale local refs below |
-| CI | **`ci.yml` is LIVE on `main` and green** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452) |
-| suite | **exit 0, 33 legs, 1427 passed / 22 skipped** on Linux with a WM, measured 2026-08-14 at `5921dc41` |
-| root | **NO `PLAN.md`, NO `REVIEW.md`.** Create `PLAN.md` fresh for the next branch |
-| released | `0.3.2` on PyPI. `## [Unreleased]` is ABSENT — the next fix commit re-creates it |
-| open milestones | **9** — `Test and release confidence` closed at `open=0 closed=3` |
+| `main` | **`2a55ff96` plus this docs commit.** No product change since `2a55ff96` — the #456 work is all on the branch |
+| branch, IN FLIGHT | **`fix/datatable-context-menus-456`**, head **`5176eebb`**, pushed. **PR [#457](https://github.com/israel-dryer/bootstack/pull/457) OPEN, unreviewed.** `PLAN.md` and `REVIEW.md` live ON THAT BRANCH |
+| CI | **`ci.yml` is LIVE and green on `main`** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). It triggers on push to `main` and on `pull_request` only |
+| CI on #457 | ✅ **GREEN — run `32259593088`, all 5 jobs**: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **So the branch is verified on Linux and Windows, not just the macOS box it was written on** |
+| suite, `main` | **exit 0, 33 legs, 1427 passed / 22 skipped** on Linux with a WM, measured 2026-08-14 at `5921dc41`. Not re-measured since |
+| suite, branch | **68 passed** across the three test files the branch touches, measured 2026-08-19 at `5176eebb` on the macOS box. ⚠ **The FULL suite was NOT re-run after the review round** — see the ⚠ below |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — they are on the branch. Create `PLAN.md` fresh for any OTHER branch you start |
+| released | `0.3.2` on PyPI. `## [Unreleased]` is ABSENT on `main`; **the branch re-creates it**, carrying #456 |
+| open milestones | **9**. #456 is on `0.3.x — Patch line`, which reads `open=7 closed=1` until it merges |
+
+#### ⏭ #456 / PR #457 — what it is, and what is left
+
+**The bug:** `DataTable`'s `context_menus` option was documented, shown in the
+widget guide, and had **no effect** — every table offered both right-click menus
+whatever you asked for.
+
+⚠ **The mechanism is the part worth carrying, because it is a REPEAT.** The
+internal was never at fault: `_impl/composites/tableview/tableview.py` has read
+and honored the option all along. **The public wrapper never delivered it** —
+`internal_kwargs` is a closed dict built from named parameters only, so
+`context_menus` fell into `**kwargs`, survived `_split_layout_kwargs` as though it
+were a layout key, and was discarded. **That is exactly #383's third gap**, already
+recorded in this file. Expect it again in any wrapper: the test is
+`git show main:<wrapper> | grep <kwarg>`, not reading the impl.
+
+**Two changes.** (1) The option now reaches the widget, validated strictly.
+(2) **`on_row_right_click` was DECOUPLED from it** (maintainer, 2026-08-19 — *"I
+would not expect that argument to affect `on_row_right_click`"*). The event was
+emitted inside `_on_row_context` one line before the menu opened, with the whole
+method behind the row-menu gate, so it tracked the **menu** rather than the
+**right-click**. The rule now: **`context_menus` chooses which menus the table
+offers; it does not choose whether a right-click is reported.** Precedent was
+three lines below the edit — `on_row_double_click`, from #417.
+
+⚠ **ONE DELIBERATE BEHAVIOR BREAK, already decided — do NOT re-file it.**
+`validate_choice` means `context_menus=None` and `"None"` construct on `0.3.2`
+(silently, both menus on) and **raise** here. **Accepted** (maintainer,
+2026-08-19 — *"if None is not a valid argument and not specified as an option,
+then we should not care about it"*): neither is in the documented `Literal`, so
+there is no supported behavior to grandfather. ⚠ `PLAN.md` originally justified
+this with *"the argument is unreachable from public code"*, which was **FALSE** —
+it was always passable, just inert. Premise corrected, decision unchanged. The
+SemVer counter-argument (#381 needed a **minor** because it raises where it used
+to accept) is written out in `REVIEW.md` with the distinction that defeats it.
+
+**Still open on this branch: ONLY the maintainer's review.** The round is closed,
+the record is written, the tree is clean, and **CI came back green on all five
+jobs**. ⚠ **That green also answers a real prior worry, so do not re-raise it:**
+`test_datatable_right_click_event.py` synthesizes `<Button-3>`, and this file
+warns that synthesized events get dropped once the shared root fills up and a
+widget goes unmapped. Both Linux legs and the Windows leg passed, so the drive is
+sound off the macOS box it was written on.
+
+⚠ **ON MERGE: archive `PLAN.md` → `development/plan-456-context-menus.md` and
+`REVIEW.md` → `development/review-456-context-menus.md`, then create `PLAN.md`
+fresh.** A stale plan describing shipped work is worse than none. Also comment on
+#456 with `gh issue comment` after the *release*, not the merge — `gh issue close
+--comment` silently drops it on an already-closed issue.
+
+#### ⚠ FOUR THINGS THIS SESSION PAID FOR — do not re-pay them
+
+- ⚠ **A CHANGELOG claim about PRIOR behavior must be checked against the OLD code,
+  not against the fix.** The #456 bullet said a misspelled value *"previously
+  turned both menus off silently"*. It did the **opposite** — the value was
+  discarded, so both menus stayed **on**. The sentence was written from the fix's
+  point of view and read as authoritative. `git show main:<file>` settles it in one
+  command. **This project has already reworded two CHANGELOGs AFTER tagging**
+  (`0.3.1`, `0.3.2`), each forcing a `gh release edit` on a published body.
+- ⚠ **A stale MEASUREMENT block is worse than a stale table, because it reads as
+  proof.** `PLAN.md` carried a verification block recording `right-click bound:
+  False` — measured **before** the decoupling commit and never re-run, so the
+  branch's own record displayed the behavior the branch had just reversed.
+  **Re-run a recorded measurement after any commit that changes what it measures.**
+  Same file also carried a stale test-count delta (`+8` where the truth was `+7`)
+  and a Tests table asserting the pre-decoupling contract. **Cause in all three:
+  `63d4cb2d` recorded the decision by APPENDING (34 insertions, 1 deletion) without
+  sweeping what it contradicted.**
+- ⚠ **LINE ENDINGS BIT THIS BRANCH THREE TIMES.** `.gitattributes` declares
+  `eol: crlf`; `PLAN.md` and `probe_456_context_menus.py` were both LF in the
+  working tree, the probe already committed that way. **`git diff` cannot see it** —
+  only `file <path>` and the *"LF will be replaced by CRLF"* stderr warning can.
+  Normalize in binary mode (strip `\r`, then re-add), never with a `$`-anchored
+  `sed`. This file has warned about it for weeks and it still recurred.
+- ⚠ **A manual edit left a stray `u` byte before `datatable.py`'s BOM
+  (`75 ef bb bf`), and the WHOLE PACKAGE became unimportable** —
+  `SyntaxError: invalid non-printable character U+FEFF`, every affected test file
+  erroring at collection. Committing it would have shipped a broken build. **Verify
+  `import bootstack` at the COMMITTED state, not just in the working tree**, when
+  anything has hand-edited a source file.
+
+⚠ **THE FULL SUITE WAS NOT RE-RUN after the review round's edits, and that is
+stated rather than implied.** Those edits are one source *comment*, `CHANGELOG.md`,
+`PLAN.md` and one new file under `development/` — no production behavior moved, and
+the 68 tests that ran cover every test file the branch touches. `PLAN.md`'s
+recorded full run stands: exit 1, 33 legs, the single failure being **#449**, an
+already-filed flake at ~1 in 10 whose file the branch's one-file `src/` diff cannot
+reach. **If you want a clean number against the pushed head, measure it — do not
+infer one.**
+
+⚠ **NOTHING ON THIS BRANCH HAD EVER OPENED A CONTEXT MENU until 2026-08-19.** The
+tests assert on the two gate predicates or on `<<RowRightClick>>` dispatch, and
+`probe_456_context_menus.py` reads gates only. `development/demo_456_context_menus.py`
+is the manual checklist that closed it — **run by the maintainer, menus confirmed.**
+Its own wiring was proven headlessly first (data row increments; group header and
+empty space do not), which is also the first live confirmation that #418/#420's "no
+row event without a record" invariant survived moving the gate. ⚠ **The header half
+still has NO automated end-to-end coverage** — that was left as a gate-2 note, not
+filed, because the predicate read *is* the seam the click path consults.
 
 ⚠ **#380 SHIPPED WITH NO CHANGELOG ENTRY, AND THAT IS CORRECT — do not "fix" it.**
 CI is not reachable by any user, and an entry earns its place by being reachable.
