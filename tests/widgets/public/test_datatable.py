@@ -833,18 +833,9 @@ def test_context_menus_defaults_to_all(app):
     assert impl._row_context_enabled() is True
 
 
-def test_context_menus_none_leaves_the_right_click_handler_unbound(app):
-    """The strongest observable, and the closest to what the reporter sees.
-
-    `'none'` is the one value that skips `bind_right_click` entirely
-    (tableview.py:1160), so no handler exists to open a menu. `<Button-3>` is
-    bound on every windowing system by that helper -- the extra aqua sequences
-    are additive -- and it is the only right-click binding the tree carries, so
-    reading it is unambiguous on all three platforms.
-    """
-    disabled = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus="none")
-    enabled = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus="all")
-
-    # Control first: the binding is observable at all through this route.
-    assert enabled._internal._tree.bind("<Button-3>"), "control failed — no right-click binding to detect"
-    assert not disabled._internal._tree.bind("<Button-3>")
+# A test asserting that `'none'` leaves `<Button-3>` unbound lived here and has
+# been REMOVED rather than repaired. It read the binding as a proxy for "no menu
+# appears", and that proxy stopped being true on purpose: the right-click is now
+# bound for every value so `on_row_right_click` keeps firing, and only the menu
+# is gated. What it was really trying to pin is covered directly, by driving a
+# real right-click, in `test_datatable_right_click_event.py`.
