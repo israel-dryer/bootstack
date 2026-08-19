@@ -120,7 +120,7 @@ It shipped in `e97b91ff` as a side effect. **Measured, and worse than predicted 
 1. **The default stays `"all"`.** Every `DataTable` ever constructed must behave byte-identically after this change. This is the whole compatibility argument for the patch line, and it gets its own test.
 2. **Validation runs before parent resolution.** Per `choices.py`'s module docstring and pinned by an existing test (`test_bad_value_is_reported_before_parent_resolution`): a bad value must be reported as a bad value, not buried under "created outside a container".
 3. **The public layer validates strictly against the lowercase set** — `validate_choice(context_menus, ("none","headers","rows","all"), ...)`, matching `selection_mode`/`sorting_mode`/`paging_mode` in the same constructor.
-   ⚠ **This is deliberately stricter than the internal**, which does `(context_menus or 'all').lower()` and so accepts `"NONE"` and `None`. **Nothing can break**: the argument is unreachable from public code today, so there is no caller to grandfather. Strictness matters here more than usual because of the failure shape — a typo like `"nones"` passes `!= "none"` at `:1159` (menus get bound) but fails **both** predicates at `:1247`/`:1250`, so it **silently disables every menu**. That is the exact "reads as a broken widget rather than a typo" case `choices.py` was written for.
+   ⚠ **This is deliberately stricter than the internal**, which does `(context_menus or 'all').lower()` and so accepts `"NONE"` and `None`. ⚠ **It is a real behavior change, and the earlier claim that "the argument is unreachable from public code" was wrong** — the kwarg was always *passable*; what was unreachable was its *effect*. So `context_menus=None` and `context_menus="NONE"` construct on `0.3.2` (silently, with both menus on) and raise here. **Accepted deliberately** (maintainer, 2026-08-19): neither is in the documented `Literal`, so there is no supported behavior to grandfather, and the rule covers every out-of-set value uniformly rather than special-casing `None`. No CHANGELOG entry — an entry earns its place by describing something a *supported* call did. Strictness matters here more than usual because of the failure shape — a typo like `"nones"` fails **both** predicates at `:1247`/`:1250`, so it **silently disables every menu**. That is the exact "reads as a broken widget rather than a typo" case `choices.py` was written for.
 
 ---
 
@@ -130,15 +130,15 @@ Placed with their siblings, not in a new file.
 
 **`tests/widgets/public/test_datatable.py`** — behavior. Assert the *named predicates*, not the raw attribute: `_header_context_enabled()` / `_row_context_enabled()` are the seams the click path actually consults, so a pass-through test that only reads `_context_menus` could pass while the gates disagree.
 
-| `context_menus` | header | row | right-click bound (`:1159`) |
+| `context_menus` | header menu | row menu | `on_row_right_click` |
 |---|---|---|---|
-| default (omitted) | True | True | yes |
-| `"all"` | True | True | yes |
-| `"headers"` | True | False | yes |
-| `"rows"` | False | True | yes |
-| `"none"` | False | False | **no** |
+| default (omitted) | True | True | fires |
+| `"all"` | True | True | fires |
+| `"headers"` | True | False | fires |
+| `"rows"` | False | True | fires |
+| `"none"` | False | False | **fires** |
 
-The `"none"` row's binding check is the strongest observable and is closest to what the reporter sees.
+⚠ **The last column was originally planned as "right-click bound (`:1159`)", reading `no` for `"none"` — the decoupling decision above REVERSES that**, and the test that asserted it was removed. `bind_right_click` is unconditional now, so the event fires for all four values and only the menus are gated. The `"none"` row is still the strongest observable: it is the one case where a table offers no menu at all yet must still report the gesture.
 
 **`tests/widgets/public/test_choice_guards.py`** — add to the existing parametrized tables: one `BAD` row (`context_menus="None"` — a plausible near-miss that also pins invariant 3's strictness) and one `GOOD` row covering all four valid values.
 
@@ -192,7 +192,9 @@ The single failure is **`test_select_change_event_value_space` — [#449](https:
 
 ⚠ **Not dismissed by re-running** — the standing rule forbids that. The argument is scope: `git diff --stat main..HEAD -- src/` is **one file**, `src/bootstack/widgets/datatable.py`, which `test_select_options.py` cannot reach. Production changes and failing test do not intersect.
 
-**Count movement bounded rather than asserted**, per the rule that has caught this file out seven times. `--collect-only` over the two changed test files: **main 53 → branch 61 = +8**, exactly the 8 tests added (4 parametrized gates + default + unbound-handler + 1 `BAD` row + 1 `GOOD` row). Nothing else moved.
+**Count movement bounded rather than asserted**, per the rule that has caught this file out seven times. `--collect-only` over the two changed test files: **main 53 → branch 60 = +7** (4 parametrized gates + default + 1 `BAD` row + 1 `GOOD` row). Nothing else moved.
+
+⚠ **This read `+8 = 61` until 2026-08-19 and was stale by exactly one.** The eighth was an unbound-handler test that the decoupling commit removed; its intent moved into `test_datatable_right_click_event.py` (8 tests), so the real total across all three files is **+15**. Re-measured, not reasoned: `pytest tests/widgets/public/test_datatable.py tests/widgets/public/test_choice_guards.py --collect-only -q`.
 
 ### Docs
 
@@ -206,10 +208,16 @@ Their code verbatim, with an introspection callback in place of a human right-cl
 resolved         : 'none'
 header menu      : False
 row menu         : False
-right-click bound: False
+right-click bound: True
 ```
 
-⚠ **A human right-click on a header and a row is still worth doing** before merge. Every check above is an assertion about the gates; nobody has watched the menu fail to appear.
+⚠ **This block read `right-click bound: False` until 2026-08-19 — it was measured BEFORE the decoupling commit and then not re-run**, so the branch's own verification record showed the behavior the branch had just reversed. Re-measured at `b88d03ac`: `<Button-3>` is present on the tree for `context_menus='none'`, which is the point of the decoupling. **Re-run a recorded measurement after any commit that changes what it measures** — a stale verification block is worse than none, because it reads as proof.
+
+✅ **DONE (maintainer, 2026-08-19): the menus were watched, and they behave.** `development/demo_456_context_menus.py` — four tables, one per value, each captioned from a single `EXPECTED` map so the window cannot drift from the contract it checks; the `'all'` table is grouped so the group-header case has something to click.
+
+⚠ **This is the ONLY evidence on the branch that a menu visually appears or fails to appear.** Everything else — the tests, `probe_456_context_menus.py` — asserts on the two gate predicates or on `<<RowRightClick>>` dispatch. It also gives the **header** half its first end-to-end check: that side has no automated coverage at all, which is why the coverage note below was closed with a manual check rather than filed.
+
+The demo's own wiring was proven before it was trusted, driven headlessly: a data-row right-click increments the counter, a **group header** and **empty space** both leave it unchanged, and `group_by("team")` produces real group parents. That last pair is also the first live confirmation that #418/#420's "no row event without a record" invariant survived moving the menu gate below the emit.
 
 ### ⚠ One process note worth carrying
 
