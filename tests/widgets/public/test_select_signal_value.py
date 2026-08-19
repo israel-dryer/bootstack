@@ -213,10 +213,20 @@ def test_read_only_is_still_honored_with_a_bound_signal(app):
 
     The value setter brackets its write with the entry's readonly state, and
     the signal now drives that same setter — so this pins the interaction
-    rather than assuming it.
+    rather than assuming it. The write below is the point: the constructor's
+    seed crosses that bracket once, but the path this branch adds is a LATER
+    write arriving from the signal, and asserting only on construction would
+    pass even if that path left the entry editable.
     """
-    sel = bs.Select(options=list(DECOUPLED), signal=bs.Signal("1"), read_only=True)
+    signal = bs.Signal("1")
+    sel = bs.Select(options=list(DECOUPLED), signal=signal, read_only=True)
 
+    assert sel.read_only is True
+
+    signal.set("3")
+    app.tk.update()
+
+    assert _shown(sel) == "Three"
     assert sel.read_only is True
 
 
