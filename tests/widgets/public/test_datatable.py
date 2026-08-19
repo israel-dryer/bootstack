@@ -787,3 +787,64 @@ def test_group_chevron_tracks_double_click(shown_app):
     opened, chevron_open = _chevron_state(impl, header)
     assert opened, "control failed — the double-click did not leave the group expanded"
     assert chevron_open, "group is expanded after a double-click but its chevron is drawn collapsed"
+
+
+# --------------------------------------------------------------------------- context menus
+
+# #456: `context_menus` was documented on the public widget and taught in
+# `docs/widgets/datatable.rst`, but was not a parameter of `DataTable.__init__`.
+# It fell into `**kwargs`, went to `_split_layout_kwargs` as though it were a
+# layout option, and was discarded without error -- so every table kept the
+# default `'all'` and `context_menus='none'` still showed both menus.
+#
+# The internal was never at fault (control in
+# `development/probe_456_context_menus.py`), so these assert the wrapper
+# forwards the value, through the two predicates the click path consults rather
+# than the raw attribute.
+
+CONTEXT_MENU_GATES = [
+    ("all", True, True),
+    ("headers", True, False),
+    ("rows", False, True),
+    ("none", False, False),
+]
+
+
+@pytest.mark.parametrize("value,header,row", CONTEXT_MENU_GATES, ids=[c[0] for c in CONTEXT_MENU_GATES])
+def test_context_menus_reaches_the_header_and_row_gates(app, value, header, row):
+    table = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus=value)
+    impl = table._internal
+
+    assert impl._header_context_enabled() is header
+    assert impl._row_context_enabled() is row
+
+
+def test_context_menus_defaults_to_all(app):
+    """The compatibility invariant: an omitted argument must not change anything.
+
+    Every DataTable ever constructed passes through this path, so a default that
+    drifted would turn a fix into a silent behavior change for every caller.
+    """
+    table = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}])
+    impl = table._internal
+
+    assert impl._context_menus == "all"
+    assert impl._header_context_enabled() is True
+    assert impl._row_context_enabled() is True
+
+
+def test_context_menus_none_leaves_the_right_click_handler_unbound(app):
+    """The strongest observable, and the closest to what the reporter sees.
+
+    `'none'` is the one value that skips `bind_right_click` entirely
+    (tableview.py:1160), so no handler exists to open a menu. `<Button-3>` is
+    bound on every windowing system by that helper -- the extra aqua sequences
+    are additive -- and it is the only right-click binding the tree carries, so
+    reading it is unambiguous on all three platforms.
+    """
+    disabled = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus="none")
+    enabled = bs.DataTable(columns=["name"], rows=[{"name": "Ada"}], context_menus="all")
+
+    # Control first: the binding is observable at all through this route.
+    assert enabled._internal._tree.bind("<Button-3>"), "control failed — no right-click binding to detect"
+    assert not disabled._internal._tree.bind("<Button-3>")

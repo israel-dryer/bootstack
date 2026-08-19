@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`DataTable`'s `context_menus` option now works.** It was documented, and shown in the widget guide, but had no effect: every table offered both right-click menus no matter what you asked for, so `context_menus="none"` still opened the column-header menu and the row menu, and there was no way to turn them off. The option is now accepted as documented — `'all'` (the default, and what every table has always done), `'headers'` or `'rows'` for one menu only, and `'none'` for neither. A misspelled value is reported instead of being ignored: it previously turned both menus off silently, which looked like the table was broken rather than like a typo. Tables that do not pass the option are unaffected. ([#456](https://github.com/israel-dryer/bootstack/issues/456))
+
 ## [0.3.2] — Read-only select fields
 
 ### Fixed
