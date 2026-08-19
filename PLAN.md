@@ -58,7 +58,7 @@ The docs make this one worse than a typo: `docs/widgets/datatable.rst:566-573` *
 
 ### Out — deliberately, and why
 
-- **`tableview.py` is untouched.** The internal is correct; the control above proves it.
+- ~~**`tableview.py` is untouched.**~~ ⚠ **REVISED 2026-08-19 — it is now in the diff.** See "The event coupling" below. The original reasoning held for the pass-through fix itself: the internal resolves and gates the value correctly, which the probe's control arm proves. What it missed is that making the argument reachable made a *pre-existing* gate reachable with it.
 - **No live `context_menus` property.** Standing principle `feedback_live_properties_runtime_need`: a property is live only when changing it has a complete effect a user would bind to a control. DataTable's four existing properties (`selection`, `current_page`, `page_count`, `data_source`) are all *runtime state*; every construction flag beside this one (`striped`, `density`, `show_status_bar`, `show_column_chooser`, …) is construction-only. A property here would also be *more* public surface than the fix needs, and would push the release question below firmly to a minor. **A setter would technically work** — `:1247`/`:1250`/`:3034` re-read the attribute on every click, though `:1159`'s binding is installed once — which is exactly why this needs to be a decision on the record rather than an omission.
 - **The general #383 gap.** Fixing the seam that swallows unknown names is `0.4.0 — Strictness and value types` work, and the audit it needs (counting wrappers that legitimately forward `**kwargs`) is not this branch's. **Cross-reference #456 from #383 as a concrete user-facing instance** — the individual fix does not stop the next one.
 - **The other unexposed DataTable capabilities** at `widget-api-audit.md:337` (`move_rows`/`hide_rows`, `show_hscrollbar`, `search_mode`, `first_page`/`last_page`). Those are genuine additions and need a minor.
@@ -81,6 +81,39 @@ Recommendation is **patch**, on the strength of the docs already promising it, b
 ✅ **DECIDED: patch** (maintainer, 2026-08-18). The CHANGELOG bullet stands as `### Fixed` and #456 goes on `0.3.x — Patch line`. ⚠ Worth carrying as precedent, because it is **not** the same call as #453's: this one *does* add a name to a public signature and was taken as a patch anyway, on the grounds that the shipped docs already promised the argument. The rule that survives is unchanged — an addition needs a minor — but **a wrapper that fails to accept what its own published docs teach is a defect in the wrapper, not a missing feature.**
 
 ---
+
+## The event coupling — added 2026-08-19, after the first two commits
+
+**Missed at scoping, and it was already written down.** [#383's comment of 2026-08-06](https://github.com/israel-dryer/bootstack/issues/383#issuecomment-5202818511) recorded this exact defect twelve days before #456 was filed, with its own probe (`development/probe_417_context_menus_reachable.py`), and closed with a warning this plan did not act on:
+
+> wiring it through is not purely additive — `context_menus="none"` also silences `on_row_right_click` […] That may well be the intended reading of "disable them", but it should be a deliberate call rather than a side effect.
+
+It shipped in `e97b91ff` as a side effect. **Measured, and worse than predicted — `'headers'` silences it too:**
+
+| `context_menus` | header menu | row menu | `on_row_right_click` (before decoupling) |
+|---|---|---|---|
+| `'all'` | ✓ | ✓ | ✓ |
+| `'headers'` | ✓ | ✗ | **✗** |
+| `'rows'` | ✗ | ✓ | ✓ |
+| `'none'` | ✗ | ✗ | **✗** |
+
+`<<RowRightClick>>` is emitted inside `_on_row_context`, one line before the menu is shown, and the whole method sat behind `_row_context_enabled()`. So the event tracked the **row menu** rather than the right-click. `'headers'` was the incoherent case: `<Button-3>` still bound, header menu still opening, widget visibly alive — and the row event silently dead.
+
+✅ **DECIDED: decouple** (maintainer, 2026-08-19 — *"I would not expect that argument to affect `on_row_right_click`"*).
+
+**`context_menus` chooses which menus the table offers; it does not choose whether a right-click is reported.** Three edits in `tableview.py`:
+
+1. `:1159` — `bind_right_click` is now unconditional. ⚠ **This is the pre-`0.3.2` binding behavior restored**, not new: the kwarg never landed before #456, so every table bound it.
+2. `_on_tree_context` — the blanket `== "none"` early return is gone; the header branch keeps its own gate, the row branch dispatches always.
+3. `_on_row_context` — the leading `_row_context_enabled()` guard moved to *below* the emit, so it gates the menu only.
+
+⚠ **The precedent was already in the file, three lines below the edit.** `on_row_double_click` is bound unconditionally with the comment *"public API and does not depend on editing"* — #417's fix, the same rule for the same reason. The new comment mirrors it deliberately.
+
+**The user-visible consequence: `on_row_right_click` behaves exactly as it does on `0.3.2`, for all four values.** Nothing about the event changes for anyone; only the menus become controllable. That strengthens the patch-line call rather than weakening it.
+
+**Tested in `tests/widgets/public/test_datatable_right_click_event.py`**, driving a real `<Button-3>` rather than reading the gate — the gate is what moved, so asserting on it would restate the implementation. Both halves are pinned: the event fires for all four values, **and** the menu still obeys all four, so a "fix" that merely deleted the gate would fail the second half.
+
+**Non-vacuity, measured:** against the pre-decoupling commit, exactly `[headers]` and `[none]` fail and the six menu-gating cases stay green.
 
 ## Invariants
 
