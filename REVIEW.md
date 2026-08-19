@@ -101,3 +101,51 @@ For `Select` specifically this is a **directional change**: the old text-space w
 ### Gate 1 after the fix step
 
 The fixes applied in this round touch `tests/` and `PLAN.md` only. **`git diff main...HEAD -- src/` is unchanged by the fix step**, so gate 1 does not open a round 2 on their account. The cap of 2 remains unspent.
+
+---
+
+## Off-protocol verification pass — 2026-08-19
+
+**Not a round.** `git diff main...HEAD -- src/` is still `select.py` alone and byte-identical to what round 1 reviewed, so **gate 1 did not open this** and **the cap of 2 remains unspent**. It was a `/code-review` run aimed at `37b871a9` — the test-only fix commit from round 1's F1 — i.e. exactly the shape gate 1 exists to keep out (`0.3.1`'s round 4 reviewed a test-only diff and yielded 3 findings about a probe's readability). It is recorded here because it produced one real finding, and because two of its three findings are re-reports that a later round must not pay for a third time.
+
+**Yield: 1 of 3.** Every claim below was re-measured independently with a control before being accepted or rejected; the probe is `verify_review_458.py` (scratchpad, not committed — it is three arms of six lines each and is reproduced inline below).
+
+### V1 — `tests/widgets/public/test_select_signal_value.py:211` — **low** — REAL, OPEN
+
+**Round 1's F1 fix reaches the signal-driven path but still cannot detect a broken readonly bracket.** The rewritten docstring says asserting only on construction "would pass even if that path left the entry editable" — implying the added `signal.set("3")` closes that gap. It does not.
+
+Neither added assertion is sensitive to the entry's ttk state. `sel.read_only` reads `self._internal.cget("readonly")`, the stored **setting**, which #453 deliberately made independent of the entry's state (the comment at `select.py:326` says so outright); and `_shown(sel) == "Three"` holds whether or not the bracket restored `readonly`.
+
+**Control — patch `SelectBox.value`'s setter to leave the entry `!readonly` after every write, then run the test's exact sequence:**
+
+```
+real code : read_only=True  shown='Three'  entry_readonly=True
+BROKEN    : read_only=True  shown='Three'  entry_readonly=False
+            assertions: read_only is True -> True ; shown == 'Three' -> True
+```
+
+Both assertions pass while the field is silently editable.
+
+⚠ **The commit message is honest about this and the docstring is not.** `37b871a9` states the scope correctly — *"It does not prove read_only itself would regress"* — so this is a docstring that overclaims relative to its own commit, not a fix that was misrepresented.
+
+**Resolution — NOT APPLIED, left for the next session.** Add `assert sel._internal.entry_widget.instate(['readonly'])` after the write. It is non-vacuous (real code reads `True`, the control reads `False`) and costs one line. Gate 2's actionable **vacuity** axis.
+
+### V2 — clearing leaves the signal stale — **RE-REPORT of F4. Do not re-file.**
+
+Identical to **F4** above, down to the mechanism (`_sync_value_set` early-returns on `None`, `_core/field_mixin.py:318`) and the `NumberField` control proving it is the shared mixin's rule. Re-measured and reproduced (`field=None signal='1'`); the finding is *true* and was never in dispute — it is **closed as #390**, whose fix lives in `field_mixin.py` and moves every `signal=` field.
+
+⚠ **Its escalation was checked and does not hold.** This pass claimed the behavior "contradicts the branch's own CHANGELOG line" (*"the signal now carries the option's value in both directions"*). That sentence continues *"set it and the matching option is selected and announced, pick an option and its value is written back"* — selection propagation in two directions, **silent on clearing**. This is the same overstatement F4 already checked and rejected against `docs/widgets/select.rst:233`, arriving a second time against a different file. Nothing false ships, in either place.
+
+### V3 — `Select` gains a public `signal` property — **RE-REPORT of F2, and now DECIDED.**
+
+Identical to **F2** above. Re-measured (`hasattr(bs.Select, "signal")` is `True` here, `False` on `main`) and true — but it was found in round 1 *and acted on*: the maintainer cut **`0.4.0 — Signal binding on fields`** on 2026-08-19 to carry #458/#459/#460/#461, and `main`'s CLAUDE.md records *"Do not re-litigate this as '#458 was only an addition' — the addition was never the binding constraint"* (#461 breaks working code and is the stronger reason).
+
+⚠ **The framing was stale, not merely redundant.** It read the addition as one that "would ship as an accidental addition rather than a decided one", which was true when round 1 found it and false by the time this pass ran. **The milestone question is settled; do not reopen it.**
+
+**One residual is genuinely live and is NOT part of the settled question:** now that the addition is deliberate and ships in a minor, the #458 CHANGELOG bullet still does not mention that `Select` gained a public `signal` property. Deciding whether to announce it is the maintainer's call, not a defect.
+
+### ⚠ The harness failure, which cost two of the three findings
+
+**The reviewer was not pointed at `REVIEW.md`, and it was reading against a `main` that had moved.** Round 1's record was sitting on the branch — F4 and F2 are written up in it *specifically* so a later round would not re-file them, and the round 1 handoff says so in as many words. Meanwhile `main` had advanced two `docs(claude):` commits carrying the `0.4.0` decision, so the branch's own copy of `CLAUDE.md` is behind and does not contain it.
+
+This is `0.3.1` round 3 repeating verbatim: three of its four findings were already-triaged items because its reviewer was handed no triage state, while round 2's reviewer was handed `REVIEW.md` and re-filed nothing. **Hand the reviewer `REVIEW.md` AND check whether `main` has moved under the branch.** Applying this file's own test — *did the evidence change, or the cost of acting?* — for V2 and V3 **neither** changed.
