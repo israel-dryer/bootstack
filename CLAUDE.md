@@ -896,7 +896,27 @@ and #379 all sat here as open work after being closed; check the state first.
 Check with:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-### ★ START HERE (2026-08-19, latest) — #458 HAS HAD ITS ROUND 1, AND IT IS NOW A MINOR: `0.4.0 — Signal binding on fields`.
+### ★ START HERE (2026-08-19, latest) — #458: ROUND 1 DONE, IT IS NOW A MINOR (`0.4.0 — Signal binding on fields`), AND **ONE LINE OF TEST CODE IS OPEN**.
+
+**⏭ THE NEXT ACTION IS ONE LINE OF TEST CODE.** A `/code-review` pass ran against `37b871a9` on 2026-08-19 — off-protocol, see below — and found that **round 1's own F1 fix is incomplete**. The rewritten `test_read_only_is_still_honored_with_a_bound_signal` now drives the signal, but **neither of its assertions can detect a broken readonly bracket**. Add `assert sel._internal.entry_widget.instate(['readonly'])` after the `signal.set("3")` and the branch is finished. **The full record is `REVIEW.md` on the branch, section `Off-protocol verification pass`** — read it rather than re-deriving; it carries the control.
+
+**The control was RUN rather than assumed** — patch `SelectBox.value`'s setter to leave the entry `!readonly` after every write, then run the test's exact sequence:
+
+```
+real code : read_only=True  shown='Three'  entry_readonly=True
+BROKEN    : read_only=True  shown='Three'  entry_readonly=False
+            assertions: read_only is True -> True ; shown == 'Three' -> True
+```
+
+Both assertions pass **while the field is silently editable**, because `sel.read_only` reads `cget("readonly")` — the stored **setting**, which #453 decoupled from the entry state on purpose — and the shown-text assertion holds either way. The proposed assertion reads `True` on real code and `False` on the control, so it is not vacuous. ⚠ **`37b871a9`'s COMMIT MESSAGE states this scope correctly** (*"It does not prove read_only itself would regress"*); it is the test DOCSTRING that overclaims. **A commit message and the artifact it describes can disagree, and the docstring is the half a later reader trusts.**
+
+⚠ **TWO OF THAT PASS'S THREE FINDINGS WERE RE-REPORTS — DO NOT PAY FOR THEM A THIRD TIME.** Both are true and both are already closed in `REVIEW.md`: **clearing a signal-bound field leaves the signal stale** is round 1's **F4**, closed as **#390** (any real fix lives in `field_mixin.py` and moves every field that takes a `signal=`); **`Select` gains a public `signal` property** is round 1's **F2**, and is the very thing `0.4.0` was cut for. ⚠ **The clearing finding did arrive with a NEW escalation, and it was CHECKED and does not hold** — that the behavior contradicts the CHANGELOG's *"the signal now carries the option's value in both directions"*. That sentence continues *"set it and the matching option is selected and announced, pick an option and its value is written back"*: selection propagation in two directions, **silent on clearing**. F4 had already rejected the identical overstatement against `docs/widgets/select.rst:233`; it simply came back pointed at a different file. **Nothing false ships, in either place.**
+
+⚠ **THE HARNESS FAILURE COST BOTH OF THEM, AND IT IS `0.3.1` ROUND 3 VERBATIM.** The reviewer was **not pointed at `REVIEW.md`** — which sits on the branch and writes F2 and F4 up *specifically* so a later round would not re-file them — and it was reading against a **`main` that had moved two `docs(claude):` commits ahead** carrying the `0.4.0` decision, so the branch's own copy of this file does not contain it. **Hand the reviewer `REVIEW.md`, AND check whether `main` has moved under the branch.** This file's own test settles both in one question: *did the evidence change, or the cost of acting?* For these two, **neither did**.
+
+⚠ **AND THE PASS ITSELF SHOULD NOT HAVE OPENED.** It reviewed `37b871a9`, a **test-only** commit — exactly what gate 1 exists to keep out, and `0.3.1`'s round 4 did the same and spent three of its five findings on a probe's readability. It is recorded as an `Off-protocol verification pass` rather than as a round 2, and **the cap of 2 is still UNSPENT**: `git diff main...HEAD -- src/` remains `select.py` alone, byte-identical to what round 1 reviewed.
+
+**⏭ ONE RESIDUAL, SEPARABLE FROM THE SETTLED MILESTONE QUESTION:** now that `Select.signal` is a *deliberate* addition shipping in a minor, the #458 CHANGELOG bullet still does not mention it. Announcing it is a maintainer call, not a defect.
 
 **✅ ROUND 1 RAN and the branch is clean.** Four findings, **none in production
 code** — one real test defect (fixed), one false claim in `PLAN.md` (corrected),
@@ -942,7 +962,7 @@ section is unchanged and still current.
 | | |
 |---|---|
 | `main` | **`5b009456`** — #457 merged as `0aad8427`, then the #456 plan/review archived into `development/`. No product change since the merge |
-| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`6db756b1`**, pushed. **NO PR yet. Round 1 HAS RUN**; `PLAN.md`, `REVIEW.md` and the review brief all live ON THAT BRANCH |
+| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`1557e7da`**, pushed. **NO PR yet. Round 1 HAS RUN, plus an off-protocol verification pass**; `PLAN.md`, `REVIEW.md` and the review brief all live ON THAT BRANCH. ⚠ **`REVIEW.md` now carries BOTH records** — hand it to any later reviewer, or two settled findings come back a third time |
 | ✅ SHIPPED to `main` | **#456** (PR #457, merge `0aad8427`) — `DataTable(context_menus=)` now reaches the widget, and `on_row_right_click` is decoupled from it |
 | suite, `main` | **1443 passed / 21 skipped** on the **Windows** box, py 3.12, `pandas` absent — **derived** 2026-08-19, not directly measured (see the branch row). Linux at `5921dc41` read `1427 / 22`; those are different platforms and not comparable |
 | suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, **re-measured 2026-08-19 after round 1's fix step**, at `6db756b1`, Windows, py 3.12, `pandas` absent. Identical to the pre-round figure at `1f9a62d1`, which is the expected result — the fix step edited a test BODY, it did not add or remove a test. Shared leg reconciles against its own collection line: `collected 1150 / 75 deselected / 1 skipped / 1075 selected`, and `1062 passed + 13 runtime skips = 1075`. ⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the collection line — sum the per-leg summary lines only** |
