@@ -148,7 +148,14 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-20) — the wrapper audit RAN and MERGED (PR #464). Next: the maintainer's four decisions.
+### ★ START HERE (2026-08-20) — the wrapper audit MERGED. Next: answer ONE decision in `PLAN.md`, then implement #383 gap 3.
+
+**⏭ THE NEXT ACTION IS ONE MAINTAINER DECISION, AND `PLAN.md` AT THE ROOT IS WRITTEN FOR IT.** The audit's headline finding — **40 of 52 wrappers silently accept an unrecognised keyword** — is #383 gap 3, and the fix is not a design problem. `_BooleanControlBase.__init__` already carries the six-line guard for five widgets. **Only PLACEMENT is open**, and `PLAN.md` §1 states both options with a recommendation. **Read it; do not re-derive it.** Three things from it that a fresh session will otherwise get wrong:
+
+- ⚠ **`App` and `Window` ARE NOT a third shape, which is the easy misread of the count below.** They forward their catch-all deliberately (`app.py:172`, `window.py:179`) and simply never call `_split_layout_kwargs`, because a top-level window is never placed in a layout — so **a seam guard does not touch them and they need no opt-out.** The real split is **40 defective / 5 already correct / 5 needing an opt-out / 2 unaffected.**
+- ⚠ **DEFAULT-STRICT AT THE SEAM SILENTLY KILLS FOUR CRAFTED ERROR MESSAGES.** `Select`, `DateField`, `NumberField` and `TimeField` run `_split_layout_kwargs` **before** their `if "textsignal" in kwargs: raise`, so the generic error would fire first — including on #458's public explanation of a deliberate behaviour change. **Move each check above its split, in the same commit, and pin the specific text with a test.** These four are the ones most likely to be skipped, because they *look* strict already.
+- **The seam is cheaper than it looks:** `_split_layout_kwargs` is a `@staticmethod` and so cannot name the widget in an error, but **all 51 call sites already spell it `self._split_layout_kwargs(...)`**, so converting it to an instance method is source-compatible everywhere and yields `type(self).__name__`. ⚠ **Prefer a DECLARATIVE opt-out (a class flag) over a per-call keyword** — it is what collapses the eventual durable guard to ~10 lines instead of another source scan.
+
 
 **⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` before touching any of them, and do not re-derive it. The instrument is `development/probe_wrapper_parameter_delta.py` (arms `scan`, `control`, `leftovers`, `roundtrip`); **re-run it rather than reading the wrappers again.**
 
@@ -165,11 +172,11 @@ release has already run on.
 - ⚠ **#383 GAP 3 IS NO LONGER BLOCKED.** Its open question was *"the shared split seam needs the wrappers that legitimately forward `**kwargs` counted first."* Counted: **40 drop, 5 reject, 5 forward, 2 never split.** And **the fix already ships** — `_BooleanControlBase.__init__` has the six-line guard covering five public widgets. Gap 3 needs no design, only placement.
 - ⚠ **`Select`, `DateField`, `NumberField` and `TimeField` LOOK strict and are NOT.** They carry an `if "textsignal" in kwargs: raise` guard, which rejects **one known name** and says nothing about the rest. **A specific-key guard is not a leftover guard** — the audit's own static pass credited all four with rejecting until construction disproved it.
 - ⚠ **NOT COVERED, AND NOT CLEAN: 84 params across `AppShell` (31), `Workbench` (34), `ThemeToggle`, `Notification`, `Snackbar`.** They build no internal in their own `__init__`. `App`, `Window` and `Splash` were in that list until the probe learned the alias hop.
-- ⚠ **THE SURFACE FIGURE MOVED AND BOTH NUMBERS ARE RIGHT.** `PLAN.md` says **77 classes / 890 params / 62 catch-alls**; the scan reports **65 / 810 / 52**. The plan counted every class in the wrapper modules; the scan counts only what a public `__all__` exports, skipping 17. **Different populations, not a discrepancy** — say which you mean.
+- ⚠ **THE SURFACE FIGURE MOVED AND BOTH NUMBERS ARE RIGHT.** The audit plan (`development/plan-463-wrapper-audit.md`) says **77 classes / 890 params / 62 catch-alls**; the scan reports **65 / 810 / 52**. The plan counted every class in the wrapper modules; the scan counts only what a public `__all__` exports, skipping 17. **Different populations, not a discrepancy** — say which you mean.
 
 **⏭ THE PASS IS OVER; WHAT IS LEFT IS FOUR MAINTAINER DECISIONS, none of which a session should make alone:**
 
-1. **Mode 3: shared seam or per-wrapper?** A seam is one change, but **a blanket guard breaks the five wrappers that forward leftovers on purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar). `App`/`Window` never split at all — a third shape.
+1. **Mode 3: shared seam or per-wrapper?** ⏭ **ANALYSED — see `PLAN.md` §1, which carries both options, the recommendation and the evidence.** A seam is one change, but **a blanket guard breaks the five wrappers that forward leftovers on purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), which need an opt-out. Lands on **#383 / `0.5.0`** — the fix raises, which is that milestone's rule.
 2. ⚠ **#460's fix vs its milestone.** Dropping `| None` from eight annotations **RETYPES WHAT A PUBLIC PROPERTY RETURNS**, which is `0.5.0`'s membership rule verbatim. #460 sits on **`0.4.0`**, which it gates. **Settle this before `0.4.0` is cut.**
 3. **#463's disposition** — close with the table as its artifact, or re-scope it into the durable guard (below). Both are on the issue as a comment.
 4. **Whether the `_impl` naming inconsistency gets an issue at all** (`readonly`/`read_only`, `maxvalue`/`maximum`, `items`/`options`/`values`, `override_redirect`/`overrideredirect`). **No user can see it**; the plan scoped `_impl` out.
@@ -196,7 +203,7 @@ release has already run on.
 |---|---|
 | `main` | **`51a44c1c`** — PR #464 merged 2026-08-20 (the wrapper audit). `PLAN.md` archived to `development/plan-463-wrapper-audit.md` and recreated as an explicit empty |
 | branches | **NONE in flight.** `audit/wrapper-parameter-delta` merged and deleted local + remote (head **`41828ba2`**); `fix/select-signal-value-458` merged earlier (head **`51d09f6e`**). ⚠ **Both are squash/merge history now, so NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **`PLAN.md` PRESENT and DELIBERATELY EMPTY** — it says no implementation is planned and names the four decisions instead. **NO `REVIEW.md`** — correct, and **no round was owed**: gate 1 fires on a non-empty `git diff -- src/` and nothing else, and #464's was empty |
+| root of `main` | **`PLAN.md` PRESENT — the #383 gap-3 plan, NOT STARTED and blocked on its own §1.** Written 2026-08-20 for the next session; round cap **3**. The audit's plan is archived at `development/plan-463-wrapper-audit.md`. **NO `REVIEW.md`** — correct, no round has opened |
 | released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
 | next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
@@ -487,8 +494,9 @@ must clear validation state.
     catch-all, **40 drop / 5 reject / 5 forward / 2 never split**, and the guard
     already ships in `_BooleanControlBase.__init__` at six lines. What is left is
     placement — and ⚠ **a blanket seam guard breaks the five that forward on
-    purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), while `App` and
-    `Window` never split at all.
+    purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), which need an
+    opt-out. `App`/`Window` forward too but never call the split, so a seam
+    guard does not reach them. ⏭ **`PLAN.md` carries the whole analysis.**
 - **#369** — the selection family disagrees on off-list values (`SelectButton`
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
