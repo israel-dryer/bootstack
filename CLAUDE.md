@@ -160,7 +160,13 @@ release has already run on.
 
 ⚠ **THIS PASS SHIPS NO PRODUCTION CODE.** `git diff main...HEAD -- src/` must stay empty for its whole life. It produces a probe, a ranked table, and issues. **Fixes are scoped separately, by the maintainer, after the table exists.**
 
-⚠ **PLACEMENT IS NOT DECIDED, deliberately.** #383 is arguably this issue in embryo — it already carries three gaps and gap 3 is mode 1 generalized — so this can widen #383 or become its own milestone with **#383, #460, #461, #455**. It gates nothing, so the rule says ask rather than assign.
+✅ **PLACEMENT DECIDED (maintainer, 2026-08-20): [#463](https://github.com/israel-dryer/bootstack/issues/463) on its own UNNUMBERED milestone `Wrapper and internal parity`.**
+
+⚠ **The reason it is unnumbered is specific and should survive: the findings will span compatibility categories.** Some fixes will RAISE where the framework accepts today (`0.5.0`-shaped), some add no surface (patch-line-shaped), some add public API (minor-shaped). **Until the table exists nobody knows the mix or the size**, so a release number would promise unmeasured scope. Findings get milestoned individually, by compatibility, once they are real.
+
+⚠ **NOT folded into `0.5.0 — Strictness and value types`, and that is settled on `0.5.0`'s OWN terms** — its membership rule is *"a change belongs here if it RAISES where the framework currently accepts, or RETYPES what a public property returns"*, and the audit as a whole does not meet it. **Do not re-propose the merge.**
+
+**Nothing was moved onto it.** #383 stays on `0.5.0` (its fix raises, so it meets that rule already); #460 and #461 stay on `0.4.0`, which they gate. ⏭ **#455 is the obvious candidate and was deliberately left alone** — unmilestoned, latent, and literally mode 4 (`Field.enable()/disable()/readonly()` write the ttk readonly state without re-deriving). **Moving it is a scope call, so it is a proposal, not a decision.**
 
 #### STATE OF THE WORLD
 
@@ -173,7 +179,7 @@ release has already run on.
 | next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **1500 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-20, Windows box, `py -3.12`. ⚠ **See the environmental note below before comparing this to anything older** |
-| open milestones | **10** |
+| open milestones | **11** — verified against `gh` 2026-08-20, and they agree 1:1 with the table below. `Wrapper and internal parity` is the new one |
 
 ⚠ **A NEW ENVIRONMENTAL PAIR — AND IT IS BIGGER THAN THE PANDAS ONE THIS FILE ALREADY DOCUMENTS.** The Windows box now has **matplotlib** installed, so **`test_chart.py` (44 tests behind a module-level `pytest.importorskip("matplotlib")`) COLLECTS instead of being the collection-time skip.** `pandas` arrived too. Against the `1458 / 21` recorded on 2026-08-19:
 
@@ -255,6 +261,7 @@ and fix the table.**
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
+| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#463**. **NEW, cut 2026-08-20**, and the next work out the door | 1 |
 | — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, #449. Reads `open=6 closed=2`. It is rolling, so it does **NOT** close when a patch ships | 6 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not

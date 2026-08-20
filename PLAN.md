@@ -1,5 +1,6 @@
 # PLAN — wrapper/internal parameter audit (measurement pass)
 
+**Issue:** [#463](https://github.com/israel-dryer/bootstack/issues/463) · **Milestone:** `Wrapper and internal parity` (unnumbered — see Placement)
 **Branch:** not yet cut — suggested `audit/wrapper-parameter-delta`
 **Base:** `main` @ `41c8bad1` (the #458 merge)
 **Status:** ⏭ **NOT STARTED.** Written 2026-08-20 by the session that merged #458, for the session that runs this.
@@ -85,6 +86,16 @@ State in the output, mechanically:
 - **`_impl` widget defects.** The maintainer's framing is wrapper-vs-internal; an internal bug found on the way is filed, not chased.
 - **The durable guard.** A one-time audit decays; a `test_public_surface.py`-style test at the *parameter* level is what prevents recurrence. **That is the more valuable half and it is a separate branch** — it needs the failure-mode taxonomy this pass produces in order to be designed to it. ⚠ Note the existing `tests/test_public_surface.py` has a known blind spot of exactly this kind (it gates the top-level name set but never asserts a submodule is unreachable as `bs.*`, which is why the `bs.events.X` drift went uncaught for two months). **Design the new guard to the modes, or it inherits the same shape.**
 
-## Placement — a maintainer call, not decided here
+## Placement — ✅ DECIDED (maintainer, 2026-08-20)
 
-**#383 is arguably this issue in embryo** — it already carries three gaps, and gap 3 is mode 1 generalized. This can either widen #383 or become its own milestone with **#383, #460, #461 and #455** as members. ⚠ **Not assigned** — `CLAUDE.md`'s rule is that placement is only automatic for a blocker, and this gates nothing.
+**Issue [#463](https://github.com/israel-dryer/bootstack/issues/463), on its own UNNUMBERED milestone [`Wrapper and internal parity`](https://github.com/israel-dryer/bootstack/milestone/17).**
+
+⚠ **It is unnumbered for a reason specific to this milestone, and the reason should survive: the findings will span compatibility categories.** Some fixes will RAISE where the framework currently accepts (`0.5.0`-shaped), some are pure bug fixes adding no surface (patch-line-shaped), and some will add public API (minor-shaped). **Until the table exists nobody knows the mix or the size**, so assigning a release would promise a scope that has not been measured. Findings get milestoned individually, by compatibility, once they are real.
+
+⚠ **It was NOT folded into `0.5.0 — Strictness and value types`, and that is settled on `0.5.0`'s OWN terms.** That milestone's membership rule is explicit — *"a change belongs here if it RAISES where the framework currently accepts, or RETYPES what a public property returns"* — and the audit as a whole does not meet it. Only some of its future findings would. **Do not re-propose the merge.**
+
+**Nothing was moved onto it, deliberately:**
+
+- **#383 stays on `0.5.0`.** Its fix raises, so it meets that milestone's rule on its own terms — it is the closest relative of this work but it is correctly placed already.
+- **#460 and #461 stay on `0.4.0`**, which they gate. Pulling them here would have changed what `0.4.0` ships.
+- **#455 is the obvious candidate and was left alone.** It is unmilestoned, latent (zero callers in `src`, `tests` or `development`), and is literally mode 4 — `Field.enable()/disable()/readonly()` write the ttk readonly state without re-deriving. **Moving it is a scope call, so it is a proposal, not a decision.**
