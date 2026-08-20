@@ -128,7 +128,20 @@ Both assertions pass while the field is silently editable.
 
 ⚠ **The commit message is honest about this and the docstring is not.** `37b871a9` states the scope correctly — *"It does not prove read_only itself would regress"* — so this is a docstring that overclaims relative to its own commit, not a fix that was misrepresented.
 
-**Resolution — NOT APPLIED, left for the next session.** Add `assert sel._internal.entry_widget.instate(['readonly'])` after the write. It is non-vacuous (real code reads `True`, the control reads `False`) and costs one line. Gate 2's actionable **vacuity** axis.
+**Resolution — ✅ APPLIED 2026-08-20.** `assert sel._internal.entry_widget.instate(["readonly"])` added after the signal write, and the overclaiming docstring rewritten to say which check is load-bearing and why the other two cannot be. Gate 2's actionable **vacuity** axis.
+
+**The control was re-run against the applied fix rather than carried over from the finding.** Breaking the applier in `selectbox.py` — `self.entry_widget.state(['!readonly'])` unconditionally, replacing the `typeable` bracket — and running the single test:
+
+```
+real code : 1 passed
+BROKEN    : 1 failed
+            >  assert sel._internal.entry_widget.instate(["readonly"])
+            E  AssertionError: assert False
+```
+
+⚠ **The three assertions ABOVE the new one all passed in the broken arm** — the failure traceback shows `read_only is True`, `_shown(sel) == "Three"` and `read_only is True` all clearing before the new line trips. That is the finding's claim reproduced directly: the old test was blind to a silently editable field. `selectbox.py` was restored from a byte copy and `git status -- src/` is clean, so no part of the control survives in the diff.
+
+**This does NOT open a round.** The change is tests-only plus this record, so `git diff main...HEAD -- src/` is unmoved and gate 1 does not trigger. **Cap 2, spent 1.**
 
 ### V2 — clearing leaves the signal stale — **RE-REPORT of F4. Do not re-file.**
 

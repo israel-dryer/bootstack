@@ -2,8 +2,13 @@
 
 **Branch:** `fix/select-signal-value-458` · **Base:** `main` @ `5b009456`
 **Issue:** [#458](https://github.com/israel-dryer/bootstack/issues/458) (external report, `bLynnb2762`)
-**Release line:** `0.3.x — Patch line`, pending the note below. Does not raise where working code used to succeed — `textsignal=` was silently discarded before, so nothing could have depended on it. ⚠ **It does add one piece of public surface**, corrected in round 1: inheriting `ValueSignalMixin` gives `Select` a public `signal` property, which `main` does not have (`hasattr` is `False` there, `True` here). Small — nine public wrappers already define that property and three more inherit it from the same mixin, so this closes a family gap rather than introducing a concept — but the standing rule is that an addition requires a minor even when nothing breaks. **Left as a maintainer call; see `REVIEW.md` F2.**
-**Round cap: 2** (patch branch, REVIEW-PROTOCOL.md gate 3). Declared before implementation. Survivors at the cap are filed as issues, not fixed here.
+**Release line:** ✅ **DECIDED (maintainer, 2026-08-19): `0.4.0 — Signal binding on fields`**, a new minor cut to carry #458, #459, #460 and #461 together. **This supersedes the `0.3.x — Patch line` this plan was written against** — the paragraph below is kept because it is what round 1 corrected and what put the question to the maintainer, not because the line is still open.
+
+Round 1's F2 found the branch **adds one piece of public surface**: inheriting `ValueSignalMixin` gives `Select` a public `signal` property, which `main` does not have (`hasattr` is `False` there, `True` here). Small — nine public wrappers already define that property and three more inherit it from the same mixin, so this closes a family gap rather than introducing a concept — but the standing rule is that an addition requires a minor even when nothing breaks. It does not raise where *working* code used to succeed: `textsignal=` fell into `**kwargs` and was silently discarded (#383's third gap), so nothing could have depended on it.
+
+⚠ **The addition was NOT the binding constraint, and this plan should not be read as if it were.** #461 is the stronger reason for the minor: seeding a `SelectButton` signal with an option's **label** works today and is the only spelling that does, so it is necessarily what any current user is using, and fixing #461 makes it wrong. That is #381's shape, and #381 needed a minor for it.
+
+**Round cap: 2** (REVIEW-PROTOCOL.md gate 3). Declared before implementation. Survivors at the cap are filed as issues, not fixed here. **Spent: 1.** Round 1 ran 2026-08-19; the later `/code-review` pass was **off-protocol** — it reviewed a test-only commit, which gate 1 exists to keep out — and is recorded in `REVIEW.md` as a verification pass rather than a round. `git diff main...HEAD -- src/` is still `select.py` alone, byte-identical to what round 1 reviewed.
 
 ---
 
