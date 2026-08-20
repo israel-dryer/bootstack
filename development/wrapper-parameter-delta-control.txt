@@ -1,0 +1,17 @@
+﻿==============================================================================
+NON-VACUITY CONTROLS
+==============================================================================
+  [PASS] #461   SelectButton signal= -> textsignal= (mode 2, OPEN)  found=True  want=True
+  [PASS] #460   .signal annotated `| None` it cannot return (mode 5, OPEN) found=True  want=True
+  [PASS] #383g3 TextField accepts an unknown name silently (mode 3, OPEN) found=True  want=True
+  [PASS] #458   Select signal= -> textsignal= (mode 2, FIXED on main) found=False want=False
+         (#460 names EIGHT widgets; this scan finds 8: Checkbox, PasswordField, PathField, SelectButton, SpinnerField, Switch, TextField, ToggleButton)
+
+  #458 is the strongest control available -- a real instance of the
+  exact mode the tool exists to catch, with a known before and after.
+  The same scan run against the pre-fix commit MUST find it:
+
+  [PASS] #458 at 1f9a62d1^ (the pre-fix commit)                     found=True  want=True
+        (58 files parsed there, parse failures: 0)
+
+CONTROLS: ALL PASS -- a null result from this tool is meaningful
