@@ -215,8 +215,13 @@ def test_read_only_is_still_honored_with_a_bound_signal(app):
     the signal now drives that same setter — so this pins the interaction
     rather than assuming it. The write below is the point: the constructor's
     seed crosses that bracket once, but the path this branch adds is a LATER
-    write arriving from the signal, and asserting only on construction would
-    pass even if that path left the entry editable.
+    write arriving from the signal.
+
+    The entry state is asserted directly because neither of the other two
+    checks can see it. `read_only` reads the stored SETTING, which #453
+    deliberately decoupled from the entry state, and the shown text is
+    correct either way — so a setter that left the entry `!readonly` after
+    its write would pass both while the field was silently editable.
     """
     signal = bs.Signal("1")
     sel = bs.Select(options=list(DECOUPLED), signal=signal, read_only=True)
@@ -228,6 +233,7 @@ def test_read_only_is_still_honored_with_a_bound_signal(app):
 
     assert _shown(sel) == "Three"
     assert sel.read_only is True
+    assert sel._internal.entry_widget.instate(["readonly"])
 
 
 def test_a_signal_seeded_after_value_wins(app):
