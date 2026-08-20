@@ -148,17 +148,39 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-20) — #458 MERGED. Next: the wrapper/internal parameter audit.
+### ★ START HERE (2026-08-20) — the wrapper audit RAN. PR #464 open. Next: the maintainer's four decisions.
 
-**⏭ THE NEXT ACTION IS A MEASUREMENT PASS, AND `PLAN.md` AT THE ROOT IS ALREADY WRITTEN FOR IT.** The maintainer's framing (2026-08-20): *"the wrappers were not sufficiently designed or reviewed. In many cases the bugs derive from the wrapper, not the `_impl` widgets... at some point we need to do a more in-depth review of the wrapper vs original widget so that we can get these before they surface."*
+**⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` (on the branch) before touching any of them, and do not re-derive it.
 
-**Read `PLAN.md` before starting.** It carries the five failure modes, the measured surface, the oracle, the non-vacuity controls and the scope boundaries. Three things from it worth knowing before you open it:
+| mode | what | measured | verdict |
+|---|---|---|---|
+| 1 | never forwarded | **0** | clean |
+| 2 | wrong destination | 100 renamed destinations | **1 defect — #461.** The other 99 are `_impl` spelling |
+| 3 | swallowed as a layout key | **40 of 52 wrappers** | **THE finding.** Posted on #383 as its gap 3 |
+| 4 | accepted then ignored | not statically decidable | 1 weak candidate (`Carousel.index`) |
+| 5 | the type lies | **8** | **= #460's population exactly**, `TextArea` cleared |
 
-- **The surface is 77 wrapper classes / 890 named params / 62 with a `**kwargs` catch-all** — measured, not estimated, and ~4x the #381 sweep. **This cannot be a reading review.**
-- **The existing check catches ONE of five failure modes.** `git show main:<wrapper> | grep <kwarg>` finds a kwarg that is never forwarded. It does not find one forwarded to the **wrong destination** (#458, #461), one **swallowed as a layout key** (#456), one **accepted then ignored** (#453), or an **annotation that lies** (#460).
-- **The controls are free, because three known positives are still OPEN on `main`** — #461 (mode 2), #460 (mode 5), #383 gap 3 (mode 1) — **and #458 itself is a fixed one**, so the scan must find it at `main~` and not at `main`. ⚠ **Run it both ways before believing any "no findings".**
+- ⚠ **MODE 2 CAME OUT ESSENTIALLY CLEAN, AND THAT IS A NEGATIVE RESULT WORTH SOMETHING ONLY BECAUSE THE CONTROLS PASS** — the same scan finds #461 on `main` and finds #458 at the pre-fix commit. **The wrapper layer's forwarding is in better shape than the recent defect run suggested; the exposure is strictness (mode 3), not mis-wiring.**
+- **What got 100 mode-2 rows down to 1 was DIVERGENCE**, not the rename itself: a public name that lands on a *different* internal key in some other wrapper. `max_value -> maxvalue` is ordinary; `signal -> textsignal` when nine siblings say `signal` is #461. **Reuse that ranking, don't re-invent one.**
+- ⚠ **#383 GAP 3 IS NO LONGER BLOCKED.** Its open question was *"the shared split seam needs the wrappers that legitimately forward `**kwargs` counted first."* Counted: **40 drop, 5 reject, 5 forward, 2 never split.** And **the fix already ships** — `_BooleanControlBase.__init__` has the six-line guard covering five public widgets. Gap 3 needs no design, only placement.
+- ⚠ **`Select`, `DateField`, `NumberField` and `TimeField` LOOK strict and are NOT.** They carry an `if "textsignal" in kwargs: raise` guard, which rejects **one known name** and says nothing about the rest. **A specific-key guard is not a leftover guard** — the audit's own static pass credited all four with rejecting until construction disproved it.
+- ⚠ **NOT COVERED, AND NOT CLEAN: 84 params across `AppShell` (31), `Workbench` (34), `ThemeToggle`, `Notification`, `Snackbar`.** They build no internal in their own `__init__`. `App`, `Window` and `Splash` were in that list until the probe learned the alias hop.
+- ⚠ **THE SURFACE FIGURE MOVED AND BOTH NUMBERS ARE RIGHT.** `PLAN.md` says **77 classes / 890 params / 62 catch-alls**; the scan reports **65 / 810 / 52**. The plan counted every class in the wrapper modules; the scan counts only what a public `__all__` exports, skipping 17. **Different populations, not a discrepancy** — say which you mean.
 
-⚠ **THIS PASS SHIPS NO PRODUCTION CODE.** `git diff main...HEAD -- src/` must stay empty for its whole life. It produces a probe, a ranked table, and issues. **Fixes are scoped separately, by the maintainer, after the table exists.**
+**⏭ THE PASS IS OVER; WHAT IS LEFT IS FOUR MAINTAINER DECISIONS, none of which a session should make alone:**
+
+1. **Mode 3: shared seam or per-wrapper?** A seam is one change, but **a blanket guard breaks the five wrappers that forward leftovers on purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar). `App`/`Window` never split at all — a third shape.
+2. ⚠ **#460's fix vs its milestone.** Dropping `| None` from eight annotations **RETYPES WHAT A PUBLIC PROPERTY RETURNS**, which is `0.5.0`'s membership rule verbatim. #460 sits on **`0.4.0`**, which it gates. **Settle this before `0.4.0` is cut.**
+3. **#463's disposition** — close with the table as its artifact, or re-scope it into the durable guard (below). Both are on the issue as a comment.
+4. **Whether the `_impl` naming inconsistency gets an issue at all** (`readonly`/`read_only`, `maxvalue`/`maximum`, `items`/`options`/`values`, `override_redirect`/`overrideredirect`). **No user can see it**; the plan scoped `_impl` out.
+
+**The durable guard is the half that does not decay, and it is DELIBERATELY NOT BUILT.** A parameter-level `test_public_surface.py`-shaped test written **to these five modes**. It needed the taxonomy to exist first; it does now. ⚠ **It must not inherit the existing file's blind spot** (that one gates the top-level *name set* and never asserts a submodule is unreachable as `bs.*` — which is how the `bs.events.X` drift survived two months), **and it must treat those 84 unanalysed params as a hole, not as coverage.**
+
+⚠ **THE PASS SHIPPED NO PRODUCTION CODE, as planned.** `git diff main...HEAD -- src/` was empty for its whole life. **Fixes are scoped separately, by the maintainer.**
+
+⚠ **FIVE TOOL DEFECTS WERE FOUND WHILE RUNNING IT, AND FOUR WERE CAUGHT BY RUNNING SOMETHING RATHER THAN READING IT** — three of those were **false alarms pointing at working code** (`TimeField(read_only=True)` was reported as writing a key nothing accepts; it works). **A static wrapper audit that is not cross-checked against construction ships false findings.** That is why the probe has an arm that constructs all 52 wrappers and compares the outcome to the static verdict (51 agree, 0 disagree). **Keep that habit for the guard.**
+
+⚠ **AND THE `main~` TRAP, WHICH COST THE FIRST CONTROL RUN A FALSE FAILURE:** the #458 before/after arm was pointed at `main~`, which is **two `docs(claude):` commits AFTER the merge** — the defect was long gone. **The commit that bounds a control has to be the one the defect actually lived in**, here `1f9a62d1^`, the fix's parent. It is pinned with a comment saying why.
 
 ✅ **PLACEMENT DECIDED (maintainer, 2026-08-20): [#463](https://github.com/israel-dryer/bootstack/issues/463) on its own UNNUMBERED milestone `Wrapper and internal parity`.**
 
@@ -173,8 +195,8 @@ release has already run on.
 | | |
 |---|---|
 | `main` | **`41c8bad1`** — PR #462 merged 2026-08-20. #458's `PLAN.md`/`REVIEW.md` archived to `development/`, and `PLAN.md` recreated for the audit above |
-| branches | **NONE in flight.** `fix/select-signal-value-458` merged; delete it local and remote once you have recorded the head SHA (**`51d09f6e`**) |
-| root of `main` | **`PLAN.md` PRESENT** (the audit plan, not-started). **NO `REVIEW.md`** — correct, no round has opened |
+| branches | ⚠ **ONE IN FLIGHT: `audit/wrapper-parameter-delta` @ `41828ba2`, [PR #464](https://github.com/israel-dryer/bootstack/pull/464), OPEN.** Probe + table + raw output, six files, all under `development/`; **`src/` untouched**. `fix/select-signal-value-458` merged; delete it local and remote once you have recorded the head SHA (**`51d09f6e`**) |
+| root of `main` | **`PLAN.md` PRESENT** (the audit plan — now EXECUTED on the branch above, so archive it to `development/` when #464 merges). **NO `REVIEW.md`** — correct, and **no round is owed**: gate 1 fires on a non-empty `git diff -- src/` and nothing else, and #464's is empty |
 | released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
 | next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
@@ -261,7 +283,7 @@ and fix the table.**
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#463**. **NEW, cut 2026-08-20**, and the next work out the door | 1 |
+| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#463**. Cut 2026-08-20. ⚠ **The measurement pass RAN the same day (PR #464) and filed NOTHING NEW** — its findings landed on #383/#460/#461. What is left on #463 is a disposition call, not work | 1 |
 | — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, #449. Reads `open=6 closed=2`. It is rolling, so it does **NOT** close when a patch ships | 6 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
