@@ -1,0 +1,667 @@
+﻿==============================================================================
+WRAPPER / INTERNAL PARAMETER DELTA -- #463
+==============================================================================
+src             : src\bootstack\widgets
+files found     : 58
+files parsed    : 58
+parse failures  : 0
+classes analysed: 65
+distinct params : 810
+
+IDIOMS -- what the tool understands, and therefore what it can speak about
+------------------------------------------------------------------------------
+    37  understood: dict splat (internal_kwargs)
+     5  UNANALYZED: this __init__ builds no internal widget
+     5  understood: dict splat (internal_kwargs) via super()
+     5  understood: direct keywords via super()
+     3  understood: direct keywords
+     2  understood: dict splat (frame_kwargs) via super()
+     2  understood: dict splat (init_kwargs) via super()
+     2  understood: dict splat (kw)
+     1  understood: dict splat (frame_kwargs)
+     1  understood: dict splat (lf_kwargs)
+     1  understood: dict splat (ps_kwargs)
+     1  understood: dict splat (pw_kwargs)
+
+MODE 2 -- wrong destination : 100
+------------------------------------------------------------------------------
+  RANK A -- the public name lands on a DIFFERENT internal key in
+            some other wrapper: the family disagrees : 35
+            (this is the shape of #458 and #461)
+  card.Card                  accent               -> surface                RENAMED-TRANSFORMED
+  carousel.Carousel          data_source          -> datasource             RENAMED
+  datatable.DataTable        data_source          -> datasource             RENAMED
+  gallery.Gallery            data_source          -> datasource             RENAMED
+  listview.ListView          data_source          -> datasource             RENAMED
+  picture.Picture            height               -> img_height             RENAMED
+  boolean_controls.ToggleButton icon                 -> on_icon                RENAMED-TRANSFORMED  [super().__init__ -> _BooleanControlBase]
+  boolean_controls.ToggleButton icon                 -> off_icon               RENAMED-TRANSFORMED  [super().__init__ -> _BooleanControlBase]
+  boolean_controls.Checkbox  label                -> text                   RENAMED  [super().__init__ -> _BooleanControlBase]
+  boolean_controls.Switch    label                -> text                   RENAMED  [super().__init__ -> _BooleanControlBase]
+  radio_variants.Radio       label                -> text                   RENAMED  (init from _RadioBase)
+  radio_variants.RadioToggleButton label                -> text                   RENAMED  [super().__init__ -> _RadioBase]
+  gauge.Gauge                max_value            -> maxvalue               RENAMED
+  numberfield.NumberField    max_value            -> maxvalue               RENAMED
+  progressbar.ProgressBar    max_value            -> maximum                RENAMED
+  slider.RangeSlider         max_value            -> maxvalue               RENAMED
+  slider.Slider              max_value            -> maxvalue               RENAMED
+  spinnerfield.SpinnerField  max_value            -> maxvalue               RENAMED
+  select.Select              options              -> items                  RENAMED-TRANSFORMED
+  spinnerfield.SpinnerField  options              -> values                 RENAMED
+  select.Select              read_only            -> readonly               RENAMED
+  timefield.TimeField        read_only            -> readonly               RENAMED
+  listview.ListView          show_separators      -> show_separator         RENAMED
+  chart.Chart                signal               -> signals                RENAMED-TRANSFORMED
+  selectbutton.SelectButton  signal               -> textsignal             RENAMED
+  gauge.Gauge                step                 -> step_size              RENAMED
+  numberfield.NumberField    step                 -> increment              RENAMED
+  spinnerfield.SpinnerField  step                 -> increment              RENAMED
+  codeeditor.CodeEditor      theme                -> pygments_style         RENAMED
+  groupbox.GroupBox          title                -> text                   RENAMED
+  radiogroup.RadioGroup      title                -> text                   RENAMED
+  app.App                    undecorated          -> override_redirect      RENAMED  [self._internal = self._tk_root, built earlier]
+  window.Window              undecorated          -> overrideredirect       RENAMED  [self._internal = self._tk_toplevel, built earlier]
+  gauge.Gauge                variant              -> meter_type             RENAMED
+  picture.Picture            width                -> img_width              RENAMED
+
+  RANK B -- one public name, one internal key everywhere it
+            appears: a consistent rename : 65
+  app.App                    max_size             -> maxsize                RENAMED  [self._internal = self._tk_root, built earlier]
+        expr: max_size   (line 166)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  app.App                    min_size             -> minsize                RENAMED  [self._internal = self._tk_root, built earlier]
+        expr: min_size   (line 164)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.Checkbox  checked_value        -> onvalue                RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: checked_value  [via _BooleanControlBase]   (line 68)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.Checkbox  unchecked_value      -> offvalue               RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: unchecked_value  [via _BooleanControlBase]   (line 70)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.Switch    checked_value        -> onvalue                RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: checked_value  [via _BooleanControlBase]   (line 68)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.Switch    unchecked_value      -> offvalue               RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: unchecked_value  [via _BooleanControlBase]   (line 70)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.ToggleButton checked_value        -> onvalue                RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: checked_value  [via _BooleanControlBase]   (line 68)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  boolean_controls.ToggleButton unchecked_value      -> offvalue               RENAMED  [super().__init__ -> _BooleanControlBase]
+        expr: unchecked_value  [via _BooleanControlBase]   (line 70)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  button.Button              icon_position        -> compound               RENAMED
+        expr: icon_position   (line 99)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  card.Card                  layout               -> direction              RENAMED-TRANSFORMED
+        expr: 'vertical' if layout == 'column' else 'horizontal'   (line 101)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  contextmenu.ContextMenu    min_height           -> minheight              RENAMED
+        expr: min_height   (line 133)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  contextmenu.ContextMenu    min_width            -> minwidth               RENAMED
+        expr: min_width   (line 123)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_add            -> enable_adding          RENAMED
+        expr: allow_add   (line 167)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_delete         -> enable_deleting        RENAMED
+        expr: allow_delete   (line 169)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_edit           -> enable_editing         RENAMED
+        expr: allow_edit   (line 168)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_export         -> enable_exporting       RENAMED
+        expr: allow_export   (line 170)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_filter         -> enable_filtering       RENAMED
+        expr: allow_filter   (line 164)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        allow_group          -> allow_grouping         RENAMED
+        expr: allow_group   (line 173)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        form                 -> form_options           RENAMED
+        expr: form   (line 187)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        searchable           -> enable_search          RENAMED
+        expr: searchable   (line 162)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datatable.DataTable        show_status_bar      -> show_table_status      RENAMED
+        expr: show_status_bar   (line 174)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datefield.DateField        range_end            -> end_date               RENAMED
+        expr: range_end   (line 128)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  datefield.DateField        range_start          -> start_date             RENAMED
+        expr: range_start   (line 126)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  expander.AccordionSection  layout               -> direction              RENAMED-TRANSFORMED  [no self._internal; analysed against self._layout_frame = FlexFrame()]
+        expr: 'vertical' if layout == 'column' else 'horizontal'   (line 257)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  gauge.Gauge                min_value            -> minvalue               RENAMED
+        expr: min_value   (line 81)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  gauge.Gauge                value_template       -> value_format           RENAMED
+        expr: value_template   (line 83)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  label.Label                icon_position        -> compound               RENAMED
+        expr: icon_position   (line 116)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  label.Label                icon_position        -> compound               RENAMED
+        expr: icon_position   (line 126)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  label.Label                wrap_width           -> wraplength             RENAMED
+        expr: wrap_width   (line 138)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  listview.ListView          allow_remove         -> enable_removing        RENAMED
+        expr: allow_remove   (line 97)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  listview.ListView          allow_reorder        -> enable_dragging        RENAMED
+        expr: allow_reorder   (line 98)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  listview.ListView          show_scrollbar       -> scrollbar_visibility   RENAMED-TRANSFORMED
+        expr: 'always' if show_scrollbar else 'never'   (line 101)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  menubutton.MenuButton      menu_options         -> popdown_options        RENAMED
+        expr: menu_options   (line 131)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  menubutton.MenuButton      show_arrow           -> show_dropdown_button   RENAMED
+        expr: show_arrow   (line 128)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  numberfield.NumberField    min_value            -> minvalue               RENAMED
+        expr: min_value   (line 147)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  numberfield.NumberField    show_steppers        -> show_spin_buttons      RENAMED
+        expr: show_steppers   (line 136)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  pagestack.StackPage        layout               -> direction              RENAMED-TRANSFORMED  [no self._internal; analysed against self._layout_frame = FlexFrame()]
+        expr: 'vertical' if layout == 'column' else 'horizontal'   (line 69)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  passwordfield.PasswordField mask                 -> show                   RENAMED
+        expr: mask   (line 86)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.Radio       icon_position        -> compound               RENAMED  (init from _RadioBase)
+        expr: icon_position   (line 83)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.Radio       selected_icon        -> on_icon                RENAMED  (init from _RadioBase)
+        expr: selected_icon   (line 75)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.Radio       text_signal          -> textsignal             RENAMED  (init from _RadioBase)
+        expr: text_signal   (line 71)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.Radio       unselected_icon      -> off_icon               RENAMED  (init from _RadioBase)
+        expr: unselected_icon   (line 77)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.RadioToggleButton selected_icon        -> on_icon                RENAMED  [super().__init__ -> _RadioBase]
+        expr: selected_icon  [via _RadioBase]   (line 75)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.RadioToggleButton text_signal          -> textsignal             RENAMED  [super().__init__ -> _RadioBase]
+        expr: text_signal  [via _RadioBase]   (line 71)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  radio_variants.RadioToggleButton unselected_icon      -> off_icon               RENAMED  [super().__init__ -> _RadioBase]
+        expr: unselected_icon  [via _RadioBase]   (line 77)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  select.Select              searchable           -> enable_search          RENAMED
+        expr: searchable   (line 128)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         high_signal          -> hi_signal              RENAMED
+        expr: high_signal   (line 285)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         high_value           -> hivalue                RENAMED
+        expr: high_value   (line 271)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         low_signal           -> lo_signal              RENAMED
+        expr: low_signal   (line 283)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         low_value            -> lovalue                RENAMED
+        expr: low_value   (line 270)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         min_value            -> minvalue               RENAMED
+        expr: min_value   (line 272)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.RangeSlider         tick_step            -> tick_interval          RENAMED
+        expr: tick_step   (line 276)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.Slider              min_value            -> minvalue               RENAMED
+        expr: min_value   (line 88)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  slider.Slider              tick_step            -> tick_interval          RENAMED
+        expr: tick_step   (line 93)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  spinnerfield.SpinnerField  min_value            -> minvalue               RENAMED
+        expr: min_value   (line 105)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  splitview.SplitPane        layout               -> direction              RENAMED-TRANSFORMED  [no self._internal; analysed against self._layout_frame = FlexFrame()]
+        expr: 'vertical' if layout == 'column' else 'horizontal'   (line 65)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  splitview.SplitView        sash_thickness       -> style_options          RENAMED-TRANSFORMED
+        expr: {'sash_thickness': sash_thickness}   (line 194)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  tabs.TabPage               layout               -> direction              RENAMED-TRANSFORMED  [no self._internal; analysed against self._layout_frame = FlexFrame()]
+        expr: 'vertical' if layout == 'column' else 'horizontal'   (line 71)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  tabs.Tabs                  allow_add            -> enable_adding          RENAMED
+        expr: allow_add   (line 204)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  tabs.Tabs                  allow_close          -> enable_closing         RENAMED
+        expr: allow_close   (line 203)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  textfield.TextField        mask                 -> show                   RENAMED
+        expr: mask   (line 123)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  tooltip.Tooltip            wrap_width           -> wraplength             RENAMED
+        expr: wrap_width   (line 64)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  tree.Tree                  show_scrollbar       -> scrollbar_visibility   RENAMED-TRANSFORMED
+        expr: 'always' if show_scrollbar else 'never'   (line 134)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  window.Window              max_size             -> maxsize                RENAMED  [self._internal = self._tk_toplevel, built earlier]
+        expr: max_size   (line 161)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+  window.Window              min_size             -> minsize                RENAMED  [self._internal = self._tk_toplevel, built earlier]
+        expr: min_size   (line 159)
+        some class in the mro takes an unannotated **kwargs -- the vocabulary is open-ended and destinations are NOT checked
+
+MODE 1 -- never forwarded : 0
+------------------------------------------------------------------------------
+
+MODE 3 -- swallowed as a layout key : 40
+------------------------------------------------------------------------------
+  avatar.Avatar              **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  button.Button              **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  buttongroup.ButtonGroup    **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  calendar.Calendar          **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  card.Card                  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  carousel.Carousel          **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  codeeditor.CodeEditor      **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  datatable.DataTable        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  datefield.DateField        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  divider.Divider            **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  expander.Accordion         **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  form.Form                  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  gallery.Gallery            **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  gauge.Gauge                **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  grid.Grid                  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  groupbox.GroupBox          **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  label.Badge                **kwargs             -> -                      LEFTOVERS-DROPPED  [super().__init__ -> Label]
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  label.Label                **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  listview.ListView          **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  numberfield.NumberField    **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  pagestack.PageStack        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  passwordfield.PasswordField **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  pathfield.PathField        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  progressbar.ProgressBar    **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  radiogroup.RadioGroup      **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  scrollview.ScrollView      **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  select.Select              **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  selectbutton.SelectButton  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  slider.RangeSlider         **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  slider.Slider              **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  spinnerfield.SpinnerField  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  splitview.SplitView        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  stacks.Column              **kwargs             -> -                      LEFTOVERS-DROPPED  [super().__init__ -> _FlexBase]
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  stacks.Row                 **kwargs             -> -                      LEFTOVERS-DROPPED  [super().__init__ -> _FlexBase]
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  tabs.Tabs                  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  textarea.TextArea          **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  textfield.TextField        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  timefield.TimeField        **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  togglegroup.ToggleGroup    **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+  tree.Tree                  **kwargs             -> -                      LEFTOVERS-DROPPED
+        _split_layout_kwargs() strips the layout keys and nothing reads what is left, so an unknown name is accepted silently
+
+UNKNOWN-NAME POLICY -- what each wrapper does with a keyword it does
+not recognise (cross-checked against real construction by --arm leftovers)
+------------------------------------------------------------------------------
+  DROPPED     40  Accordion, Avatar, Badge, Button, ButtonGroup, Calendar, Card, Carousel ...
+  REJECTED     5  Checkbox, Radio, RadioToggleButton, Switch, ToggleButton
+  FORWARDED    5  Chart, MenuButton, Picture, StatusBar, Toolbar
+  NO SPLIT     2  App, Window
+
+  The 5 REJECTED wrappers are the precedent #383 gap 3 needs: the
+  guard already exists in this codebase and is six lines long.
+
+MODE 5 -- the type lies : 8
+------------------------------------------------------------------------------
+  boolean_controls.Checkbox  .signal   Signal | None          line 174  (property on _BooleanControlBase)
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  boolean_controls.Switch    .signal   Signal | None          line 174  (property on _BooleanControlBase)
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  boolean_controls.ToggleButton .signal   Signal | None          line 174  (property on _BooleanControlBase)
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  passwordfield.PasswordField .signal   Signal[str] | None     line 140
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  pathfield.PathField        .signal   Signal[str] | None     line 218
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  selectbutton.SelectButton  .signal   Signal[str] | None     line 149
+        the internal defines 'textsignal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  spinnerfield.SpinnerField  .signal   Signal[str] | None     line 170
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  textfield.TextField        .signal   Signal[str] | None     line 165
+        the internal defines 'signal' as a property with no None path, so the getattr default is unreachable and `| None` cannot occur
+  -- checked and CLEARED (the None is reachable):
+     textarea.TextArea          OK             the internal has no class-level 'signal', so the instance attribute may legitimately be absent
+
+DIVERGENCE -- one public name, more than one internal destination : 16
+------------------------------------------------------------------------------
+  Read this list first. A name here means the wrapper family does not
+  agree on where the parameter goes; #458 and #461 are both instances.
+  accent               2 destinations
+      -> accent                 Checkbox, Switch, ToggleButton, Button, ButtonGroup (+34 more)
+      -> surface                Card
+  data_source          2 destinations
+      -> data_source            Chart
+      -> datasource             Carousel, DataTable, Gallery, ListView
+  height               2 destinations
+      -> height                 Carousel, CodeEditor, ContextMenu, Form, Grid (+6 more)
+      -> img_height             Picture
+  icon                 3 destinations
+      -> icon                   Button, Label, MenuButton, Radio, RadioToggleButton (+1 more)
+      -> off_icon               ToggleButton
+      -> on_icon                ToggleButton
+  label                2 destinations
+      -> label                  DateField, NumberField, PasswordField, PathField, Select (+4 more)
+      -> text                   Checkbox, Switch, Radio, RadioToggleButton
+  max_value            2 destinations
+      -> maximum                ProgressBar
+      -> maxvalue               Gauge, NumberField, RangeSlider, Slider, SpinnerField
+  options              3 destinations
+      -> items                  Select
+      -> options                SelectButton
+      -> values                 SpinnerField
+  read_only            2 destinations
+      -> read_only              CodeEditor, TextArea
+      -> readonly               Select, TimeField
+  show_separators      2 destinations
+      -> show_separator         ListView
+      -> show_separators        Accordion
+  signal               3 destinations
+      -> signal                 Checkbox, Switch, ToggleButton, ProgressBar, Radio (+4 more)
+      -> signals                Chart
+      -> textsignal             SelectButton
+  step                 3 destinations
+      -> increment              NumberField, SpinnerField
+      -> step                   RangeSlider, Slider
+      -> step_size              Gauge
+  theme                2 destinations
+      -> pygments_style         CodeEditor
+      -> theme                  App
+  title                2 destinations
+      -> text                   GroupBox, RadioGroup
+      -> title                  App, Window
+  undecorated          2 destinations
+      -> override_redirect      App
+      -> overrideredirect       Window
+  variant              2 destinations
+      -> meter_type             Gauge
+      -> variant                ToggleButton, Button, ButtonGroup, Accordion, Badge (+4 more)
+  width                2 destinations
+      -> img_width              Picture
+      -> width                  Button, ContextMenu, Form, Grid, Label (+12 more)
+
+CONDITIONAL -- forwarded by a guard, not by value : 89
+------------------------------------------------------------------------------
+  boolean_controls.Checkbox  if disabled: -> state='disabled'  [via _BooleanControlBase]
+  boolean_controls.Checkbox  if icon_only: -> icon_only=True  [via _internal_options=options]
+  boolean_controls.Checkbox  if show_indicator: -> show_indicator=False  [via _internal_options=options]
+  boolean_controls.Switch    if disabled: -> state='disabled'  [via _BooleanControlBase]
+  boolean_controls.ToggleButton if disabled: -> state='disabled'  [via _BooleanControlBase]
+  boolean_controls.ToggleButton if icon_only: -> icon_only=True  [via _internal_options=options]
+  button.Button              if disabled: -> state='disabled'
+  button.Button              if icon_only: -> compound=icon_position
+  button.Button              if icon_only: -> icon_only=True
+  buttongroup.ButtonGroup    if disabled: -> state='disabled'
+  contextmenu.ContextMenu    if on_select: -> command=_on_select
+  datefield.DateField        if disabled: -> state='disabled'
+  datefield.DateField        if disabled: -> state='readonly'
+  datefield.DateField        if read_only: -> state='readonly'
+  datefield.DateField        if required: -> required=True
+  expander.Accordion         if show_border: -> show_border=True
+  grid.Grid                  if height: -> propagate=False
+  grid.Grid                  if show_border: -> show_border=True
+  grid.Grid                  if width: -> propagate=False
+  label.Label                if icon: -> icon_only=True
+  label.Label                if icon: -> compound='image'
+  label.Label                if icon: -> compound=icon_position
+  label.Label                if icon: -> icon_only=True
+  label.Label                if icon_only: -> icon_only=True
+  label.Label                if icon_only: -> compound='image'
+  label.Label                if icon_only: -> compound=icon_position
+  label.Label                if icon_only: -> icon_only=True
+  label.Label                if icon_only: -> compound='image'
+  label.Label                if icon_only: -> compound=icon_position
+  label.Label                if icon_only: -> icon_only=True
+  label.Label                if image: -> icon_only=True
+  label.Label                if image: -> compound='image'
+  label.Label                if image: -> compound=icon_position
+  label.Label                if text: -> icon_only=True
+  label.Label                if text: -> compound='image'
+  label.Label                if text: -> compound=icon_position
+  label.Label                if text: -> icon_only=True
+  label.Label                if text: -> compound='image'
+  label.Label                if text: -> compound=icon_position
+  label.Label                if textsignal: -> icon_only=True
+  label.Label                if textsignal: -> compound='image'
+  label.Label                if textsignal: -> compound=icon_position
+  label.Label                if textsignal: -> icon_only=True
+  label.Label                if textsignal: -> compound='image'
+  label.Label                if textsignal: -> compound=icon_position
+  menubutton.MenuButton      if disabled: -> state='disabled'
+  menubutton.MenuButton      if icon_only: -> icon_only=True
+  menubutton.MenuButton      if on_select: -> command=_on_select
+  numberfield.NumberField    if disabled: -> state='disabled'
+  numberfield.NumberField    if disabled: -> state='readonly'
+  numberfield.NumberField    if read_only: -> state='readonly'
+  numberfield.NumberField    if required: -> required=True
+  numberfield.NumberField    if wrap: -> wrap=True
+  passwordfield.PasswordField if disabled: -> state='disabled'
+  passwordfield.PasswordField if disabled: -> state='readonly'
+  passwordfield.PasswordField if read_only: -> state='readonly'
+  passwordfield.PasswordField if required: -> required=True
+  pathfield.PathField        if disabled: -> state='disabled'
+  pathfield.PathField        if disabled: -> state='readonly'
+  pathfield.PathField        if read_only: -> state='readonly'
+  pathfield.PathField        if required: -> required=True
+  radio_variants.Radio       if disabled: -> state='disabled'
+  radio_variants.Radio       if icon_only: -> icon_only=True
+  radio_variants.Radio       if show_indicator: -> show_indicator=False
+  radio_variants.RadioToggleButton if disabled: -> state='disabled'  [via _RadioBase]
+  radio_variants.RadioToggleButton if icon_only: -> icon_only=True  [via _RadioBase]
+  radiogroup.RadioGroup      if disabled: -> state='disabled'
+  scrollview.ScrollView      if show_border: -> show_border=True
+  select.Select              if disabled: -> state='disabled'
+  select.Select              if required: -> required=True
+  selectbutton.SelectButton  if disabled: -> state='disabled'
+  slider.RangeSlider         if disabled: -> state='disabled'
+  slider.Slider              if disabled: -> state='disabled'
+  spinnerfield.SpinnerField  if disabled: -> state='disabled'
+  spinnerfield.SpinnerField  if disabled: -> state='readonly'
+  spinnerfield.SpinnerField  if read_only: -> state='readonly'
+  spinnerfield.SpinnerField  if required: -> required=True
+  stacks.Column              if height: -> propagate=False  [via _FlexBase]
+  stacks.Column              if width: -> propagate=False  [via _FlexBase]
+  stacks.Row                 if height: -> propagate=False  [via _FlexBase]
+  stacks.Row                 if width: -> propagate=False  [via _FlexBase]
+  textarea.TextArea          if required: -> required=True
+  textfield.TextField        if disabled: -> state='disabled'
+  textfield.TextField        if disabled: -> state='readonly'
+  textfield.TextField        if read_only: -> state='readonly'
+  textfield.TextField        if required: -> required=True
+  timefield.TimeField        if disabled: -> state='disabled'
+  timefield.TimeField        if required: -> required=True
+  togglegroup.ToggleGroup    if disabled: -> state='disabled'
+
+UNANALYZED -- the tool CANNOT speak about these; do NOT read as clean
+------------------------------------------------------------------------------
+  appshell.AppShell             31 params   (this __init__ builds no internal widget)
+  appshell.Workbench            34 params   (this __init__ builds no internal widget)
+  theme_toggle.ThemeToggle       5 params   (this __init__ builds no internal widget)
+  toast.Notification             7 params   (this __init__ builds no internal widget)
+  toast.Snackbar                 7 params   (this __init__ builds no internal widget)
+
+USED-ELSEWHERE -- reaches no internal kwarg; needs a human : 100
+------------------------------------------------------------------------------
+  app.App                    gap                  into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  app.App                    grow_items           into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  app.App                    horizontal_items     into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  app.App                    icon                 passed to resolve_window_icon()
+  app.App                    padding              into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  app.App                    surface              into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  app.App                    vertical_items       into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  avatar.Avatar              image                passed to self._coerce_image()
+  boolean_controls.Checkbox  on_change            passed to __init__()
+  boolean_controls.Checkbox  tristate             passed to __init__()
+  boolean_controls.Checkbox  value                passed to __init__()
+  boolean_controls.Switch    on_change            passed to __init__()
+  boolean_controls.Switch    value                passed to __init__()
+  boolean_controls.ToggleButton on_change            passed to __init__()
+  boolean_controls.ToggleButton value                passed to __init__()
+  button.Button              on_click             stored on self, never forwarded
+  buttongroup.ButtonGroup    localize             stored on self, never forwarded
+  card.Card                  auto_flow            passed to GridFrame()
+  card.Card                  columns              passed to GridFrame()
+  card.Card                  rows                 passed to GridFrame()
+  datefield.DateField        signal               passed to self._bind_value_signal()
+  expander.AccordionSection  auto_flow            passed to GridFrame()
+  expander.AccordionSection  columns              passed to GridFrame()
+  expander.AccordionSection  internal_expander    stored on self, never forwarded
+  expander.AccordionSection  key                  stored on self, never forwarded
+  expander.AccordionSection  rows                 passed to GridFrame()
+  grid.Grid                  horizontal_items     stored on self, never forwarded
+  grid.Grid                  vertical_items       stored on self, never forwarded
+  groupbox.GroupBox          auto_flow            passed to GridFrame()
+  groupbox.GroupBox          columns              passed to GridFrame()
+  groupbox.GroupBox          gap                  passed to FlexFrame(), GridFrame()
+  groupbox.GroupBox          grow_items           passed to FlexFrame()
+  groupbox.GroupBox          horizontal_items     passed to FlexFrame(), resolve_layout_items()
+  groupbox.GroupBox          layout               passed to FlexFrame(), ValueError(), resolve_layout_items()
+  groupbox.GroupBox          rows                 passed to GridFrame()
+  groupbox.GroupBox          vertical_items       passed to FlexFrame(), resolve_layout_items()
+  listview.ListView          height               passed to self._internal.configure()
+  numberfield.NumberField    signal               passed to self._bind_value_signal()
+  pagestack.StackPage        auto_flow            passed to GridFrame()
+  pagestack.StackPage        columns              passed to GridFrame()
+  pagestack.StackPage        key                  stored on self, never forwarded
+  pagestack.StackPage        owner                stored on self, never forwarded
+  pagestack.StackPage        page_widget          passed to FlexFrame(), GridFrame()
+  pagestack.StackPage        rows                 passed to GridFrame()
+  picture.Picture            image                passed to self._coerce_image()
+  radio_variants.Radio       _internal_options    passed to update()
+  radio_variants.Radio       on_change            referenced but neither forwarded nor stored
+  radio_variants.RadioToggleButton density              passed to __init__()
+  radio_variants.RadioToggleButton on_change            passed to __init__()
+  radiogroup.RadioGroup      options              passed to normalize_options()
+  select.Select              signal               passed to self._bind_value_signal()
+  splash.Splash              fade                 stored on self, never forwarded
+  splash.Splash              gap                  passed to FlexFrame()
+  splash.Splash              min_duration         passed to float(), max()
+  splash.Splash              padding              passed to FlexFrame()
+  splash.Splash              size                 stored on self, never forwarded
+  splash.Splash              skippable            stored on self, never forwarded
+  splash.Splash              surface              passed to FlexFrame()
+  splash.Splash              until                passed to BootstackError(), float(), isinstance()
+  splitview.SplitPane        auto_flow            passed to GridFrame()
+  splitview.SplitPane        columns              passed to GridFrame()
+  splitview.SplitPane        frame                passed to FlexFrame(), GridFrame()
+  splitview.SplitPane        key                  stored on self, never forwarded
+  splitview.SplitPane        owner                stored on self, never forwarded
+  splitview.SplitPane        paned                stored on self, never forwarded
+  splitview.SplitPane        rows                 passed to GridFrame()
+  stacks.Spacer              size                 stored on self, never forwarded
+  stacks.Spacer              weight               stored on self, never forwarded
+  statusbar.StatusBar        _show                stored on self, never forwarded
+  statusbar.StatusBar        _toolbar             stored on self, never forwarded
+  tabs.TabPage               auto_flow            passed to GridFrame()
+  tabs.TabPage               columns              passed to GridFrame()
+  tabs.TabPage               key                  stored on self, never forwarded
+  tabs.TabPage               owner                stored on self, never forwarded
+  tabs.TabPage               page_widget          passed to FlexFrame(), GridFrame()
+  tabs.TabPage               rows                 passed to GridFrame()
+  textarea.TextArea          width                into internal_kwargs, splatted into _InternalTextArea() -- a SECOND widget, not the internal measured here
+  timefield.TimeField        signal               passed to self._bind_value_signal()
+  togglegroup.ToggleGroup    localize             stored on self, never forwarded
+  togglegroup.ToggleGroup    options              passed to normalize_options()
+  toolbar.Toolbar            _host                stored on self, never forwarded
+  toolbar.Toolbar            _toolbar             stored on self, never forwarded
+  tooltip.Tooltip            target               passed to isinstance()
+  tree.Tree                  data_source          passed to SourceBinding()
+  tree.Tree                  height               passed to self._internal.configure()
+  tree.Tree                  icon_field           passed to SourceBinding()
+  tree.Tree                  label_field          passed to SourceBinding()
+  tree.Tree                  node_builder         passed to SourceBinding()
+  tree.Tree                  nodes                passed to self._internal.load()
+  tree.Tree                  order                passed to SourceBinding()
+  tree.Tree                  parent_field         passed to SourceBinding()
+  tree.Tree                  root_value           passed to SourceBinding()
+  window.Window              gap                  into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              grow_items           into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              horizontal_items     into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              icon                 passed to resolve_window_icon()
+  window.Window              padding              into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              surface              into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              vertical_items       into frame_kwargs, splatted into FlexFrame() -- a SECOND widget, not the internal measured here
+  window.Window              window_controls      stored on self, never forwarded
+
+MODE 4 -- accepted then ignored : NOT MEASURED BY THIS ARM
+------------------------------------------------------------------------------
+  Mode 4 is not statically decidable and this probe does not claim to
+  find it. `--arm roundtrip` is a PARTIAL heuristic; read its own
+  honesty note before quoting it.
+
+SKIPPED CLASSES : 17
+------------------------------------------------------------------------------
+  appshell.Page                          not in a public __all__
+  appshell.PageNav                       not in a public __all__
+  appshell.Rail                          not in a public __all__
+  appshell.Workspace                     not in a public __all__
+  chart.ChartAnimation                   not in a public __all__
+  datatable.ExportJob                    not in a public __all__
+  expander.Expander                      not in a public __all__
+  scrollbar.Scrollbar                    not in a public __all__
+  sidebar_toggle.SidebarToggle           not in a public __all__
+  sizegrip.SizeGrip                      not in a public __all__
+  spinbox.Spinbox                        not in a public __all__
+  types.BaseWidgetKwargs                 not in a public __all__
+  types.ColumnSpec                       not in a public __all__
+  types.FormOptions                      not in a public __all__
+  types.IconSpec                         not in a public __all__
+  types.OptionDict                       not in a public __all__
+  types.StyledKwargs                     not in a public __all__

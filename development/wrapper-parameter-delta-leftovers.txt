@@ -1,0 +1,6 @@
+﻿==============================================================================
+MODE 3 CROSS-CHECK -- static verdict vs actual construction
+==============================================================================
+  agree=51  DISAGREE=0  inconclusive=1
+
+  A disagreement here is a defect in THIS PROBE, not in the wrapper.

@@ -1,0 +1,18 @@
+﻿==============================================================================
+MODE 4 ROUNDTRIP HEURISTIC
+==============================================================================
+
+  WHAT THIS ARM DOES: constructs each wrapper with one non-default value for a
+  parameter that has a same-named public property, then reads the property back.
+  A disagreement is a mode-4 CANDIDATE.
+
+  WHAT IT CANNOT SEE, stated up front so a null result is not over-read:
+    * #453 -- the defect this mode is named for -- WOULD NOT BE CAUGHT. The
+      wrapper's own `read_only` property answered True for every Select; the
+      only honest observable was the inner entry's ttk state. A property that
+      echoes the stored setting cannot witness the setting being ignored.
+    * A parameter with no same-named property is not tested at all.
+    * A widget that will not construct headless is SKIPPED, not cleared.
+
+  checked=80  mismatched=1  skipped=72
+    Carousel             index                sent=7 read back=0
