@@ -148,9 +148,9 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-20) — the wrapper audit RAN. PR #464 open. Next: the maintainer's four decisions.
+### ★ START HERE (2026-08-20) — the wrapper audit RAN and MERGED (PR #464). Next: the maintainer's four decisions.
 
-**⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` (on the branch) before touching any of them, and do not re-derive it.
+**⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` before touching any of them, and do not re-derive it. The instrument is `development/probe_wrapper_parameter_delta.py` (arms `scan`, `control`, `leftovers`, `roundtrip`); **re-run it rather than reading the wrappers again.**
 
 | mode | what | measured | verdict |
 |---|---|---|---|
@@ -194,9 +194,9 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | **`41c8bad1`** — PR #462 merged 2026-08-20. #458's `PLAN.md`/`REVIEW.md` archived to `development/`, and `PLAN.md` recreated for the audit above |
-| branches | ⚠ **ONE IN FLIGHT: `audit/wrapper-parameter-delta` @ `41828ba2`, [PR #464](https://github.com/israel-dryer/bootstack/pull/464), OPEN.** Probe + table + raw output, six files, all under `development/`; **`src/` untouched**. `fix/select-signal-value-458` merged; delete it local and remote once you have recorded the head SHA (**`51d09f6e`**) |
-| root of `main` | **`PLAN.md` PRESENT** (the audit plan — now EXECUTED on the branch above, so archive it to `development/` when #464 merges). **NO `REVIEW.md`** — correct, and **no round is owed**: gate 1 fires on a non-empty `git diff -- src/` and nothing else, and #464's is empty |
+| `main` | **`51a44c1c`** — PR #464 merged 2026-08-20 (the wrapper audit). `PLAN.md` archived to `development/plan-463-wrapper-audit.md` and recreated as an explicit empty |
+| branches | **NONE in flight.** `audit/wrapper-parameter-delta` merged and deleted local + remote (head **`41828ba2`**); `fix/select-signal-value-458` merged earlier (head **`51d09f6e`**). ⚠ **Both are squash/merge history now, so NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
+| root of `main` | **`PLAN.md` PRESENT and DELIBERATELY EMPTY** — it says no implementation is planned and names the four decisions instead. **NO `REVIEW.md`** — correct, and **no round was owed**: gate 1 fires on a non-empty `git diff -- src/` and nothing else, and #464's was empty |
 | released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
 | next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
@@ -476,15 +476,19 @@ must clear validation state.
   ARGUMENT NAME, not by widget.** Folds in `Slider.value = None` leaking a raw
   `TypeError` (reachable via `form.set({'slider_key': None})`) and `show_grid=True`
   silently accepted on `Row`.
-  - ⚠ **#383 gained a THIRD gap:** the two in its body are about bad **values**,
-    this one is about unknown **names** — `bs.TextField(bogus_xyz=1)` constructs
-    silently while the internal `Field(master, bogus_xyz=1)` raises `TclError`, so
-    **the public layer is the less strict of the two.** Wrappers build
-    `internal_kwargs` from named parameters only and `**kwargs` exists to feed
-    `_split_layout_kwargs`, so leftovers are never read. ⚠ **It does NOT reuse
-    `validate_choice`** (the name never reaches a validator), and the obvious home
-    — the shared split seam — needs the wrappers that legitimately forward
-    `**kwargs` counted first.
+  - ⚠ **#383 gained a THIRD gap, and it is now MEASURED — read the comment on the
+    issue (2026-08-20) before re-deriving any of this.** The two gaps in its body
+    are about bad **values**; this one is about unknown **names** —
+    `bs.TextField(bogus_xyz=1)` constructs silently while the internal
+    `TextEntry(None, bogus_xyz=1)` raises `TclError: unknown option "-bogus_xyz"`,
+    so **the public layer is the less strict of the two** — both halves measured,
+    not inferred. ⚠ **It does NOT reuse `validate_choice`**; the name never
+    reaches a validator. **THE BLOCKER IS GONE:** of the 52 wrappers with a
+    catch-all, **40 drop / 5 reject / 5 forward / 2 never split**, and the guard
+    already ships in `_BooleanControlBase.__init__` at six lines. What is left is
+    placement — and ⚠ **a blanket seam guard breaks the five that forward on
+    purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), while `App` and
+    `Window` never split at all.
 - **#369** — the selection family disagrees on off-list values (`SelectButton`
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
