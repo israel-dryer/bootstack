@@ -6,6 +6,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.selectbox import SelectBox as _InternalSelectBox
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import ValueSignalMixin
 from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
@@ -21,7 +22,7 @@ _SELECT_EVENTS: dict[str, str] = {
 }
 
 
-class Select(PublicWidgetBase):
+class Select(ValueSignalMixin, PublicWidgetBase):
     """A single-selection dropdown field.
 
     The options list is the first positional argument. All options are
@@ -37,9 +38,9 @@ class Select(PublicWidgetBase):
             `selection`. Defaults to an empty list.
         value: Initially selected value (value-space — matches an option's
             value, not its label).
-        signal: Reactive `Signal` two-way bound to the field's displayed text.
-            With decoupled options (text differs from value), bind to the value
-            via `on_change`/`value`; the signal carries the display text.
+        signal: Reactive `Signal` two-way bound to the selected value — the
+            option's value, not the label shown for it. Seeding it with an
+            option's value selects that option and displays its text.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
         required: If `True`, marks the field as required and prevents
@@ -95,7 +96,7 @@ class Select(PublicWidgetBase):
         options: list[Option] | None = None,
         *,
         value: Any = None,
-        signal: "Signal[str] | None" = None,
+        signal: "Signal | None" = None,
         label: str | None = None,
         message: str | None = None,
         required: bool = False,
@@ -114,6 +115,12 @@ class Select(PublicWidgetBase):
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if "textsignal" in kwargs:
+            raise TypeError(
+                "Select does not accept 'textsignal=' — a select binds the "
+                "option's value, not the label shown for it. Use signal= with a "
+                "Signal seeded from an option's value (e.g. Signal('2'))."
+            )
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
@@ -126,8 +133,6 @@ class Select(PublicWidgetBase):
         }
         if value is not None:
             internal_kwargs["value"] = value
-        if signal is not None:
-            internal_kwargs["textsignal"] = signal
         if label is not None:
             internal_kwargs["label"] = label
         if message is not None:
@@ -147,6 +152,23 @@ class Select(PublicWidgetBase):
 
         self._internal = _InternalSelectBox(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
+
+        # Bind through the `value` property, never as the entry's textvariable
+        # (#458). The property is the only path that maps the value to the
+        # option's display text, keeps the entry's committed value in step, and
+        # emits <<Change>>; attaching the Signal's variable directly bypasses
+        # all three, so the field showed one option while reporting another.
+        if signal is not None:
+            # Seeding is not a change. The mixin seeds by assigning `value`,
+            # which would emit <<Change>> during construction — `value=` does
+            # not, and a handler bound right after the constructor still sees it
+            # because the event is queued and dispatched once the loop turns.
+            # Suppress the seed only; every later write emits normally.
+            self._internal._suppress_changed_event = True
+            try:
+                self._bind_value_signal(signal)
+            finally:
+                self._internal._suppress_changed_event = False
 
     # ----- Validation -----
 
@@ -213,6 +235,11 @@ class Select(PublicWidgetBase):
     @value.setter
     def value(self, v: Any) -> None:
         self._internal.value = v
+        # The mixin's on_change sync only fires on a user commit, so a
+        # programmatic set would otherwise leave a bound signal stale. Read the
+        # value back rather than echoing `v` — an off-list value is displayed
+        # as given, and the getter is what decodes the option's text.
+        self._sync_value_set(self.value)
 
     @property
     def text(self) -> str:
