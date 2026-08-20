@@ -148,240 +148,76 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-20) — #458 is in flight as PR #462; ONE LINE OF TEST CODE IS OPEN
+### ★ START HERE (2026-08-20) — #458 MERGED. Next: the wrapper/internal parameter audit.
 
-**⏭ THE NEXT ACTION IS ONE LINE OF TEST CODE.** An off-protocol `/code-review`
-pass against `37b871a9` found that **round 1's own F1 fix is incomplete**. The
-rewritten `test_read_only_is_still_honored_with_a_bound_signal` now drives the
-signal, but **neither assertion can detect a broken readonly bracket.** Add:
+**⏭ THE NEXT ACTION IS A MEASUREMENT PASS, AND `PLAN.md` AT THE ROOT IS ALREADY WRITTEN FOR IT.** The maintainer's framing (2026-08-20): *"the wrappers were not sufficiently designed or reviewed. In many cases the bugs derive from the wrapper, not the `_impl` widgets... at some point we need to do a more in-depth review of the wrapper vs original widget so that we can get these before they surface."*
 
-```python
-assert sel._internal.entry_widget.instate(['readonly'])
-```
+**Read `PLAN.md` before starting.** It carries the five failure modes, the measured surface, the oracle, the non-vacuity controls and the scope boundaries. Three things from it worth knowing before you open it:
 
-after the `signal.set("3")`, and the branch is finished. **The full record is
-`REVIEW.md` on the branch, section `Off-protocol verification pass`.**
+- **The surface is 77 wrapper classes / 890 named params / 62 with a `**kwargs` catch-all** — measured, not estimated, and ~4x the #381 sweep. **This cannot be a reading review.**
+- **The existing check catches ONE of five failure modes.** `git show main:<wrapper> | grep <kwarg>` finds a kwarg that is never forwarded. It does not find one forwarded to the **wrong destination** (#458, #461), one **swallowed as a layout key** (#456), one **accepted then ignored** (#453), or an **annotation that lies** (#460).
+- **The controls are free, because three known positives are still OPEN on `main`** — #461 (mode 2), #460 (mode 5), #383 gap 3 (mode 1) — **and #458 itself is a fixed one**, so the scan must find it at `main~` and not at `main`. ⚠ **Run it both ways before believing any "no findings".**
 
-The control was **run, not assumed** — patch `SelectBox.value`'s setter to leave
-the entry `!readonly` after every write, then run the test's exact sequence:
+⚠ **THIS PASS SHIPS NO PRODUCTION CODE.** `git diff main...HEAD -- src/` must stay empty for its whole life. It produces a probe, a ranked table, and issues. **Fixes are scoped separately, by the maintainer, after the table exists.**
 
-```
-real code : read_only=True  shown='Three'  entry_readonly=True
-BROKEN    : read_only=True  shown='Three'  entry_readonly=False
-            assertions: read_only is True -> True ; shown == 'Three' -> True
-```
-
-Both assertions pass **while the field is silently editable**, because
-`sel.read_only` reads the stored **setting**, which #453 decoupled from the entry
-state on purpose. The proposed assertion reads `True` on real code and `False` on
-the control, so it is not vacuous. ⚠ `37b871a9`'s **commit message** states the
-scope correctly; it is the test **docstring** that overclaims. **A commit message
-and the artifact it describes can disagree, and the docstring is the half a later
-reader trusts.**
-
-**⏭ ONE RESIDUAL, maintainer's call:** now that `Select.signal` is a *deliberate*
-addition shipping in a minor, the #458 CHANGELOG bullet still does not mention it.
-Announcing it is a scope call, not a defect.
-
-**⏭ AFTER #458: #452, the macOS CI hang** (maintainer, 2026-08-14: *"macos will be
-on another machine"*). Brief below.
+⚠ **PLACEMENT IS NOT DECIDED, deliberately.** #383 is arguably this issue in embryo — it already carries three gaps and gap 3 is mode 1 generalized — so this can widen #383 or become its own milestone with **#383, #460, #461, #455**. It gates nothing, so the rule says ask rather than assign.
 
 #### STATE OF THE WORLD
 
 | | |
 |---|---|
-| `main` | **`033186e9`** — docs-only commits since the #457 merge (`0aad8427`). No product change |
-| branch, IN FLIGHT | **`fix/select-signal-value-458`**, **PR #462 OPEN**. Round 1 has run, plus an off-protocol verification pass. `PLAN.md`, `REVIEW.md` and the review brief all live **ON THAT BRANCH** |
-| CI on PR #462 | headless ✅ · ubuntu 3.13 ✅ · windows 3.13 ✅ · docs `-W` ✅ · **ubuntu 3.12 CANCELLED** — see below, it is infrastructure, not a defect |
-| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, measured 2026-08-19 at `6db756b1`, Windows, py 3.12, `pandas` absent |
-| suite, `main` | **1443 passed / 21 skipped** — **derived**, not measured, by subtracting the branch's one new test file |
-| CI | `ci.yml` live and green on `main` — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). Triggers on push to `main` and on `pull_request` |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/plan-456-context-menus.md` and `development/review-456-context-menus.md` |
-| released | `0.3.2`. `## [Unreleased]` is PRESENT on `main` carrying #456; the #458 branch adds a second bullet |
-| open milestones | **10**, agreeing 1:1 with the table below |
+| `main` | **`41c8bad1`** — PR #462 merged 2026-08-20. #458's `PLAN.md`/`REVIEW.md` archived to `development/`, and `PLAN.md` recreated for the audit above |
+| branches | **NONE in flight.** `fix/select-signal-value-458` merged; delete it local and remote once you have recorded the head SHA (**`51d09f6e`**) |
+| root of `main` | **`PLAN.md` PRESENT** (the audit plan, not-started). **NO `REVIEW.md`** — correct, no round has opened |
+| released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
+| next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
+| CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
+| suite, `main` | **1500 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-20, Windows box, `py -3.12`. ⚠ **See the environmental note below before comparing this to anything older** |
+| open milestones | **10** |
 
-⚠ **PR #462's ubuntu-3.12 leg was CANCELLED, not failed — it is a RUNNER
-OUTAGE, not a product or workflow defect.** It hung inside `sudo apt-get update`
-with `azure.archive.ubuntu.com` unreachable (repeated `Ign:`) and never reached
-the tests; the 15-minute `timeout-minutes` cap killed it. **The ubuntu-3.13 leg
-ran the identical apt step and passed.** Re-running the job is the whole fix.
-**This is also the `timeout-minutes` guard working as designed** — added in
-`5921dc41` after #452 burned 90 minutes; without it this would have run to
-GitHub's 6-hour default.
+⚠ **A NEW ENVIRONMENTAL PAIR — AND IT IS BIGGER THAN THE PANDAS ONE THIS FILE ALREADY DOCUMENTS.** The Windows box now has **matplotlib** installed, so **`test_chart.py` (44 tests behind a module-level `pytest.importorskip("matplotlib")`) COLLECTS instead of being the collection-time skip.** `pandas` arrived too. Against the `1458 / 21` recorded on 2026-08-19:
 
-#### ⏭ #458 — a `Select` bound to a `Signal` bound the TEXT, not the value
+```
+1458 + 44 (test_chart) - 2 (data leg 125/4 -> 123/6) = 1500 passed
+  21 -  1 (the collection-time skip is gone) + 2 (pandas)  =   22 skipped
+```
 
-**External report from `bLynnb2762`** (same reporter as #428 and #453), against
-`0.3.2`. `Select` mapped its public `signal=` onto the internal **`textsignal=`**,
-installing the `Signal`'s Tk variable **as the entry's textvariable** — so writes
-landed in the display text, bypassing both `_resolve_display()` and the entry's
-commit path.
+Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was added. **So a session measuring `1500 / 22` on this box is seeing the right number, and one measuring `1458 / 21` has neither dep installed.** Check with `py -3.12 -c "import matplotlib"` and `import pandas` before re-flagging either. ⚠ **This is the eighth count discrepancy this file has had to reconcile, and the first that was NOT an error** — it reconciled because the collection line was read, not because the total looked plausible.
 
-⚠ **ONE WIRING LINE, TWO SYMPTOMS — and the reported one is the milder.**
-**A**, reported: decoupled `(text, value)` options displayed the raw value.
-**B**, not reported and worse: a signal write moved the display but not the
-selection, so `.value`/`.selection` kept reporting the previous option and **no
-`<<Change>>` fired** — on plain `list[str]` options too, and it did not self-heal.
-The field showed one option and reported another indefinitely.
+#### ✅ #458 — MERGED (PR #462, merge commit `41c8bad1`). Kept for its traps.
 
-**Fixed by binding through `ValueSignalMixin`**, as `DateField`/`NumberField`/
-`TimeField` already do. **The two symptoms are not separable**: any fix for B must
-bind through `value`, and that binding is inherently value-space.
+`Select` mapped its public `signal=` onto the internal **`textsignal=`**, installing the `Signal`'s Tk variable as the entry's textvariable — so writes landed in the display text, bypassing the value-to-label map and the commit path. **One wiring line, two symptoms**, and the reported one was the milder: decoupled options displayed the raw value (reported), while a signal write moved the display but **not** the selection, leaving `.value`/`.selection` stale with **no `<<Change>>`** — on plain `list[str]` options too, and it did not self-heal. Fixed by binding through `ValueSignalMixin`.
 
-⚠ **`signal=` IS NOW VALUE-SPACE — a deliberate, maintainer-approved behavior
-change** (2026-08-19), taken over two stated alternatives. **Both directions
-moved**: `sel.value = '2'` used to write the label `'Two'` into the signal and now
-writes `'2'`. **Do not re-litigate it.**
+⚠ **`signal=` IS NOW VALUE-SPACE — a deliberate, maintainer-approved behavior change.** Both directions moved: `sel.value = '2'` used to write the label `'Two'` into the signal and now writes `'2'`. **Do not re-litigate it.**
 
-⚠ **A REGRESSION WAS FOUND AND AVOIDED MID-IMPLEMENTATION.** The mixin seeds by
-assigning `value`, and `SelectBox`'s setter **emits**, so binding a signal fired
-`<<Change>>` at construction where `value=` does not. **The event is QUEUED**, so
-a handler bound on the line *after* the constructor still receives it — and the
-reporter's own snippet binds `on_change` to `bs.toast`, so their app would have
-**toasted on startup**. Suppressed for the seed only, pinned by a test.
-`_suppress_changed_event` now has its first writer; this branch is the only
-caller, so the `try/finally` is the only thing clearing it.
+⚠ **`.signal` MEANS TWO DIFFERENT THINGS ACROSS THE PUBLIC API, and #458 widened the split rather than causing it.** Text-space: `TextField`, `PasswordField`, `PathField`, `SpinnerField`, `TextArea`, `CodeEditor`, **`SelectButton`**. Value-space: `NumberField`, `DateField`, `TimeField`, `Select`. **That is the real content of #460 and #461 taken together, and it is a family decision nobody has made.** ⚠ The CHANGELOG was corrected pre-merge for claiming the fix *"matches the other fields that take a `signal=`"* — **it does not match `SelectButton`**, which is the nearest sibling and still binds the label. **A closed list cannot over-claim the way an open one did.**
 
-⚠ **ONE TEST FAILS PRE-FIX WITH `AttributeError`, NOT BEHAVIORALLY** —
-`test_destroying_the_field_releases_the_signal_subscription` asserts on
-`_value_sub`, which does not exist before the branch. Argued in `PLAN.md` as
-unavoidable for a guard on new machinery, and **stated out loud rather than
-smoothed over**, because this project's standard is that a pre-fix failure should
-be behavioral.
+⚠ **THE MINOR WAS FORCED BY #461, NOT BY THE ADDITION.** #458 adds public surface (`Select` gains a `signal` property), and the standing rule says an addition needs a minor — but **#461 BREAKS WORKING CODE**, which is the stronger reason: seeding a `SelectButton` signal with an option's **label** works today and is the only spelling that does. That is #381's shape. **Do not re-read this as "#458 was only an addition".**
 
-⚠ **THE ARCHAEOLOGY IS IN `PLAN.md` — do not re-derive it.** Short version,
-because the shape recurs: a rename (`text_signal=` → `signal=`) 12 days before the
-`ValueSignalMixin` sweep is exactly what made `Select` pass that sweep's check.
-**The sweep checked the kwarg's NAME, not which space it bound.**
+⚠ **ONE RESIDUAL, STILL UNDECIDED:** the #458 CHANGELOG bullet does not mention that `Select` gained a public `signal` property. **Announcing it is a maintainer call, not a defect.**
 
-⚠ **THIS IS THE THIRD "the internal was right, the wrapper was the defect" IN A
-ROW** — #383's third gap (leftover `**kwargs` never read), #456 (`context_menus`
-discarded as a layout key), now #458 (delivered to the wrong internal parameter).
-The existing check (`git show main:<wrapper> | grep <kwarg>`) catches **absence**.
-It does not catch **the wrong destination**, which is what this was.
+**Two review records, archived to `development/plan-458-select-signal.md` and `development/review-458-select-signal.md`** — round 1 (four findings, none in production code) plus an **off-protocol verification pass** that should not have opened (it reviewed a test-only commit, which gate 1 exists to keep out) and whose two re-reports cost a round of attention because **the reviewer was not handed `REVIEW.md`**. Cap was 2, spent 1.
 
-#### Round 1 (2026-08-19) — four findings, NONE in production code
+⚠ **ITS ONE REAL FINDING IS THE ONE TO CARRY: a test can drive the right path and still assert nothing that can fail.** Round 1's own fix added a signal write to the read-only test but no assertion sensitive to the entry state — `read_only` reads the stored **setting** (#453 decoupled it from the entry on purpose) and the shown text is correct either way, so **both assertions passed while the field was silently editable**. Closed by asserting `entry_widget.instate(["readonly"])`, with a control that breaks the applier and watches the three older assertions still clear.
 
-Record is **`REVIEW.md` on the branch**; `REVIEW.md` now carries **both** it and
-the off-protocol pass. **Hand it to any later reviewer.**
+#### Two OPEN issues from that work — filed, not fixed
 
-| # | what | outcome |
-|---|---|---|
-| F1 | the read-only test never drove a signal write | **FIXED** — but incompletely, see START HERE |
-| F2 | `PLAN.md` claimed no public surface added; `.signal` says otherwise | **CORRECTED** — and it moved the release line |
-| F3 | the exact-list `<<Change>>` assertion shares #449's known-flaky shape | **RAISED, THEN WITHDRAWN** |
-| F4 | clearing a signal-bound `Select` leaves the signal stale | **OUT OF SCOPE — it is #390** |
-
-⚠ **F3 IS THE ONE WORTH READING BEFORE RE-FILING ANYTHING.** The fix looked
-obvious — relax `assert seen == ["2", "3"]` to the set-equality form a sibling
-uses — and was **withdrawn**, because the "exactly once" half guards against the
-two-way binding feeding its own write back as a second change, **a regression this
-branch could plausibly introduce**. The sibling relaxed for a reason that does not
-transfer. Relaxing would have traded real coverage of the branch's own risk for a
-flake never observed in this test.
-
-⚠ **F4 is #390 and MUST NOT be re-filed.** `_sync_value_set` and `_to_signal` both
-return early on `None` (`_core/field_mixin.py:318` and `:293`), and that file is
-**not in this branch's diff**. Any real fix moves every field that takes a
-`signal=`.
-
-⚠ **TWO OF THE OFF-PROTOCOL PASS'S THREE FINDINGS WERE RE-REPORTS OF F2 AND F4 —
-do not pay for them a third time.** The clearing finding arrived with a new
-escalation (that it contradicts the CHANGELOG); that was **checked and does not
-hold** — the sentence is about selection propagation and is silent on clearing.
-**Nothing false ships, in either place.**
-
-⚠ **THE HARNESS FAILURE THAT COST BOTH IS `0.3.1` ROUND 3 VERBATIM.** The reviewer
-was **not pointed at `REVIEW.md`**, and was reading against a `main` that had moved
-ahead. **Hand the reviewer `REVIEW.md`, AND check whether `main` has moved under
-the branch.**
-
-⚠ **THE GENERALIZABLE HALF, AND IT WILL RECUR ON EVERY BRANCH: A SESSION STARTED
-*ON* A BRANCH LOADS A STALE `CLAUDE.md`.** Handoff commits go to `main` only and a
-branch correctly never touches this file, so the branch's copy is frozen at its
-merge base and silently ages — measured at three `docs(claude):` commits behind.
-**Check with `git log --oneline main --not <branch> -- CLAUDE.md` before trusting
-the handoff you were given, and prefer leaving the checkout on `main` between
-sessions.**
-
-⚠ **AND THAT PASS SHOULD NOT HAVE OPENED** — it reviewed a **test-only** commit,
-exactly what gate 1 exists to keep out. It is recorded as an
-`Off-protocol verification pass`, not a round 2, and **the cap of 2 is UNSPENT**:
-`git diff main...HEAD -- src/` is still `select.py` alone, byte-identical to what
-round 1 reviewed.
-
-#### ✅ THE RELEASE LINE IS DECIDED — `0.4.0 — Signal binding on fields`
-
-Maintainer, 2026-08-19: #458 does **not** ride the patch line. A new minor carries
-#458, #459, #460 and #461.
-
-⚠ **TWO SEPARATE REASONS FORCED THE MINOR, and the weaker one is the famous one.**
-F2 found #458 **adds public surface** (`Select` inherits a public `signal`
-property `main` lacks) and an addition needs a minor. **But #461 is the stronger
-reason: it BREAKS WORKING CODE.** Seeding a `SelectButton` signal with an option's
-**label** works today and is the only spelling that does, so it is necessarily
-what any current user is using; fixing #461 makes it wrong. That is #381's shape,
-and #381 needed a minor for it. **Do not re-litigate this as "#458 was only an
-addition"** — the addition was never the binding constraint.
-
-#### Two defects found while verifying — FILED, NOT FIXED
-
-- **#461 — `SelectButton` has the SAME defect, unfixed.** Identical
-  `signal → textsignal` wiring at `selectbutton.py:84`. Seeding with the **label**
-  works; seeding with the **value** — what `value=` takes and what the docstring
-  promises — gives `text='2' value='2' selection=None`, and `sel.value = "3"`
-  writes the *label* back into the signal. ⚠ **Narrower than #458**: plain
-  `list[str]` options are unaffected and `<<Change>>` does fire, so it lacks #458's
-  silent half.
-- **#460 — eight widgets annotate `.signal` as `Signal | None` and can never
-  return `None`.** The wrappers forward with `getattr(self._internal, 'signal',
-  None)`, but the internal **lazily creates on first access**, so the default is
-  dead code and the `| None` is **unreachable, not merely unobserved**. ⚠ **Do not
-  "fix" `TextArea`, `CodeEditor`, or the `ValueSignalMixin` trio** — they genuinely
-  return `None`. `Slider` is the honest exemplar.
-
-⚠ **`.signal` MEANS TWO DIFFERENT THINGS ACROSS THE PUBLIC API, and #458 widens
-the split rather than causing it.** Text-space: `TextField`, `PasswordField`,
-`PathField`, `SpinnerField`, `TextArea`, `CodeEditor`, `SelectButton`.
-Value-space: `NumberField`, `DateField`, `TimeField`, and now `Select`. **That is
-the real content of #460 and #461 taken together**, and it is a family decision
-nobody has made.
-
-⚠ **ON MERGE:** archive `PLAN.md` → `development/plan-458-select-signal.md` and
-`REVIEW.md` → `development/review-458-select-signal.md`, then create `PLAN.md`
-fresh. Comment on #458 with `gh issue comment` after the *release*, not the merge.
+- **#461 — `SelectButton` has #458's defect, unfixed.** Identical `signal -> textsignal` wiring at `selectbutton.py:85`. Seeding with the **label** works; seeding with the **value** — what `value=` takes and what the docstring promises — gives `text='2' value='2' selection=None`, and `sel.value = "3"` writes the *label* back. ⚠ **Narrower than #458**: plain `list[str]` options are unaffected and `<<Change>>` does fire. **On `0.4.0`, and it is why that milestone is a MINOR.**
+- **#460 — eight widgets annotate `.signal` as `Signal | None` and can never return `None`.** The wrappers forward with `getattr(self._internal, 'signal', None)` but the internal **lazily creates on first access**, so the default is dead code and the `| None` is **unreachable, not merely unobserved**. ⚠ **Do not "fix" `TextArea`, `CodeEditor`, or the `ValueSignalMixin` trio** — they genuinely return `None`. `Slider` is the honest exemplar.
 
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
-**The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran
-**90 minutes for a 90-second suite** and was removed rather than left hanging.
-aqua is a platform this project publishes for and is now the only one with zero
-automated coverage, so the value of #380 is capped until this closes.
+**The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
 
-**Known already, so it is not re-derived:** setup and the Tk-version report both
-**succeeded**, then "Run the suite" never returned — so it is not a provisioning
-failure. **Every job now sets `timeout-minutes`**, so a retry costs 15 minutes.
+**Known already, so it is not re-derived:** setup and the Tk-version report both **succeeded**, then "Run the suite" never returned — so it is not a provisioning failure. **Every job now sets `timeout-minutes`**, so a retry costs 15 minutes. ⚠ That guard has since proven itself twice: PR #462's ubuntu-3.12 leg hung inside `sudo apt-get update` on an unreachable mirror and was killed at 15 minutes instead of burning to GitHub's 6-hour default. **A cancelled leg whose log stops inside `apt-get` is a runner outage, not a defect — re-run it.**
 
-**⏭ STEP 1, AND IT DECIDES HOW EVERYTHING ELSE READS: does a bare `tkinter.Tk()`
-even complete on the runner?** Not the suite — one root, one `update()`, one
-`destroy()`, with a timeout. A hang there means aqua needs something a headless
-runner does not give it (a window server session) and the answer is a different
-runner configuration. A pass means the hang is ours, and the next step is
-bisecting which leg blocks.
+**⏭ STEP 1, AND IT DECIDES HOW EVERYTHING ELSE READS: does a bare `tkinter.Tk()` even complete on the runner?** Not the suite — one root, one `update()`, one `destroy()`, with a timeout. A hang there means aqua needs something a headless runner does not give it (a window server session) and the answer is a different runner configuration. A pass means the hang is ours, and the next step is bisecting which leg blocks.
 
-⚠ **This is debug-by-push and there is no way around it.** Make each push answer
-one question, and **write the question into the workflow step name** so the log
-reads as an experiment rather than a rerun.
+⚠ **This is debug-by-push and there is no way around it.** Make each push answer one question, and **write the question into the workflow step name** so the log reads as an experiment rather than a rerun.
 
-⚠ **The local macOS box is NOT a substitute and will mislead you.** It has a
-window server, a logged-in session and Tk 8.6; the runner has none of the first
-two. **The whole #447 lesson transfers: a display without the thing that manages
-windows behaves differently from one with it, and the difference is invisible
-until measured.** If the local box passes, that is not evidence about the runner.
+⚠ **The local macOS box is NOT a substitute and will mislead you.** It has a window server, a logged-in session and Tk 8.6; the runner has none of the first two. **The whole #447 lesson transfers: a display without the thing that manages windows behaves differently from one with it, and the difference is invisible until measured.** If the local box passes, that is not evidence about the runner.
 
-⚠ **#431 is waiting on a macOS answer too and is cheap to fold in** — its fix
-skips on aqua, and nobody has *observed* that branch being taken on a real Aqua
-build.
+⚠ **#431 is waiting on a macOS answer too and is cheap to fold in** — its fix skips on aqua, and nobody has *observed* that branch being taken on a real Aqua build.
 
 #### Open flakes and known-unstable tests
 
@@ -391,13 +227,9 @@ build.
 | **#449** | `test_select_change_event_value_space` pins an exact event list against an async change, ~1 in 10 full runs | **OPEN.** Two candidate causes RULED OUT by measurement: it is **not** a `Select` emitting at construction, and **not** an event leaked by the reset destroying a widget. Remaining hypothesis — stale bindings surviving destroy while Tk recycles path names — is **UNTESTED** |
 | flake C | `test_enter_on_a_disabled_button_still_reaches_the_default` | Folded into #447's family; 1 in 37, **UNEXPLAINED**, does not reproduce in a quiet process (0/40) |
 
-⚠ **`probe_446_disabled_button_enter.py` COUNTS A BARRIER TIMEOUT AS A
-REPRODUCTION** — a run where the dialog never comes up yields `calls == []`,
-byte-identical to the flake, and the probe's READING text then points at the guard
-when the truth is that Enter was never pressed. **Fix that before working #447.**
+⚠ **`probe_446_disabled_button_enter.py` COUNTS A BARRIER TIMEOUT AS A REPRODUCTION** — a run where the dialog never comes up yields `calls == []`, byte-identical to the flake, and the probe's READING text then points at the guard when the truth is that Enter was never pressed. **Fix that before working #447.**
 
-⚠ **#447's rate went 4/50 → 2/50 across #407, which SETTLES NOTHING** — inside
-noise at that sample size.
+⚠ **#447's rate went 4/50 -> 2/50 across #407, which SETTLES NOTHING** — inside noise at that sample size.
 
 ### Milestones
 
@@ -414,7 +246,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — #458, #459, #460, #461. Cut 2026-08-19; the next release out the door | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (merged 2026-08-20), **#459, #460, #461**. Cut 2026-08-19; the next release out the door | 3 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -456,6 +288,15 @@ title.**
 as `0.3.x`. Check with
 `gh api repos/:owner/:repo/milestones --jq '.[]|"\(.title) open=\(.open_issues) closed=\(.closed_issues)"'`.
 
+⚠ **BUT THAT COMMAND COUNTS PULL REQUESTS AS ISSUES — do not reconcile it against
+an issue list without allowing for them.** Measured 2026-08-20: `0.4.0` reported
+`open=3 closed=2` while `gh issue list --milestone ... --state all` returned
+**four** issues, exactly one of them closed. The second "closed issue" was **PR
+#462**, which carried the milestone. **The milestone endpoint is a work-item
+count, not an issue count**, and a session comparing the two would conclude an
+issue had gone missing. `gh issue list --milestone <title> --state all` is the
+authority for *issues*; use the API figure only for the open/closed shape.
+
 **FOUR UNMILESTONED OPEN ISSUES — #431, #436, #452, #455.** All four predate the
 current work. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
@@ -490,18 +331,38 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-19 on `fix/select-signal-value-458` at
-`6db756b1`**, Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
-`pandas` ABSENT:
+**AUTHORITATIVE — measured 2026-08-20 on `main` at `41c8bad1`**, Windows box,
+`py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and `pandas`
+BOTH PRESENT**:
 
-| | branch, measured | `main`, derived |
-|---|---|---|
-| summed, 33 legs | **1458 passed / 21 skipped** | **1443 / 21** |
-| shared leg | **1062 / 13** against **1075** selected | — |
+| | measured |
+|---|---|
+| summed, 33 legs | **1500 passed / 22 skipped** |
+| shared leg | **1106 / 13** against **1119** selected |
+| data leg | **123 / 6** (`pandas` present) |
 
-The shared leg reconciles against its own collection line: `collected 1150 / 75
-deselected / 1 skipped / 1075 selected`, and `1062 passed + 13 runtime skips =
-1075`. ⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the
+The shared leg reconciles against its own collection line: `collected 1194 / 75
+deselected / 1119 selected`, and `1106 passed + 13 runtime skips = 1119`.
+
+⚠ **THIS SUPERSEDES `1458 / 21`, AND THE DIFFERENCE IS ENTIRELY ENVIRONMENTAL —
+it is the first of this file's eight count discrepancies that was NOT an error.**
+Against the 2026-08-19 figure (same box, both deps ABSENT):
+
+```
+1458 + 44 (test_chart.py now collects) - 2 (data leg 125/4 -> 123/6) = 1500 passed
+  21 -  1 (its collection-time skip is gone) + 2 (pandas)            =   22 skipped
+```
+
+**`test_chart.py` is 44 tests behind a module-level `pytest.importorskip("matplotlib")`** — it *was* the `1 skipped` in the old collection line and now contributes all 44. **Check `py -3.12 -c "import matplotlib"` and `import pandas` before re-flagging either total**; both are legitimate on this box depending on what is installed.
+
+⚠ **It reconciled because the COLLECTION LINE was read, not because the total
+looked plausible.** The old line said `collected 1150 ... / 1 skipped / 1075
+selected`; the new one says `collected 1194 ... / 1119 selected` with no
+collection-time skip at all. **That vanished `1 skipped` is the whole tell** — a
+session comparing only the summed totals would have seen +42 and had nothing to
+attribute it to.
+
+⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the
 collection line — sum the per-leg summary lines only.**
 
 **The three checks, in order of what they actually prove:**

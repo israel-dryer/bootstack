@@ -1,175 +1,90 @@
-# PLAN — #458: a `Select` bound to a `Signal` binds text, not value
+# PLAN — wrapper/internal parameter audit (measurement pass)
 
-**Branch:** `fix/select-signal-value-458` · **Base:** `main` @ `5b009456`
-**Issue:** [#458](https://github.com/israel-dryer/bootstack/issues/458) (external report, `bLynnb2762`)
-**Release line:** ✅ **DECIDED (maintainer, 2026-08-19): `0.4.0 — Signal binding on fields`**, a new minor cut to carry #458, #459, #460 and #461 together. **This supersedes the `0.3.x — Patch line` this plan was written against** — the paragraph below is kept because it is what round 1 corrected and what put the question to the maintainer, not because the line is still open.
+**Branch:** not yet cut — suggested `audit/wrapper-parameter-delta`
+**Base:** `main` @ `41c8bad1` (the #458 merge)
+**Status:** ⏭ **NOT STARTED.** Written 2026-08-20 by the session that merged #458, for the session that runs this.
 
-Round 1's F2 found the branch **adds one piece of public surface**: inheriting `ValueSignalMixin` gives `Select` a public `signal` property, which `main` does not have (`hasattr` is `False` there, `True` here). Small — nine public wrappers already define that property and three more inherit it from the same mixin, so this closes a family gap rather than introducing a concept — but the standing rule is that an addition requires a minor even when nothing breaks. It does not raise where *working* code used to succeed: `textsignal=` fell into `**kwargs` and was silently discarded (#383's third gap), so nothing could have depended on it.
+**Release line:** none — this pass ships **no production code**. It produces a table and files issues. Whatever fixes come out of it get scoped, milestoned and planned separately, by the maintainer, after the table exists.
 
-⚠ **The addition was NOT the binding constraint, and this plan should not be read as if it were.** #461 is the stronger reason for the minor: seeding a `SelectButton` signal with an option's **label** works today and is the only spelling that does, so it is necessarily what any current user is using, and fixing #461 makes it wrong. That is #381's shape, and #381 needed a minor for it.
-
-**Round cap: 2** (REVIEW-PROTOCOL.md gate 3). Declared before implementation. Survivors at the cap are filed as issues, not fixed here. **Spent: 1.** Round 1 ran 2026-08-19; the later `/code-review` pass was **off-protocol** — it reviewed a test-only commit, which gate 1 exists to keep out — and is recorded in `REVIEW.md` as a verification pass rather than a round. `git diff main...HEAD -- src/` is still `select.py` alone, byte-identical to what round 1 reviewed.
+**Round cap: 0 for the measurement itself.** `git diff main...HEAD -- src/` must stay empty for the whole pass; if it does not, the pass has turned into a fix branch and needs its own plan and its own cap (gate 1, gate 3). ⚠ **The probe is an instrument, not reviewed code (gate 4)** — but this one is the exception gate 4 names: **its conclusion will be cited as settled, so it must be shown capable of finding something.** See `Non-vacuity` below.
 
 ---
 
-## What is wrong
+## Why
 
-`Select` maps its public `signal=` onto the internal **`textsignal=`** (`select.py:130`), which installs the `Signal`'s Tk variable *as the entry's `textvariable`*. Measured: both are `SIG1`. Signal writes therefore land directly in the entry's display text, bypassing two things at once:
+**Maintainer, 2026-08-20:** *"the wrappers were not sufficiently designed or reviewed. In many cases the bugs derive from the wrapper, not the `_impl` widgets... at some point we need to do a more in-depth review of the wrapper vs original widget so that we can get these before they surface."*
 
-- `_resolve_display()` — the value-to-display-text map that the `value=` path goes through (`selectbox.py:131`);
-- the entry's commit path, which is what maintains `TextEntryPart._value` — the cache `.value` actually reads.
+This is the dominant recent defect pattern, and `CLAUDE.md` already records #458 as *"the THIRD 'the internal was right, the wrapper was the defect' IN A ROW."* The existing check — `git show main:<wrapper> | grep <kwarg>` — catches exactly one of the five ways it goes wrong.
 
-That single wiring line produces two symptoms.
+## The five failure modes, with a real example each
 
-**A — the reported one.** With decoupled `(text, value)` options, the field displays the raw value. `Signal('2')` shows `2`, where `value='2'` shows `Two`.
+| # | mode | example | caught by the existing grep? |
+|---|---|---|---|
+| 1 | **never forwarded** — the kwarg exists on the wrapper and never reaches the internal | #383 gap 3, #456 | ✅ yes |
+| 2 | **wrong destination** — forwarded, to the wrong internal parameter | **#458**, **#461** | ❌ no |
+| 3 | **swallowed as a layout key** — falls into `**kwargs`, `_split_layout_kwargs` eats it, nothing raises | #456 | ❌ no |
+| 4 | **accepted then ignored** — reaches the internal and is overwritten by something recomputed | #453 | ❌ no |
+| 5 | **the type lies** — the annotation describes a value the code cannot produce | #460 (eight widgets) | ❌ no |
 
-**B — not reported, and worse.** Writing to a bound signal moves the display but not the selection: `.value` and `.selection` keep reporting the previous option and **no `<<Change>>` fires**. This needs no decoupling — it hits plain `list[str]` options too, and it does not self-heal (measured: survives a `<Return>`; only a real pick through the popup resyncs). So the widget shows one option and reports another, indefinitely, and code reading `.value` on submit gets the option the user is not looking at.
+⚠ **Mode 2 is the one that keeps landing and the one no tool currently sees.** `CLAUDE.md`: *"The existing check catches ABSENCE. It does not catch THE WRONG DESTINATION, which is what this was."*
 
-Symptom B is why this is not cosmetic. `.value` decodes text back to value via `_value_by_text`, which is exactly why the reporter saw correct event data and read the whole thing as a display glitch.
+## The surface — MEASURED, not estimated
 
-## How it got here (so the fix is aimed at the cause)
+Measured 2026-08-20 on `main` at `41c8bad1` with an `ast` pass over `src/bootstack/widgets/*.py`:
 
-| date | commit | |
-|---|---|---|
-| 2026-05-28 | `3cc69e5b` | `Select` ships with `text_signal=` mapped to `textsignal`. Honest: `options: list[str]`, text *was* value. |
-| 2026-05-31 | `4b50f2f2` | *"Rename `text_signal=` to `signal=` for consistency"*. Name became value-space; wiring stayed text-space. Still not a defect — options were still plain. |
-| 2026-06-10 | `ee3345d4` | Shared option shape adds `(text, value)` and `_resolve_display`. The two spaces split. `value=` was routed through the new map; the signal path was not. **Defect A born.** |
-| 2026-06-12 | `d05ecd8a` | `ValueSignalMixin` built and applied to Number/Date/Time. `select.py` untouched. |
-
-Symptom B is older than A: `TextEntryPart.value()` already returned the committed `self._value` at `3cc69e5b`, so a raw variable write has never updated it. B dates from 2026-05-28.
-
-`d05ecd8a`'s design doc records why `Select` was skipped (`docs/_dev/field-value-dtype.md:55`): *"`Select` already had `signal=`."* The sweep checked for the **presence of the kwarg name**, not **which space it bound** — and the rename 12 days earlier is precisely what made `Select` pass that check.
-
-## The fix
-
-Adopt the pattern the three sibling field widgets already use. `TimeField` is the direct precedent: it rides the **same `SelectBox` internals**, binds through `ValueSignalMixin`, and explicitly rejects `textsignal=` (`timefield.py:92`).
-
-1. `Select(ValueSignalMixin, PublicWidgetBase)`.
-2. Stop passing `internal_kwargs["textsignal"]`. After the internal is constructed, `self._bind_value_signal(signal)`.
-3. `Select.value` setter calls `self._sync_value_set(...)`, so a programmatic set pushes to the signal (the mixin's `on_change` sync only covers commits).
-4. Reject `textsignal=` with a message pointing at `signal=`, mirroring `TimeField`.
-
-The mixin binds through the `value` property, which is the path that runs `_resolve_display` **and** maintains the committed value **and** emits `<<Change>>`. That is why one change fixes both symptoms — and why they are not separable: any fix for B has to bind through `value`, and that binding is inherently value-space.
-
-## Contract after this change
-
-`signal=` carries the option's **value**, matching `Select.value`, `DateField`, `NumberField` and `TimeField`.
-
-```python
-sig = bs.Signal('2')
-sel = bs.Select(options=[('One', '1'), ('Two', '2')], signal=sig)   # shows 'Two'
-sig.set('1')        # shows 'One', .value == '1', <<Change>> fires
-sel.value = '2'     # sig() == '2'
+```
+77 public wrapper classes · 890 named params · 62 with a **kwargs catch-all
 ```
 
-**Both directions move.** Today `sel.value = '2'` writes the *text* `'Two'` into the signal; after this it writes `'2'`. Same one-line cause, and leaving the write-back in text-space would make the signal round-trip lossy.
+**That is ~4x the #381 sweep (215 kwargs) and is why this cannot be a reading review.** It has to be mechanical, and the output has to be a ranked table rather than a verdict.
 
-## Invariants — must not move
+⚠ **THE SCAN ALREADY FOUND ITS OWN FIRST TRAP: `App` (28 params), `AppShell` (31), `Workbench` (34) and `Window` (21) have ZERO `internal_kwargs` references** — 114 params that forward through `APP_CONFIG_KWARGS` and other idioms instead. **A tool that assumes one forwarding idiom will report those four as clean.** Enumerate the idioms before trusting any "no findings" result on a wrapper.
 
-- `.value` and `.selection` stay value-space. Not touched.
-- **Plain `list[str]` options seed identically** to today. Text == value, so both readings coincide. This is the control that scopes the change.
-- An **off-list value still displays and does not raise** (#368 retired-value path). Measured on `main`: `value='99'` shows `'99'`. Must hold via a signal.
-- `read_only` (#453) untouched — it is derived, never storage. The value setter already brackets its write with the readonly state; binding must not defeat it.
-- No emit loop: the mixin's `_value_syncing` guard must hold in both directions.
-- The subscription is released on destroy — a `Signal` outlives its widgets.
+## The oracle that makes this tractable
 
-## Blast radius
+**The internal widget is the specification.** For most wrappers this is not code review — it is diffing two signatures and classifying the delta. Modes 1–3 and 5 are a pure AST pass; mode 4 needs the runtime construct-with-a-bogus-value probe already proven on #381.
 
-- **No test constructs `Select` with a signal.** Verified across full repo history, not just the current tree.
-- `docs/widgets/select.rst:225` demos `signal=` with `["Red", "Green", "Blue"]` — plain options, where both readings are indistinguishable. Unaffected.
-- The text-space contract is asserted **only** in `Select.signal`'s own docstring (`select.py:40`), which describes the behavior rather than designing it. Rewritten here.
-- `textsignal=` on `Select` is **silently swallowed today** (measured: falls into `**kwargs`, never read — #383's third gap). It cannot be in working use, so raising on it breaks nobody.
+Mode 2 is the only one needing a human, and it should be **short**: flag every case where wrapper param `X` forwards to internal key `Y` with `X != Y`. Every legitimate rename plus every #458 lands in that list. **#458 would have been in it.**
 
-## Risks
+## Deliverable
 
-- `ValueSignalMixin._push_to_signal` reconciles numeric types off `signal._type`. Select values are usually `str` (measured: `Signal('1')._type is str`), so the numeric branch is inert — but a `Select` over int-valued options is legal and must be exercised.
-- `Select` is a `Form` editor. `Form` binding must be checked, not assumed.
-- Seeding order: `_bind_value_signal` runs *after* `_attach_to_parent`, matching `TimeField`. A signal and an explicit `value=` together — the signal wins, since it seeds last. Pin it so it is a decision, not an accident.
+**One committed probe and one table. No fixes.**
 
-## Tests — `tests/widgets/public/test_select_signal_value.py`
+1. `development/probe_wrapper_parameter_delta.py` — the scan, runnable on any box, ASCII output only.
+2. A table per wrapper: param, whether it reaches the internal, where it lands, and which mode (if any) it trips.
+3. Findings filed as issues, ranked. **Do not fix them here** — `CLAUDE.md`'s rule is that a survivor is filed, not fixed, and this pass is all survivors by construction.
 
-Every test must fail against pre-fix source for a **behavioral** reason. Nothing here raises `AttributeError` pre-fix (`signal=` is accepted today), so a failure means wrong behavior, not a missing method.
+## Non-vacuity — REQUIRED before any "no findings" is believed
 
-**Planned 10; 15 were written.** The five extra are the seed-emit guard found during implementation (below), a round trip through a second `Select` sharing one signal, the `value=`/`signal=` equality pinned as a pair rather than as two expectations, the `value=` + `signal=` precedence, and the destroy-release split out of row 10 so the loop guard and the subscription release are pinned separately.
+⚠ **A probe that finds nothing must be proven able to find something.** This project has already shipped a completeness scan that reported **zero hits** because `ast.parse` choked on a UTF-8 BOM and a bare `except Exception: continue` swallowed it, silently skipping every file.
 
-| # | pins |
-|---|---|
-| 1 | the report: decoupled options plus `Signal('2')` displays `Two` |
-| 2 | signal write moves display **and** `.value`/`.selection` (decoupled) |
-| 3 | **symptom B on plain options** — signal write moves `.value` |
-| 4 | signal write fires `<<Change>>` exactly once |
-| 5 | write-back: `sel.value = '2'` puts `'2'` (not `'Two'`) in the signal |
-| 6 | control: plain options seed identically to `value=` |
-| 7 | off-list signal value displays, does not raise (#368) |
-| 8 | int-valued options round-trip |
-| 9 | `textsignal=` raises and names `signal=` |
-| 10 | no feedback loop; subscription released on destroy |
+**The control is free here, because four known-positive cases exist and three are still unfixed on `main`:**
 
-## Verification
+| case | mode | state on `main` |
+|---|---|---|
+| **#461** `SelectButton` — `signal=` -> `textsignal=` | 2 | **OPEN** — must be found |
+| **#460** eight widgets annotating `.signal` as `Signal \| None` | 5 | **OPEN** — must be found |
+| **#383** gap 3 — `bs.TextField(bogus_xyz=1)` constructs silently | 1/3 | **OPEN** — must be found |
+| **#458** `Select` — `signal=` -> `textsignal=` | 2 | **FIXED** — run the scan at `main~` and it must appear; at `main` it must not |
 
-- `py -3.12 tests/run_gui.py` — full suite, all legs, exit 0. Record the count and the commit measured at, per CLAUDE.md.
-- `development/probe_458_select_signal_display.py` re-run: arms 1 and 2 agree, arm 3 (control) unchanged, arm 4 tracks.
-- Clean `-W` docs build (`Select.signal`'s docstring is rendered API surface).
-- Manual: the reporter's exact snippet from #458.
+**The #458 arm is the strongest control available** — a real instance of the exact mode the tool exists to catch, with a known before and after. **Run it both ways.** Read files as `utf-8-sig` and let no bare `except` swallow a parse failure; count files parsed and assert it equals files found.
 
----
+## Scope boundaries — write the command, not the conclusion
 
-## Verification results — measured on the working tree before commit
+⚠ **`CLAUDE.md`: a completeness claim whose scope was never written down reads as global and is checked as local.** Two claims in this project's history went wrong exactly that way (*"no other `grab_set` in the package"* meant `dialogs/`; *"not yet filed"* meant this session, not the tracker).
 
-Windows box, `py -3.12`, `pandas` absent.
+State in the output, mechanically:
 
-| check | result |
-|---|---|
-| `py -3.12 tests/run_gui.py` | **exit 0, 33 legs, 1458 passed / 21 skipped** |
-| `main` on the same box, **derived** | **1443 / 21** — this branch's only change under `tests/` is one new file of 15 tests, so the delta is bounded at exactly +15 (1443 + 15 = 1458, and it reconciles) |
-| new tests vs **pre-fix** `select.py` | **11 failed, 4 passed** |
-| clean `-W` docs build | succeeded, **0 warnings** |
-| reporter's snippet from #458 | displays `Two`; **0 change events at startup** |
-| probe arms 1/2/3/4 | 1 and 2 agree, 3 (control) unchanged, 4 tracks every write |
+- **which directory** was scanned (`src/bootstack/widgets/*.py` is NOT all public wrappers — dialogs are under `src/bootstack/dialogs/`)
+- **which classes** were skipped and why
+- **which forwarding idioms** are understood, and therefore which wrappers the tool cannot speak about
 
-⚠ **One test breaks the behavioral-failure standard stated above, and it is called out rather than smoothed over.** `test_destroying_the_field_releases_the_signal_subscription` fails pre-fix with `AttributeError: 'Select' object has no attribute '_value_sub'` — structural, not behavioral. It cannot be otherwise: it guards a leak in machinery that does not exist before this branch, and pre-fix there is no subscription to leak, so any behavioral form of it would pass vacuously. Accepted as an invariant guard on new machinery; a reviewer should not read its pre-fix failure as evidence the defect reproduces.
+## Out of scope, deliberately
 
-The 4 tests that pass pre-fix are **meant to** — they are the control
-(`test_plain_options_are_unaffected`) and the invariant guards (off-list value,
-read-only, seed-emit). A test that passes on both sides of the fix is only
-vacuous if it claims to pin the defect; these claim to pin what must NOT move.
+- **Any fix.** Including obvious ones.
+- **`_impl` widget defects.** The maintainer's framing is wrapper-vs-internal; an internal bug found on the way is filed, not chased.
+- **The durable guard.** A one-time audit decays; a `test_public_surface.py`-style test at the *parameter* level is what prevents recurrence. **That is the more valuable half and it is a separate branch** — it needs the failure-mode taxonomy this pass produces in order to be designed to it. ⚠ Note the existing `tests/test_public_surface.py` has a known blind spot of exactly this kind (it gates the top-level name set but never asserts a submodule is unreachable as `bs.*`, which is why the `bs.events.X` drift went uncaught for two months). **Design the new guard to the modes, or it inherits the same shape.**
 
-Pre-fix failures are behavioral, not `AttributeError`: `'2' == 'Two'` (the
-report), `'One' == 'Three'` (the unreported symptom, plain options), and
-`[] == ['2', '3']` (the missing change events).
+## Placement — a maintainer call, not decided here
 
-## Found during implementation, and fixed here
-
-**Binding a signal emitted `<<Change>>` at construction, where `value=` does
-not.** The mixin seeds by assigning `value`, and `SelectBox`'s setter emits. The
-event is **queued**, so a handler bound on the line after the constructor still
-receives it once the loop turns — the reporter's own snippet binds `on_change`
-to `bs.toast`, so this would have toasted on startup. Suppressed for the seed
-only, via the `_suppress_changed_event` flag `selectbox.py:1212` already reads.
-
-⚠ **That flag had no writer anywhere in `src/` before this branch** — it was a
-read-only seam. This is the first code to set it. Flagged rather than buried,
-because a reviewer will not find another caller to compare against.
-
-## Out of scope — filed, not fixed
-
-**[#459](https://github.com/israel-dryer/bootstack/issues/459)** — `TimeField`
-has the identical seed-emit behavior, and it is **pre-existing**: it has bound
-through `ValueSignalMixin` since `d05ecd8a` (2026-06-12), long before this
-branch. Measured with both controls (`TimeField(value=)` is quiet, and the
-`NumberField`/`DateField` siblings are quiet), so the finding is scoped to the
-signal door on the one select-backed field. Left unmilestoned — it gates
-nothing.
-
-## Discharged risks
-
-- **`Form` integration** — checked rather than assumed. `form.get()` after
-  `form.set({'size': '2'})` on a select editor returns `{'size': '2'}`, and a
-  `Select` with no signal reports `.signal is None`, so the new
-  `_sync_value_set()` call in the value setter early-returns and the no-signal
-  path is byte-for-byte unchanged in behavior.
-- **Non-`str` option values** — int-valued options round-trip in both
-  directions (`_push_to_signal`'s numeric reconciliation is exercised). The
-  `signal` annotation was widened from `Signal[str]` to `Signal` to match.
-- **`value=` + `signal=` together** — the signal seeds last and wins. Pinned, so
-  the precedence is a decision rather than an artifact of statement order.
+**#383 is arguably this issue in embryo** — it already carries three gaps, and gap 3 is mode 1 generalized. This can either widen #383 or become its own milestone with **#383, #460, #461 and #455** as members. ⚠ **Not assigned** — `CLAUDE.md`'s rule is that placement is only automatic for a blocker, and this gates nothing.
