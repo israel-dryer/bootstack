@@ -12,895 +12,158 @@ and ease of use, not compatibility with the raw tk/ttk surface.
 Go from nothing to something fast. The user should never need to `import tkinter`.
 
 **Working directory:** `D:\Development\bootstack` (Windows box) — see Environment.
-**Branch strategy:** `feat/*` branches off `main`. PRs go `feat/*` → `main`.
+**Branch strategy:** `feat/*` / `fix/*` branches off `main`. PRs go → `main`.
 
-> 📓 **Session history lives in `docs/_dev/handoff-archive.md`** — every shipped
-> initiative with its full root-cause analysis, decisions, and gotchas. This file
-> keeps only what is OPEN plus the standing rules. **Read the archive when you
-> touch an area it covers** (it is indexed by issue/PR number); don't re-derive a
-> root cause that is already written down there.
->
-> ⚠ The archive spent a while **untracked** — it was split out of this file on
-> 2026-07-30 and that session ended before committing either half. Committed
-> 2026-07-30 (`docs(claude): split session history…`). **Lesson worth keeping: a
-> handoff artifact only survives if it is IN THE REPO.** The same failure mode
-> already cost us #379's `leakfix.patch`, which was saved to a per-session temp
-> `scratchpad/` and is genuinely gone.
+### Where things live — READ THIS BEFORE ADDING TO THIS FILE
 
-> 📋 **`REVIEW-PROTOCOL.md` in the repo root is the STANDING WORKFLOW for
-> iterative development** (maintainer, 2026-08-10). Read it before starting
-> implementation or review work. The core rule: **a session that has written
-> code never reviews code** — start a fresh session before every review, because
-> written artifacts transfer intent while session memory transfers
-> self-justification.
->
-> ⚠ **If you are implementing, write `PLAN.md` at the repo root UP FRONT, before
-> you write code.** The whole protocol depends on that file existing, and a plan
-> reconstructed after the fact is a justification rather than a plan — which is
-> precisely what the session boundary exists to keep out. `PLAN.md` and
-> `REVIEW.md` are live working files for the branch in hand; this file keeps
-> standing rules and what is open; `docs/_dev/handoff-archive.md` keeps shipped
-> history.
->
-> ⚠ **THE ROOT CARRIES BOTH RIGHT NOW** — `PLAN.md` and `REVIEW.md` for
-> `fix/dialog-keyboard-modality` (`0.3.1`). **Archive them into `development/`
-> when it merges**, as `0.3.0`'s were
-> (`development/plan-428-437-438-dialogs.md`,
-> `development/review-428-437-438-dialogs.md`), and **create `PLAN.md` fresh for
-> the branch after — finding a stale one describing shipped work is worse than
-> finding none.**
->
-> ⚠ **AND CLOSE EACH ROUND WITH ITS RECORD.** Rounds 1–3 of the `0.3.0` dialog
-> work each landed a `docs(review):` commit; **round 4 did not**, so the branch sat
-> with four fix commits answering findings that existed nowhere in the repo, and
-> the record had to be reconstructed from commit messages afterwards. Writing the
-> record is the last step of a fix step, not an optional one.
->
-> ⚠ **HAND `REVIEW.md` TO THE REVIEWER, or the round re-litigates settled
-> decisions** (learned on `0.3.1`, 2026-08-11). Round 2's reviewer was given
-> round 1's record and re-filed nothing. **Round 3's was not, and three of its
-> four findings were already-triaged items** — one refuted by measurement, one
-> deferred by the maintainer, one already filed as out of scope by round 2
-> itself. That is a harness failure, not a reviewer failure, and it costs a round
-> of maintainer attention spent re-reading its own deferrals.
->
-> ⚠ **A re-report is not automatically noise, though.** `0.3.1`'s round 3 also
-> re-raised a finding whose *evidence* had not changed but whose *price* had — a
-> one-argument fix, weighed against shipping an unmeasurable X11 behavior change.
-> It was taken. **Ask what changed: the evidence, or the cost of acting?**
->
-> ⚠ **AND KNOW WHEN TO STOP.** `0.3.1` ran three rounds: 6 findings then 5 then
-> 4, but **real** yield was 3, 5, 1 — and round 2 existed only because round 1's
-> own fix was incomplete. **When a round returns mostly re-reports and
-> out-of-scope pre-existing bugs, the branch is done and the rest are issues.**
+This file keeps **only what is OPEN plus the standing rules.** Everything else
+has a home:
+
+| File | Holds |
+|---|---|
+| `docs/_dev/handoff-archive.md` | **Every shipped initiative** with its root causes, decisions and gotchas. Indexed by issue/PR number — **read the entry before you touch an area it covers**, don't re-derive it |
+| `docs/_dev/docs-authoring-patterns.md` | Docs IA, the API Reference & Guide page recipes, autosummary templates, the widget documentation pattern, screenshot patterns |
+| `docs/_dev/widget-review-and-docs-standards.md` | The widget review + docs checklist |
+| `REVIEW-PROTOCOL.md` (repo root) | **The standing workflow for iterative development.** Read it before any implementation or review work |
+| `PLAN.md` / `REVIEW.md` (repo root) | Live working files **for the branch in hand only** |
+
+⚠ **THIS FILE HAS BEEN SPLIT TWICE — 2026-07-30 and 2026-08-20 — AND THE SECOND
+SPLIT WAS FORCED.** It had reached **~60,000 tokens**, over budget, because every
+release from `0.2.2` to `0.3.2` accreted here instead of being archived when it
+shipped. **Archive an entry THE DAY ITS RELEASE SHIPS.** If you are adding more
+than a few lines about work that is finished, you are writing in the wrong file.
+
+⚠ **A handoff artifact only survives if it is IN THE REPO.** The first split sat
+untracked and nearly vanished; #379's `leakfix.patch` was saved to a per-session
+temp `scratchpad/` and is genuinely gone.
+
+### The review protocol, in one paragraph
+
+**A session that has written code never reviews code** — start a fresh session
+before every review, because written artifacts transfer intent while session
+memory transfers self-justification. **If you are implementing, write `PLAN.md`
+UP FRONT, before you write code**; a plan reconstructed afterwards is a
+justification, which is what the session boundary exists to keep out. **Close
+each round with its `docs(review):` record** — writing the record is the last
+step of a fix step, not an optional one. **Hand `REVIEW.md` to the next
+reviewer**, or the round re-litigates settled decisions. **On merge, archive
+`PLAN.md`/`REVIEW.md` into `development/` and create `PLAN.md` fresh** — finding a
+stale one describing shipped work is worse than finding none.
+
+**Stopping rules** (`REVIEW-PROTOCOL.md`, four mechanical gates — a rule needing
+judgment gets reasoned around exactly when it should bind):
+
+1. **A round is triggered by a non-empty `git diff <range> -- src/`, and nothing
+   else.** Test-, probe- and docs-only commits are self-checked. ⚠ **Gate 1 has a
+   known GAP: `.github/` is none of those three**, so a CI workflow reads as
+   no-round. Unresolved — raise it rather than deciding silently.
+2. **Test code is reviewed on ONE axis — what defect can it let through.** Only
+   **vacuity** (passes while the behavior is broken) and **false alarm** (fails
+   while it is fine) are actionable. Diagnostics, wording, symmetry and probe
+   ergonomics are **notes in the record, never fixes**.
+3. **The round cap goes in `PLAN.md` up front** — 2 for a patch, 3 for a minor —
+   and survivors are filed as issues.
+4. **Probes are instruments, not reviewed code.** A flake gets **one** fix attempt
+   with a mechanism-reproducing control, then quarantine. Exception: a probe whose
+   *conclusion* is cited as settled must be shown capable of finding something.
+
+**And know when to stop.** `0.3.1` ran four rounds yielding 6/5/4/5 findings but
+only 3/5/1/2 real ones — round 2 existed only because round 1's fix was
+incomplete, and round 4 reviewed a **test-only** diff. **When a round returns
+mostly re-reports and out-of-scope pre-existing bugs, the branch is done and the
+rest are issues.** ⚠ **But a re-report is not automatically noise** — ask *what
+changed: the evidence, or the cost of acting?* `0.3.1` round 3 re-raised a finding
+whose evidence was unchanged but whose price had dropped to one argument, and it
+was rightly taken.
 
 ---
 
 ## Environment — THREE MACHINES. Check which one you are on first.
 
-**WSL box** (`/home/iddryer/bootstack`, Ubuntu 22.04.5 on WSL2) — **the ONLY box
-that can run the Linux leg**, which is why #447 was answerable at all. Set up
-2026-08-14; a previous session's environment had been lost, so **verify before
-assuming**:
+**Windows box** (`D:\Development\bootstack`) — the primary. The checked-in
+`.venv` is **STALE** (points at a `Python314\python.exe` that fails with *"Access
+is denied"*). **Use `py -3.12` for BOTH tests and docs** — pytest is installed
+**only** on 3.12 (9.0.3). ⚠ `py -3.13 tests/run_gui.py` fails every leg with *"No
+module named pytest"* **while still printing a plausible-looking harness
+summary**. `py -3.13` (3.13.7, Tk 8.6) is fine for running demo scripts, which is
+all it is good for. `bootstack.__version__` reports a stale `0.1.0a9` from old
+install metadata — harmless, ignore it.
+
+**WSL box** (`/home/iddryer/bootstack`, Ubuntu 22.04.5) — **the ONLY box that can
+run the Linux leg.** Set up 2026-08-14; an earlier session's environment had been
+lost, so **verify before assuming**.
 
 - **`python` does not exist and `python3` is 3.10.12, below the 3.12 floor.** Use
-  **`/home/iddryer/.virtualenvs/bootstack/bin/python`** — Python **3.13.11**,
-  Tk **8.6.12**, editable install, pytest 9.1.1. ⚠ Confirm provenance before
-  trusting a run: it must print `/home/iddryer/bootstack/src/bootstack`.
-- ⚠ **`pandas` is ABSENT here**, so the data leg reads **`125 / 4`**. That is the
-  documented environmental pair, not a discrepancy.
+  **`/home/iddryer/.virtualenvs/bootstack/bin/python`** — 3.13.11, Tk 8.6.12,
+  editable install, pytest 9.1.1. ⚠ Confirm provenance: it must print
+  `/home/iddryer/bootstack/src/bootstack`.
 - ⚠ **NO passwordless sudo, and `openbox` is NOT installed.** `xfwm4`, `xvfb-run`
-  and `xprop` are. CI uses `openbox`; local arms use `xfwm4`, and the control
-  proves a window manager is present rather than which one it is.
+  and `xprop` are. CI uses `openbox`; local arms use `xfwm4`.
+- ⚠ **Run the Linux suite WITH a window manager**, or you reproduce #447 and think
+  you found a product bug. Poll `_NET_SUPPORTING_WM_CHECK`; never `sleep`.
 - ⚠ **`gh` is not installed for Linux — use the WINDOWS binary**,
-  `"/mnt/c/Program Files/GitHub CLI/gh.exe"`, authenticated as `israel-dryer`
-  with `repo` + `workflow` scopes. It cannot read WSL paths, so pass bodies via
-  **`--body-file -`** on stdin, never a `/home/...` path.
-- **git can push**: `credential.helper` is set globally to
-  `/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe`. Fetch works
-  without it because the repo is public — **a successful fetch is not evidence
-  that push works.**
-- ⚠ **Files in this repo are CRLF and `git diff` CANNOT SEE a flip to LF.** A
-  `sed -i` with a `$`-anchored pattern **silently matches nothing** here. Use the
-  Edit tool, or rewrite in binary mode; check with `file <path>`.
-- ⚠ **Run the Linux suite WITH a window manager**, or you reproduce #447 and
-  think you found a product bug. Poll `_NET_SUPPORTING_WM_CHECK`; never `sleep`.
+  `"/mnt/c/Program Files/GitHub CLI/gh.exe"`. It cannot read WSL paths, so pass
+  bodies via **`--body-file -`** on stdin, never a `/home/...` path.
+- **git can push** (`credential.helper` → the Windows credential manager). ⚠ The
+  repo is public, so **a successful fetch is not evidence that push works.**
 - **Screen capture is not measurable under WSLg** — Weston places windows at
-  coordinates like `(-32730, -32709)` where no screen covers them, so
-  `test_capture` fails there with `X get_image failed`. Run it under Xvfb.
+  coordinates no screen covers, so `test_capture` fails with `X get_image failed`.
+  Run it under Xvfb.
 
-**⚠ Still NO Tk 9 on any of the three boxes.** All are 8.6. The Tk 9 scroll/DPI
-contract remains unexercised, and #376/#378 remain unverifiable.
+**macOS box** (`/Users/israeldryer/PycharmProjects/bootstack`) — here **`.venv`
+WORKS**: `.venv/bin/python` = Python 3.14.0, Tk 8.6, editable install, macOS
+26.5.2. `python tests/run_gui.py` runs the full GUI suite in ~2 min with a real
+display. `python3.13` exists system-wide but does **NOT** have bootstack installed.
 
-**Windows box** (`D:\Development\bootstack`): the checked-in `.venv` is **STALE**
-— it points at a `Python314\python.exe` that fails with *"Access is denied"*. Use
-the launcher. **`py -3.12` for BOTH tests and docs** — **pytest is installed ONLY
-on 3.12** (9.0.3); `py -3.13 tests/run_gui.py` fails every leg with *"No module
-named pytest"* **while still printing a plausible-looking harness summary**. 3.13
-and 3.14 have neither pytest nor the docs deps. `py -3.13` (3.13.7, Tk 8.6) is
-fine for **running demo scripts**, which is all it is good for.
-`bootstack.__version__` reports a stale `0.1.0a9` from old install metadata —
-harmless, ignore it.
+⚠ **Still NO Tk 9 on any of the three boxes.** All are 8.6, so the Tk 9 scroll/DPI
+contract is unexercised and **#376/#378 remain unverifiable.**
 
-**macOS box:** repo at **`/Users/israeldryer/PycharmProjects/bootstack`**. Here
-**`.venv` WORKS**: `.venv/bin/python` = **Python 3.14.0, Tk 8.6**, editable
-install, macOS **26.5.2**. `python tests/run_gui.py` runs the full GUI suite in
-~2 min with a real display. ⚠ Tk here is **8.6, not 9** — this box does NOT
-exercise the Tk 9 paths, so `test_scroll_events.py`'s touchpad tests SKIP.
-`python3.13` exists system-wide but does **NOT** have bootstack installed.
-
-**Running tests:** `python tests/run_gui.py` (one root per process, `#150`).
+**Running tests:** `python tests/run_gui.py` (one root per process, #150).
 **Docs:** clean-build always — incremental builds MASK warnings.
 `rm -rf docs/_build && sphinx-build -b html docs docs/_build/html -W --keep-going`.
 
-**⚠ `tests/widgets/*.py` NEVER RUNS.** `testpaths` is `tests/cli`,
-`tests/widgets/public`, `tests/data`, and `run_gui.py` passes those same paths —
-so **12 files / 25 tests** directly under `tests/widgets/` (`test_shell_*`,
-`test_icon_image_props`, `test_rebuild_regressions`, `test_toolbar_drag`) are
-collected by nothing. All 25 **pass** run individually (each builds its own root,
-so they'd need `isolated` treatment). Dead coverage — fold into #380.
+⚠ **`tests/widgets/*.py` NEVER RUNS.** `testpaths` is `tests/cli`,
+`tests/widgets/public`, `tests/data`; **12 files / 25 tests** directly under
+`tests/widgets/` are collected by nothing. All 25 pass run individually. Same
+class: `tests/test_public_surface.py` (166 tests, green, never run by
+`run_gui.py`). Both folded into #380 — **and CI now runs them**, which is where
+the branch's `+166`/`+25` deltas come from.
 
-**⚠ Never pipe a build/test command to `tail`** — you capture `tail`'s exit 0 and
-miss real failures (it once hid a failing test leg AND a broken docs build).
-**This bites in PowerShell too**: `pytest ... | Select-String ...` leaves
-`$LASTEXITCODE` from the *pipeline*. Redirect to a file, capture `$LASTEXITCODE`
-on the next statement, then grep the file.
+⚠ **Never pipe a build/test command to `tail`** — you capture `tail`'s exit 0 and
+miss real failures. **This bites in PowerShell too**: `pytest ... | Select-String`
+leaves `$LASTEXITCODE` from the *pipeline*. Redirect to a file, capture
+`$LASTEXITCODE` on the next statement, then grep the file.
 
 ---
 
 ## Current state
 
-**Released:** **`0.3.2` on PyPI, tag `v0.3.2` (2026-08-13)** — titled *Read-only
-select fields*, one fix (#453) on the patch line, `release.yml` clean and docs
-chained off it. **See START HERE for its verification and the tag-vs-`main`
-divergence.** Then `0.3.1` (2026-08-12, *Dialog keyboard and modality*, four
-fixes).
-
-⚠ **THE PARAGRAPH BELOW IS `0.3.0`'s AND IS KEPT FOR ITS DETAIL, NOT AS THE
-CURRENT RELEASE.** Two releases have shipped since. Same for most of this
-section — **`Recently shipped` and START HERE are the current ones; this block is
-history with the warnings still attached.**
-
-**`0.3.0` on PyPI, tag `v0.3.0` (2026-08-11)** — titled *Screen
-capture and dialog results*, **shipped by `release.yml`, which ran clean end to
-end**, with `docs.yml` chaining off it automatically. Two features and six fixes:
-`widget.capture()` (#427, #429) and the dialog-result work (#428, #437, #438).
-Previous: `0.2.3` (2026-08-08, also clean) and `0.2.2` (2026-08-06, published
-**manually** during an Actions outage — that recipe is kept under Release flow
-because it will be needed again).
-
-Every post-release step is done and was **verified rather than assumed**: PyPI
-proved with a real `pip download` (not the CDN-cached summary endpoint), the
-shipped wheel opened and checked, the GitHub Release live with both assets, docs
-returning 200, and #428's reporter told it is live via `gh issue comment`.
-
-⚠ **One check worth repeating on every release from now on: `import bootstack`
-with `idlelib` BLOCKED.** That is #430's defect, and grep is not enough to
-re-prove it — seven `idlelib` mentions survive in the wheel and all are docstring
-attributions. Block the module with a `meta_path` finder, assert the block works
-as a control, then import. It passed for `0.3.0`.
-
-**⏭ NEXT RELEASE: `0.3.1 — Dialog keyboard and modality`** — #426, #439, #440,
-#441, **and #446**, which was moved onto the milestone on 2026-08-12 because it
-gates the release (see the milestone table's note). Scoped 2026-08-11
-(maintainer). **MERGED to `main` on 2026-08-12 as PR #448 (merge commit
-`d307fd2e`) after FOUR review rounds. NOT RELEASED YET** — `## [Unreleased]`
-carries all four fixes and the next job is to promote and tag it. See START HERE.
-
-**`main` is GREEN.** ⚠ **STOP RE-RECORDING THESE NUMBERS FROM MEMORY. This file
-has now been wrong about them SEVEN times, in both directions.**
-
-**AUTHORITATIVE — derived 2026-08-13 from a measurement on
-`fix/select-read-only-453` at `872aa862`**, full `py -3.12 tests/run_gui.py`,
-**exit 0, all 20 legs**, `pandas` ABSENT:
-
-| | branch, measured | `main`, derived |
-|---|---|---|
-| summed, 20 legs | **1225 passed / 21 skipped** | **1208 passed / 21 skipped** |
-| shared leg | **1028 / 14** against **1041** selected | **1011 / 14** against **1024** selected |
-| data leg | **125 / 4** | same |
-
-**The derivation is exact and is the whole point** — the branch adds ONE test
-file of 17 tests and `git diff --stat 288d2596..HEAD -- tests/` proves nothing
-else under `tests/` changed since the #407 merge, every other commit being
-`docs(*)`. So subtract 17. The shared leg reconciles against its own collection
-line the documented way: `collected 1116 / 75 deselected / 1 skipped / 1041
-selected`, and `1028 passed + 13 runtime skips = 1041`, the 14th skip being the
-collection-time one that is summarized but never selected.
-
-⚠ **THE `1250 / 22` AND `1055 / 13` AGAINST `1068` THIS FILE CARRIED FOR `main`
-WERE WRONG — that is the seventh time, and it was a DOUBLE error, since the file
-also disputed the right number and picked the wrong one.** It flagged round 3's
-`1011 / 14` against a `1024` ceiling as irreconcilable and kept `1068`. `1011 /
-14 / 1024` is exactly what today's measurement derives, and `1208 / 21` is
-exactly what this file already records for the `0.3.1` branch. Both surviving
-figures were the correct ones all along. **A count that reconciles against its
-own collection line is still only self-consistent — it does not prove the run
-selected everything it should have.** The check that caught this is cheaper than
-the one that missed it: `git diff --stat <baseline>..HEAD -- tests/`, which
-bounds how much the count is ALLOWED to have moved.
-
-Data leg **125 / 4** here because `pandas` is absent (`py -3.12 -c "import
-pandas"` → `ModuleNotFoundError`); it reads **123 / 6** when `pandas` is
-installed, two tests running only when it is missing. Check the optional dep
-before re-flagging that pair.
-
-⚠ **THE COUNTS DID NOT MOVE ACROSS #407; THE CLOCK DID.** Same totals before and
-after, which is the point — a harness fix that changed a count would have been
-skipping something into passing. What changed, measured on this box with the
-same command either side:
-
-| | before #407 | after |
-|---|---|---|
-| shared leg (`tests/widgets/public tests/cli -m "not isolated"`) | **215s** | **56s** |
-| full `run_gui.py` | ~5 min | **66–88s** |
-
-That is a larger win than the **144s → 80s** this file recorded when the root
-cause was first diagnosed — so prefer these, and re-measure rather than trusting
-either.
-
-**Previous, kept for the reasoning that refers to it — measured 2026-08-11 on
-`main` at `ab11f37c`** (the #443 merge — everything in `0.3.0`), full
-`py -3.12 tests/run_gui.py`, **exit 0, all 20 legs passed**:
-
-| leg | result |
-|---|---|
-| widgets+CLI, shared root | **962 passed / 14 skipped** (75 deselected — capture raised it from 52) |
-| data | **125 passed / 4 skipped** |
-| `test_capture.py` (isolated) | **23 passed** |
-| every leg summed (20 legs) | **1159 passed / 21 skipped** |
-
-The pre-capture figure at `06acd727` was **1136 / 21 over 19 legs**, same shared
-leg (962 / 14, 52 deselected) — capture adds 23 isolated tests and nothing to the
-shared one.
-
-⚠ **The `1006 / 13` recorded here for `e0092336` was IMPOSSIBLE, and so were
-`1001 / 13` and `1005 / 13` in `REVIEW.md`'s rounds 3 and 4.** The shared leg
-**selects 975 tests**, so no result summing to 1018 or 1019 can come out of it —
-`SHARED_GROUPS[0]` is one pytest process over `tests/widgets/public tests/cli`
-with `-m "not isolated"`, printing one summary line. **The ceiling is the
-selected count, and checking a reported total against it takes one command:**
-`pytest <paths> -m "not isolated" --collect-only -q | tail -2`. That single check
-would have caught three of the five wrong figures this file has carried.
-
-⚠ **THE `123 / 6` DATA-LEG FLAG IS ENVIRONMENTAL AFTER ALL — this file's
-"RESOLVED: it was wrong, not environmental" was itself wrong** (measured
-2026-08-12). Both figures are real and the difference tracks **whether `pandas`
-is installed on the box**: two tests in `test_readers.py` / `test_writers.py`
-SKIP with *"pandas installed - gating path not exercised"*, i.e. they run only
-when it is ABSENT. `pandas` is installed here now and the leg reads **123 passed /
-6 skipped**; on 2026-08-11 it was not, and the same leg read `125 / 4`.
-`pyarrow` and `tables` are absent on both dates and account for the other four
-skips. **So neither number is a defect, and a session seeing either should
-check the optional deps rather than re-flagging it.** `py -3.12 -c "import
-pandas"` settles it in one command.
-
-Previous, kept because the reasoning below refers to it — measured 2026-08-10 on
-`feat/widget-capture-427` at **`bdbdd097`**: widgets+CLI **932 / 14**, data
-**125 / 4**, summed **1128 / 22**. That row is consistent with today's: `main`
-gained the 30 tests #428/#437/#438 brought (932 → 962).
-
-⚠ **A superset cannot collect fewer than its subset.** That is what exposed the
-2026-08-08 pair (`976 / 13` and `1170`), and the selected-count ceiling above is
-the same test applied within a single run. **Prefer a number you just measured
-over one written here, and fix the table when they disagree.**
-
-**The rule that keeps being broken: record the DATE and the COMMIT beside any
-count, and re-measure rather than reasoning from a number already in this
-file.** Sum the legs yourself — `run_gui.py` prints no aggregate. And if a count
-here disagrees with one you just measured, prefer yours and fix this table.
-
-**✅ BOTH IN-FLIGHT BRANCHES ARE MERGED AND DELETED (2026-08-06).**
-`fix/datatable-double-click-417` went in as **PR #423** (merge commit `1ab5cda7`) and
-`fix/datatable-click-focus-421` as **PR #424** (merge commit `734d515b`). Both were
-**merge commits, not squashes**, deliberately — the one-commit-per-issue granularity
-was the deliverable, same call made for #410. Both were verified as genuine ancestors
-of `origin/main` with MERGED PRs, then **deleted local and remote after `0.2.2` hit
-PyPI**. Head SHAs if either ever needs resurrecting: **`278d579a`** (417) and
-**`fa735f99`** (421).
-
-⚠ **A worktree was used for #421 and has been REMOVED**; the branch itself lives in
-the repo normally. Do not go looking for a checkout under `scratchpad/`.
-**#409 shipped 2026-08-05 via PR #414** (merge
-commit `d428f6be`) — docs-only, unreleased, and it left **#412** open on purpose;
-full entry in the archive, summary under START HERE. Both `0.2.1` PRs are merged:
-**#410** (the #392-review cluster, merged as a **merge commit** so its six
-one-per-issue commits landed individually — the granularity was the deliverable)
-and **#411** (#405). Every `backup/*` ref and all twelve `: gone` locals were
-deleted after the release.
-
-**✅ `0.2.3` SHIPPED 2026-08-08 — #430. `fix/idlelib-import-430` merged as PR #435
-(merge commit `3c785759`), then DELETED local + remote; head `57ee3041` if it ever
-needs resurrecting.** `import bootstack` raised `ModuleNotFoundError` on any Python
-build without `idlelib` (Debian and Ubuntu package IDLE separately, like
-`python3-tk`), so the WHOLE framework was unimportable — not a degraded
-`CodeEditor`. Fixed by **porting** `WidgetRedirector` into
-`textarea/redirector.py` rather than importing it; `idlelib` is stdlib, so it is
-not on PyPI and could never have been declared as a dependency. Full root cause and
-the Linux repro are on the issue — do not re-derive. Three things worth carrying
-here:
-
-- ⚠ **`NOTICE` now carries a PSF attribution, scoped to `redirector.py` ALONE —
-  that scope was MEASURED, do not widen it.** The first draft listed six
-  IDLE-derived modules. Comparing each against its claimed `idlelib` source
-  (docstrings and type hints stripped, normalized through `ast.unparse`) showed
-  only `redirector.py` carries IDLE's *expression*: **29% verbatim, 5-line
-  identical runs**. The other five — `filter`, `undo`, `sidebar`, `line_numbers`,
-  `bracket_matcher` — share **0–7%**, and their longest runs are 1–2 line
-  incidentals like `import tkinter as tk`. They implement IDLE's *designs*, which
-  is an idea, not protected expression, so declaring them PSF-derived would tell a
-  license scanner something untrue. PSF LA v2: **clause 2** is copyright
-  retention, **clause 3** is the changes summary — both satisfied. ⚠ `NOTICE`
-  reaches users as `dist-info/licenses/NOTICE` via **setuptools' automatic
-  license-file globbing, NOT `MANIFEST.in`** (which names only `LICENSE`) —
-  verified by opening the published wheel, not assumed.
-- ⚠ **A probe must be RUNNABLE ON EVERY BOX IT IS MEANT TO INFORM.**
-  `probe_430_idlelib_free_import.py` called `sys.exit(1)` the moment `idlelib`
-  imported, so on Windows and macOS it printed arm 1 and stopped — even though arms
-  2–4 (interception from Python AND through the Tcl command, the unregistered-op
-  control, `close()`, a real `CodeEditor` through `FilterChain`) do not depend on
-  `idlelib` at all. It was runnable only on the one box that **cannot finish the
-  GUI suite (#432)**. Now SKIPs and continues. **The capture branch had already
-  fixed the identical shape in `b005509b`** — this is a recurring failure mode, not
-  a one-off.
-- ⚠ **`gh issue close --comment` SILENTLY DROPS THE COMMENT if the issue is already
-  closed** — and a PR body saying `Closes #430` closes it at merge. It warns about
-  the close and says nothing about the comment. Post with `gh issue comment`
-  separately, and **check the comment actually landed**. Also: **`bump-my-version`
-  had VANISHED from 3.12** despite this file recording it installed 2026-08-05;
-  reinstalled as **1.5.1**. Check for it before assuming the release flow works.
-
-**⚠ EVERYTHING IN THIS SECTION ABOUT `feat/widget-capture-427` AND
-`fix/formdialog-select-value-428` IS SHIPPED HISTORY — both are in `0.3.0`.** It
-is kept for the measurements and traps, not as live state. **The one branch in
-flight is `fix/dialog-keyboard-modality` (`0.3.1`) — see START HERE**, which is
-the only block in this file describing work that is not merged.
-
-**✅ `fix/formdialog-select-value-428` IS MERGED AND DELETED.** It went in as
-**PR #442**, **merge commit `06acd727`** (a merge commit, not a squash — same
-call as #410/#423/#424, the one-commit-per-issue granularity being the
-deliverable). **#428, #437 and #438 are all CLOSED**, all milestoned
-`0.3.0 — Screen capture and dialog results`. Branch head was **`38d01598`** if it
-ever needs resurrecting; local and remote refs are gone (GitHub auto-deleted the
-remote on merge, which is why `git merge-base --is-ancestor origin/<branch>` now
-fails with *"Not a valid object name"* rather than reporting non-ancestry —
-**check the recorded head SHA against `origin/main` instead**).
-
-**1. `feat/widget-capture-427` — head `origin/…` is `1654c60e` (moved again on
-2026-08-11, after this file recorded `a7d8941a`), 30+ commits.
-⚠ ANY LOCAL CHECKOUT IS BEHIND: the maintainer pushed three commits on
-2026-08-11 that REPLACED the #429 fix.** See the #429 block below — the approach
-changed, and the block that used to live here was describing code that is gone.
-⚠ **History was REWRITTEN by an earlier rebase** — a stale checkout needs
-`git fetch && git reset --hard origin/feat/widget-capture-427`, not a pull. A
-backup ref `backup/widget-capture-427-prerebase` points at the pre-rebase head
-`05707330`; delete it once the branch merges.
-
-Adds `widget.capture(path)` — save a widget, window, or app as a `.png`/`.jpg`/
-`.pdf` — from discussion #425 (an external user) via **#427**. It ships in the
-minor now titled **`0.3.0 — Screen capture and dialog results`**, which the
-maintainer RENAMED and widened to also carry #428, #437 and #438 — so capture is
-no longer the only thing gating that release.
-
-**Capture is now the ONLY thing gating `0.3.0`** — the dialog half shipped to
-`main` in PR #442.
-**Read `development/review-brief-427-capture.md` ON THAT BRANCH** — it records the
-settled decisions not to re-litigate and the measurements not to re-derive. ⚠ **But
-read it as a POINT-IN-TIME record: its six self-flagged soft spots are all resolved
-now** (see below), and it was deliberately not rewritten. Run
-`development/verify_427_capture.py` on each box; it prints the platform and
-backend and SKIPs arms the machine cannot exercise.
-
-**✅ The macOS and Linux legs HAVE NOW BEEN RUN** (maintainer, 2026-08-08) — that is
-what the 15 newer commits are: `e9d9f2f4` ask spectacle for a fullscreen grab,
-`493a0980` + `ac9a87a3` the Linux docs, `31a4eb46` bounds-check on the library's own
-crop path, `575b8400` refuse a scrolled-out widget and a destroyed root, `aae0396c`
-run the capture tests in their own process, `67aefdbf` pin the region hand-off on
-Windows and macOS, `d66b3440` let the topmost precondition wait for the window
-manager. Those legs also produced **#429, #431, #432, #433, #434**.
-
-#### ✅ #429 IS FIXED — but ⚠ **THE FIX WAS REPLACED ON 2026-08-11. The quiet
-settle is GONE.**
-
-⚠ **This block described the wrong code for a day. Read the commit messages on
-the branch, not a summary, if anything here is load-bearing.** The first fix
-(`e616f5dc`) stopped `settle()` dispatching at all. That was REVERSED by
-**`e4fd4af7` — "block input while settling instead of not settling"**, plus
-`9aada08d` (docs) and `a7d8941a` (probes re-pointed, manual demo added).
-
-`settle()` ran `root.update()` every 10ms so the desktop could repaint, which
-dispatched everything queued — so a second click on the export button re-entered
-the caller's handler mid-capture and stacked a second save dialog on the END
-USER. **It now still dispatches, and holds `tk busy` over the target instead.**
-
-**⚠ THE OPEN QUESTION THIS FILE RECORDED WAS ANSWERED, AND THE ANSWER KILLED THE
-FIX: the quiet settle does NOT repaint on macOS.** The area a window uncovers is
-repainted by the desktop, and on macOS that does not happen at all unless the
-event loop is turning — so the capture returned whatever was there before. The
-Windows 0 px result was real but was a property of the DWM backing store, not of
-the approach.
-
-⚠ **`tk busy` is now ADOPTED, having been recorded here as REJECTED.** Do not
-re-litigate it in either direction; the reason it lost (more machinery than not
-calling `update()`) stopped mattering once not calling `update()` was ruled out.
-
-- **Reproduced first, with a control.** Pre-fix the handler reached nesting depth
-  2; the same call queued AFTER the capture stayed at depth 1. Measuring DEPTH
-  rather than call count is what separates re-entrancy from "it ran twice".
-  Post-fix every arm is depth 1 with `calls=2` — the second click is not
-  swallowed, it is serialized.
-- **Captures are pixel-identical.** A shot taken right after a window closed
-  differs from a reference by **0 px**, against a 50 px floor between two shots
-  of an unchanged window.
-- ⚠ **The fix could NOT live in `capture()`.** The documented pattern calls
-  `ask_save_file()` BEFORE `capture()`, so a re-entrant handler opens the second
-  dialog before reaching any guard there. Raising or no-oping was considered and
-  REJECTED — both hand the application author a problem AND make the end-user
-  outcome worse than the bug (an unhandled exception on a double-click, or a file
-  silently not written). Memory `feedback_framework_absorbs_not_developer`.
-- ⚠ **`tk busy` is invisible to a capture (0 px) — but the first measurement of
-  that was WRONG in the other direction** (it "gets photographed", 3906 px). The
-  noise floor had been built from two static back-to-back shots, far too tight
-  for a comparison that restacks a window; it was measuring text antialiasing.
-  Floor measured across a restack now, and busy reads 0 px against it.
-- ⚠ **A SYNTHESIZED CLICK CANNOT TEST THE GUARD, and the probes now say so
-  instead of pretending otherwise.** `tk busy` intercepts by putting a window
-  over the target, so it only catches what the window system routed by pointer
-  position; `event_generate` aimed at a widget delivers straight to that
-  widget's bindings and re-enters with `tk busy status` reading 1. The real
-  question needs a human: **`development/demo_429_busy_during_settle.py`**,
-  click Export then keep clicking and read the nesting depth.
-- ⚠ **The guard is on INPUT, not on scheduled work.** A capture started from a
-  timer still re-enters, by design. `probe_429_capture_reentrancy.py` records
-  that as the known limit rather than a failure.
-- ⚠ **Three probes silently became their own controls** when the sleep-only
-  settle shipped, because every arm drove through `_capture.settle`. Worst case:
-  `probe_429_settle_without_input.py` had a "control" arm and a sleep-only arm
-  running IDENTICAL code and producing byte-identical images, while reporting
-  three FAILs that were all one unrelated thing (a cover window never removed,
-  photographed as pure magenta). Every strategy is pinned per-file now, arms that
-  read live code are labelled, and an `expect` argument keeps a
-  defect-reproducing arm from reporting failure forever.
-- ⚠ **THE MEASUREMENT TRAP, worth more than the fix: compare captures only
-  within ONE `bs.App` INSTANCE.** The FIRST app in a process renders its content
-  white; every later one in the same process falls back to default grey. Two
-  captures from different app instances therefore differ in ~99% of pixels for
-  reasons unrelated to what is being measured — and a noise control built from
-  two same-population shots agreed to 14 px, so it looked sound. That produced a
-  confident WRONG conclusion (`tk busy` "gets photographed"). Stricter cousin of
-  the standing "measure within one process" rule.
-- ⚠ **A test that leaned on the old behavior had to change.**
-  `test_widget_closed_while_settling_raises_a_bootstack_error` queued its destroy
-  on a timer and relied on settle dispatching it; with the wait quiet that timer
-  no longer fires during the capture and the test would have passed **without
-  ever destroying anything**. It queues the destroy as IDLE work now. Confirmed
-  non-vacuous by disabling the guard.
-
-**⏭ WHAT IS OPEN NOW: is `tk busy` invisible off macOS?** `e4fd4af7` was measured
-on macOS, Tk 8.6. The dispatching wait is the shape the Windows and Linux legs
-already ran on 2026-08-08, so those legs' results still stand — what rides on top
-of them, untested elsewhere, is the busy hold. **Arm 3 of
-`development/probe_429_busy_during_settle.py` measures exactly that; run it on
-Windows and Linux.** Then `demo_429_busy_during_settle.py` by hand for the input
-half, which no automated arm can reach. Also re-run `verify_427_capture.py`,
-since `settle()` changed twice underneath it.
-
-⚠ **#431/#432/#433/#434 are NOT capture defects** and must not be bolted onto
-this branch — they are pre-existing test-infrastructure bugs that running the
-other platforms merely surfaced. #431 and #434 are the SAME modifier-bit
-assumption seen from two platforms and are best fixed together, once Linux has
-reported.
-
-**The review ran 2026-08-07 and found six things; five were fixed on the branch,
-one was documented. Do NOT re-derive these — each has a control committed at
-`development/probe_427_review_fixes.py` reproducing the pre-fix behavior.**
-
-- ✅ **The Linux virtual-desktop crop — FIXED (`8e721837`).** This was flagged
-  here as "the likeliest real defect" and it was real: `crop((1930, 10, 2200,
-  300))` on a 1920x1080 image returns 270x290 pixels, **every one black**, and
-  raises nothing. `_crop_desktop()` now bounds-checks and raises. ⚠ **Region
-  flags (`grim -g`, `import -crop`) were CONSIDERED and DELIBERATELY SKIPPED —
-  do not re-propose them.** None can be verified from the Windows box, and a
-  wrong `-g` region fails just as silently as the bug it would replace; the
-  bounds check is the part that holds on every backend.
-- ✅ **`save()` flattened only `RGBA` — FIXED.** The gate is on the target
-  format now, because the subprocess fallback opens whatever the desktop tool
-  wrote and mode `P` fails with `cannot write mode P as JPEG`.
-- ✅ **`settle()` re-entrancy — FIXED.** It turns the event loop, so a queued
-  handler can close the target. **Measured: `winfo_ismapped()` on a destroyed
-  widget RAISES `TclError: bad window path name` — it does not return 0**, so a
-  raw toolkit error escaped a method documented to raise `BootstackError`. That
-  measurement is what made the finding real rather than overstated.
-- ✅ **A negative `inset` — FIXED.** It expanded the rect and photographed the
-  neighbors; a 60x20 widget with `inset=-8` yields a 76x36 grab, **invisible to
-  the existing `right <= left` guard because the box only grew.**
-- ✅ **macOS Screen Recording permission — DOCUMENTED** (it returns the desktop
-  and raises nothing). ⚠ **`CGPreflightScreenCaptureAccess()` would detect it
-  but needs pyobjc, which bootstack does not depend on — decided against, do not
-  re-propose.**
-- ✅ **A dangling `:func:` xref — FIXED.** It pointed at
-  `bootstack.dialogs.ask_save_file`; the verb is top-level and its only autodoc
-  home is `bootstack.ask_save_file`. ⚠ **A default `-W` build does NOT catch a
-  dangling py xref — only `-n` does.**
-
-### ✅ `fix/formdialog-select-value-428` — MERGED (PR #442, `06acd727`), branch deleted
-
-Shipped to `main` on 2026-08-11. It grew well past its name and carried **#428**
-(the external report from `@bLynnb2762`), **#437** and **#438** — all three now
-CLOSED and milestoned `0.3.0 — Screen capture and dialog results`. Head at merge
-was **`38d01598`**. ⚠ **Nothing is released yet**: `0.3.0` still waits on
-capture, so #428's reporter has NOT been told it is live. Post that comment with
-`gh issue comment` after the release — `gh issue close --comment` silently drops
-it on an already-closed issue.
-
-⚠ **THE SUITE WAS NOT GREEN WHEN THE BRANCH WAS HANDED OVER, and the way it got
-that way is worth more than the fix.** Round 4's verification ran at `70a039ce`
-— **one commit before** `f9f1692f` rewrote the very tests it was verifying — so
-a flaky test entered `main`'s queue unseen. Fixed pre-merge in `3d24ebbf`.
-**Verify at the commit you are shipping, not at the last one you happened to
-measure.**
-
-**The flake, because the mechanism will recur:**
-`test_enter_on_a_focused_button_does_not_also_press_the_default` failed its own
-precondition — `focus_lastfor()` named the toplevel, so the `focus_set()` above
-it had done nothing. **Tk's `focus_set()` is a SILENT no-op when the widget or
-any ancestor is unmapped**: `TkSetFocusWin` walks the ancestry and returns
-without setting anything, reporting nothing, so the miss surfaces one line later
-as an inexplicable focus assertion. The test's `_drive` helper polled for the
-modal grab as its "the dialog is up" barrier, but **the grab is set before the
-geometry manager maps the footer's children at idle** — the failure carried
-`button mapped=0 parent mapped=1 top mapped=1 grab=.!toplevel7`. Rate: **1 in 5
-full legs, 0 in 60 dialogs in a quiet process.** The barrier now waits for the
-grab AND the footer being mapped.
-
-⚠ **A 1-in-5 flake cannot be verified against by re-running.** The control at
-`development/probe_437_focus_flake.py` CREATES the condition instead —
-packed-but-not-yet-updated widgets leave idle geometry work outstanding when the
-dialog goes up: **old barrier 5/10 unmapped and 5/10 focus misses, new barrier 0
-and 0**, the two columns tracking one-for-one. Arm 1 is the mechanism alone and
-arm 2 is the quiet-process control that returns 0/60.
-
-⚠ **Round 4's review record was never written.** Four fix commits answered
-findings that existed nowhere in the repo. Reconstructed into `REVIEW.md` from
-the commits and their probes, labelled as reconstructed. **Rounds 1–3 each
-landed a `docs(review):` commit; make that the last step of a fix step, not an
-optional one.**
-
-**The root cause, so it is not re-derived:** `FormDialog.result` was read AFTER
-the dialog closed, by which point the editors were destroyed and the only thing
-left to read was the on-screen TEXT — which arrives as a string whatever the
-value's real type was. It was never a conversion on the read path (an early
-session proved that half and it held). Entries are now captured at the press,
-while the form is alive, in `_accept_press`. The same defect hit every editor
-whose display differs from its value, not only `select`: a date field handed back
-its formatted text.
-
-⚠ **The plan and the full four-round review record are ARCHIVED** at
-`development/plan-428-437-438-dialogs.md` and
-`development/review-428-437-438-dialogs.md` (they were `PLAN.md` / `REVIEW.md` at
-the root while the branch was live). The per-round briefs are
-`development/review-brief-437-438-dialog-buttons.md`, `…-round3.md` and
-`…-round4.md`. **Four rounds ran — 5 findings, then 8, 7 and 4.** Read those
-before reopening any of this rather than re-deriving it.
-
-**Round 4 (2026-08-11) found five things; all five are handled:**
-
-- ✅ **The Dialog page taught reading a content widget after `show()`** —
-  `create_project(fields["name"].value)`, i.e. after every widget was destroyed.
-  It survived only because `TextField` is `StringVar`-backed; the same idiom with
-  a `bs.Select` raises `TclError`. **That is the very pattern #428 exists to
-  prevent, in the release that fixes it.** The example binds a `Signal` now.
-- ✅ **A DISABLED button swallowed Enter** — the stand-down guard assumed a
-  button that received the key had already acted on it, which is false when
-  `invoke` does nothing. Any content button that greys itself out on click left
-  the keyboard dead for the whole dialog.
-- ✅ **The bindtags read went through Tcl for a case that cannot arise here.**
-  Tkinter really does hand a callback a bare path string when the target is
-  absent from its widget map — but a dialog has 0 such widgets of 32, because
-  bootstack creates everything from Python. Simplified to `.bindtags()`.
-- ✅ **A CHANGELOG sentence contradicted the branch's own measurement** (claimed
-  dialogs resting on their default button were unaffected; #439 says no dialog
-  is in that state at open). Removed rather than corrected — the accurate version
-  would document #439 as if intended.
-- ✅ **A test pinned #439 as a passing precondition.** Loosened, so fixing #439
-  cannot turn it into a precondition failure.
-- ⏭ **Filed as #441, deliberately NOT fixed here:** Enter in a `TextArea` inserts
-  the newline and then the dialog closes on top of it, because the guard
-  recognizes only `TButton`. Needs a general rule for "did something already
-  handle this key?", not another special case.
-
-⚠ **Traps this branch already paid for — do not re-pay them:**
-
-- **`bootstack.dialogs.FormDialog` is a public WRAPPER**, not the impl in
-  `dialogs/_impl/formdialog.py`. Reach the impl through `._internal`.
-- **`dlg.show()` runs a modal wait loop that a close scheduled with `after` does
-  NOT break.** Drive it by invoking a real footer button instead — and poll for
-  the modal grab rather than firing on a fixed delay, because `show()` pumps the
-  event loop while building and positioning, so a timer can land on a half-built
-  dialog. `_drive()` in `test_dialog_press_contract.py` is the worked pattern.
-- **`instate(['!disabled'])` is a QUESTION returning True when the widget is
-  ENABLED.** `not instate(['!disabled'])` therefore selects the disabled one —
-  a double negative that silently inverts a guard. Write
-  `not instate(['disabled'])`.
-- Probe output must be **ASCII** — a check mark raised `UnicodeEncodeError` on
-  this box's cp1252 console. Same rule #430 hit.
-
-**⚠ THIS LINE IS STALE — see START HERE for the live answer.** As of 2026-08-11
-(later still) the refs are **`main` and `fix/dialog-keyboard-modality`**, the
-latter LOCAL ONLY. `feat/widget-capture-427` and
-`fix/formdialog-select-value-428` both shipped in `0.3.0` and are deleted.
-
-Original line, kept for the reasoning that follows it: *BRANCHES: `main`,
-`feat/widget-capture-427` — `fix/formdialog-select-value-428`
-merged as PR #442 and was deleted local and remote on 2026-08-11.*
-The `main`-only state below
-was verified 2026-08-06 after the `0.2.2` release and held until the branch above
-was pushed on 2026-08-07.
-An earlier sweep on 2026-08-05
-(maintainer-approved) deleted all seven survivors together with
-their `: gone` locals: three merged ancestors (`docs/custom-events-409` PR #414,
-`fix/command-option-modifiers-405` PR #411, `fix/event-cleanup-392-followups`
-PR #410) and four squash-merge leftovers (`cleanup/shell-visibility-idiom` PR #384,
-`fix/literal-mode-guards` PR #382, `fix/394-field-row-alignment` PR #395,
-`fix/403-test-coverage` PR #406). Head SHAs are in the deleting commit's message if
-one ever needs resurrecting; GitHub also keeps each PR's head SHA.
-
-⚠ **The method matters more than the result, because this recurs every release.**
-**Non-ancestor ≠ unmerged.** Four of the seven were not ancestors of `main` purely
-because their PRs were **squash-merged**, and an earlier handoff nearly read that
-as live work. Verify with two commands, never by reading this file:
-`git merge-base --is-ancestor origin/<branch> origin/main` for ancestry, then
-`gh pr list --head <branch> --state all --json number,state,mergedAt` — a MERGED PR
-is what makes a non-ancestor safe to delete. Record the head SHAs before deleting.
-
-**`0.2.1` shipped `#396, #398, #399, #400, #403, #405`** in the release notes,
-plus **#397 and #401**, which are fixed and merged but **deliberately absent from
-the CHANGELOG**. Neither was reachable from public API, so listing them handed a
-reader scanning for upgrade risk a false positive — the same call made for #387 in
-`0.2.0`. Verified, not assumed: `MessageDialog`/`QueryDialog`/`DateDialog` are
-absent from `bootstack.dialogs.__all__` and the public verbs return their result
-directly, while the one public dialog class (`ColorChooserDialog`) was the case
-that was already correct; and `on("increment")` raises `UnknownEventError` with no
-`on_increment` shorthand. **Both remain fully documented in their own commit
-messages** (`a93a47a4`, `7e204801`) — that is where the root causes live now.
-
-**0.2.0 shipped `#332, #379, #381, #387, #388, #392, #394`.** It was **a minor,
-not a patch**, and that was a deliberate maintainer call: the project committed to
-SemVer at 0.1.0 and **#381** raises where it used to accept. ⚠ **This file used to
-claim TWO incompatible changes; that was wrong.** The second (`configure(data=)`
-clearing absent keys, #387) is **not publicly reachable** — `bs.Form` has no
-`configure` method at all (verified: `AttributeError`), so no user can observe it.
-One genuine break still warrants a minor, so the version is right — it just rests
-on one leg, not two. The CHANGELOG correctly omits it. **#394** also moves pixels
-in any layout pairing a field with a taller widget on a stretch axis.
-
-**⏭ ACTIVE: `feat/widget-capture-427` (#427), pushed 2026-08-07. Reviewed, all
-findings applied; awaiting the macOS/Linux legs, then a PR** — see the IN FLIGHT
-block under Current state. It was
-taken ahead of the standing recommendation deliberately: an external user asked
-for it in discussion #425, and it is additive, so it cannot destabilize the
-batched strictness work. ⚠ **It adds public surface, so it CANNOT ride the patch
-line.** ✅ **DECIDED 2026-08-07 (maintainer): it CUTS AHEAD as its own minor.** It
-became `0.3.0`, and everything below it shifted up one. ⚠ **That milestone was
-later RENAMED to `0.3.0 — Screen capture and dialog results` and widened to carry
-#428, #437 and #438** — capture no longer ships alone.
-
-After it, pick
-from the table below. ⚠ **The standing recommendation named here for months —
-the unnumbered `Test and release confidence` workstream (#407 then #380) — is
-DONE and its milestone is CLOSED (2026-08-14).** The live recommendation is at
-START HERE: **#452**, because CI now covers ubuntu and windows and not macOS.
-After that the next numbered milestone is **`0.4.0 — Signal binding on fields`**
-(#458, #459, #460, #461), cut 2026-08-19 and already half-built — #458's branch
-has passed round 1. Then `0.5.0 — Strictness and value types` (#383, #369, #408,
-#416), deliberately batched so users get one migration rather than four.
-**#390** remains a decision that can be taken at any time, and is
-still the cheapest item on the board. ⚠ **The milestones have been RENUMBERED
-THREE TIMES — read the CURRENT table below, never a number quoted in older
-prose.**
-Restructured and renumbered 2026-08-05, then renumbered again 2026-08-07 when
-`0.3.0 — Screen capture` was inserted ahead of the strictness batch. Two
-generations of stale numbers are therefore in circulation:
-
-| written before | says | now means |
-|---|---|---|
-| 2026-08-05 | `0.3.0 — Guided flows` | `0.7.0 — Guided flows` |
-| 2026-08-05 | `0.4.0 — Power-user interactions` | `0.8.0 — Power-user interactions` |
-| 2026-08-05 | `0.5.0 — Structured editing` | `0.9.0 — Structured editing` |
-| 2026-08-05 | `0.6.0 — Argument and value strictness` | `0.5.0 — Strictness and value types` |
-| 2026-08-07 | `0.3.0 — Strictness and value types` | `0.5.0 — Strictness and value types` |
-| 2026-08-07 | `0.4.0 — Form, signals, and composite authoring` | `0.6.0 — …` |
-| 2026-08-07 | `0.5.0 / 0.6.0 / 0.7.0` | `0.7.0 / 0.8.0 / 0.9.0` |
-| **before 2026-08-19** | `0.4.0 — Strictness and value types` | `0.5.0 — Strictness and value types` |
-| **before 2026-08-19** | `0.5.0 / 0.6.0 / 0.7.0 / 0.8.0` | `0.6.0 / 0.7.0 / 0.8.0 / 0.9.0` |
-
-⚠ **THE 2026-08-19 ROW IS THE THIRD RENUMBERING, and unlike the first two it was
-NOT a restructuring** — nothing was re-scoped. A new minor (`0.4.0 — Signal
-binding on fields`) was inserted ahead of the chain because the signal work was
-ready and the strictness batch is not started, and everything above it shifted
-one step. The renames were done top-down (`0.8.0`→`0.9.0` first) so no title ever
-collided with a live one; issue attachments are unaffected by a milestone rename.
-
-⚠ **Prose further down this file still quotes the OLD numbers in places** (e.g.
-"#369 and #383 are milestoned `0.6.0 — Argument and value strictness`"). Those
-lines were not swept. The table above is the authority; when you touch such a
-line, fix it.
-
-**THE RULE, which is the part worth keeping: numbered milestones are RELEASES;
-unnumbered milestones hold work NOT YET ASSIGNED to a release.** Membership in a
-numbered one is decided by compatibility *and* readiness, and the title names what
-actually ships. Nothing gets a number until its order is real.
-
-⚠ **CLOSE A MILESTONE WHEN ITS RELEASE SHIPS** (maintainer, 2026-08-11). The
-project had been inconsistent — only `0.1.0` was ever closed, while `0.2.0` and
-`0.3.0` sat open with zero open issues, so the milestone list mixed finished
-history with live work. All four shipped milestones are closed now
-(`0.1.0`, `0.2.0`, `0.2.x`, `0.3.0`), which makes **the open list exactly the
-live work and a direct cross-check on the table below.** They agreed 1:1 when
-last verified. If they ever disagree, trust `gh` and fix the table. This replaced an
-accidental mix in which `0.2.x`/`0.6.0` were compatibility buckets wearing subject
-names while `0.3.0`–`0.5.0` were subject themes wearing version numbers — which is
-how three of five `0.3.0 — Guided flows` issues came to be form/signal work.
-
-⚠ **The unnumbered half was first written as "workstreams that do not map to a
-release." That was wrong** — most of it maps to a release, just an undetermined
-one. Each unnumbered milestone says *why* it has no number: Tk 9 is blocked on
-hardware, hot reload is outside the SemVer freeze, test confidence rides any patch,
-additions ride any minor.
-
-⚠ **The patch line is BUG FIXES ONLY.** The project committed to SemVer at `0.1.0`,
-so **adding public surface is a MINOR even when nothing breaks** — someone upgrading
-`0.2.1 → 0.2.2` should be able to assume no new API arrived. An audit on 2026-08-05
-found **three of the patch line's four issues were additions** (#352 a whole new
-widget, #317 and #208 additive), which is why `Additions awaiting a minor` exists.
-⚠ **The trap to avoid repeating:** the milestone had *already* been renamed away
-from "Fixes and small additions" to stop that creep, while its description still
-said "fixes and small additions" — so the rename changed nothing. **Fix the
-description, not just the title.**
-
-⚠ **BUT THE RULE IS ONE-DIRECTIONAL, AND THIS FILE USED TO IMPLY OTHERWISE**
-(corrected by the maintainer, 2026-08-11). An addition **requires** a minor; a
-minor does **not** require additions. `Additions awaiting a minor` is a queue of
-work that *cannot* ride a patch — it is **not** a statement that minors are for
-additions, and a minor is free to carry as many plain bug fixes as it likes.
-`0.3.0` did exactly that: two additions and **six fixes**. So when a minor is
-being cut anyway, ask what else is ready rather than parking fixes for a later
-patch out of habit. The mirror-image question is just as useful and is what
-scoped `0.3.1`: **for a fix, ask whether it needs a minor at all** — if it adds no
-public surface it can ship as a patch, which is what let `0.3.0` go out on time
-with four known bugs deferred rather than held.
-
-| Order | Milestone | Open |
-|---|---|---|
-| — | ~~**`0.3.0 — Screen capture and dialog results`**~~ — **SHIPPED 2026-08-11**: #427, #428, #429, #437, #438 | 0 |
-| — | ~~**`0.3.1 — Dialog keyboard and modality`**~~ — **SHIPPED 2026-08-12, milestone CLOSED**: #426, #439, #440, #441, #446 | 0 |
-| — | ~~**`Test and release confidence`**~~ — **DONE 2026-08-14, milestone CLOSED** at `open=0 closed=3`: #407, #380 (PR #451), #432 (did not reproduce) | 0 |
-| 3 | **`0.4.0 — Signal binding on fields`** — #458, #459, #460, #461. **NEW, cut 2026-08-19**, and the next release out the door | 4 |
-| 4 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
-| 5 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
-| 6 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
-| 7 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
-| 8 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
-| — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
-| — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
-| — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`0.3.x — Patch line`** (rolling, FIXES ONLY) — #207, #422, #444, #445, #447, #449. **#453 and #456 are CLOSED** (cut as `0.3.2`, and merged as PR #457), so the milestone reads **`open=6 closed=2`** — verified against `gh` 2026-08-19 (latest), not counted by hand. It is a rolling line, so it does NOT close when a patch ships. ⚠ **#460 was briefly placed here and then MOVED to `0.4.0`** when the signal work was collected into one minor — if an older paragraph says #460 is on the patch line, that paragraph is stale | 6 |
-
-⚠ **`0.2.x — Patch line` was NOT renamed, and that was checked rather than
-assumed** (2026-08-11). It holds **15 CLOSED issues** — the whole `0.2.1`/`0.2.2`/
-`0.2.3` patch history — so renaming it would have relabelled shipped work as
-`0.3.x`. A **new `0.3.x — Patch line`** was created instead and the two open
-issues moved onto it (#207 deferred by decision, #422 test-only). `0.2.x` now
-reads `open=0 closed=15` and is a finished record. **The check to repeat when a
-line rolls over: `gh api repos/:owner/:repo/milestones --jq '.[]|"\(.title)
-open=\(.open_issues) closed=\(.closed_issues)"'` — closed issues make a milestone
-history, and history is not renameable.**
-
-Ordering reasons, so they are not re-litigated: **confidence first** (nothing runs
-the suite, so every release is a gamble, and #407 makes that automation cheaper
-before you buy it); **breaks batched, not dribbled** (#383/#369/#408/#416 in ONE
-minor = one migration for users instead of four); then near-ready API, then new
-widgets. ⚠ **Numbers past `0.4.0` are ordering hints, not commitments** — they
-assume three minors land in that sequence, which nobody knows. Retitling is cheap;
-that is the point of the rule. **Subject now lives on LABELS** (`tk9`,
-`test-infra`, `hot-reload`, `new-widget`) so milestones can stay about *when*.
-Reasoning also in memory `project_roadmap_milestones`.
-
-⚠ **RESOLVED 2026-08-14 — but the list below is now STALE by three.** #432, #433
-and #434 are CLOSED; **#431 is deliberately still OPEN.** So the live unmilestoned
-set is **#431, #436, #452, #455**.
-
-⚠ **#431 IS OPEN ON PURPOSE AND IS WAITING ON A DECISION, not on work.** Its fix
-landed with #434's — the NumLock bit resolves per windowing system — but on aqua
-it **SKIPS**, because macOS has no NumLock modifier for `Mod1` to carry and
-asserting anything about bit 8 there would be asserting something about Command,
-which `test_command_binding_exists_only_on_macos` already covers directly. So the
-test cannot be made meaningful on Aqua and now says so out loud. **That resolves
-the failure; whether it resolves the issue is a scope call.** Close it if "no
-longer fails, and says why" is the wanted outcome; re-scope it if macOS should
-have positive coverage of the bare-`b` path, which would need a premise other
-than NumLock. ⚠ **And it is UNVERIFIED on a real Aqua build** — the skip is driven
-by `tk windowingsystem`, read from Tk rather than cached, but nobody has watched
-that branch be taken. Fold it into the #452 trip.
-
-**⚠ FOUR UNMILESTONED OPEN ISSUES — re-verified against `gh` on 2026-08-19
-(latest)**, not counted by hand: **#431, #436, #452, #455.** All four PREDATE
-this work. **#458, #459, #460 and #461 all went onto the new
-`0.4.0 — Signal binding on fields`**, so the list is back to where it was before
-the signal work started. ⚠ **The list below
-is the 2026-08-13 one and names #433 and #434, which are now CLOSED; the two
-that replaced them are #458 (the `Select` signal fix, in flight) and #459 (the
-`TimeField` seed-emit it surfaced).** Original text follows.
-
-not counted by hand: **#431, #433, #434, #436, #452, #455.** #455 is the one
-that moved: the survivor of #453's round 2 (`Field.enable()/disable()/readonly()`
-writing the ttk readonly state without re-deriving), left unassigned because it
-gates nothing — `0.3.2` ships without it, so its placement is a scope call, not
-a fact already decided by a blocker. #453 itself was filed onto
-`0.3.x — Patch line` by the maintainer, so it never joined this list. #452 is the macOS CI hang, filed 2026-08-12 and left unassigned per the rule below. #447 and #449 went to `0.3.x — Patch line` when `0.3.1` closed (maintainer, 2026-08-12); the remaining four all PREDATE this work and are deliberately left alone. The new one
-is #447, flake C, filed out of round 4 under gate 4's one-attempt rule and left
-unmilestoned per the rule below. Earlier the same day **#446 went to `0.3.1` and
-#432 to `Test and release confidence`** (maintainer, 2026-08-12).
-
-⚠ **STALE, and left here only for the rule it produced: this said "`0.3.1` STILL
-HAS ONE OPEN ISSUE — #446 — so the milestone cannot be closed at release
-time."** It was settled on 2026-08-12 — **#446 was CLOSED rather than moved**,
-because its scope was exactly the two flakes and both shipped in `48dba181`; the
-third became #447, which went to `0.3.x — Patch line`. `0.3.1`'s milestone reads
-`open=0 closed=5` and is closed. **The open-milestone list is the cross-check on
-the table above and they agree 1:1 — trust `gh`, not a paragraph.**
-
-⚠ **THAT PAIR CORRECTED A MISREADING OF THE "do not assign unasked" RULE, and
-the correction is the part worth keeping.** This file had #446 sitting
-unmilestoned while simultaneously describing it as a merge blocker for `0.3.1`,
-and #432 unmilestoned while describing it as the blocker for #380. **That is
-incoherent on the file's own terms: a milestone answers WHEN SOMETHING SHIPS, so
-an issue that gates a release has already had its milestone decided by the thing
-it blocks.** The maintainer put it directly — *"I'm not sure why you would think
-this doesn't belong in a milestone that gates that milestone release."*
-
-**The rule is narrower than it was being applied.** "Do not assign a milestone
-unasked" guards against making SCOPE calls for the maintainer — deciding that a
-piece of optional work belongs in a release. It was never about a blocker, whose
-placement is a fact rather than a choice. **The test: would shipping the
-milestone without this issue be a decision, or a defect?** A defect means it
-belongs on the milestone; a decision means ask. #430 is the same shape from the
-other side — the maintainer said "we release this with 0.2.3", which decided it.
-
-**#431/#433/#434 all came out of running the macOS and Linux legs for #427**
-and are **test-infrastructure failures, not user-facing** — which is exactly why
-they were kept OUT of `0.3.0`: a CHANGELOG entry earns its place by being
-reachable, and a user cannot observe any of these. **They gate nothing, so they
-stay unassigned** — that is the rule working, not the exception. **#436** is the
-`versionadded` convention, filed 2026-08-10, and it carries an undecided question
-(retroactive to `0.2.x`, or forward-only) — worth answering now that `0.3.0` has
-shipped new public surface that a reader cannot date.
-
-⚠ **#432 moving onto `Test and release confidence` also fixes the ORDER inside
-that milestone.** It is listed as #407 then #380, but #432 is the blocker to
-attack first: the shared-root GUI leg cannot complete on Linux at all, which
-makes CI unbuyable until it is fixed.
-
-**ZERO UNMILESTONED OPEN ISSUES as of 2026-08-06** (verified against `gh`, not
-counted by hand) — the deviation this file used to flag was closed. The maintainer
-assigned #417, #418, #419, #420, #421 and #422 to `0.2.x — Patch line` in one call:
-all six are bug fixes on existing public API and **none adds public surface**, which
-is the test for the patch line. #417 came from an external user; the other five were
-filed by us while fixing it. ⚠ **Do not assign a milestone unasked** — that rule
-still stands for work whose membership is a SCOPE call, which this was (an
-explicit decision). ⚠ **It does NOT cover a blocker** — see the correction above:
-if the milestone cannot ship until the issue is fixed, its placement is already
-determined and leaving it unassigned just hides the gate.
-⚠ **A bullet in this file is not proof an issue is open** — #222, #234
-and #379 all sat here as open work after being closed; check the state first.
-Check with:
-`gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
-
-### ★ START HERE (2026-08-19, latest) — #458: ROUND 1 DONE, IT IS NOW A MINOR (`0.4.0 — Signal binding on fields`), AND **ONE LINE OF TEST CODE IS OPEN**.
-
-**⏭ THE NEXT ACTION IS ONE LINE OF TEST CODE.** A `/code-review` pass ran against `37b871a9` on 2026-08-19 — off-protocol, see below — and found that **round 1's own F1 fix is incomplete**. The rewritten `test_read_only_is_still_honored_with_a_bound_signal` now drives the signal, but **neither of its assertions can detect a broken readonly bracket**. Add `assert sel._internal.entry_widget.instate(['readonly'])` after the `signal.set("3")` and the branch is finished. **The full record is `REVIEW.md` on the branch, section `Off-protocol verification pass`** — read it rather than re-deriving; it carries the control.
-
-**The control was RUN rather than assumed** — patch `SelectBox.value`'s setter to leave the entry `!readonly` after every write, then run the test's exact sequence:
+**Released: `0.3.2` on PyPI, tag `v0.3.2` (2026-08-13)** — *Read-only select
+fields*, one fix (#453). Prior: `0.3.1` (2026-08-12), `0.3.0` (2026-08-11),
+`0.2.3`, `0.2.2`, `0.2.1`, `0.2.0`. **Full detail for every one of these is in
+`docs/_dev/handoff-archive.md`** — do not re-derive it here.
+
+⚠ **`v0.3.2` and `main` DIFFER BY DESIGN**, as `v0.3.1` did: the CHANGELOG was
+reworded *after* the tag and the GitHub Release body edited to match with
+`gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
+release has already run on.
+
+### ★ START HERE (2026-08-20) — #458 is in flight as PR #462; ONE LINE OF TEST CODE IS OPEN
+
+**⏭ THE NEXT ACTION IS ONE LINE OF TEST CODE.** An off-protocol `/code-review`
+pass against `37b871a9` found that **round 1's own F1 fix is incomplete**. The
+rewritten `test_read_only_is_still_honored_with_a_bound_signal` now drives the
+signal, but **neither assertion can detect a broken readonly bracket.** Add:
+
+```python
+assert sel._internal.entry_widget.instate(['readonly'])
+```
+
+after the `signal.set("3")`, and the branch is finished. **The full record is
+`REVIEW.md` on the branch, section `Off-protocol verification pass`.**
+
+The control was **run, not assumed** — patch `SelectBox.value`'s setter to leave
+the entry `!readonly` after every write, then run the test's exact sequence:
 
 ```
 real code : read_only=True  shown='Three'  entry_readonly=True
@@ -908,111 +171,88 @@ BROKEN    : read_only=True  shown='Three'  entry_readonly=False
             assertions: read_only is True -> True ; shown == 'Three' -> True
 ```
 
-Both assertions pass **while the field is silently editable**, because `sel.read_only` reads `cget("readonly")` — the stored **setting**, which #453 decoupled from the entry state on purpose — and the shown-text assertion holds either way. The proposed assertion reads `True` on real code and `False` on the control, so it is not vacuous. ⚠ **`37b871a9`'s COMMIT MESSAGE states this scope correctly** (*"It does not prove read_only itself would regress"*); it is the test DOCSTRING that overclaims. **A commit message and the artifact it describes can disagree, and the docstring is the half a later reader trusts.**
+Both assertions pass **while the field is silently editable**, because
+`sel.read_only` reads the stored **setting**, which #453 decoupled from the entry
+state on purpose. The proposed assertion reads `True` on real code and `False` on
+the control, so it is not vacuous. ⚠ `37b871a9`'s **commit message** states the
+scope correctly; it is the test **docstring** that overclaims. **A commit message
+and the artifact it describes can disagree, and the docstring is the half a later
+reader trusts.**
 
-⚠ **TWO OF THAT PASS'S THREE FINDINGS WERE RE-REPORTS — DO NOT PAY FOR THEM A THIRD TIME.** Both are true and both are already closed in `REVIEW.md`: **clearing a signal-bound field leaves the signal stale** is round 1's **F4**, closed as **#390** (any real fix lives in `field_mixin.py` and moves every field that takes a `signal=`); **`Select` gains a public `signal` property** is round 1's **F2**, and is the very thing `0.4.0` was cut for. ⚠ **The clearing finding did arrive with a NEW escalation, and it was CHECKED and does not hold** — that the behavior contradicts the CHANGELOG's *"the signal now carries the option's value in both directions"*. That sentence continues *"set it and the matching option is selected and announced, pick an option and its value is written back"*: selection propagation in two directions, **silent on clearing**. F4 had already rejected the identical overstatement against `docs/widgets/select.rst:233`; it simply came back pointed at a different file. **Nothing false ships, in either place.**
+**⏭ ONE RESIDUAL, maintainer's call:** now that `Select.signal` is a *deliberate*
+addition shipping in a minor, the #458 CHANGELOG bullet still does not mention it.
+Announcing it is a scope call, not a defect.
 
-⚠ **THE HARNESS FAILURE COST BOTH OF THEM, AND IT IS `0.3.1` ROUND 3 VERBATIM.** The reviewer was **not pointed at `REVIEW.md`** — which sits on the branch and writes F2 and F4 up *specifically* so a later round would not re-file them — and it was reading against a **`main` that had moved two `docs(claude):` commits ahead** carrying the `0.4.0` decision, so the branch's own copy of this file does not contain it. **Hand the reviewer `REVIEW.md`, AND check whether `main` has moved under the branch.** This file's own test settles both in one question: *did the evidence change, or the cost of acting?* For these two, **neither did**.
+**⏭ AFTER #458: #452, the macOS CI hang** (maintainer, 2026-08-14: *"macos will be
+on another machine"*). Brief below.
 
-⚠ **THE GENERALIZABLE HALF, AND IT WILL RECUR ON EVERY BRANCH: A SESSION STARTED *ON* A BRANCH LOADS A STALE `CLAUDE.md`.** Handoff commits go to `main` only and a branch correctly never touches this file — `git diff main...HEAD -- CLAUDE.md` is empty here, as the rule requires — so the branch's copy is frozen at its merge base and silently ages. Measured today: **three `docs(claude):` commits behind**, which is the entire `0.4.0` decision plus this block. **Check with `git log --oneline main --not <branch> -- CLAUDE.md` before trusting the handoff you were given, and prefer leaving the checkout on `main` between sessions** so a fresh session loads the current file and checks the branch out deliberately.
-
-⚠ **AND THE PASS ITSELF SHOULD NOT HAVE OPENED.** It reviewed `37b871a9`, a **test-only** commit — exactly what gate 1 exists to keep out, and `0.3.1`'s round 4 did the same and spent three of its five findings on a probe's readability. It is recorded as an `Off-protocol verification pass` rather than as a round 2, and **the cap of 2 is still UNSPENT**: `git diff main...HEAD -- src/` remains `select.py` alone, byte-identical to what round 1 reviewed.
-
-**⏭ ONE RESIDUAL, SEPARABLE FROM THE SETTLED MILESTONE QUESTION:** now that `Select.signal` is a *deliberate* addition shipping in a minor, the #458 CHANGELOG bullet still does not mention it. Announcing it is a maintainer call, not a defect.
-
-**✅ ROUND 1 RAN and the branch is clean.** Four findings, **none in production
-code** — one real test defect (fixed), one false claim in `PLAN.md` (corrected),
-one withdrawn on re-examination, one out of scope and belonging to #390. The
-record is **`REVIEW.md` on the branch**; read it rather than re-deriving, and
-note that F3 and F4 are written up specifically so a round 2 does not re-file
-them.
-
-**✅ THE RELEASE LINE IS DECIDED (maintainer, 2026-08-19): #458 does NOT ride the
-patch line. A new minor `0.4.0 — Signal binding on fields` was cut and carries
-#458, #459, #460 and #461** — *"if possible, I'd like to roll in 458, 459, 460,
-and 461 to this patch release"*, answered by cutting the minor that can legally
-hold all four rather than by bending the patch line.
-
-⚠ **TWO SEPARATE REASONS FORCED THE MINOR, and the weaker one is the famous
-one.** Round 1's F2 found that #458 **adds public surface** — inheriting
-`ValueSignalMixin` gives `Select` a public `signal` property `main` does not have
-(`hasattr` is `False` there, `True` here) — and the standing rule is that an
-addition needs a minor even when nothing breaks. **But #461 is the stronger
-reason: it BREAKS WORKING CODE.** Seeding a `SelectButton` signal with an
-option's **label** works correctly today and is the only spelling that does, so
-it is necessarily what any current user is using; fixing #461 makes it wrong.
-That is #381's shape exactly, and #381 needed a minor for it. **Do not
-re-litigate this as "#458 was only an addition"** — the addition was never the
-binding constraint.
-
-⚠ **Gate 1 does NOT open a round 2.** The fix step touched `tests/` and
-`PLAN.md` only, so `git diff main...HEAD -- src/` is byte-identical to what
-round 1 reviewed (still `select.py` alone, 34/7). **The cap of 2 is unspent** —
-a round 2 is available if the milestone decision changes the code, and is
-otherwise not owed.
-
-⚠ **Still NO PR, and do not merge before the decision above.** The protocol runs
-the rounds first; #456 shipped that way. **Do not touch the branch outside a
-review step** either.
-
-**⏭ AFTER #458, THE NEXT ACTION IS #452 — the macOS CI hang** (maintainer,
-2026-08-14: *"macos will be on another machine"*). The brief at the end of this
-section is unchanged and still current.
-
-**STATE OF THE WORLD:**
+#### STATE OF THE WORLD
 
 | | |
 |---|---|
-| `main` | **`5b009456`** — #457 merged as `0aad8427`, then the #456 plan/review archived into `development/`. No product change since the merge |
-| branch, IN FLIGHT | **`fix/select-signal-value-458`**, head **`1557e7da`**, pushed. **NO PR yet. Round 1 HAS RUN, plus an off-protocol verification pass**; `PLAN.md`, `REVIEW.md` and the review brief all live ON THAT BRANCH. ⚠ **`REVIEW.md` now carries BOTH records** — hand it to any later reviewer, or two settled findings come back a third time |
-| ✅ SHIPPED to `main` | **#456** (PR #457, merge `0aad8427`) — `DataTable(context_menus=)` now reaches the widget, and `on_row_right_click` is decoupled from it |
-| suite, `main` | **1443 passed / 21 skipped** on the **Windows** box, py 3.12, `pandas` absent — **derived** 2026-08-19, not directly measured (see the branch row). Linux at `5921dc41` read `1427 / 22`; those are different platforms and not comparable |
-| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, **re-measured 2026-08-19 after round 1's fix step**, at `6db756b1`, Windows, py 3.12, `pandas` absent. Identical to the pre-round figure at `1f9a62d1`, which is the expected result — the fix step edited a test BODY, it did not add or remove a test. Shared leg reconciles against its own collection line: `collected 1150 / 75 deselected / 1 skipped / 1075 selected`, and `1062 passed + 13 runtime skips = 1075`. ⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the collection line — sum the per-leg summary lines only** |
-| CI | **`ci.yml` LIVE and green on `main`** — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). Triggers on push to `main` and on `pull_request` only — so **#458 has NO CI yet**, having no PR |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/plan-456-context-menus.md` and `development/review-456-context-menus.md`. `PLAN.md` exists only on the #458 branch |
-| released | `0.3.2` on PyPI. `## [Unreleased]` is PRESENT on `main` again, carrying #456; the #458 branch adds a second bullet to it |
-| open milestones | **10**, verified against `gh` — one more than before, because `0.4.0 — Signal binding on fields` was created and **everything from the old `0.4.0` up was renumbered one step** (see the stale-number table below; this is the THIRD renumbering). #458, #459, #460 and #461 are all on it, so the unmilestoned list is back to its four pre-existing members |
+| `main` | **`033186e9`** — docs-only commits since the #457 merge (`0aad8427`). No product change |
+| branch, IN FLIGHT | **`fix/select-signal-value-458`**, **PR #462 OPEN**. Round 1 has run, plus an off-protocol verification pass. `PLAN.md`, `REVIEW.md` and the review brief all live **ON THAT BRANCH** |
+| CI on PR #462 | headless ✅ · ubuntu 3.13 ✅ · windows 3.13 ✅ · docs `-W` ✅ · **ubuntu 3.12 CANCELLED** — see below, it is infrastructure, not a defect |
+| suite, branch | **exit 0, 33 legs, 1458 passed / 21 skipped**, measured 2026-08-19 at `6db756b1`, Windows, py 3.12, `pandas` absent |
+| suite, `main` | **1443 passed / 21 skipped** — **derived**, not measured, by subtracting the branch's one new test file |
+| CI | `ci.yml` live and green on `main` — 5 jobs: headless, ubuntu 3.12 + 3.13, windows 3.13, docs `-W`. **No macOS leg** (#452). Triggers on push to `main` and on `pull_request` |
+| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/plan-456-context-menus.md` and `development/review-456-context-menus.md` |
+| released | `0.3.2`. `## [Unreleased]` is PRESENT on `main` carrying #456; the #458 branch adds a second bullet |
+| open milestones | **10**, agreeing 1:1 with the table below |
+
+⚠ **PR #462's ubuntu-3.12 leg was CANCELLED, not failed — it is a RUNNER
+OUTAGE, not a product or workflow defect.** It hung inside `sudo apt-get update`
+with `azure.archive.ubuntu.com` unreachable (repeated `Ign:`) and never reached
+the tests; the 15-minute `timeout-minutes` cap killed it. **The ubuntu-3.13 leg
+ran the identical apt step and passed.** Re-running the job is the whole fix.
+**This is also the `timeout-minutes` guard working as designed** — added in
+`5921dc41` after #452 burned 90 minutes; without it this would have run to
+GitHub's 6-hour default.
 
 #### ⏭ #458 — a `Select` bound to a `Signal` bound the TEXT, not the value
 
-**External report from `bLynnb2762`** (the same reporter as #428 and #453), against
+**External report from `bLynnb2762`** (same reporter as #428 and #453), against
 `0.3.2`. `Select` mapped its public `signal=` onto the internal **`textsignal=`**,
-which installs the `Signal`'s Tk variable **as the entry's textvariable** — so
-writes landed straight in the display text, bypassing both `_resolve_display()`
-(the value-to-label map the `value=` path uses) and the entry's commit path.
+installing the `Signal`'s Tk variable **as the entry's textvariable** — so writes
+landed in the display text, bypassing both `_resolve_display()` and the entry's
+commit path.
 
 ⚠ **ONE WIRING LINE, TWO SYMPTOMS — and the reported one is the milder.**
-**A**, reported: decoupled `(text, value)` options displayed the raw value, so
-`Signal('2')` showed `2` where `value='2'` showed `Two`. **B**, NOT reported and
-worse: a signal write moved the display but not the selection, so
-`.value`/`.selection` kept reporting the previous option and **no `<<Change>>`
-fired** — on plain `list[str]` options too, and it did not self-heal (survives a
-`<Return>`; only a real pick resyncs). The field showed one option and reported
-another indefinitely.
+**A**, reported: decoupled `(text, value)` options displayed the raw value.
+**B**, not reported and worse: a signal write moved the display but not the
+selection, so `.value`/`.selection` kept reporting the previous option and **no
+`<<Change>>` fired** — on plain `list[str]` options too, and it did not self-heal.
+The field showed one option and reported another indefinitely.
 
 **Fixed by binding through `ValueSignalMixin`**, as `DateField`/`NumberField`/
-`TimeField` already do — `TimeField` on these same `SelectBox` internals. That
-mixin binds through the `value` property, the one path that maps value to label,
-keeps the committed value in step, and emits `<<Change>>`. **The two symptoms are
-not separable**: any fix for B must bind through `value`, and that binding is
-inherently value-space.
+`TimeField` already do. **The two symptoms are not separable**: any fix for B must
+bind through `value`, and that binding is inherently value-space.
 
-⚠ **`signal=` IS NOW VALUE-SPACE. That is a deliberate, maintainer-approved
-behavior change** (2026-08-19), taken over two alternatives that were put
-explicitly (keep text-space and fix only the sync; or add a `textsignal=` escape
-hatch, which would have forced a minor). **Both directions moved** —
-`sel.value = '2'` used to write the label `'Two'` into the signal and now writes
-`'2'`. **Do not re-litigate it.**
+⚠ **`signal=` IS NOW VALUE-SPACE — a deliberate, maintainer-approved behavior
+change** (2026-08-19), taken over two stated alternatives. **Both directions
+moved**: `sel.value = '2'` used to write the label `'Two'` into the signal and now
+writes `'2'`. **Do not re-litigate it.**
 
-⚠ **THE ARCHAEOLOGY IS WRITTEN UP IN `PLAN.md` — do not re-derive it.** Short
-version, because the shape recurs: `4b50f2f2` (2026-05-31) renamed `text_signal=`
-to `signal=` and left the wiring text-space, which was harmless while options were
-plain strings. `ee3345d4` (2026-06-10) split the two spaces by adding decoupled
-options and routed only `value=` through the new map. **Then `d05ecd8a`
-(2026-06-12) built `ValueSignalMixin` and skipped `Select`** — its design doc
-says why, verbatim (`docs/_dev/field-value-dtype.md:55`): *"`Select` already had
-`signal=`."* **The sweep checked the kwarg's NAME, not which space it bound, and
-the rename 12 days earlier is exactly what made it pass that check.**
+⚠ **A REGRESSION WAS FOUND AND AVOIDED MID-IMPLEMENTATION.** The mixin seeds by
+assigning `value`, and `SelectBox`'s setter **emits**, so binding a signal fired
+`<<Change>>` at construction where `value=` does not. **The event is QUEUED**, so
+a handler bound on the line *after* the constructor still receives it — and the
+reporter's own snippet binds `on_change` to `bs.toast`, so their app would have
+**toasted on startup**. Suppressed for the seed only, pinned by a test.
+`_suppress_changed_event` now has its first writer; this branch is the only
+caller, so the `try/finally` is the only thing clearing it.
+
+⚠ **ONE TEST FAILS PRE-FIX WITH `AttributeError`, NOT BEHAVIORALLY** —
+`test_destroying_the_field_releases_the_signal_subscription` asserts on
+`_value_sub`, which does not exist before the branch. Argued in `PLAN.md` as
+unavoidable for a guard on new machinery, and **stated out loud rather than
+smoothed over**, because this project's standard is that a pre-fix failure should
+be behavioral.
+
+⚠ **THE ARCHAEOLOGY IS IN `PLAN.md` — do not re-derive it.** Short version,
+because the shape recurs: a rename (`text_signal=` → `signal=`) 12 days before the
+`ValueSignalMixin` sweep is exactly what made `Select` pass that sweep's check.
+**The sweep checked the kwarg's NAME, not which space it bound.**
 
 ⚠ **THIS IS THE THIRD "the internal was right, the wrapper was the defect" IN A
 ROW** — #383's third gap (leftover `**kwargs` never read), #456 (`context_menus`
@@ -1020,635 +260,118 @@ discarded as a layout key), now #458 (delivered to the wrong internal parameter)
 The existing check (`git show main:<wrapper> | grep <kwarg>`) catches **absence**.
 It does not catch **the wrong destination**, which is what this was.
 
-⚠ **A REGRESSION WAS FOUND AND AVOIDED MID-IMPLEMENTATION — keep this.** The
-mixin seeds by assigning `value`, and `SelectBox`'s setter **emits**, so binding a
-signal fired `<<Change>>` at construction where `value=` does not. **The event is
-QUEUED**, so a handler bound on the line *after* the constructor still receives
-it once the loop turns — and the reporter's own snippet binds `on_change` to
-`bs.toast`, so their app would have **toasted on startup**. Suppressed for the
-seed only, and pinned by a test.
+#### Round 1 (2026-08-19) — four findings, NONE in production code
 
-⚠ **`_suppress_changed_event` NOW HAS ITS FIRST WRITER.** It sat at
-`selectbox.py:1212` read-but-never-set anywhere in `src/`. This branch is the only
-caller, so there is nothing to compare against and the `try/finally` is the only
-thing clearing it.
-
-⚠ **ONE TEST FAILS PRE-FIX WITH `AttributeError`, NOT BEHAVIORALLY** —
-`test_destroying_the_field_releases_the_signal_subscription` asserts on
-`_value_sub`, which does not exist before the branch. Argued in `PLAN.md` as
-unavoidable for a guard on new machinery. **Stated out loud rather than smoothed
-over**, because this project's standard is that a pre-fix failure should be
-behavioral — and because an earlier draft of the record claimed the wrong
-pre-fix tally (`10 failed / 5 passed`) until it was actually measured
-(**11 failed / 4 passed**).
-
-**✅ [#459](https://github.com/israel-dryer/bootstack/issues/459) FILED, NOT
-FIXED:** `TimeField` has the identical seed-emit behavior. **Pre-existing** — it
-has bound through `ValueSignalMixin` since `d05ecd8a`, long before this branch.
-Measured with both controls (`TimeField(value=)` is quiet; the `NumberField` and
-`DateField` siblings are quiet). Unmilestoned: it gates nothing.
-
-#### ✅ Round 1 ran 2026-08-19 — four findings, NONE in production code
-
-Record is **`REVIEW.md` on the branch**. Two commits answer it: `37b871a9` (the
-test fix) and `6db756b1` (the record plus the `PLAN.md` correction).
+Record is **`REVIEW.md` on the branch**; `REVIEW.md` now carries **both** it and
+the off-protocol pass. **Hand it to any later reviewer.**
 
 | # | what | outcome |
 |---|---|---|
-| F1 | the read-only test never drove a signal write, so the path this branch ADDS was untested | **FIXED** |
-| F2 | `PLAN.md` claimed the branch adds no public surface; `.signal` says otherwise | **CORRECTED** — and it moved the release line |
+| F1 | the read-only test never drove a signal write | **FIXED** — but incompletely, see START HERE |
+| F2 | `PLAN.md` claimed no public surface added; `.signal` says otherwise | **CORRECTED** — and it moved the release line |
 | F3 | the exact-list `<<Change>>` assertion shares #449's known-flaky shape | **RAISED, THEN WITHDRAWN** |
 | F4 | clearing a signal-bound `Select` leaves the signal stale | **OUT OF SCOPE — it is #390** |
 
 ⚠ **F3 IS THE ONE WORTH READING BEFORE RE-FILING ANYTHING.** The fix looked
-obvious — relax `assert seen == ["2", "3"]` to the set-equality form the sibling
-at `test_select_options.py:290` uses — and it was **withdrawn**, because the
-"exactly once" half is the guard against the two-way binding feeding its own
-write back as a second change, which is a regression *this branch* could
-plausibly introduce. The sibling relaxed for a reason that does not transfer:
-`SelectButton`'s `StringVar` legitimately emits more than once per set, and
-`Select` does not. **Relaxing would have traded real coverage of the branch's own
-risk for a flake that has never been observed in this test.** The #449 linkage is
-recorded instead, so if it ever does flake the cause is already named.
+obvious — relax `assert seen == ["2", "3"]` to the set-equality form a sibling
+uses — and was **withdrawn**, because the "exactly once" half guards against the
+two-way binding feeding its own write back as a second change, **a regression this
+branch could plausibly introduce**. The sibling relaxed for a reason that does not
+transfer. Relaxing would have traded real coverage of the branch's own risk for a
+flake never observed in this test.
 
-⚠ **F4 is #390 and MUST NOT be re-filed.** `_sync_value_set` and `_to_signal`
-both return early on `None` (`_core/field_mixin.py:318` and `:293`), and that
-file is **not in this branch's diff** — measured on `main` with `NumberField`,
-which has bound through the mixin since `d05ecd8a`: `value = None` leaves the
-signal reading `7`. For `Select` it *is* a directional change (the old text-space
-wiring pushed `''` on clear), but the direction is toward consistency with
-`NumberField`/`DateField`/`TimeField`. ⚠ **The reviewer's accompanying claim that
-the new docs "state the contract as unconditional in both directions" was CHECKED
-and is overstated** — `docs/widgets/select.rst:233` describes seeding a value and
-picking an option and says nothing about clearing. Nothing false ships.
+⚠ **F4 is #390 and MUST NOT be re-filed.** `_sync_value_set` and `_to_signal` both
+return early on `None` (`_core/field_mixin.py:318` and `:293`), and that file is
+**not in this branch's diff**. Any real fix moves every field that takes a
+`signal=`.
 
-**✅ TWO UNRELATED DEFECTS WERE FOUND WHILE VERIFYING, AND ARE FILED, NOT FIXED:**
+⚠ **TWO OF THE OFF-PROTOCOL PASS'S THREE FINDINGS WERE RE-REPORTS OF F2 AND F4 —
+do not pay for them a third time.** The clearing finding arrived with a new
+escalation (that it contradicts the CHANGELOG); that was **checked and does not
+hold** — the sentence is about selection propagation and is silent on clearing.
+**Nothing false ships, in either place.**
 
-- **[#461](https://github.com/israel-dryer/bootstack/issues/461) — `SelectButton`
-  has this SAME defect, unfixed.** Identical `signal → textsignal` wiring at
-  `selectbutton.py:84`. Measured on `main` with decoupled options: seeding with
-  the **label** works (`text='Two' value='2' selection={...}`), seeding with the
-  **value** — what `value=` takes and what the docstring at `:39` promises —
-  gives `text='2' value='2' selection=None`, and `sel.value = "3"` writes the
-  *label* `'Three'` back into the signal. ⚠ **Narrower than #458**: plain
-  `list[str]` options are unaffected, and `<<Change>>` does fire, so it lacks
-  #458's silent half. **On `0.4.0` — and it is the reason that milestone is a
-  MINOR**, because the label spelling works today (see START HERE).
-- **[#460](https://github.com/israel-dryer/bootstack/issues/460) — eight widgets
-  annotate `.signal` as `Signal | None` and can never return `None`.** The
-  wrappers forward with `getattr(self._internal, 'signal', None)`, but the
-  internal is a **property that lazily creates on first access**
-  (`_impl/mixins/signal_mixin.py:92` and `:211`), so the default is dead code and
-  the `| None` is **unreachable, not merely unobserved**. On `0.4.0`, its own
-  branch — it was briefly on the patch line before the four were collected. ⚠ **Do not "fix" `TextArea`, `CodeEditor`, or the
-  `ValueSignalMixin` trio** — they genuinely return `None`. `Slider` is the
-  honest exemplar: it delegates directly and annotates no `None`.
+⚠ **THE HARNESS FAILURE THAT COST BOTH IS `0.3.1` ROUND 3 VERBATIM.** The reviewer
+was **not pointed at `REVIEW.md`**, and was reading against a `main` that had moved
+ahead. **Hand the reviewer `REVIEW.md`, AND check whether `main` has moved under
+the branch.**
+
+⚠ **THE GENERALIZABLE HALF, AND IT WILL RECUR ON EVERY BRANCH: A SESSION STARTED
+*ON* A BRANCH LOADS A STALE `CLAUDE.md`.** Handoff commits go to `main` only and a
+branch correctly never touches this file, so the branch's copy is frozen at its
+merge base and silently ages — measured at three `docs(claude):` commits behind.
+**Check with `git log --oneline main --not <branch> -- CLAUDE.md` before trusting
+the handoff you were given, and prefer leaving the checkout on `main` between
+sessions.**
+
+⚠ **AND THAT PASS SHOULD NOT HAVE OPENED** — it reviewed a **test-only** commit,
+exactly what gate 1 exists to keep out. It is recorded as an
+`Off-protocol verification pass`, not a round 2, and **the cap of 2 is UNSPENT**:
+`git diff main...HEAD -- src/` is still `select.py` alone, byte-identical to what
+round 1 reviewed.
+
+#### ✅ THE RELEASE LINE IS DECIDED — `0.4.0 — Signal binding on fields`
+
+Maintainer, 2026-08-19: #458 does **not** ride the patch line. A new minor carries
+#458, #459, #460 and #461.
+
+⚠ **TWO SEPARATE REASONS FORCED THE MINOR, and the weaker one is the famous one.**
+F2 found #458 **adds public surface** (`Select` inherits a public `signal`
+property `main` lacks) and an addition needs a minor. **But #461 is the stronger
+reason: it BREAKS WORKING CODE.** Seeding a `SelectButton` signal with an option's
+**label** works today and is the only spelling that does, so it is necessarily
+what any current user is using; fixing #461 makes it wrong. That is #381's shape,
+and #381 needed a minor for it. **Do not re-litigate this as "#458 was only an
+addition"** — the addition was never the binding constraint.
+
+#### Two defects found while verifying — FILED, NOT FIXED
+
+- **#461 — `SelectButton` has the SAME defect, unfixed.** Identical
+  `signal → textsignal` wiring at `selectbutton.py:84`. Seeding with the **label**
+  works; seeding with the **value** — what `value=` takes and what the docstring
+  promises — gives `text='2' value='2' selection=None`, and `sel.value = "3"`
+  writes the *label* back into the signal. ⚠ **Narrower than #458**: plain
+  `list[str]` options are unaffected and `<<Change>>` does fire, so it lacks #458's
+  silent half.
+- **#460 — eight widgets annotate `.signal` as `Signal | None` and can never
+  return `None`.** The wrappers forward with `getattr(self._internal, 'signal',
+  None)`, but the internal **lazily creates on first access**, so the default is
+  dead code and the `| None` is **unreachable, not merely unobserved**. ⚠ **Do not
+  "fix" `TextArea`, `CodeEditor`, or the `ValueSignalMixin` trio** — they genuinely
+  return `None`. `Slider` is the honest exemplar.
 
 ⚠ **`.signal` MEANS TWO DIFFERENT THINGS ACROSS THE PUBLIC API, and #458 widens
 the split rather than causing it.** Text-space: `TextField`, `PasswordField`,
 `PathField`, `SpinnerField`, `TextArea`, `CodeEditor`, `SelectButton`.
-Value-space (the mixin): `NumberField`, `DateField`, `TimeField`, and now
-`Select`. So after this branch `Select.signal` returns `None` when unbound while
-its nearest sibling `SelectButton.signal` returns a live signal, under the same
-name and the same annotation. **That is the real content of #460 and #461 taken
-together**, and it is a family decision nobody has made.
-
-⚠ **ON MERGE: archive `PLAN.md` to `development/plan-458-select-signal.md` and
-`REVIEW.md` to `development/review-458-select-signal.md`, then create `PLAN.md`
-fresh.** Comment on #458 with `gh issue comment` after the *release*, not the
-merge — `gh issue close --comment` silently drops it on an already-closed issue.
-
----
-
-#### ✅ #456 / PR #457 — MERGED 2026-08-19 as `0aad8427`. Kept for its lessons.
-
-**The bug:** `DataTable`'s `context_menus` option was documented, shown in the
-widget guide, and had **no effect** — every table offered both right-click menus
-whatever you asked for.
-
-⚠ **The mechanism is the part worth carrying, because it is a REPEAT.** The
-internal was never at fault: `_impl/composites/tableview/tableview.py` has read
-and honored the option all along. **The public wrapper never delivered it** —
-`internal_kwargs` is a closed dict built from named parameters only, so
-`context_menus` fell into `**kwargs`, survived `_split_layout_kwargs` as though it
-were a layout key, and was discarded. **That is exactly #383's third gap**, already
-recorded in this file. Expect it again in any wrapper: the test is
-`git show main:<wrapper> | grep <kwarg>`, not reading the impl.
-
-**Two changes.** (1) The option now reaches the widget, validated strictly.
-(2) **`on_row_right_click` was DECOUPLED from it** (maintainer, 2026-08-19 — *"I
-would not expect that argument to affect `on_row_right_click`"*). The event was
-emitted inside `_on_row_context` one line before the menu opened, with the whole
-method behind the row-menu gate, so it tracked the **menu** rather than the
-**right-click**. The rule now: **`context_menus` chooses which menus the table
-offers; it does not choose whether a right-click is reported.** Precedent was
-three lines below the edit — `on_row_double_click`, from #417.
-
-⚠ **ONE DELIBERATE BEHAVIOR BREAK, already decided — do NOT re-file it.**
-`validate_choice` means `context_menus=None` and `"None"` construct on `0.3.2`
-(silently, both menus on) and **raise** here. **Accepted** (maintainer,
-2026-08-19 — *"if None is not a valid argument and not specified as an option,
-then we should not care about it"*): neither is in the documented `Literal`, so
-there is no supported behavior to grandfather. ⚠ `PLAN.md` originally justified
-this with *"the argument is unreachable from public code"*, which was **FALSE** —
-it was always passable, just inert. Premise corrected, decision unchanged. The
-SemVer counter-argument (#381 needed a **minor** because it raises where it used
-to accept) is written out in `REVIEW.md` with the distinction that defeats it.
-
-**MERGED — nothing open. The line below described the pre-merge state.** The round is closed,
-the record is written, the tree is clean, and **CI came back green on all five
-jobs**. ⚠ **That green also answers a real prior worry, so do not re-raise it:**
-`test_datatable_right_click_event.py` synthesizes `<Button-3>`, and this file
-warns that synthesized events get dropped once the shared root fills up and a
-widget goes unmapped. Both Linux legs and the Windows leg passed, so the drive is
-sound off the macOS box it was written on.
-
-⚠ **ON MERGE: archive `PLAN.md` → `development/plan-456-context-menus.md` and
-`REVIEW.md` → `development/review-456-context-menus.md`, then create `PLAN.md`
-fresh.** A stale plan describing shipped work is worse than none. Also comment on
-#456 with `gh issue comment` after the *release*, not the merge — `gh issue close
---comment` silently drops it on an already-closed issue.
-
-#### ⚠ FOUR THINGS THIS SESSION PAID FOR — do not re-pay them
-
-- ⚠ **A CHANGELOG claim about PRIOR behavior must be checked against the OLD code,
-  not against the fix.** The #456 bullet said a misspelled value *"previously
-  turned both menus off silently"*. It did the **opposite** — the value was
-  discarded, so both menus stayed **on**. The sentence was written from the fix's
-  point of view and read as authoritative. `git show main:<file>` settles it in one
-  command. **This project has already reworded two CHANGELOGs AFTER tagging**
-  (`0.3.1`, `0.3.2`), each forcing a `gh release edit` on a published body.
-- ⚠ **A stale MEASUREMENT block is worse than a stale table, because it reads as
-  proof.** `PLAN.md` carried a verification block recording `right-click bound:
-  False` — measured **before** the decoupling commit and never re-run, so the
-  branch's own record displayed the behavior the branch had just reversed.
-  **Re-run a recorded measurement after any commit that changes what it measures.**
-  Same file also carried a stale test-count delta (`+8` where the truth was `+7`)
-  and a Tests table asserting the pre-decoupling contract. **Cause in all three:
-  `63d4cb2d` recorded the decision by APPENDING (34 insertions, 1 deletion) without
-  sweeping what it contradicted.**
-- ⚠ **LINE ENDINGS BIT THIS BRANCH THREE TIMES.** `.gitattributes` declares
-  `eol: crlf`; `PLAN.md` and `probe_456_context_menus.py` were both LF in the
-  working tree, the probe already committed that way. **`git diff` cannot see it** —
-  only `file <path>` and the *"LF will be replaced by CRLF"* stderr warning can.
-  Normalize in binary mode (strip `\r`, then re-add), never with a `$`-anchored
-  `sed`. This file has warned about it for weeks and it still recurred.
-- ⚠ **A manual edit left a stray `u` byte before `datatable.py`'s BOM
-  (`75 ef bb bf`), and the WHOLE PACKAGE became unimportable** —
-  `SyntaxError: invalid non-printable character U+FEFF`, every affected test file
-  erroring at collection. Committing it would have shipped a broken build. **Verify
-  `import bootstack` at the COMMITTED state, not just in the working tree**, when
-  anything has hand-edited a source file.
-
-⚠ **THE FULL SUITE WAS NOT RE-RUN after the review round's edits, and that is
-stated rather than implied.** Those edits are one source *comment*, `CHANGELOG.md`,
-`PLAN.md` and one new file under `development/` — no production behavior moved, and
-the 68 tests that ran cover every test file the branch touches. `PLAN.md`'s
-recorded full run stands: exit 1, 33 legs, the single failure being **#449**, an
-already-filed flake at ~1 in 10 whose file the branch's one-file `src/` diff cannot
-reach. **If you want a clean number against the pushed head, measure it — do not
-infer one.**
-
-⚠ **NOTHING ON THIS BRANCH HAD EVER OPENED A CONTEXT MENU until 2026-08-19.** The
-tests assert on the two gate predicates or on `<<RowRightClick>>` dispatch, and
-`probe_456_context_menus.py` reads gates only. `development/demo_456_context_menus.py`
-is the manual checklist that closed it — **run by the maintainer, menus confirmed.**
-Its own wiring was proven headlessly first (data row increments; group header and
-empty space do not), which is also the first live confirmation that #418/#420's "no
-row event without a record" invariant survived moving the gate. ⚠ **The header half
-still has NO automated end-to-end coverage** — that was left as a gate-2 note, not
-filed, because the predicate read *is* the seam the click path consults.
-
-⚠ **#380 SHIPPED WITH NO CHANGELOG ENTRY, AND THAT IS CORRECT — do not "fix" it.**
-CI is not reachable by any user, and an entry earns its place by being reachable.
-Same call as #407. #433 and #434 rode along on the same reasoning.
-
-⚠ **PR #451 OPENED ZERO REVIEW ROUNDS, and that was the protocol working.** Gate 1
-triggers on a non-empty `git diff <range> -- src/`; this branch's was empty at
-every point, verified rather than assumed. Declared cap 2, actual 0 — **the second
-branch in a row where gate 1 held**, after #407. There is no `REVIEW.md` to
-archive because no round was opened.
-
-⚠ **BUT GATE 1 HAS A GAP THIS BRANCH WALKED THROUGH, and it should be settled
-before the next infrastructure branch.** Gate 1 exempts commits that change "only
-tests, probes, or documentation". **`.github/` is none of those three**, and
-`ci.yml` was this branch's actual deliverable — the trigger is defined
-mechanically as the `src/` diff, so it read as no-round, but the *reasoning*
-behind the exemption (reviewing test instruments never terminates) does not cover
-a CI workflow. It was raised with the maintainer rather than resolved silently.
-**The mitigating fact: a workflow is checked by RUNNING, and this one ran green
-on the real runners.** That is stronger evidence than a reading review — but it
-is not the same thing, and gate 1 should say which it means.
-
-#### ⚠ ONE THING WAS NOT VERIFIED — read before trusting the capture leg
-
-**The capture leg reported `21 passed / 2 skipped` on CI against `22 / 1`
-locally.** The likely reason is the ordering artifact `_pin()` documents in its
-own docstring — a refused always-on-top request still leaves a record, so the two
-topmost tests behave differently depending on which ran first. **That was NOT
-confirmed on the runner.** The alternative is that `openbox` (CI) and `xfwm4`
-(local, because this box has no `openbox` and no passwordless sudo) differ on
-whether they honor always-on-top. Neither reading was measured. **Do not cite the
-capture leg's count as settled until someone does.**
-
-**⚠ THIS SESSION RAN FROM A THIRD MACHINE — A WSL BOX — AND IT IS SET UP NOW.**
-See the Environment section. It is the only box that can run the Linux leg, and
-its previous session's environment had been lost; a venv at
-`/home/iddryer/.virtualenvs/bootstack` now carries an editable install, and WSL
-git is wired to the Windows credential manager so it can push and use `gh.exe`.
-
-#### What closed the Linux question
-
-**#447's CI reproduction is a MISSING WINDOW MANAGER, not a product bug.** Under
-X11 it is the window manager, not the server, that assigns input focus to a newly
-mapped top-level window. Bare `xvfb-run` starts none, so a dialog is mapped but
-never focused and the toplevel's `<Return>` binding has nothing to fire against.
-**`focus_lastfor()` returning the EMPTY STRING was the tell** — not "focus is on
-the wrong widget" but "nothing in this toplevel ever held focus". Same
-silent-no-op family as the fixed #437 flake.
-
-Measured with only the window manager varying — same kernel, distro, Tk, Python
-and commit: **7 dialog failures without one, 0 with one**, deterministic in both
-directions. **So the `0.3.1` dialog keyboard work is fine on X11.**
-
-⚠ **BUT #447 IS NOT CLOSED, AND MUST NOT BE CLOSED ON THIS.** It was reported as
-a **Windows** flake at ~4/50, on a machine that HAS a window manager, and nothing
-here explains that. "The same condition needs a race where a WM exists" is a
-**hypothesis, not a measurement** — recorded as one on the issue. PR #451 removes
-the CI reproduction; the Windows flake stays open.
-
-#### What PR #451 now carries, beyond the workflow itself
-
-| # | change | issue |
-|---|---|---|
-| 1 | `ci.yml` installs and starts `openbox`, polling `_NET_SUPPORTING_WM_CHECK` | #447 |
-| 2 | the NumLock bit resolved per platform instead of hardcoded `8` | **#434, #431** |
-| 3 | `cget("padding")[0]` read through `str()`, for Tk's `Tcl_Obj` | **#433** |
-| 4 | the capture topmost-restore assertion waits for the WM to answer | — |
-
-⚠ **THE POLL IS LOAD-BEARING — do not replace it with a `sleep`.** A window
-manager that fails to start leaves the suite on an unmanaged display and
-reproduces #447 **exactly**, which reads as a product bug rather than a broken
-step. That false result was measured once already, when `xfwm4 --daemon` silently
-failed to start and the arm came back **byte-identical** to the no-WM arm. Both
-arms of the guard were exercised before committing: no WM exits 1 loudly, a real
-one runs the payload.
-
-⚠ **#4 WAS NOT PREVIOUSLY FILED, AND ONLY A WINDOW MANAGER CAN EXPOSE IT.** That
-test *skips* where always-on-top is not honored, so bare Xvfb never ran it — it
-is newly reachable, not a regression. Always-on-top is answered asynchronously,
-which `_pin()` already polls for on the way IN; the assertion did not on the way
-OUT. **The restore lands in ~1 ms and the immediate read still returns the old
-value.** Product code is correct and untouched. Non-vacuity confirmed by
-disabling that restore and watching the polled assertion still fail — **not** by
-re-running.
-
-**AUTHORITATIVE — measured 2026-08-14 on `ci/test-workflow-380` at `5921dc41`**,
-WSL box, Ubuntu 22.04.5, Python 3.13.11, Tk 8.6.12, `pandas` ABSENT (so the data
-leg reads `125 / 4`), 33 legs:
-
-| arm | exit | passed | failed | skipped |
-|---|---|---|---|---|
-| Xvfb **+ window manager** | 0 | **1427** | **0** | 22 |
-| Xvfb **bare** — what CI did | 1 | 1418 | **7** | 24 |
-
-⚠ **IT RECONCILES AGAINST ITSELF: `1418 + 7 failed + 2 extra skips = 1427`**, the
-two extra skips being the capture topmost tests standing down where no WM honors
-always-on-top. And the 7 are exactly the #447 cluster, so **the test fixes did
-not mask it** — remove the window manager and it returns. CI agrees: its Linux
-shared leg reads `1032 passed, 14 skipped, 75 deselected`, identical to local.
-
-⚠ **THE `1449` RECORDED FOR THIS BRANCH IS STILL UNRECONCILED AND IS NOT THE SAME
-QUANTITY.** 1427 is a **Linux** figure; 1449 was not, and platform gating differs.
-**Do not close the gap by picking whichever number makes the arithmetic work** —
-the matrix reports all three platforms now, so re-measure per platform. This
-file has been wrong about counts seven times; that is how.
-
-#### ⚠ A DUPLICATE ISSUE WAS ALMOST FILED, AND THE NEAR-MISS IS THE LESSON
-
-`development/issue-draft-appshell-mod1-x11.md` was committed on 2026-08-12 saying
-the `bare_b` issue was unfiled and should be opened from the Windows box. **It
-was a duplicate — #434 has existed since 2026-08-08**, carrying the same
-Mod1-is-Alt diagnosis, and the report's finding 2 was already **#433**. The draft
-is **deleted**; the report carries a correction header.
-
-**The scope word is where it went wrong, again.** "Not yet filed" was true of
-that *session* and not of the *tracker*, and nothing wrote down which was meant.
-Same shape as `0.3.1` round 1's *"no other `grab_set` exists in the package"*,
-where "the package" silently meant `dialogs/` and #444 was two rounds away.
-⚠ **Committing the draft was still the RIGHT call** — that box genuinely had no
-`gh` and no credential, and a guessed issue number would have been worse.
-
-#### ✅ #432 DID NOT REPRODUCE — decide it, don't re-scope it blind
-
-Both Linux legs ran **all 33 legs to completion** and reported normally, twice
-now. #407 appears to have removed it. It was the stated blocker on this whole
-workstream, so **closing or re-scoping it is a maintainer call that is now
-cheap to make.**
-
-⚠ **ONE ITEM IS THE MAINTAINER'S, NOT YOURS: telling `bLynnb2762` that #453 is
-live.** They took it on 2026-08-13 (*"I'll respond to the user"*). **Do not post
-it as well** — a duplicate to an external reporter is worse than a late one. If
-you ever do post one, use `gh issue comment 453`; `gh issue close --comment`
-silently drops the comment on an already-closed issue and warns only about the
-close.
-
-#### ✅ `0.3.2 — Read-only select fields` IS ON PyPI (2026-08-13)
-
-Tag `v0.3.2`, **`release.yml` ran clean** (build, publish, GitHub Release all
-green) and **`docs.yml` chained off it automatically** — no manual kick. One
-user-facing fix, #453, on the patch line because it adds no public surface.
-
-**Every post-release check was VERIFIED, not assumed:** PyPI read from
-`/pypi/bootstack/0.3.2/json` (never the CDN-cached summary endpoint) **and** a
-real `pip download`; the wheel opened and the #453 fix confirmed *inside it*;
-`import bootstack` with **`idlelib` BLOCKED by a `meta_path` finder, with a
-control asserting the block itself bites** (#430); provenance asserted so the
-test could not silently import the editable working tree; `WidgetRedirector`
-confirmed as bootstack's own module; `NOTICE` at `dist-info/licenses/`; the
-GitHub Release live with both assets; `bootstack.org` 200.
-
-⚠ **THE `idlelib` GREP CAME BACK POSITIVE AND WAS A FALSE ALARM — this is why
-the meta_path test exists.** A substring search for `from idlelib` matched
-**`"borrowed from idlelib/parenmatch.py"`**, prose inside a docstring
-attribution. All seven mentions in the wheel are attributions; none is an import
-statement. **Do not re-prove #430 with grep, in either direction.**
-
-⚠ **`bump-my-version` reported `1.5.0` today** where this file recorded `1.5.1`
-on 2026-08-08, and it had vanished entirely once before. **Check it exists
-before assuming the release flow works.**
-
-⚠ **`v0.3.2` AND `main` DIFFER BY DESIGN, exactly as `0.3.1` did.** The
-CHANGELOG entry was **reworded after the tag** (`c2ff50fb`): it was accurate —
-every claim traced to a named test — but written in the framework's vocabulary
-rather than the reader's (*"rather than an internal state"*, *"built on the same
-internals"*), which is the implementation detail the same day's review had just
-stripped out of the `Select` docstring. **The GitHub Release body was edited to
-match with `gh release edit --notes-file`**, built by running
-`release_notes.extract` against the corrected file and splicing the
-auto-generated `## What's Changed` tail back verbatim, with an assertion
-refusing to overwrite if that tail was missing. **THE TAG WAS NOT MOVED** —
-never move a tag a release has already run on. If it happens again, that is the
-recipe.
-
-⚠ **The lesson worth keeping: verifying the EXTRACTION is not reviewing the
-NOTES.** Checking that the title carries its suffix, the body starts at
-`### Fixed` and no link definitions leaked is mechanics. Nobody had read the
-bullet as a user reads it until the maintainer asked, and by then it was
-published. **Read the entry as its audience before promoting the section**, and
-remember the audience is someone asking "was I affected?".
-
-#### What `0.3.2` contained, and what it did not
-
-**One user-facing fix: #453.** `read_only=True` on a `Select` was accepted and
-ignored — the arrow greyed out so the field *looked* read-only while a click in
-the text area still opened the list and changed the value, and
-`select.read_only` read `True` for every `Select` ever built. The entry's ttk
-`readonly` state was doing double duty as the widget's own "no free typing" flag
-and was recomputed unconditionally, discarding the request. It is **derived,
-never storage** now. `TimeField` rides the same internals and is fixed with it.
-
-⚠ **#407 also landed since `v0.3.1` and deliberately has NO CHANGELOG entry** —
-it is test-harness only, and an entry earns its place by being reachable. Do not
-"fix" its absence.
-
-#### ⚠ The two findings from this branch worth carrying — do NOT re-derive
-
-**1. When a piece of state becomes DERIVED, every existing writer of it becomes
-a silent no-op — and the writers outside the file are invisible.** Making the
-ttk state an OUTPUT re-derived after every write killed `TimeField.read_only`,
-whose setter wrote `state="readonly"` onto a `SelectBox` internal; the applier
-wrote `['!readonly']` back over it inside the same call. `main` reported `True`,
-the branch `False`. `grep -rn 'state="readonly"' src/` found all seven writers;
-only `TimeField` wraps a select.
-
-⚠ **Round 1 fixed that setter and MISSED THE CONSTRUCTOR, one scope up, doing
-the identical write.** `bs.TimeField(read_only=True)` still came back freely
-typeable with its time list open, because every existing test drove the setter.
-**Round 2 found it. The lesson is that a fix to a property is not a fix to the
-setting** — enumerate the ways the value can arrive (constructor, setter,
-`configure`) and pin each.
-
-**2. A docstring outlives its code, and the expensive half is not the obvious
-one.** Two shipped in this branch. `select.py`'s `read_only` docstring carried
-`cget`, `configure` and "a 5-tuple" into the **rendered API Reference** — Tkinter
-vocabulary on a page describing a framework that exists to hide it. Worse,
-`TimeField`'s constructor doc said read-only means *"the user must pick from the
-dropdown"* — the pre-#453 reading, which the fix made **actively false**, on a
-published page. ⚠ **The toolkit leak looks wrong to any reader; the stale
-behavior looks authoritative.** Check both when a fix changes what an option
-means, and verify in the BUILT html:
-`grep -rlE "cget|instate|5-tuple|textvariable" docs/_build/html --include=*.html`.
-
-⚠ **The `select.py` half REVERSED a round 1 decision, on the maintainer's
-instruction** — round 1 had deliberately put that warning *in* the docstring so
-the call would not be "simplified" back later. Right instinct, wrong surface: it
-is for whoever edits the line, not whoever reads the docs, so it moved verbatim
-into a `#` comment. **Do not put it back.**
-
-#### Two review rounds ran, against a declared cap of 2
-
-Record archived at **`development/review-453-select-read-only.md`**, plan at
-**`development/plan-453-select-read-only.md`**. Yield **3 findings then 4**, plus
-a fifth found during round 2's fix step. ⚠ **Round 2's fixes touched `src/`,
-which gate 1 would read as a trigger for a round 3 — the CAP is what stopped it,
-and the survivor was filed instead.** That is the stopping rule working; it is
-the first branch where it bound.
-
-**The survivor is [#455](https://github.com/israel-dryer/bootstack/issues/455)**
-— `Field.enable()/disable()/readonly()` write the ttk readonly state without
-re-deriving, merged with `PLAN.md`'s out-of-scope item that
-`Field.readonly(False)` disables the field instead of clearing read-only.
-**Latent: zero callers in `src`, `tests` or `development`**, and the public
-`disabled` setter already routes through `_delegate_state`, which re-derives.
-Left **unmilestoned** — it gates nothing, so its placement is a scope call.
-
-**#383 gained a THIRD gap** ([comment](https://github.com/israel-dryer/bootstack/issues/383#issuecomment-5283453605)):
-the two in its body are about bad **values**, this one is about unknown **names**
-— `bs.TextField(bogus_xyz=1)` constructs silently while the internal
-`Field(master, bogus_xyz=1)` raises `TclError`, so **the public layer is the
-less strict of the two**. Mechanism measured: wrappers build `internal_kwargs`
-from named parameters only and `**kwargs` exists to feed
-`_split_layout_kwargs`, so leftovers are never read and never reach the internal.
-⚠ **It does NOT reuse `validate_choice`** (the name never reaches a validator),
-and the obvious home — the shared split seam — needs the wrappers that
-legitimately forward `**kwargs` counted first.
-
-**✅ #380 IS NO LONGER PAUSED — the measurement was taken on 2026-08-14 and PR
-#451 is GREEN.** The two blocks marked ⏭ below are ANSWERED and are kept for
-their reasoning only. See START HERE.
-
-**✅ RESUME POINT 1 — ANSWERED 2026-08-14: Xvfb-only, the missing window manager
-IS the bug.** Report at `development/report-447-linux-focus.md` (read its
-CORRECTION header first). Original text follows, for the reasoning that framed
-the question correctly.
-
-**⏭ RESUME POINT 1 — the WSL agent's answer on #447.** A brief is committed at
-**`development/handoff-447-linux-focus.md`**. It asks ONE question: does the
-dialog focus/Enter cluster fail on X11 generally, or only under `xvfb-run`,
-**which has no window manager at all**? `focus_lastfor()` returning the EMPTY
-STRING is not "the wrong widget" — it is "nothing in this toplevel ever held
-focus", which is what a missing WM produces. Xvfb-only means a one-line CI fix
-and the product is fine; failing under a compositor too means **a product bug in
-`0.3.1`'s dialog keyboard work on Linux**, a platform we publish for, invisible
-to both boxes here.
-
-**✅ RESUME POINT 2 — ANSWERED 2026-08-14: FIXED, not merged. PR #451 is green on
-all five jobs** (run `31797591244`), both Linux legs included. **Merging it is
-the next action.** The instinct recorded below was right and is worth keeping:
-understanding Linux first is what turned a red leg into a one-step workflow fix
-instead of a hunt through the dialog code.
-
-**⏭ RESUME POINT 2 — then merge or fix PR #451.** It is open and deliberately
-NOT merged: its CI is green on Windows, headless and docs, and **red on both
-Linux legs** with the #447 cluster. Merging a red workflow trains everyone to
-ignore it. The maintainer chose to understand Linux first (2026-08-12).
-
-**STATE OF THE WORLD, so nothing below has to be pieced together:**
-
-| | |
-|---|---|
-| `main` | **`c2ff50fb`**, pushed. Green. `0.3.2` is released from `c311a9c4`; the one commit after it is the CHANGELOG rewording, which is why `v0.3.2` and `main` differ |
-| branch, PAUSED | **`ci/test-workflow-380`** (PR #451), pushed, head **`255c8a42`**. `PLAN.md` lives ON THAT BRANCH. **The only branch alive** |
-| suite on `main` | **exit 0, 20 legs, 1229 passed / 21 skipped**, measured 2026-08-13 at `03d981f1`. Shared leg **1032 / 14 against 1045 selected** — `1032 + 13` runtime skips = 1045, the 14th being the collection-time skip that is summarized but never selected. **Everything on `main` since that commit is CHANGELOG, CLAUDE.md and the version bump, so the figure transfers** |
-| suite on `ci/test-workflow-380` | **exit 0, 33 legs, 1449 passed / 22 skipped, 98s** — ⚠ **still SUSPECT, see below** |
-| root of `main` | **NO `PLAN.md`, NO `REVIEW.md`** — archived to `development/` at `03d981f1`. **Create `PLAN.md` fresh for the next branch** |
-| released | **`0.3.2` on PyPI, tag `v0.3.2`, shipped 2026-08-13 and fully verified.** `## [Unreleased]` is ABSENT again — the next fix commit re-creates it |
-| open milestones | 10, and they agree 1:1 with the table below |
-| `pandas` | **ABSENT on this box now**, so the data leg reads `125 / 4`. It read `123 / 6` on 2026-08-12. Documented environmental pair, not a discrepancy |
-
-⚠ **`1208 → 1229` IS +21 EXACTLY, WHICH IS `test_select_read_only.py`.** That is
-the whole delta and it reconciles against the shared leg's own collection line,
-so nothing was silently dropped or skipped into passing. **Prefer a number you
-just measured over one written here — this file has now been wrong about counts
-seven times.** The check is one command:
-`pytest tests/widgets/public tests/cli -m "not isolated" --collect-only -q | tail -2`.
-
-⚠ **Round 1 of the #453 review recorded `33 legs` for a branch that has 20.**
-33 is `ci/test-workflow-380`'s leg count; the passed figure it quoted was
-consistent with the branch it was actually on, so it reads as a transcription
-slip rather than a different checkout. **Recorded because a wrong leg count is
-how a wrong total gets believed.**
-
-⚠ **THIS RECONCILIATION RESTED ON THE WRONG BASE AND MUST BE RE-MEASURED BEFORE
-IT IS QUOTED.** It read: `1250` + **25** tests under `tests/widgets/` that
-`testpaths` never collected + **166** in `tests/test_public_surface.py`, which
-had never run anywhere + **8** for `test_tk9_scaling_baseline.py`, which now
-runs TWICE (once in the headless leg to prove it needs no display, once in the
-shared leg as before) = `1449`. **The `1250` base is wrong — `main` was `1208`**
-(corrected 2026-08-13), so the same three additions predict **`1407`**, not
-`1449`. Either the branch total or one of the addends is off by 42. ⚠ **And the
-base has MOVED AGAIN since: `main` is `1229` now that #453 landed, so the
-prediction is `1428` against that.** Neither figure closes the gap; the point is
-that the branch total was never reconciled. **Both halves need a fresh
-`py -3.12 tests/run_gui.py` on `ci/test-workflow-380`, taken after rebasing it
-on today's `main`; do not repair the arithmetic by picking whichever number
-makes it close.** The
-substance is untouched — the 25 and the 166 had literally never been executed by
-any automated run, which is what #380 asked to fix.
-
-#### ⚠ WHAT CI FOUND ON ITS VERY FIRST RUN (run `31591527788`)
-
-| job | result |
-|---|---|
-| `headless` (no display, root creation BLOCKED) | ✅ |
-| `tests` windows py3.13 | ✅ |
-| `docs` `-W` | ✅ |
-| `tests` ubuntu py3.12 **and** py3.13 | ❌ **7 failures, identical on both** |
-| `tests` macos py3.13 | ⛔ **HUNG — 90 minutes for a 90-second suite** |
-
-- **The Linux failures are the #447 cluster** — `focus_lastfor()` returning `''`,
-  Enter reaching neither the focused button nor the default. Same shape measured
-  at 4/50 on Windows and never explained. **This is the first near-deterministic
-  reproduction the issue has ever had.** See RESUME POINT 1.
-- ✅ **#432 DID NOT REPRODUCE.** The Linux leg **ran all 33 legs to completion**
-  and reported normally — it did not exit silently mid-run. #407 appears to have
-  removed it. **#432 should be closed or re-scoped on this evidence**; it was the
-  blocker on this whole workstream.
-- ⛔ **The macOS hang is [#452](https://github.com/israel-dryer/bootstack/issues/452).**
-  Setup and the Tk-version report both succeeded, then the suite never returned.
-  #380 had flagged Tk-on-Aqua as unverified on GitHub runners; that is answered.
-  **The leg is REMOVED from the matrix** rather than left hanging, and **every
-  job now sets `timeout-minutes`** — without them that hang would have burned to
-  GitHub's 6-hour default. ⚠ **Step 3 of #452 first: does a bare
-  `tkinter.Tk()` even complete on the runner?** That control decides how the
-  rest reads.
-- ⚠ **One more Linux failure is deliberately NOT filed yet:**
-  `test_appshell_shortcuts::test_bare_b_does_not_toggle_the_sidebar`
-  (`assert '' == 'b'`). It is focus-shaped too, so it may share #447's cause;
-  filing now risks a duplicate the WSL run would immediately merge.
-
-⚠ **`REVIEW-PROTOCOL.md` GAINED A `Stopping rules` SECTION ON 2026-08-12 — READ
-IT BEFORE ANY REVIEW.** Four mechanical gates, written because this project spent
-four review rounds on the `0.3.1` branch and round 4 reviewed a **test-only**
-commit whose fixes would have earned a round 5. The one that bites first: **a
-round is triggered by a non-empty `git diff <range> -- src/` and by nothing
-else.** #407 was its first application and opened **zero** rounds against a
-declared cap of 2.
-
-**#380 IS IN FLIGHT, NOT PENDING** — PR #451, branch `ci/test-workflow-380`. It
-became affordable because #407 took the suite from ~5 minutes to ~1. The
-workflow is written, verified locally, and has run once; what is left is the
-Linux question above, not more authoring.
-
-⚠ **DO NOT DESIGN #380 FROM SCRATCH. `D:\Development\ttkbootstrap` HAS ALREADY
-SOLVED IT** (maintainer's pointer, 2026-08-12). Same maintainer, same shared-root
-design, and its `tests/conftest.py` says outright that it followed bootstack's
-approach. Its `.github/workflows/ci.yml` is close to a drop-in answer:
-
-- a matrix of **ubuntu / windows / macos** plus the **floor Python** from
-  `pyproject.toml`, with **`fail-fast: false`** and the reason written into the
-  file — a green Linux run was once read as a green suite while Windows was red;
-- **`xvfb-run -a -s "-screen 0 1280x1024x24 -dpi 96"`** on Linux only, with a
-  comment explaining the `-dpi 96`: Xvfb otherwise reports ~100 dpi, a real ~1.05
-  scaling factor, too small to hit the quarter-step snap and large enough to
-  round asset geometry up a pixel;
-- a per-job step that **REPORTS the Tk build** (`tcl=… tk=…`) rather than
-  letting anyone infer it from the Python version;
-- `concurrency` with `cancel-in-progress`, and a separate `-W` docs job;
-- an optional dependency **deliberately not installed**, so the fallback path is
-  the one under test.
-
-⚠ **One idea there is worth stealing into `conftest` regardless of CI:** it pins
-Tk scaling to baseline in the fixture, which "demotes CI's `-dpi 96` from
-load-bearing to belt-and-braces." bootstack has pixel-exact tests too, and a
-developer's laptop at 125% is the same hazard. **Not done — its own change.**
-
-**⏭ AND RE-TEST #432 BEFORE SCOPING IT.** The shared-root GUI leg exiting
-silently mid-run on Linux was most likely the widget accumulation #407 has now
-removed. **It may simply not reproduce.** Neither box here can check that;
-it needs a Linux run, which is also the first thing #380's Linux leg would tell
-you.
+Value-space: `NumberField`, `DateField`, `TimeField`, and now `Select`. **That is
+the real content of #460 and #461 taken together**, and it is a family decision
+nobody has made.
+
+⚠ **ON MERGE:** archive `PLAN.md` → `development/plan-458-select-signal.md` and
+`REVIEW.md` → `development/review-458-select-signal.md`, then create `PLAN.md`
+fresh. Comment on #458 with `gh issue comment` after the *release*, not the merge.
 
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
-**The job:** CI now covers ubuntu and windows and **not macOS**, because the leg
-ran **90 minutes for a 90-second suite** and was removed rather than left
-hanging. aqua is a platform this project publishes for and it is now the only one
-with zero automated coverage, so the value of #380 is capped until this closes.
+**The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran
+**90 minutes for a 90-second suite** and was removed rather than left hanging.
+aqua is a platform this project publishes for and is now the only one with zero
+automated coverage, so the value of #380 is capped until this closes.
 
-**What is already known, so it is not re-derived:**
+**Known already, so it is not re-derived:** setup and the Tk-version report both
+**succeeded**, then "Run the suite" never returned — so it is not a provisioning
+failure. **Every job now sets `timeout-minutes`**, so a retry costs 15 minutes.
 
-- Setup and the Tk-version report both **succeeded**; then "Run the suite" never
-  returned. So Python and Tk installed fine — it is not a provisioning failure.
-- **Every job now sets `timeout-minutes`**, so a retry costs 15 minutes rather
-  than GitHub's 6-hour default. That was added in `5921dc41` precisely so this is
-  affordable to iterate on.
-- #380 had already flagged Tk-on-Aqua as **unverified** on GitHub runners. That
-  is now answered in the negative, at least as the suite currently runs.
+**⏭ STEP 1, AND IT DECIDES HOW EVERYTHING ELSE READS: does a bare `tkinter.Tk()`
+even complete on the runner?** Not the suite — one root, one `update()`, one
+`destroy()`, with a timeout. A hang there means aqua needs something a headless
+runner does not give it (a window server session) and the answer is a different
+runner configuration. A pass means the hang is ours, and the next step is
+bisecting which leg blocks.
 
-**⏭ STEP 1, AND IT DECIDES HOW EVERYTHING ELSE READS: does a bare
-`tkinter.Tk()` even complete on the runner?** Not the suite — one root, one
-`update()`, one `destroy()`, with a timeout. A hang there means aqua needs
-something a headless runner does not give it (a window server session), and the
-answer is a different runner configuration rather than anything in the suite. A
-pass there means the hang is ours, and the next step is bisecting which leg
-blocks.
-
-⚠ **This is debug-by-push and there is no way around it** — no box this project
-has is a GitHub macOS runner. Budget for that: make each push answer one
-question, and write the question into the workflow step name so the log reads as
-an experiment rather than a rerun.
+⚠ **This is debug-by-push and there is no way around it.** Make each push answer
+one question, and **write the question into the workflow step name** so the log
+reads as an experiment rather than a rerun.
 
 ⚠ **The local macOS box is NOT a substitute and will mislead you.** It has a
 window server, a logged-in session and Tk 8.6; the runner has none of the first
@@ -1656,1768 +379,890 @@ two. **The whole #447 lesson transfers: a display without the thing that manages
 windows behaves differently from one with it, and the difference is invisible
 until measured.** If the local box passes, that is not evidence about the runner.
 
-⚠ **#431 is waiting on a macOS answer too** and is cheap to fold in — its fix
+⚠ **#431 is waiting on a macOS answer too and is cheap to fold in** — its fix
 skips on aqua, and nobody has *observed* that branch being taken on a real Aqua
-build. See the ⚠ under the unmilestoned list.
+build.
 
-#### ✅ `0.3.1 — Dialog keyboard and modality` IS ON PyPI (2026-08-12)
+#### Open flakes and known-unstable tests
 
-Tag `v0.3.1`, **`release.yml` ran clean** (build, publish, release all green) and
-`docs.yml` chained off it. **Every post-release step is done and VERIFIED, not
-assumed:** PyPI proved with a real `pip download` of the wheel (never the
-CDN-cached summary endpoint), the shipped wheel opened and **imported with
-`idlelib` BLOCKED via a `meta_path` finder, with a control asserting the block
-was real** (#430's defect — grep is not enough, seven `idlelib` mentions survive
-in the wheel as docstring attributions), `WidgetRedirector` confirmed as
-bootstack's own module, `NOTICE` present at `dist-info/licenses/` with the PSF
-attribution, the GitHub Release live with both assets, and `bootstack.org`
-returning 200.
-
-⚠ **A CHANGELOG WORDING FIX LANDED AFTER THE TAG, so the two disagree by design.**
-`v0.3.1` carries the pre-fix text; `main` carries the corrected text; the
-**GitHub Release body was edited to match with `gh release edit --notes-file`**,
-keeping the auto-generated `## What's Changed` tail. **The tag was NOT moved** —
-never move a tag a release has already run on. If this happens again, that is
-the recipe.
-
-✅ **`0.3.1`'s MILESTONE IS CLOSED** (maintainer, 2026-08-12), reading
-`open=0 closed=5`. **#446 was CLOSED rather than moved**, because its scope was
-exactly the two flakes and both shipped in `48dba181`; the third became #447.
-Anything unfinished went to **`0.3.x — Patch line`** — #447 and #449 — which is
-consistent with #422 already sitting there, so a test-only issue on the patch
-line is not a new precedent.
-
-**PR [#448](https://github.com/israel-dryer/bootstack/pull/448) is MERGED** —
-merge commit **`d307fd2e`**, a **merge commit, not a squash**, the same call made
-for #410/#423/#424/#442. Branch head at merge was **`ba27ab58`**;
-`fix/dialog-keyboard-modality` is **DELETED** local and remote (that SHA is the
-one to resurrect from). Verified both ways before merging:
-ancestor of `origin/main` **and** a MERGED PR. **#426, #439, #440 and #441 are
-all CLOSED.**
-
-⚠ **`main`'s only difference from the commit the suite was measured at
-(`ba27ab58`) is `CLAUDE.md`** — four `docs(claude):` commits landed while the
-branch was out. Docs-only, so the counts below transfer to `main` exactly.
-
-**`PLAN.md` and `REVIEW.md` ARE ARCHIVED** to
-`development/plan-426-439-440-441-dialogs.md` and
-`development/review-426-439-440-441-dialogs.md`. **The root is deliberately empty
-of both — create `PLAN.md` fresh for the next branch.**
-
-#### ⚠ THE DURABLE OUTCOME OF THIS BRANCH IS NOT THE FOUR FIXES
-
-**`REVIEW-PROTOCOL.md` now has a `Stopping rules` section, and it exists because
-the loop on this branch did not terminate on its own** (maintainer, 2026-08-12:
-*"you can create endless cycles of tests, bugs in tests etc... A test is meant
-for assurance. It's important, but at the same time, it is not the product."*).
-Round 3 reviewed a production fix; round 4 reviewed the **test-only** commit that
-fixed the flakes round 3's verification surfaced; round 5 would have reviewed the
-fixes to those tests. **The measured shape: ~430 production lines against ~1,300
-test lines and ~750 lines of probes and review records, over 17 commits of which
-4 are review records. Rounds 3 and 4 changed ZERO lines under `src/`.**
-
-The four gates, all mechanical because a rule needing judgment gets reasoned
-around exactly when it should bind:
-
-1. **A round is triggered by a non-empty `git diff <range> -- src/`, and by
-   nothing else.** Test-, probe- and docs-only commits are self-checked. Under
-   this gate round 4 would not have opened.
-2. **Test code is reviewed on ONE axis — what defect can it let through.** Only
-   **vacuity** (passes while the behavior is broken) and **false alarm** (fails
-   while it is fine) are actionable. Diagnostics, wording, symmetry and probe
-   ergonomics are **notes in the record, never fixes**. Under this gate round 4
-   yields 2 findings, not 5.
-3. **The round cap goes in `PLAN.md` up front** — 2 for a patch, 3 for a minor —
-   and survivors are filed as issues.
-4. **Probes are instruments, not reviewed code**, and a flake gets **one** fix
-   attempt with a mechanism-reproducing control before quarantine. The one
-   exception: a probe whose *conclusion* is cited as settled must still be shown
-   capable of finding something — a claim about evidence, not code quality.
-
-#### ✅ Round 4 RAN, and the branch closed there
-
-**#446's two flakes were FIXED at `48dba181`** (test-only — `src/` untouched,
-verified not assumed). Round 4 reviewed that diff and found **two vacuity
-defects, both fixed in `74991e55`**, plus three notes left unfixed under gate 2.
-**A third flake is still open and is now [#447](https://github.com/israel-dryer/bootstack/issues/447)** — filed rather than
-chased, under gate 4.
-
-| flake | file | before | after |
-|---|---|---|---|
-| A `test_the_restored_grab_is_the_same_KIND_it_was` | `test_dialog_nested_modality.py` | 1 in 12 | **fixed** |
-| B `test_query_dialog_focuses_its_entry_not_the_default_button` | `test_dialog_initial_focus.py` | 1 in 8 | **fixed** |
-| C `test_enter_on_a_disabled_button_still_reaches_the_default` | `test_dialog_press_contract.py` | not seen in 12 | **1 in 37, UNEXPLAINED** |
-
-⚠ **NEITHER FIXED FLAKE HAD THE CAUSE THIS FILE PREDICTED, and the leaked-timer
-prediction was WRONG rather than merely incomplete.** It was measured first and
-refuted — `probe_446_leaked_after_jobs.py` shows no test-scheduled timer survives
-a test. **A named prior is a hypothesis, not a diagnosis**, which is the opposite
-of what the previous version of this block said ("both have a named prior with a
-worked fix, so neither should need re-deriving").
-
-- **Flake A was a FIXED DELAY where the other files poll.**
-  `test_dialog_nested_modality.py` drove on `after(300, drive)`. `show()` creates
-  the toplevel, builds the footer and content, positions the window, and only
-  **then** grabs — and building and positioning both pump the event loop, so the
-  timer fires mid-`show()`, the driver destroys the toplevel, and `show()`
-  deiconifies a window that is gone. **The grab is the barrier because it is the
-  last thing `show()` does before it waits.** Forced 10/10 → 0/10 in
-  `probe_446_fixed_delay_lands_mid_show.py`, against 0/10 for the same fixed
-  delay in a quiet process.
-- **Flake B was a barrier SCOPE error, not a timing one.** `_drive` waited for
-  the grab and for every **footer** child to map — correct where the widget under
-  test is a footer button, useless here, where it is `QueryDialog`'s entry in the
-  **content** subtree. Measured 4/12 unmapped at the old barrier and the same
-  4/12 focus misses, tracking one-for-one → **0/12** once the barrier waits for
-  the resolved focus target (`probe_446_barrier_scope.py`).
-
-⚠ **FLAKE C IS THE OPEN QUESTION AND MUST NOT BE CLOSED BY RE-RUNNING.** Enter on
-a disabled footer button reached **neither** it nor the default button
-(`calls == []`), which reading the guard cannot explain — `_key_was_consumed`
-returns `not instate(["disabled"])`, i.e. False, for a disabled button. It does
-not reproduce in a quiet process (**0/40**,
-`probe_446_disabled_button_enter.py`, already instrumented to separate "the
-toplevel binding never ran" from "it ran and `invoke()` did nothing"), and 25
-instrumented runs did not catch it again. **Whether the timing change in the fix
-exposed it is UNKNOWN** — it appeared once in 37 post-fix runs and zero times in
-12 pre-fix runs, which is too little to attribute either way. Record it as
-unknown; do not let a later session inherit a guess as a fact.
-
-⚠ **THE LESSON, and it is the same one `0.3.0` round 4 paid for: `run_gui.py`
-EXIT 0 IS NOT EVIDENCE OF STABILITY.** The branch reported **1208 passed / 21
-skipped, exit 0, all 20 legs**, plus a clean `-W` docs build — and had two flakes
-then and one now. At 1-in-8 a full green run is the *expected* outcome of a
-broken branch. **Do not re-run to check; re-running is how all three of these
-hid.** The #437 control is the pattern: a probe that **CREATES** the condition
-and reports a rate, not one that looks for the symptom. Both #446 fixes were
-accepted on exactly that evidence, and flake C is unresolved precisely because
-nothing has yet made it happen on demand.
-
-**Reproduction is in #446** — the five dialog files in one pytest process, eight
-or more times. `git diff main...HEAD -- CLAUDE.md` is empty and must stay that way.
-
-⚠ **THE COUNTS THIS BLOCK RECORDED FOR `48dba181` WERE WRONG — see the corrected
-table under `main` is GREEN.** It claimed **1250 / 22** summed and a shared leg
-of **1055 / 13** against a **1068** ceiling, and dismissed round 3's `1011 / 14`
-against `1024` as the irreconcilable one. **Round 3 was right**; the real figures
-are **1208 / 21** summed and **1011 / 14** against **1024**, derived 2026-08-13
-by measuring a later branch and subtracting the only test file added since.
-
-⚠ **The reasoning that produced the wrong number is the part worth keeping,
-because it looked airtight:** `1055 + 13 = 1068` reconciles against its own
-collection line, which this file treats as the check that settles a disputed
-count. **It does not.** Self-consistency proves the run summed correctly, not
-that it selected the right population — a wrong ceiling reconciles just as
-neatly as a right one. Bound the movement instead:
-`git diff --stat <baseline>..HEAD -- tests/` says how much the count is ALLOWED
-to have changed, and it is one command.
-
-**⏭ SO THE NEXT JOB IS THE RELEASE** (top of this section). After it: the
-standing recommendation is `Test and release confidence`, and **#432 is the
-blocker to attack first** — the shared-root GUI leg exits silently mid-run on
-Linux, which makes CI unbuyable — then #407, then #380. **#447 is filed and can
-wait**; #444 and #445 likewise.
-
-**FOUR REVIEW ROUNDS RAN. The full record is
-`development/review-426-439-440-441-dialogs.md` — read it rather than
-re-deriving.** The yield curve is the part worth carrying:
-
-| round | findings | real | what it cost |
-|---|---|---|---|
-| 1 | 6 | 3 | 2 refuted by measurement, 1 deferred by the maintainer |
-| 2 | 5 | 5 | **all five were round 1's own fix being incomplete** |
-| 3 | 4 | 1 | **three were already-triaged items re-filed** |
-| 4 | 5 | 2 | **reviewed a TEST-ONLY diff; 3 findings were about a probe's readability** |
-
-⚠ **The old note here said "STOP AT THREE" and blamed a harness gap. That was
-half the story and the missing half is now `REVIEW-PROTOCOL.md`'s gate 1.**
-Carrying triage state into the reviewer is still right — round 2's reviewer was
-handed `REVIEW.md` and re-filed nothing, round 3's was not and re-filed three
-settled items. But no amount of triage state stops a round that should never
-have opened, and round 4 opened on a diff with **no production code in it at
-all**. Gate the round on `git diff -- src/`; triage the findings inside it.
-
-⚠ **Round 4's two real findings were both VACUITY, and the control is worth more
-than either fix.** `_nest` in `test_dialog_nested_modality.py` gave up silently
-when its barrier never cleared — so nothing was ever nested, the outer grab was
-never displaced, and both nesting tests passed measuring nothing. `_outer`'s
-error path was unreachable for a different reason: its retry budget ran to
-10050ms while its fallback fired at 10000ms, so the fallback always won, `state`
-was left empty **with no `"error"` key**, and `assert "error" not in state`
-passed. **THE FIRST CONTROL WAS WRONG AND LOOKED RIGHT**: disabling the retry
-budget left the test passing, because the inner dialog already held the grab on
-the very first check, so the give-up path was never reached. Forcing the
-condition itself (*"pretend the grab never arrives"*) is what exercised it —
-**pre-fix the test PASSES in 8.83s**, having sat through the entire 8-second
-fallback and nested nothing; post-fix it fails naming both routes. **A control
-that does not reach the path under test is indistinguishable from a fix that
-works.**
-
-⚠ **One claim was DOWNGRADED rather than fixed, and it matters because this file
-recorded it as settled.** `probe_446_leaked_after_jobs.py` returns an empty set
-on both sides of every test if `_root()` is `None` or `after info` raises —
-indistinguishable from a clean result. So **"no test-scheduled timer survives a
-test" is UNCONTROLLED, not refuted.** The probe was left alone under gate 4; the
-claim it backs was weakened in the record instead.
+| # | what | status |
+|---|---|---|
+| **#447** | dialog focus/Enter cluster, Windows, ~4/50 | **OPEN.** The CI reproduction was a **missing window manager** and is fixed; **the Windows flake is NOT explained by that** and must not be closed on it |
+| **#449** | `test_select_change_event_value_space` pins an exact event list against an async change, ~1 in 10 full runs | **OPEN.** Two candidate causes RULED OUT by measurement: it is **not** a `Select` emitting at construction, and **not** an event leaked by the reset destroying a widget. Remaining hypothesis — stale bindings surviving destroy while Tk recycles path names — is **UNTESTED** |
+| flake C | `test_enter_on_a_disabled_button_still_reaches_the_default` | Folded into #447's family; 1 in 37, **UNEXPLAINED**, does not reproduce in a quiet process (0/40) |
 
 ⚠ **`probe_446_disabled_button_enter.py` COUNTS A BARRIER TIMEOUT AS A
-REPRODUCTION** — a run where the dialog never comes up yields `calls == []` with
-no other keys, byte-identical to flake C, and the probe's own READING text then
-points at the guard when the truth is that Enter was never pressed. **Fix that
-before working #447**, or the probe will lie about the exact distinction the
-issue turns on. Recorded on the issue too.
+REPRODUCTION** — a run where the dialog never comes up yields `calls == []`,
+byte-identical to the flake, and the probe's READING text then points at the guard
+when the truth is that Enter was never pressed. **Fix that before working #447.**
 
-⚠ **Round 3's one real finding was OUT OF SCOPE and is filed, not fixed —
-[#444](https://github.com/israel-dryer/bootstack/issues/444).** A modal
-`bs.Window` never restores the grab it took, so a dialog underneath it loses its
-modality. Reproduced (`outer holds grab: True` → `after inner closed: None`).
-**Pre-existing in `0.2.3` and `0.3.0`, and `_runtime/toplevel.py` is not in this
-branch's diff** — #440 was scoped to the four dialog classes. ⚠ **The reviewer
-also claimed the CHANGELOG says this is fixed; that was CHECKED and is FALSE** —
-the #440 bullet scopes itself to dialogs and its `modal="app"` sentence is about
-restoring a grab's *kind*. Nothing false ships. Agents over-flag; that is the
-shape it takes on a finding that is otherwise sound.
+⚠ **#447's rate went 4/50 → 2/50 across #407, which SETTLES NOTHING** — inside
+noise at that sample size.
 
-⚠ **[#445](https://github.com/israel-dryer/bootstack/issues/445) filed the same
-way:** `attach()` drops legacy layout kwargs on a grid cell while rejecting them
-on a flex child. Pre-existing, one-liner now that `kind` is required. Both are on
-`0.3.x — Patch line`.
+### Milestones
 
-**#441's scoping constraint held: the fix stayed INTERNAL.** The issue floated
-letting a widget *declare* it consumes Enter — new public surface, which would
-have pushed the whole thing to a minor. The shipped rule asks the bindtag **and
-the keysym**, both internal.
+**THE RULE: numbered milestones are RELEASES; unnumbered milestones hold work NOT
+YET ASSIGNED to a release.** Membership in a numbered one is decided by
+compatibility *and* readiness, and the title names what actually ships. Nothing
+gets a number until its order is real. **Subject lives on LABELS** (`tk9`,
+`test-infra`, `hot-reload`, `new-widget`) so milestones stay about *when*.
 
-⚠ **The keysym half was round 1's F1, refuted, then RE-OPENED ON COST rather than
-on new evidence.** Round 1 documented it as an unmeasurable X11 limit; round 3
-pointed out the remedy is one argument, weighed against shipping a branch that
-changes X11 behavior on a platform neither box can test. **Measured before
-changing anything — the asymmetry is one-sided:**
+⚠ **CLOSE A MILESTONE WHEN ITS RELEASE SHIPS.** All shipped ones are closed, which
+makes **the open list exactly the live work and a direct cross-check on this
+table.** They agreed 1:1 when last verified. **If they ever disagree, trust `gh`
+and fix the table.**
 
-```
-TButton  <Key-Return> -> button_default_binding   <Key-KP_Enter> -> button_default_binding
-Text     <Key-Return> -> tk::TextInsert           <Key-KP_Enter> -> '# nothing'
-```
-
-So a button answers both Enter keys and a text widget answers only `Return`.
-⚠ **The test is `keysym != "KP_Enter"`, NOT `== "Return"`, deliberately** — an
-unknown keysym then reads as consumed, because standing down wrongly costs a dead
-key while firing wrongly costs **#441 itself**. Pinned by its own test so it is
-not "simplified" into the equality form later. ⚠ **Windows can reach this path by
-NEITHER route** (synthesis yields keysym `??`; the physical key folds into
-`Return`), so the tests drive the rule directly and only X11 can run it end to
-end.
-
-After `0.3.1`, the standing recommendation is still `Test and release confidence`
-(#407 then #380) — and **#432 is the blocker to attack first**, since the GUI leg
-cannot complete on Linux at all, which makes CI unbuyable.
-
-**⏭ A DESIGN IDEA WORTH CARRYING INTO THAT BRANCH (maintainer, 2026-08-11): map
-the real keys onto a virtual name with `event_add`**, so a dialog binds one
-`<<Submit>>` instead of `<Return>` + `<KP_Enter>` and the intent becomes
-targetable. **Measured before it gets designed around —
-`development/probe_439_virtual_event_for_submit.py`, and it needs a MAPPED
-window or every arm silently reads empty:**
-
-- ✅ **It works.** `root.event_add("<<Submit>>", "<Return>", "<KP_Enter>")` and a
-  `<<Submit>>` binding fires from the real key. One name covers both keys, which
-  is exactly the duplication the dialog carries today.
-- ⚠ **On a tag carrying BOTH, the PHYSICAL binding wins and the virtual one does
-  not run at all.** Measured: with `<<Submit>>` and `<Return>` both bound to the
-  widget, only `<Return>` fired. So this is not additive — anything already
-  binding `<Return>` directly shadows the virtual name on its own tag.
-- ⚠ **The mapping is per-INTERPRETER, not per-widget** (`event info` reads the
-  same through the root and through a widget). Adding one is a cross-cutting,
-  app-wide change, not a local one.
-- ❌ **It does NOT change the bindtag walk.** Order stayed
-  `widget → class → toplevel`. So the toplevel still runs after a button's class
-  binding and still has to decide whether something already answered the key —
-  **#441 is untouched by this.** It is a naming and deduplication win, not a
-  dispatch one; adopt it for clarity if wanted, but do not scope #441 around it.
-
-⚠ **#436 was filed 2026-08-10**: adopt `versionadded` across the public API,
-because the docs site serves ONE version and a reader cannot tell which release
-an API needs. `capture()` is already tagged on its branch as the first case. It
-carries one undecided question — whether `versionchanged` gets applied
-retroactively to `0.2.0`–`0.2.3` or stays forward-only.
-
-Verified, not assumed:
-
-- **PyPI** — `0.2.3` live, wheel + sdist, proved with a real
-  `pip download --no-deps bootstack==0.2.3`. ⚠ The **`/pypi/bootstack/json` summary
-  endpoint is CDN-cached and lagged behind a successful `0.2.2` upload** — use
-  `/pypi/bootstack/<version>/json` or a real `pip download`, and never read a stale
-  summary as a failed upload and re-upload.
-- **The fix, inside the published wheel** — `from idlelib` is gone from the shipped
-  `filter.py`, and `NOTICE` is present at `dist-info/licenses/NOTICE` carrying the
-  PSF attribution. **Checking the artifact, not the source tree, is what proves a
-  packaging-shaped bug is actually fixed** — #430 was reported against the shipped
-  `0.2.2` wheel in the first place.
-- **GitHub Release** — [`v0.2.3`](https://github.com/israel-dryer/bootstack/releases/tag/v0.2.3),
-  titled `0.2.3 — Import without IDLE`, both artifacts, not a draft, not a
-  prerelease.
-- **Docs** — deployed automatically, `http://bootstack.org/` returns 200 (run
-  `31274654592`, chained off the successful Release run).
-- **Issue** — #430 CLOSED, milestoned `0.2.x — Patch line`, "it's live" comment
-  posted ([5227773487](https://github.com/israel-dryer/bootstack/issues/430#issuecomment-5227773487)).
-- **Branch** — `fix/idlelib-import-430` deleted local + remote (head `57ee3041`),
-  verified merged with the two-command check before deleting.
-
-**⚠ `release.yml` RAN CLEAN for `v0.2.3`** — build, PyPI publish, and GitHub Release
-all green, and `docs.yml` chained off it automatically. Actions had recovered from
-the 2026-08-06 outage. **The manual recipe below was NOT needed and is kept only as
-the fallback for next time.**
-
-#### ⚠ THE FALLBACK, FROM `0.2.2`: publishing BY HAND when Actions is down
-
-`release.yml` **never ran successfully for `v0.2.2`.** GitHub Actions was in a
-**major outage** all afternoon (incident opened 15:22 UTC, still *investigating* at
-19:43 UTC — "capacity remains constrained and jobs may still be delayed or fail").
-Two tag-triggered runs died without publishing anything:
-
-| run | what happened |
-|---|---|
-| `31115122262` | failed twice; `Failed to resolve action download info: Service Unavailable` — GitHub could not hand the runner its actions. Bound to a tag object that no longer exists. |
-| `31121469892` | `Build distribution` sat **queued 15 minutes then was CANCELLED**; publish + release **skipped**. A rerun re-queued and never started. |
-
-⚠ **`gh run` reported this run inconsistently** — `gh run cancel` said *"Cannot cancel
-a workflow run that is completed"* while `gh run view` said `queued`, repeatedly. Under
-an Actions outage the run state itself is unreliable; **check PyPI, not the run**, to
-decide whether anything was published.
-
-**So it was published manually**, which worked cleanly and is the fallback to reuse:
-
-1. `git worktree add <scratchpad>/rel-X.Y.Z vX.Y.Z` — build from a **pristine checkout
-   of the tag**, never from the working tree. This repo has ~60 untracked files in
-   `development/`; building in place risks them landing in the sdist. (Verified they
-   did not: sdist top level is `src`, `tests`, `LICENSE`, `NOTICE`, `MANIFEST.in`,
-   `PKG-INFO`, `README.md`, `pyproject.toml`, `setup.cfg`.)
-2. `py -3.12 -m pip install --upgrade build twine` (neither was installed).
-3. `py -3.12 -m build`, then **`py -3.12 -m twine check dist/*`** — both PASSED.
-4. `py -3.12 -m twine upload --config-file D:/Development/bootstack/.pypirc --non-interactive dist/*`
-5. `gh release create vX.Y.Z dist/* --title "<from release_notes.py>" --notes-file RELEASE_NOTES.md --generate-notes`
-6. `git worktree remove <path> --force`
-
-⚠ **`twine.exe` is NOT on PATH** — always `py -3.12 -m twine`.
-
-⚠ **The token lives at `D:\Development\bootstack\.pypirc`** (repo root, **not**
-`~/.pypirc`, which does not exist). It is `[pypi]` + `username = __token__` + a
-179-char `pypi-AgEI…` token. It is **gitignored at `.gitignore:29` (`/.pypirc`) and
-untracked** — verified, safe. Because it is not in the home directory, **twine needs
-`--config-file` explicitly** or it will not find it.
-
-⚠ **A manual publish SKIPS THE DOCS DEPLOY.** `docs.yml` triggers on
-`workflow_run` of **"Release" completing successfully** — no successful Release run
-means no docs, silently. Its three runs that day all read `completed/skipped`, which
-looks like a no-op but meant the site was still serving `0.2.1`. Fix is one command:
-**`gh workflow run docs.yml --ref main`** (the workflow has a `workflow_dispatch`
-trigger and its `if:` explicitly allows it). It succeeded in ~2 minutes even mid-outage.
-
-⚠ **`release.yml` publishes via OIDC trusted publishing**
-(`pypa/gh-action-pypi-publish` + `id-token: write`), so there is **no token in CI** —
-the local `.pypirc` is the only credential path for a manual publish, and CI's path
-cannot be reproduced locally.
-
-⚠ **If run `31121469892` ever does execute**, its publish step will fail with *file
-already exists*. **That is expected and harmless** — PyPI already has the correct
-artifacts. Do not "fix" it by re-uploading or burning a version.
-
-#### ⚠ The CHANGELOG said the wrong thing about click order — FIXED at `931edd89`
-
-The `0.2.2` notes claimed a double-click runs `on_row_click` twice **before**
-`on_row_double_click`. **It does not.** `on_row_click` rides `<ButtonRelease-1>` while
-`<Double-1>` is a **ButtonPress** pattern, so the double lands *between* the clicks.
-Measured, with a control:
-
-```
-claimed:  ['click', 'click', 'double']
-actual:   ['click', 'double', 'click']      <- same shape as Win32's DOWN, UP, DBLCLK, UP
-```
-
-It matters practically: **one `on_row_click` fires AFTER the double-click handler has
-already run**, so a click handler that moves the selection lands after the double-click
-opened a dialog. The earlier session measured *counts* (2 clicks + 1 double) and never
-checked *order*; the wrong ordering survived a rewrite of that same line hours earlier.
-
-⚠ **The probe was junk on its first run and said so loudly** — it reported
-`['double','click','double','click']`, claiming `double` on the very first press.
-**Synthesized events default to `time=0`, and Tk decides `Double` off the event
-clock**, so the preceding control click was indistinguishable in time. Supplying an
-explicit `time=` to `event_generate` fixed it. Probe with both the control and the
-clock: `development/probe_421_click_order.py`.
-
-**A click count on `RowEvent` was considered and DROPPED** (maintainer, 2026-08-06) —
-do not re-propose it. DOM has `event.detail` and AppKit has `clickCount`, and either
-would let a handler early-return on the second click, but the maintainer is not
-worried about it. It would have been new public surface, so a minor, not the patch line.
-
-**⚠ DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** This was violated on 2026-08-06: a
-branch was handed off and then edited in place while the agent ran. The review reads
-files on disk, not only `git diff`, so it reviews a moving target. If follow-up work
-cannot wait, do it in a **`git worktree`** or on another branch. Memory
-`feedback_dont_touch_branch_under_review`. ⚠ **And a worktree runs against `main`'s
-source unless you set `PYTHONPATH`** — the editable install points at
-`D:\Development\bootstack\src`, so a worktree's tests import *main's* code. The #421
-review hit this; it happened to hand it a free pre-fix control, but it silently
-invalidates a post-fix run.
-
-⚠ **`PYTHONPATH` ALONE IS HALF THE FIX, AND THE HALF-FIX IS LOUD — WHICH IS THE
-ONLY REASON IT GETS CAUGHT.** Setting `PYTHONPATH` to the worktree's `src` while
-passing **test paths relative to the primary checkout** runs the NEW tests against
-the OLD source. Measured 2026-08-11: 9–10 failures on every one of eight runs,
-where the honest answer was 1 in 8. **Pass the worktree's ABSOLUTE test paths too**
-(pytest then picks up its `conftest.py`), and prove which tree you loaded before
-trusting a single number:
-`PYTHONPATH=$W/src py -3.12 -c "import bootstack,os;print(os.path.dirname(bootstack.__file__))"`.
-The failure mode is friendly here only by luck — a version skew that happened to
-break loudly. Skew that breaks quietly reads as a real result.
-
-**⚠ AND CHECK `git rev-parse` ON BOTH BRANCHES BEFORE READING ANY FILE.** These two
-branches were briefly at the *identical* commit, so a branch name did not tell you
-which code you were looking at — reading `tableview.py` would have silently shown
-421's work-in-progress while you believed you were on 417. The 2026-08-06 review
-caught this itself and reviewed committed blobs (`git show <sha>:<path>`) instead.
-
-#### What shipped in `0.2.2` — commit map (both branches now merged and deleted)
-
-`fix/datatable-click-focus-421` was **stacked on** `fix/datatable-double-click-417`.
-All of these are on `main`; the branch column records which PR carried them
-(**417** → #423, **421** → #424). Three later commits — `5d169044`, `9e257368`,
-`62950b0a` — applied the #421 review findings on top.
-
-| SHA | Branch | What |
+| Order | Milestone | Open |
 |---|---|---|
-| `aeffa27d` | 417 | #417 — `<Double-1>` bound unconditionally |
-| `638b24e3` | 417 | #420's guard on `_on_row_double_click` (commit says `#417`; re-cited later — history reads oddly, notes are correct) |
-| `701cea54` | 417 | #418 — the same guard on `_on_row_context` |
-| `14808981` | 417 | #419 — deferred chevron refresh |
-| `36ae3720` | 417 | CHANGELOG: chevron bullet, `#420` re-citation, `### Changed` |
-| `69f92b05` | 417 | probes + `demo_419_group_chevrons.py` |
-| `6718de36` | 417 | **fixes two defective tests** — see below |
-| `f7405d97` | 417 | CHANGELOG: the double `on_row_click` bullet |
-| `f425430f` | **421** | **#421 — `_take_click_focus` on the two `'break'` paths** |
-| `ff814b85` | **421** | CHANGELOG bullet for #421 |
-| `6c18d34e` | **421** | the 417 review record into `development/` |
+| 1 | **`0.4.0 — Signal binding on fields`** — #458, #459, #460, #461. Cut 2026-08-19; the next release out the door | 4 |
+| 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
+| 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
+| 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
+| 5 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
+| 6 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
+| — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
+| — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
+| — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
+| — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, #449. Reads `open=6 closed=2`. It is rolling, so it does **NOT** close when a patch ships | 6 |
 
-#### ⚠ What the 2026-08-06 review established — do NOT re-derive
+**Ordering reasons, so they are not re-litigated:** **breaks batched, not
+dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
+four); then near-ready API, then new widgets. ⚠ **Numbers past `0.4.0` are ordering
+hints, not commitments.** Retitling is cheap; that is the point of the rule.
 
-Full record committed at **`development/review-417-double-click.md`**. Verdict was
-ship-ready. It verified, and these should not be re-checked:
+⚠ **THE MILESTONES HAVE BEEN RENUMBERED THREE TIMES — read this table, never a
+number quoted in older prose or in the archive.** The 2026-08-19 renumbering
+inserted `0.4.0 — Signal binding on fields` and shifted everything above it one
+step. A pre-2026-08-19 mention of `0.4.0 — Strictness` means `0.5.0`, and
+`0.5.0`/`0.6.0`/`0.7.0`/`0.8.0` mean `0.6.0`/`0.7.0`/`0.8.0`/`0.9.0`.
 
-- **The `iid not in self._row_map` guard is exact.** Group parents go only to
-  `_group_parents`; data rows only to `_row_map`. All four `_tree.insert` sites were
-  enumerated.
-- **No binding accumulation** from the unconditional `<Double-1>` — `_build_tree`
-  runs once and the bind has no `add=`.
-- **The deferred chevron refresh is safe after teardown** — scheduled on
-  `self._root()`, and every `item()` call is inside `try/except`.
-- **`_update_selection_markers` does not clobber chevrons** — selection markers are
-  inactive whenever `_group_by_key` is set. A suspected conflict, chased and closed.
+⚠ **THE PATCH LINE IS BUG FIXES ONLY.** The project committed to SemVer at
+`0.1.0`, so **adding public surface is a MINOR even when nothing breaks** —
+someone upgrading `0.2.1 → 0.2.2` should be able to assume no new API arrived.
+⚠ **BUT THE RULE IS ONE-DIRECTIONAL.** An addition **requires** a minor; a minor
+does **not** require additions, and is free to carry as many plain bug fixes as it
+likes (`0.3.0` carried two additions and **six fixes**). **So when a minor is being
+cut anyway, ask what else is ready rather than parking fixes out of habit.** The
+mirror-image question scoped `0.3.1`: **for a fix, ask whether it needs a minor at
+all** — if it adds no public surface it can ship as a patch.
 
-**All six of its findings are handled.** Findings 1–4 landed in `6718de36` and
-`f7405d97`; finding 5 became **#422**; finding 6 needed no action.
+⚠ **A trap already paid for: the patch-line milestone had been renamed away from
+"Fixes and small additions" while its description still said "fixes and small
+additions", so the rename changed nothing. Fix the description, not just the
+title.**
 
-#### ⚠ THE LESSON WORTH KEEPING: that review MISSED two real defects
+⚠ **A rolling line that turns over gets a NEW milestone, never a rename** —
+`0.2.x` holds 15 CLOSED issues, so renaming it would have relabelled shipped work
+as `0.3.x`. Check with
+`gh api repos/:owner/:repo/milestones --jq '.[]|"\(.title) open=\(.open_issues) closed=\(.closed_issues)"'`.
 
-It called the tests "better than the repo average". **Two of them were broken**, both
-found afterward by running the control the committing session should have run —
-*revert the fix, confirm the test fails*:
+**FOUR UNMILESTONED OPEN ISSUES — #431, #436, #452, #455.** All four predate the
+current work. Verify rather than counting by hand:
+`gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
-- **`test_group_chevron_tracks_double_click` was VACUOUS** — it passed against the
-  unfixed code. The setup started collapsed, so the double-click's two toggles
-  finished on a *collapse*, the direction that was never broken.
-- **`test_group_chevron_tracks_keyboard_expand` was FLAKY**, ~1 run in 5, its own
-  control tripping. It synthesized key events, and those are dropped once earlier
-  tests fill the shared root and the table is unmapped.
+- **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
+  landed with #434's, but on aqua it **SKIPS** — macOS has no NumLock modifier for
+  `Mod1` to carry. The test cannot be made meaningful there and now says so out
+  loud. **That resolves the failure; whether it resolves the issue is a scope
+  call.** ⚠ And it is **UNVERIFIED on a real Aqua build** — fold into the #452 trip.
+- **#436** — adopt `versionadded` across the public API, because the docs site
+  serves ONE version and a reader cannot tell which release an API needs. Carries
+  one undecided question: retroactive to `0.2.x`, or forward-only?
+- **#455** — `Field.enable()/disable()/readonly()` write the ttk readonly state
+  without re-deriving, plus `Field.readonly(False)` disabling the field instead of
+  clearing read-only. **Latent: zero callers** anywhere. Unmilestoned because it
+  gates nothing.
 
-**The standing rule is that agents over-flag. This one under-flagged, on exactly what
-it praised.** Adversarial verification cuts both ways — a clean review is not proof.
+⚠ **"DO NOT ASSIGN A MILESTONE UNASKED" IS NARROWER THAN IT READS.** It guards
+against making SCOPE calls for the maintainer. **It was never about a blocker,
+whose placement is a fact rather than a choice** — an issue that gates a release
+has already had its milestone decided by the thing it blocks. **The test: would
+shipping the milestone without this issue be a decision, or a defect?** A defect
+means it belongs on the milestone; a decision means ask.
 
-#### Measured facts worth not re-deriving
+⚠ **A bullet in this file is not proof an issue is open** — #222, #234 and #379 all
+sat here as open work after being closed.
+`gh issue view <n> --json state --jq .state`.
 
-- **A double-click also fires `on_row_click` TWICE** (measured 2 clicks + 1
-  double-click, against a 1/0 single-click control). `<ButtonRelease-1>` has no
-  `Double` counterpart. Documented in the CHANGELOG; no test covers the interaction.
-- **The toolkit reports an expand BEFORE recording it.** `ttk::treeview::OpenItem`
-  generates `<<TreeviewOpen>>` and *then* sets `-open true`; `CloseItem` sets first.
-  That asymmetry is the whole of #419. Verified from `info body`, not from memory.
-- **Tk REJECTS `event_generate("<Double-1>")`** — `Double` is a binding pattern, not
-  an event type. Two presses is the only way to synthesize one.
-- **Do not synthesize keys in the shared-root suite.** Drive the routine the key is
-  bound to (`ttk::treeview::ToggleFocus`, `ttk::treeview::Keynav w right`). The
-  key-to-routine mapping is the toolkit's binding table, not ours.
-- **Assert focus via `focus_lastfor()`, not `focus_get()`** — the latter reports
-  nothing unless the window is active, which is not dependable here.
-- **Probes must stub `_open_form_dialog` AND the row menu** — both block the loop
-  forever when driven synthetically.
-- Four probes and a visual demo are **committed** in `development/`:
-  `probe_group_header_chevron_sync.py`, `probe_021_allow_edit_group_header.py`,
-  `probe_group_header_click_focus.py`, and `demo_419_group_chevrons.py` (a
-  seven-step manual checklist covering all five issues). Each probe carries a control.
+### Suite counts
 
-#### ⚠ What the #421 review established — do NOT re-derive
+⚠ **STOP RE-RECORDING THESE FROM MEMORY. This file has been wrong about them
+SEVEN times, in both directions.** **Prefer a number you just measured over one
+written here, and fix this section when they disagree.**
 
-Full record at **`development/review-421-click-focus.md`**. Verified, and not worth
-re-checking:
+**AUTHORITATIVE — measured 2026-08-19 on `fix/select-signal-value-458` at
+`6db756b1`**, Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
+`pandas` ABSENT:
 
-- **#421's two new tests are NOT vacuous.** Run against unfixed source both fail with
-  the right symptom (`focus_lastfor()` is the App root, not the tree), and test 1's
-  internal control arm — clicking a plain data row — passes. This is exactly the
-  control the #417 review skipped, which is how two defective tests got through there.
-- **Suite green at the head.** 973 passed / 13 skipped (widgets+CLI) and 123 / 6
-  (data), matching the `ff814b85` figure. The previously-flaky
-  `test_group_chevron_tracks_keyboard_expand` passed on both of two runs.
-- **The group-header focus question is CLOSED — it is a non-issue.** Tk's `<space>` is
-  `ttk::treeview::ToggleFocus` → `Toggle $w $item`, which toggles the item's *open
-  state*, not selection. Measured after a group-header click: `tree.selection()` is
-  `()`, `table.selection` is `[]`, no `SelectionChange`. Item focus on a group header
-  cannot leak into selection.
-- **`_tree.focus` is read nowhere else in the `tableview` package** — nothing
-  downstream assumes the focus item is a data row.
-- **Taking focus on an empty-space click is not a regression** — ttk's own `Press`
-  does `focus $w` unconditionally.
+| | branch, measured | `main`, derived |
+|---|---|---|
+| summed, 33 legs | **1458 passed / 21 skipped** | **1443 / 21** |
+| shared leg | **1062 / 13** against **1075** selected | — |
 
-#### ✅ The three #421 review findings — ALL APPLIED 2026-08-06, nothing left here
+The shared leg reconciles against its own collection line: `collected 1150 / 75
+deselected / 1 skipped / 1075 selected`, and `1062 passed + 13 runtime skips =
+1075`. ⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the
+collection line — sum the per-leg summary lines only.**
 
-Kept only because the measurements are worth not re-deriving. Landed as `5d169044`
-(finding 1 + its test), `9e257368` (finding 2), `62950b0a` (finding 3), all now on
-`main` via PR #424.
+**The three checks, in order of what they actually prove:**
 
-⚠ **Finding 1's test needed a real control to be worth anything**, and got one: run
-against unfixed source it fails with `dragging a separator in checkbox mode resized
-nothing` **while its own plain-table control arm passes first** — so the failure is
-behavioral, not a broken harness. That is exactly the control the #417 review skipped,
-which is how two defective tests got through there.
+1. **The ceiling.** `passed + skipped` cannot exceed the selected count.
+   `pytest <paths> -m "not isolated" --collect-only -q | tail -2`.
+2. ⚠ **But `passed + skipped` CAN LEGITIMATELY EXCEED it by the collection-time
+   skips** — a module-level skip is reported in the summary while never being one
+   of the selected items. **Read the collection line before concluding a total is
+   impossible.**
+3. ⚠ **Self-consistency proves the run summed correctly, NOT that it selected the
+   right population.** A wrong ceiling reconciles just as neatly as a right one —
+   that is how the seventh error got through. **Bound the movement instead:**
+   `git diff --stat <baseline>..HEAD -- tests/` says how much the count is
+   ALLOWED to have changed, and it is one command.
 
-Original write-up follows.
+⚠ **Platform figures are NOT comparable.** Linux at `5921dc41` read `1427 / 22`;
+that is a different platform with different gating. **Do not close a gap by
+picking whichever number makes the arithmetic work.**
 
-1. **MEDIUM — `tableview.py:2918`: column resizing is DEAD whenever selection
-   checkboxes are on.** `_on_header_click` special-cases only `region == "heading"`, so
-   a click on a column **separator** falls into `if self._toggle_select_active():`,
-   where `identify_row(event.y)` returns `""` — and the branch **still** returns
-   `"break"`, swallowing ttk's `resize.press`. **Measured:** a plain table resizes
-   (`120 → 156`); with `selection_mode="multi", show_selection_controls=True` none of
-   its three separators move at all. The `break` is load-bearing **only when there is a
-   row to toggle**. #421's diff compounds it — `_take_click_focus(iid)` sits *above*
-   the `if iid:` guard, so a failed resize attempt now also yanks focus into the tree
-   body. **Fix: move the call inside `if iid:` and return `"break"` only there.** The
-   reviewer verified that change: all three separators resize (`#0` 43→79, `#1`/`#2`
-   likewise) and all 23 `test_datatable.py` tests stay green. ⚠ **The breakage predates
-   the branch** — but the diff edits exactly these lines. **No test covers the
-   separator path either way; add one.**
-2. **LOW — `tableview.py:2874`: swap `except Exception: pass` for
-   `debug_log_exception`.** The defect #421 fixes *is* "focus silently did not happen";
-   if `focus_set()`/`focus(iid)` raises, the fix degrades back to the original bug with
-   no signal anywhere. `debug_log_exception` (`_runtime/utility.py`, #399) never
-   raises, so it is safe in a Tk dispatch path. Neighbors do the bare `pass`, but this
-   is new code.
-3. **LOW — `CHANGELOG.md:25`: the headline overstates the blast radius.** "Clicking a
-   `DataTable` row now leaves the keyboard pointed at that row" reads as though
-   ordinary row clicks were broken. **They never were** — the branch's own control
-   proves plain rows always took focus. Scope the headline to group headers and
-   checkbox tables; the bullet body already says the right thing. Same standard that
-   kept #397/#401 out of `0.2.1`.
+⚠ **The data leg reads `125 / 4` when `pandas` is ABSENT and `123 / 6` when it is
+installed** — two tests run only when it is missing. Documented environmental
+pair, not a discrepancy. `py -3.12 -c "import pandas"` settles it.
 
-### ✅ The `0.2.2` release sequence — ALL STEPS DONE (2026-08-06)
+**Record the DATE and the COMMIT beside any count, or don't record it.** Sum the
+legs yourself — `run_gui.py` prints no aggregate.
 
-**Milestones are SETTLED (maintainer, 2026-08-06): #417, #418, #419, #420, #421 and
-#422 are all on `0.2.x — Patch line`. There are ZERO unmilestoned open issues** —
-verified against `gh`, and it clears the deviation this file used to flag. That
-milestone now has **#422 and #207** left open.
+---
 
-All six steps completed: branches rebased (with `git diff main...HEAD -- CLAUDE.md`
-empty on both — the trap that nearly bit #410), PR'd and merged as merge commits
-(#423 then #424), `## [Unreleased]` promoted in its own commit, `bumpversion` run,
-tag pushed, **published manually** (see START HERE), issues closed, #417 commented,
-branches deleted. ⚠ The CHANGELOG bullet count is **7**, but do **not** read that as
-"unchanged from the 7 recorded at `ff814b85`" — the column-resize fix **added** one
-and consolidating the #418/#420 pair **removed** one. Coincidence, not stasis.
+## Backlog — what to pick up
 
-⚠ **The posted #417 comment is NOT verbatim the draft this file carried.** The draft
-predated the column-resize fix (#421 review finding 1), so it said "four more defects"
-and stopped at the focus bug. One sentence was appended covering the separator fix,
-which is user-visible in the release notes. **A prepared draft goes stale when the
-release grows** — re-read it against the final CHANGELOG before pasting.
+**#390 is the exception to milestone order and can be taken at ANY time — it is a
+DECISION, not work.** Should signals model emptiness at all? Cheapest item on the
+board and the largest unblock, since it gates #389 shipping *whole*. **The analysis
+is COMPLETE — it needs an answer, not more analysis**, and the maintainer is
+actively evaluating (discussion #386), so do not re-derive it or ask the reporter
+to weigh in.
 
-Everything below is the backlog to pick from now that `0.2.2` is out.
+`Signal.set(None)` raises unconditionally (`signal.py:248` — strictly monomorphic,
+type inferred from the seed). **Four decisions, in order:**
 
-**#409 is DONE (PR #414) — full entry in `docs/_dev/handoff-archive.md`.** Two
-things from it are worth carrying here because they are invisible in the diff and
-will bite again:
-
-- ⚠ **`emit()` and `on()` take the same names but NOT always the same target.**
-  `emit()` consults the `_event_target()` seam **only for `<<Virtual>>` sequences**;
-  the native-mapped names (`click`/`focus`/`blur`/`submit`) fire on `_internal`, so
-  `field.emit("submit")` on a retargeting composite reaches nothing bound through
-  `on()` — silently. Documented in both `PublicWidgetBase.emit`'s docstring and
-  `docs/reference/events.rst` now; it was only in the docstring before.
-- ⚠ **`resolve_event()`'s error is process-wide, not per-widget.** `all_known` is a
-  union of `GLOBAL_EVENT_MAP` and **every** `_CLASS_EVENT_MAPS` entry, so a `Button`
-  typo is reported alongside `cursor_move`/`export`/`item_drag_start`. Narrowing it
-  is folded into **#412**, not done. Don't write docs claiming the error lists what
-  *that* widget knows — the branch shipped that sentence and the review caught it.
-
-**⚠ `## [Unreleased]` is ABSENT ON `main`** — `0.2.3` consumed it (the top section is
-now `## [0.2.3] — Import without IDLE`, with its `[0.2.3]:` link definition at the
-bottom). The next fix commit re-creates it, per the convention under Release flow.
-
-**⏭ The next targets, in milestone order (see the table above for why).**
-
-**#390 is the exception to the order and can be taken at ANY time — it is a
-DECISION, not work.** Should signals model emptiness at all? (`0.4.0`.) The
-write-up below is complete and the maintainer is actively evaluating (discussion
-#386); it needs an answer, not more analysis. Cheapest item on the board and the
-largest unblock, since it gates #389 shipping *whole*. **Do not re-derive it.**
-
-Otherwise, first substantial work is the **`Test and release confidence`**
-workstream, in this order:
-
-1. **#407 — the harness scene reset.** Best-understood open work in this file: root
-   cause known, payoff measured (widget leg **144s → 80s**), and it makes PageStack
-   pass with no `isolated` marker. Its old blocker (#392) shipped in `0.2.0`. ⚠ The
-   patch itself is LOST and must be re-derived from the recorded root cause below.
-2. **#380 — CI.** Nothing runs the suite on push; every Tk 9 bug so far was found by
-   a user or by hand. Take it *after* #407 so the automation is cheaper and the suite
-   it automates actually passes. Largest item here; read the issue before scoping.
-
-Then `0.3.0 — Strictness and value types` as one batch (#383, #369, #408, #416),
-then `0.4.0` (#389 behind #390, #412, #415). **#412** is small and well-scoped:
-publish an existing internal front door so composite authors get a documented
-bare-name path *while keeping the typo guard*. Until it lands,
-`docs/reference/events.rst` stays **deliberately silent on custom events** — that
-silence is the one real cost of how #409 shipped.
-
-**⚠ #415/#416 came from discussion #413** (a user asking for `PathField` in a
-`Form`). Both were filed 2026-08-05 with a probe at
-`development/probe_413_pathfield_value.py`; **the maintainer replied on #413 the
-same day, so that loop is closed.** The measured finding worth not re-deriving:
-**10 of the 12 public field-family widgets are `Form` editors — the two that are
-not are `PathField` and `TimeField`** — and an unknown `editor=` name **silently
-builds a `TextField`** (`_impl/composites/form.py:774`). `DateField` being an
-editor while `TimeField` is not is what makes this drift rather than a design
-boundary.
-
-**⚠ `open_multiple` is FULLY DECIDED (maintainer, 2026-08-05) — nothing left to
-settle before implementing #416.** The contract: **`open_multiple` → `tuple[Path,
-...]`, empty `()`; every other mode → `Path | None`, empty `None`.** #416's body
-still presents this as an open question with two options; **the decision lives in a
-comment on the issue**, not the body. The rejected option was a second property
-holding the tuple — one concept, two names. Two costs accepted deliberately: the
-return type depends on a construction argument (`open_multiple` selects a different
-*kind* of thing, and the `', '` join it replaces is already lossy), and **`()`
-rather than `None` when empty is a deliberate exception to the framework's
-`None`-when-empty convention** — the type stays stable so callers iterate without a
-guard, and for a multi-select "nothing selected" and "an empty selection" are the
-same state.
-
-**⚠ Two test-coverage gaps, same class — fold both into #380.** `testpaths` is
-`tests/cli`, `tests/widgets/public`, `tests/data`, so **anything outside those
-never runs**: (a) the 12 files / 25 tests directly under `tests/widgets/`, and
-(b) **`tests/test_public_surface.py`** — the guard for the curated public namespace
-(PR #104), which the widget-review standard lists as a verify step. Run by hand at
-the `0.2.1` tag: **166 passed**. It is green; it is just never run by `run_gui.py`.
-
-**⚠ What THIS FILE got wrong about the cluster — the pattern is the lesson.** The
-2026-08-05 review re-read `7e204801` (#401) and #397 (then `6520597b`, shipped as
-`a93a47a4` after the timer fix was folded in) precisely because
-an earlier whole-branch pass had already been wrong three times about #397. That
-re-read found two more defects, so the running count is **four** — and one of them
-was in this file:
-
-- **This file claimed "the branch no longer touches `CLAUDE.md` at all." It did.**
-  The `docs(claude):` *commits* had been dropped, but the CLAUDE.md edits were
-  folded into the #396 commit instead — a 252-line rewrite descending from
-  `e23207b4`, i.e. `main`'s **pre-cluster** handoff. Merging #410 would have applied
-  84 insertions against 168 deletions to `main`'s handoff, silently reverting three
-  `docs(claude):` commits. Caught by diffing `main...HEAD -- CLAUDE.md`, not by
-  reading. **Run that diff before merging any branch.** The rule it protects still
-  holds: handoff state lives on `main` only.
-- **The #397 end-to-end test leaked a 10s `after` timer** on the shared root, and
-  its module is not in `ISOLATED` — so the timer fired during a later test and
-  destroyed an unrelated `Toplevel`. **The test passed either way**, which is what
-  made it invisible. Measured 1 leaked timer → 0. A test that schedules a hang guard
-  must cancel it in a `finally`.
-
-**⚠ A probe that finds nothing must be proven able to find something.** The #401
-completeness check (an AST scan for handlers bound to a virtual sequence that
-return `'break'`) reported **zero hits** — because `ast.parse` was choking on a
-**UTF-8 BOM** and a bare `except Exception: continue` swallowed it, silently
-skipping every file. Reading `utf-8-sig` and re-running against the pre-fix commit
-as a control reproduced exactly the two known handlers, which is the only thing
-that made the post-fix zero mean anything. **Always run the control.** The same
-session produced a second vacuity: a probe set `field.readonly = True` on a public
-widget — a plain Python object — so the bogus attribute stuck silently and the field
-kept stepping. The property is **`read_only`**.
-
-#392 is DONE and merged — its full root-cause writeup, the four-commit breakdown,
-and every gotcha moved to **`docs/_dev/handoff-archive.md`** (grep `#392`). **Read
-that entry before touching `_runtime/events.py`**; it records things that cost real
-time and are invisible in the diff.
-
-**After 0.2.1, the realistic candidates:**
-
-1. **#390 — should signals model emptiness at all? (DESIGN — milestone `0.3.0`;
-   the maintainer is actively evaluating options as of 2026-07-30.)** Gates #389
-   shipping *whole*: without it `Form.clear()` works but leaves a bound `Signal`
-   stale. **If the answer is no, close #390** and ship #389 with the limitation
-   documented. ⚠ The analysis below is COMPLETE — it needs a decision, not more
-   work. The maintainer has publicly said they are evaluating (discussion #386),
-   so do not re-derive it or ask the reporter to weigh in. `Signal.set(None)` raises
-   unconditionally (`signal.py:248` — strictly monomorphic, type inferred from the
-   seed). **Four decisions, in order:** (1) *do it at all?* (2) *declared or
-   automatic?* — recommend **declared** (`Signal(v, nullable=True)`), because
-   automatic-by-mode cannot cover `int` and isn't safe to lean on: `Signal(0)` is
+1. *Do it at all?*
+2. *Declared or automatic?* — recommend **declared** (`Signal(v, nullable=True)`).
+   Automatic-by-mode cannot cover `int` and is not safe to lean on: `Signal(0)` is
    Python-authoritative only *while unrealized*, so the moment anything touches
-   `.var`, `__call__` starts reading the IntVar and a stored `None` is lost;
-   (3) *what happens to a non-nullable signal asked to go empty?* — recommend a
-   public `Signal.nullable` so `ValueSignalMixin` skips rather than crashing
-   `Form.clear()`; (4) *what does `map()` do over a nullable signal?* — it calls
-   the transform unconditionally and infers the derived type from the first result
-   (`signal.py:295, 302`), so a `None` source breaks the **documented** Date/Time
-   pattern (typed `signal=` plus a `.map()`-derived text signal). **No existing
-   code is at risk either way** — `set(None)` raises today, so nothing can
-   currently receive it. **KEY MEASURED FINDING, don't re-derive it:** the
-   dividing line is **attached-vs-not, not object-vs-native**. `NumberField(signal=)`
-   / `DateField(signal=)` are **unrealized** — `ValueSignalMixin` syncs via
-   `subscribe()` + `on_change` in pure Python and never touches `.var`, so **for a
-   number field's value signal there is no IntVar at all**. `Checkbox(signal=)` and
-   `TextField(textsignal=)` **are** the widget's `variable`/`textvariable` — there
-   `None` either raises (`IntVar`) or **silently corrupts**: `StringVar.set(None)`
-   stores the literal `'None'`, the widget displays it, and every subscriber gets
-   the 4-character string. That is why a blanket guard relaxation must not ship.
-   **Per-type "empty" values were considered and REJECTED** — `empty(int) = 0`
-   contradicts the shipped `NumberField.clear()` decision, `empty(bool) = False`
-   collapses tristate (#358), `date` has only a **sentinel** indistinguishable from
-   data, and it makes emptiness type-dependent at every call site. The framework
-   already runs both models in separate channels (`value` is `None` when empty,
-   `text` is `''`) and keeping them separate is what stops either leaking into the
-   other. Memory `reference_signal_nullability_attached_vs_not`.
+   `.var`, `__call__` starts reading the IntVar and a stored `None` is lost.
+3. *What happens to a non-nullable signal asked to go empty?* — recommend a public
+   `Signal.nullable` so `ValueSignalMixin` skips rather than crashing
+   `Form.clear()`.
+4. *What does `map()` do over a nullable signal?* — it calls the transform
+   unconditionally and infers the derived type from the first result, so a `None`
+   source breaks the **documented** Date/Time pattern.
 
-2. **#389 — `Form.reset()` / `Form.clear()`.** Milestone `0.3.0` (moved out of
-   0.2.0 so that release could cut). Unblocked (#387 merged), design
-   settled, implementation sketch on the issue. **They are DIFFERENT verbs** —
-   reset = construction-time originals, clear = `None`. Both justified: `reset()`
-   is **not user-implementable** (after an edit, `get()` no longer knows the
-   original); `clear()` is the data-entry case. Slider clears to `min_value` (no
-   null state, and that is already the de-facto seeding behavior). Needs an
-   `__init__` snapshot because `set()` destroys `_data`; both must clear
-   validation state.
+**No existing code is at risk either way** — `set(None)` raises today, so nothing
+can currently receive it. ⚠ **KEY MEASURED FINDING: the dividing line is
+attached-vs-not, not object-vs-native.** `NumberField(signal=)` /
+`DateField(signal=)` are **unrealized** — `ValueSignalMixin` syncs in pure Python
+and never touches `.var`, so for a number field's value signal **there is no IntVar
+at all**. `Checkbox(signal=)` and `TextField(textsignal=)` **are** the widget's
+`variable`/`textvariable` — there `None` either raises (`IntVar`) or **silently
+corrupts**: `StringVar.set(None)` stores the literal `'None'`, the widget displays
+it, and every subscriber gets the 4-character string. **That is why a blanket guard
+relaxation must not ship.** ⚠ **Per-type "empty" values were CONSIDERED and
+REJECTED** — `empty(int) = 0` contradicts the shipped `NumberField.clear()`
+decision, `empty(bool) = False` collapses tristate (#358), `date` has only a
+sentinel indistinguishable from data, and it makes emptiness type-dependent at
+every call site.
 
-Then the standing items: **#407 (harness leak-fix)**, **#380 (CI)**, and **#383
-(kwarg sweep)**.
+**#389 — `Form.reset()` / `Form.clear()`.** Design settled, sketch on the issue.
+**They are DIFFERENT verbs** — reset = construction-time originals, clear = `None`.
+Both justified: `reset()` is **not user-implementable** (after an edit, `get()` no
+longer knows the original); `clear()` is the data-entry case. Slider clears to
+`min_value`. Needs an `__init__` snapshot because `set()` destroys `_data`; both
+must clear validation state.
 
-### Then — standing infrastructure work
+### Strictness batch (`0.5.0`) — four issues, ONE migration
 
-- ~~**#407 harness leak-fix**~~ — **✅ DONE, merged 2026-08-12 as PR #450 (merge
-  commit `288d2596`). CLOSED.** The recorded root cause was exactly right and is
-  worth keeping because it explains the shape: `conftest._region()` returned
-  `_region_root`, which on a decorated App **is the root**, so
-  `_snapshot`/`_reset_scene` walked the root's children twice and never looked
-  inside `App._content_frame` — **the scene reset had been a no-op for content
-  widgets for the entire life of the shared-root harness.** Measured before the
-  fix with five labels: **0 of 5 visible to the walk.** `_region()` now prefers
-  `_content_frame`; the whole change is 26 lines, 25 of them the comment.
-  Control both arms in one process: `development/probe_407_scene_reset.py`.
-  Plan archived at `development/plan-407-scene-reset.md`.
-  - ⚠ **The payoff BEAT the recorded figure: shared leg 215s → 56s** (this file
-    said 144s → 80s), full suite ~5 min → 66–88s, counts unchanged at 1250 / 22.
-  - ⚠ **PageStack STILL needs its `isolated` marker.** That half of the
-    prediction did NOT hold — removing it does not break PageStack, it surfaces
-    the unrelated select test below.
-  - ⚠ **The second latent bug surfaced and is filed as
-    [#449](https://github.com/israel-dryer/bootstack/issues/449), not fixed.**
-    `test_select_change_event_value_space` pins an exact event list against an
-    asynchronous change; ~1 in 10 full runs, 0 in 6 shared-leg runs, 0 in 10 solo
-    runs. **Two candidate causes are now RULED OUT by measurement:** it is not a
-    `Select` emitting at construction (0 events with `bind_all` installed before
-    the widget is built, with or without `value=`), and it is not an event leaked
-    by the reset destroying a widget (arm 2 of the probe: 0 leaked, drain or no
-    drain). ⚠ **This file must not repeat the withdrawn guess that `Select`
-    emits a `None` change at construction — it does not.** The remaining
-    hypothesis is stale bindings surviving destroy while Tk recycles path names,
-    and it is UNTESTED.
-  - ⚠ **A drain of the Tk event queue was added to `_reset_scene` and then
-    REMOVED.** Three full runs with it were green and three without were green
-    too, which decides nothing at a 1-in-10 rate; the probe that creates the
-    condition refuted the hypothesis outright. **The refuting arm is committed so
-    it is not re-proposed.** Lesson worth more than the fix: keeping a change
-    because the suite happens to be green is the trap.
-  - ⚠ **#447's flake rate went 4/50 → 2/50, which SETTLES NOTHING** — inside
-    noise at that sample size. Recorded as unchanged.
-
-- **#380 — CI test workflow.** `.github/workflows/` still has only `docs.yml` +
-  `release.yml`, so **nothing runs the suite**; every Tk 9 bug so far was found by
-  a user or by hand. Branch `ci/test-workflow` was created and deleted unused —
-  recreate it. Plan agreed: **(1)** headless `ubuntu-latest` logic job —
-  `test_tk9_scaling_baseline.py` monkeypatches `platform.system()`/
-  `tkinter.TkVersion` so it needs **no display and no Tk 9**, and would have caught
-  #375; **(2)** an `xvfb-run` Linux job for the widget suite; **(3)** fold in the
-  never-collected `tests/widgets/*.py` gap. **DEFER the macOS/Tk 9 leg** — blocked
-  on #378 (the suite cannot complete on Tk 9 at all), red from day one. Read the
-  issue before scoping: it carries measurements showing the naive "just run
-  pytest" plan fails (`-m "not gui"` selects 741 tests but yields **494 errors**
-  headless — only ~222 genuinely run without a display), and warns that
-  `Treeview.bbox()` returns `''` rather than erroring on an unmapped window, so
-  geometry assertions **vacuously pass** headless.
-
-### Open, additive items (not ship-blockers)
-
-- ~~**#396 / #397 / #398 / #399 / #400 / #401 / #405**~~ — **ALL CLOSED, SHIPPED in
-  `0.2.1`.** The event-target facts are worth keeping, because they are invisible in
-  the diff. `on()` resolves through **one seam**,
-  `PublicWidgetBase._event_target(sequence)` (`widgets/_core/base.py`); the ten
-  retargeting wrappers override only that (~5 lines each) and their duplicated
-  `on()` overrides are gone (−262 lines). **`tabs.py` never retargeted at all** —
-  the issue over-counted at eleven; its `on()` was a byte-for-byte copy of the base
-  and was simply deleted. ⚠ **`emit()` consults the seam ONLY for `<<Virtual>>`
-  sequences** — for the public names that map onto real Tk sequences
-  (`submit`/`focus`/`blur`/`click`) it fires on `_internal`, because generating one
-  at the inner entry *drives* the widget instead of notifying about it. Regression
-  coverage: `tests/widgets/public/test_event_target_seam.py`. ⚠ The `Slider` control
-  test needs **`shown_app`, not `app`** — see the unmapped-window gotcha above.
-  **The old warning that a test pairing `emit()` with `on_*()` must pick a widget
-  where the two agree is now OBSOLETE everywhere** — they cannot disagree.
-
-- **#376 — DataTable cell padding ignored on Tcl/Tk 9** (checkbox flush to the row
-  edge, columns collide). Open in `0.2.x`, **unverifiable on either box** — the
-  Windows box is Tk 8.6 and the macOS box is Tk 8.6 too. Needs a Tk 9 environment,
-  same blocker family as #378.
-
-- **#383** — follow-up sweep from #381: presentation kwargs still degrading
-  silently (`density`, `Tabs.orient`, `Slider.orient`, `Gauge.variant`) **plus**
-  args that raise but leak a **raw `TclError`/`AttributeError`**
-  (`Button.icon_position`, `Label.justify`, `Scrollbar.variant`,
-  `Expander.icon_position`, `ProgressBar.mode`). Sweep **BY ARGUMENT NAME**, not
-  by widget. Also folds in: **`Slider.value = None`** leaks a raw
-  `TypeError: float() argument must be...` (reachable from user code via
-  `form.set({'slider_key': None})`), and **`show_grid=True` is silently accepted
-  on `Row` and does nothing** — not a kwarg anywhere in `src/`, but swallowed into
-  the layout kwargs without error (the #394 reporter used it *while trying to
-  diagnose the bug* and got no feedback).
+- **#383** — presentation kwargs still degrading silently (`density`,
+  `Tabs.orient`, `Slider.orient`, `Gauge.variant`) **plus** args that raise but
+  leak a raw `TclError`/`AttributeError` (`Button.icon_position`, `Label.justify`,
+  `Scrollbar.variant`, `Expander.icon_position`, `ProgressBar.mode`). **Sweep BY
+  ARGUMENT NAME, not by widget.** Folds in `Slider.value = None` leaking a raw
+  `TypeError` (reachable via `form.set({'slider_key': None})`) and `show_grid=True`
+  silently accepted on `Row`.
+  - ⚠ **#383 gained a THIRD gap:** the two in its body are about bad **values**,
+    this one is about unknown **names** — `bs.TextField(bogus_xyz=1)` constructs
+    silently while the internal `Field(master, bogus_xyz=1)` raises `TclError`, so
+    **the public layer is the less strict of the two.** Wrappers build
+    `internal_kwargs` from named parameters only and `**kwargs` exists to feed
+    `_split_layout_kwargs`, so leftovers are never read. ⚠ **It does NOT reuse
+    `validate_choice`** (the name never reaches a validator), and the obvious home
+    — the shared split seam — needs the wrappers that legitimately forward
+    `**kwargs` counted first.
 - **#369** — the selection family disagrees on off-list values (`SelectButton`
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
-  `selection` says `None`). Wants ONE family decision, not four patches.
-- **#369 and #383 are milestoned `0.6.0 — Argument and value strictness`** — both
-  would raise where the framework currently accepts, so they cannot ride the
-  `0.2.x` patch line and needed a minor of their own. `0.6.0` was created for
-  exactly this and placed AFTER the themed minors so nothing was renumbered
-  again. #352 → `0.5.0 — Structured editing`; #328 → `0.2.x` (follows the
-  hot-reload umbrella #322).
+  `selection` says `None`). **Wants ONE family decision, not four patches.**
+- **#416** — `PathField` as a `Form` editor. ⚠ **`open_multiple` is FULLY DECIDED
+  (maintainer, 2026-08-05) and the decision lives in a COMMENT on the issue, not
+  the body, which still presents it as open.** The contract: **`open_multiple` →
+  `tuple[Path, ...]`, empty `()`; every other mode → `Path | None`, empty `None`.**
+  Two costs accepted deliberately: the return type depends on a construction
+  argument, and **`()` rather than `None` when empty is a deliberate exception to
+  the framework's `None`-when-empty convention** — the type stays stable so callers
+  iterate without a guard.
+- **#415** — filed with #416 from discussion #413. ⚠ **Measured finding worth not
+  re-deriving: 10 of the 12 public field-family widgets are `Form` editors — the
+  two that are not are `PathField` and `TimeField`** — and an unknown `editor=`
+  name **silently builds a `TextField`** (`_impl/composites/form.py:774`).
+  `DateField` being an editor while `TimeField` is not is what makes this drift
+  rather than a design boundary.
+
+### Other open items
+
+- **#412** — small and well-scoped: publish an existing internal front door so
+  composite authors get a documented bare-name path *while keeping the typo
+  guard*. Until it lands, `docs/reference/events.rst` stays **deliberately silent
+  on custom events** — that silence is the one real cost of how #409 shipped.
+  ⚠ Also folds in narrowing `resolve_event()`'s error, which is **process-wide,
+  not per-widget**: `all_known` unions `GLOBAL_EVENT_MAP` with **every**
+  `_CLASS_EVENT_MAPS` entry, so a `Button` typo is reported alongside
+  `cursor_move`/`export`. **Don't write docs claiming the error lists what *that*
+  widget knows.**
+- **#376** — DataTable cell padding ignored on Tcl/Tk 9. **Unverifiable on all
+  three boxes** (all Tk 8.6). Same blocker family as #378.
+- **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
+  API implication, low/self-inflicted impact, Win/Linux only). Agreed proportional
+  fix if revisited: a module-level open-menu registry + dismiss-all from
+  `DataTable._on_header_click`, **NOT** the risky grab.
 - **#208** — DataTable: persist selection by record id across search/sort/page.
 - **#192** — color-swatch `Select` control (decision-gated; lock shape/naming with
-  the maintainer first). A `Select`-style dropdown rendering color swatches inline,
-  complementing `ask_color()`. New widget or Select variant?
-- ~~**#222** (TextField live properties) and **#234** (SpinnerField↔NumberField
-  parity)~~ — **both CLOSED; removed from the backlog 2026-08-04.** They sat here
-  as open items long after the fact. ⚠ **Verify an issue is still open before
-  acting on a bullet in this file** —
-  `gh issue view <n> --json state --jq .state`.
-- **#207** — ContextMenu outside-dismiss vs a `'break'` target — **DEFERRED** (no
-  API implication, low/self-inflicted impact, Win/Linux only; agreed proportional
-  fix if revisited = a module-level open-menu registry + dismiss-all from
-  `DataTable._on_header_click`, NOT the risky grab). Analysis on the issue.
+  the maintainer first). New widget or Select variant?
 - **#328** — the E2E multi-file `@reloadable` reload test is the one OPEN piece,
   **DEFERRED** (the maintainer will write it). On PROVISIONAL `bootstack.dev`.
+- **#444 / #445** — both pre-existing, filed out of `0.3.1` round 3, on the patch
+  line. #444: a modal `bs.Window` never restores the grab it took, so a dialog
+  underneath it loses its modality (`_runtime/toplevel.py`). #445: `attach()` drops
+  legacy layout kwargs on a grid cell while rejecting them on a flex child.
+- **#432** — **DID NOT REPRODUCE** across two Linux runs; #407 appears to have
+  removed it. It was the stated blocker on the whole CI workstream, so **closing
+  or re-scoping it is a maintainer call that is now cheap to make.**
 - **Gallery opt-in keyboard-focus ring** (future) + deferred Gallery perf (debounce
   `<Configure>`, bounded thumbnail-PhotoImage LRU, cache `_fit_caption`). Scope to
-  keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
+  keyboard focus, **NOT hover**.
 - **`add_spacer()` → public `Spacer`** — deferred, entangled with
-  `feat/unified-toolbars` (the internal `Toolbar` is pack-based). Memory
-  `project_unified_toolbars`.
-- **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
+  `feat/unified-toolbars` (the internal `Toolbar` is pack-based).
+- **Code-review follow-ups #4–#10** — cleanup/altitude items in
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`;
   screenshot Win64 HWND hardening; group/window/date duplication; Calendar
   batch-redraw).
-- **Docs site fleshout — substantially DONE.** Remaining is only opportunistic: a
-  review pass on `installation`/`quickstart` and enrichment of any still-thin page.
-  Memory `project_docs_site_fleshout`.
+- **Docs site fleshout — substantially DONE.** Remaining is opportunistic: a review
+  pass on `installation`/`quickstart` and enrichment of any still-thin page.
+
+### API/cleanup backlog (memory-tracked)
+
+- `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
+  public layer abstracts Tk; still imported by data/i18n/mixins.
+- `project_event_naming_revisit` — past-tense event names pending rename:
+  `SideNav.on_pane_toggled`/`on_display_mode_changed`,
+  `ListView.on_selection_changed`, `Calendar.on_date_selected`.
+- `project_editfilter_public_api` — `EditFilter` DEMOTED (Tk-coupled raw text
+  indices/tags); investigate a de-Tkinter-ed CodeEditor extension API before any
+  re-promotion. `NOTE(editfilter-public-api)` in
+  `widgets/_impl/composites/textarea/filter.py`.
+- `project_window_api_hardening` — `bs.Window` leaks uncurated `**kwargs` to the
+  internal Toplevel, has no live properties (`title`/`size`/`topmost` are
+  construction-only), and never releases the modal grab. Own branch.
+- `project_enum_option_typing` — promote recurring enumerated `str` kwargs to named
+  `Literal` aliases in `widgets/types.py`. The ALIAS docstring carries the value
+  list once; widget docstrings describe meaning only. Own branch.
+- `project_show_indicator_removal` — **KEEP.** `show_indicator=False` +
+  `on_icon`/`off_icon` is exactly what makes an icon-driven custom checkbox. #144
+  closed won't-do. **Do NOT re-propose removal.**
+- Lower-priority: bare index/landing pages; localization/windowing `tasks/` how-tos;
+  screenshots pending (Tooltip/Toast, 7 Dialog pages); AppShell deferred
+  improvements (`nav_pane_width=` not wired to `SideNav(pane_width=)`, hardcoded nav
+  density/font, group active-child highlight + indentation, footer non-page
+  widgets).
 
 ---
 
 ## Release flow
 
-**⚠ Use `py -3.12 -m bumpversion`, NOT the `.venv` shim.** This file used to point
-at `.venv/Scripts/bump-my-version.exe` — that shim is part of the **stale `.venv`**
-and dies with *"Access is denied"* on its `Python314` path, like everything else in
-there. ⚠ **It DISAPPEARS — check for it before every release.** Recorded here as
-installed 2026-08-05 (v1.5.0), it was **gone by 2026-08-08** (`No module named
-bumpversion`) and had to be reinstalled with
-`py -3.12 -m pip install --upgrade bump-my-version` (now **v1.5.1**). That is twice
-this environment has lost a release-critical tool, so verify rather than assume.
-⚠ **The import name is
-`bumpversion`, not `bump_my_version`** — probing the wrong one reports "no module"
-on an interpreter that has it perfectly well, which cost a wrong conclusion during
-the `0.2.1` release.
-
 `py -3.12 -m bumpversion bump patch` → push `main` + the `v*` tag → `release.yml`
 (PyPI + GitHub Release) → `docs.yml` deploys. `release.yml` fires on `v*` tags
-only. There is **no `development` branch** (CONTRIBUTING.md + the localization
-workflow target `main`).
+only. There is **no `development` branch**.
+
+⚠ **Use `py -3.12 -m bumpversion`, NOT the `.venv` shim** (stale, dies with
+"Access is denied"). ⚠ **The import name is `bumpversion`, not
+`bump_my_version`** — probing the wrong one reports "no module" on an interpreter
+that has it. ⚠ **IT DISAPPEARS — check before every release.** Recorded installed
+twice and gone twice.
+
+**Order of operations, and the trap:** ⚠ `bump-my-version bump patch
+--allow-dirty` commits **ONLY `pyproject.toml`** — it will NOT sweep the CHANGELOG
+rename in, which ships a release whose notes still say `## [Unreleased]` and
+breaks `release.yml`'s section extraction. **Promote `## [Unreleased]` to the
+version in its OWN commit BEFORE running `bump-my-version`.**
+
+⚠ **`docs.yml` is CHAINED to `release.yml` SUCCEEDING**, not to the tag or the
+push — it triggers on `workflow_run` of "Release" `completed` and is gated on
+`conclusion == 'success'`. **Any release that does not go through a green
+`release.yml` run leaves the docs site stale, silently** (the run shows as
+`completed/skipped`, which reads like a no-op). Kick it with
+**`gh workflow run docs.yml --ref main`**.
 
 ⚠ **POST-RELEASE: `gh issue close --comment "..."` SILENTLY DROPS THE COMMENT when
 the issue is already closed** — and a PR body containing `Closes #N` closes it at
-merge, which is the normal case. `gh` warns only about the close and says nothing
-about the comment, so the "it's live" note is lost without a visible error. Post it
-with **`gh issue comment N --body ...`** instead, and **verify it landed** with
-`gh issue view N --json comments`. Bit `0.2.3`.
+merge, which is the normal case. `gh` warns only about the close. Post with
+**`gh issue comment N --body ...`** and **verify it landed** with
+`gh issue view N --json comments`.
 
-⚠ **`docs.yml` is CHAINED to `release.yml` SUCCEEDING**, not to the tag or the push —
-it triggers on `workflow_run` of "Release" `completed` and its `build` job is gated on
-`github.event.workflow_run.conclusion == 'success'`. So **any release that does not go
-through a green `release.yml` run leaves the docs site stale, silently** (the run shows
-as `completed/skipped`, which reads like a no-op). Kick it with
-**`gh workflow run docs.yml --ref main`**.
+### Post-release verification — every step VERIFIED, never assumed
 
-⚠ **When Actions is down, publish by hand** — full recipe under START HERE
-(`0.2.2` shipped that way on 2026-08-06). Short version: build from a
-`git worktree` of the tag, `py -3.12 -m twine upload --config-file
-D:/Development/bootstack/.pypirc dist/*`, then `gh release create`, then the docs
-command above. **CI itself has no token** (OIDC trusted publishing), so the
-gitignored repo-root `.pypirc` is the only local credential.
+- **PyPI** — prove with a real `pip download --no-deps bootstack==X.Y.Z`. ⚠ **The
+  `/pypi/bootstack/json` summary endpoint is CDN-cached and has lagged behind a
+  successful upload** — use `/pypi/bootstack/<version>/json` or a real download,
+  and never read a stale summary as a failed upload and re-upload.
+- **The fix, INSIDE the published wheel** — checking the artifact, not the source
+  tree, is what proves a packaging-shaped bug is fixed.
+- ⚠ **`import bootstack` with `idlelib` BLOCKED, every release.** That is #430's
+  defect. Block the module with a `meta_path` finder, **assert the block works as a
+  control**, then import. ⚠ **Grep is NOT enough and gives a FALSE POSITIVE** —
+  seven `idlelib` mentions survive in the wheel and all are docstring
+  attributions. **Do not re-prove #430 with grep, in either direction.**
+- **Provenance asserted**, so the test cannot silently import the editable tree.
+- **`NOTICE` at `dist-info/licenses/`** — it reaches users via setuptools'
+  automatic license-file globbing, **NOT `MANIFEST.in`** (which names only
+  `LICENSE`).
+- **GitHub Release live with both assets; `bootstack.org` returning 200.**
 
-**CHANGELOG convention:** a fix commit writes `## [Unreleased]`; the promotion
-commit renames it AND adds the `[X]:` link definition. **`## [Unreleased]` is absent
-on `main`** — `0.2.3` consumed it, so the top section is
-`## [0.2.3] — Import without IDLE` (1 `### Fixed` bullet) with its link definition at
-the bottom. The next fix commit re-creates it. ⚠ **Verify the extraction against the
-REAL file before tagging, not a simulation** — `release_notes.extract('X.Y.Z', ...)`
-returns `(title, body)`; confirm the title carries the descriptive suffix, the body
-starts at `### Fixed`, and no bottom link definitions leaked in.
+### CHANGELOG convention
 
-**⚠ An entry earns its place by being REACHABLE.** `0.2.1` deliberately omitted
-#397 and #401 because no public API could reach either defect; `0.2.0` did the same
-for #387. A CHANGELOG is read by someone asking "was I affected?", so an entry for
-an unreachable defect is a false positive. Check `__all__` and the public event
-registry before writing the bullet — and say so in the commit message, since that
-is where the omitted work stays documented.
+A fix commit writes `## [Unreleased]`; the promotion commit renames it AND adds
+the `[X]:` link definition.
 
-**⚠ Verify the rendered release notes BEFORE tagging** — the extraction is scriptable:
-`py -3.12 -c "import sys; sys.path.insert(0,'.github/scripts'); from release_notes import extract; print(extract('X.Y.Z', open('CHANGELOG.md',encoding='utf-8').read())[0])"`.
-The **title** comes from the descriptive suffix after `## [X.Y.Z] —`, so a section
-promoted without one ships a release titled bare `X.Y.Z`. Confirm the body starts
-at `### Fixed` and that no bottom link definitions leaked in.
+⚠ **An entry earns its place by being REACHABLE.** A CHANGELOG is read by someone
+asking "was I affected?", so an entry for an unreachable defect is a false
+positive. `0.2.1` deliberately omitted #397/#401 and `0.2.0` omitted #387 on those
+grounds; #380, #407, #433 and #434 shipped with no entry because CI and test
+harness are not reachable by any user. **Do not "fix" those absences.** Check
+`__all__` and the public event registry before writing the bullet — **and say so in
+the commit message, since that is where the omitted work stays documented.**
 
-**⚠ Write CHANGELOG entries ONE PARAGRAPH PER LINE — do not hard-wrap them.**
-`.github/scripts/release_notes.py` lifts a version's section verbatim into the
-**GitHub Release body**, which renders a soft line break as a visible one, so
-80-column wrapping produced ragged notes that could not reflow to the reader's
-window. Unwrapped renders identically in the repo file view and in the Sphinx docs
-(both treat a soft break as a space) and correctly on the release page. The 0.2.0
-section is unwrapped; **older sections are left wrapped — do not reformat shipped
-history.** Same rule for PR bodies, issue bodies, and review comments. Memory
-`feedback_no_hard_wrap_in_responses`.
+⚠ **A CHANGELOG claim about PRIOR behavior must be checked against the OLD code,
+not against the fix.** The #456 bullet said a misspelled value *"previously turned
+both menus off silently"*; it did the **opposite**. The sentence was written from
+the fix's point of view and read as authoritative. `git show main:<file>` settles
+it in one command.
 
-**Read the whole `## [Unreleased]` section before promoting it.** 0.2.0's had
+⚠ **Read the entry as its AUDIENCE reads it before promoting the section.**
+Verifying the *extraction* is not reviewing the *notes*. **This project has
+reworded two CHANGELOGs AFTER tagging** (`0.3.1`, `0.3.2`), each forcing a
+`gh release edit` on a published body.
+
+⚠ **Read the whole `## [Unreleased]` section before promoting it.** `0.2.0`'s had
 accreted across five fixes and nobody had read it end to end: **three entries were
-filed under `Changed` but were plain bug fixes** (#388 picker, #387 clear, #387
-`Form.set`), which handed a reader scanning for upgrade risk three false positives
-before the one that mattered. Section order also contradicted the file's own
-declared Keep a Changelog format (`Fixed/Changed/Added` instead of
-`Added/Changed/Fixed`). Both fixed in `199b4081`.
+filed under `Changed` but were plain bug fixes**, handing a reader scanning for
+upgrade risk three false positives before the one that mattered.
 
-**⚠ Release-flow gotcha:** `bump-my-version bump patch --allow-dirty` commits
-**ONLY `pyproject.toml`** — it will NOT sweep the CHANGELOG rename into the
-`Release X` commit, which ships a release whose notes still say `## [Unreleased]`
-and breaks `release.yml`'s section extraction. **Promote `## [Unreleased]` to the
-version in its OWN commit BEFORE running `bump-my-version`.** Confirmed working on
-0.1.8: `docs(changelog): promote Unreleased to 0.1.8` (`7c136b20`) ran *before*
-`Release 0.1.8` (`b2f37f0f`, which again touched only `pyproject.toml`).
-`release.yml` extracts ONLY the `## [x]` section, so bottom link-defs are excluded
-from the GitHub Release body.
+⚠ **Verify the extraction against the REAL file before tagging, not a
+simulation.** The **title** comes from the descriptive suffix after
+`## [X.Y.Z] —`, so a section promoted without one ships a release titled bare
+`X.Y.Z`. Confirm the body starts at `### Fixed` and no bottom link definitions
+leaked in:
+`py -3.12 -c "import sys; sys.path.insert(0,'.github/scripts'); from release_notes import extract; print(extract('X.Y.Z', open('CHANGELOG.md',encoding='utf-8').read())[0])"`
+
+⚠ **Write CHANGELOG entries ONE PARAGRAPH PER LINE — do not hard-wrap.**
+`release_notes.py` lifts the section verbatim into the **GitHub Release body**,
+which renders a soft line break as a visible one. Unwrapped renders identically in
+the repo file view and in Sphinx. **Older sections are left wrapped — do not
+reformat shipped history.** Same rule for PR bodies, issue bodies, and review
+comments.
+
+### ⚠ FALLBACK: publishing BY HAND when Actions is down
+
+Used for `0.2.2` during a major Actions outage; it worked cleanly and will be
+needed again. ⚠ **Under an outage the run state itself is unreliable** (`gh run
+cancel` said "already completed" while `gh run view` said `queued`) — **check
+PyPI, not the run**, to decide whether anything was published.
+
+1. `git worktree add <scratchpad>/rel-X.Y.Z vX.Y.Z` — build from a **pristine
+   checkout of the tag**, never the working tree (this repo has ~60 untracked
+   files in `development/`).
+2. `py -3.12 -m pip install --upgrade build twine`
+3. `py -3.12 -m build`, then **`py -3.12 -m twine check dist/*`**
+4. `py -3.12 -m twine upload --config-file D:/Development/bootstack/.pypirc --non-interactive dist/*`
+5. `gh release create vX.Y.Z dist/* --title "<from release_notes.py>" --notes-file RELEASE_NOTES.md --generate-notes`
+6. `gh workflow run docs.yml --ref main` — **a manual publish SKIPS THE DOCS
+   DEPLOY**, silently.
+7. `git worktree remove <path> --force`
+
+⚠ **`twine.exe` is NOT on PATH** — always `py -3.12 -m twine`. ⚠ **The token lives
+at `D:\Development\bootstack\.pypirc`** (repo root, **not** `~/.pypirc`, which does
+not exist), gitignored and untracked. Because it is not in the home directory,
+**twine needs `--config-file` explicitly.** ⚠ **`release.yml` publishes via OIDC
+trusted publishing, so there is NO token in CI** — the local `.pypirc` is the only
+credential path for a manual publish, and CI's path cannot be reproduced locally.
 
 ---
 
 ## Working agreements
 
 **Hold commits until the user tests; per-commit approval.** Never commit feature
-work to `main` — create a dedicated `feat/*` branch first. A fix pushed to a branch
-AFTER its PR merged is **stranded** — verify it landed in `main`.
+work to `main` — create a dedicated `feat/*`/`fix/*` branch first. A fix pushed to
+a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
 
 **Standing principles** (apply in every review):
 
-- **Live properties only for legitimate runtime needs**
-  (`feedback_live_properties_runtime_need`) — e.g. `surface` is **build-time, not
-  live**.
+- **Live properties only for legitimate runtime needs** — e.g. `surface` is
+  **build-time, not live**.
 - **Prefer Tk native/virtual-event bindings**; don't undo a convention without
-  reason (`feedback_prefer_native_bindings_dont_undo_conventions`).
-- **Describe the clean public surface in docs — no implementation/toolkit detail**
-  (`feedback_no_toolkit_internals_in_docs`).
+  reason.
+- **Describe the clean public surface in docs — no implementation/toolkit detail.**
 - **Adversarially verify reviewer and agent claims** — agents over-flag. The
   2026-06-22 trust audit disproved 2 of the "bugs" it was handed; the Topic-guide
-  review agents over-flagged 10 of 12 pages.
-- **Pause and ask when a fix outgrows its issue**
-  (`feedback_pause_and_ask_when_stuck`) — #355 burned hours heading toward a
-  `Select` value-model rewrite before the maintainer pointed at the ~15-line fix.
+  review agents over-flagged 10 of 12 pages. ⚠ **But it cuts both ways: a clean
+  review is not proof.** The #417 review called the tests "better than the repo
+  average" and **two of them were broken** — one vacuous, one flaky — both found
+  afterwards by the control the committing session should have run.
+- **Pause and ask when a fix outgrows its issue** — #355 burned hours heading
+  toward a `Select` value-model rewrite before the maintainer pointed at the
+  ~15-line fix.
 - **Test PUBLIC paths, not internal side-hacks.**
+- **The framework absorbs the problem, not the developer.** A fix that hands the
+  application author a new problem, or makes the end-user outcome worse than the
+  bug, is not a fix.
+
+### ⚠ Branch and worktree hygiene
+
+- **DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** The review reads files on disk,
+  not only `git diff`, so it reviews a moving target. If follow-up cannot wait, use
+  a **`git worktree`** or another branch.
+- ⚠ **A worktree runs against `main`'s source unless you set `PYTHONPATH`** — the
+  editable install points at `D:\Development\bootstack\src`.
+- ⚠ **`PYTHONPATH` ALONE IS HALF THE FIX.** Setting it while passing **test paths
+  relative to the primary checkout** runs the NEW tests against the OLD source
+  (measured: 9–10 failures on every one of eight runs, where the honest answer was
+  1 in 8). **Pass the worktree's ABSOLUTE test paths too**, and prove which tree
+  you loaded:
+  `PYTHONPATH=$W/src py -3.12 -c "import bootstack,os;print(os.path.dirname(bootstack.__file__))"`.
+  **The failure mode is friendly here only by luck** — skew that breaks quietly
+  reads as a real result.
+- ⚠ **CHECK `git rev-parse` ON BOTH BRANCHES BEFORE READING ANY FILE.** Two
+  branches were once at the *identical* commit, so a branch name did not tell you
+  which code you were looking at. Review committed blobs (`git show <sha>:<path>`).
+- ⚠ **RUN `git diff main...HEAD -- CLAUDE.md` BEFORE MERGING ANY BRANCH.** It must
+  be empty. A branch once folded a 252-line CLAUDE.md rewrite into a fix commit,
+  descending from a pre-cluster handoff — merging it would have silently reverted
+  three `docs(claude):` commits. **Handoff state lives on `main` only.**
+- ⚠ **NON-ANCESTOR ≠ UNMERGED.** Squash-merged branches are not ancestors of
+  `main`, and a handoff once nearly read that as live work. Verify with two
+  commands: `git merge-base --is-ancestor origin/<branch> origin/main`, then
+  `gh pr list --head <branch> --state all --json number,state,mergedAt` — **a
+  MERGED PR is what makes a non-ancestor safe to delete. Record the head SHAs
+  before deleting.** ⚠ Once a remote branch is gone the ancestry check fails with
+  *"Not a valid object name"* rather than reporting non-ancestry — **check the
+  recorded head SHA against `origin/main` instead.**
+- **Merge commits, not squashes, when the one-commit-per-issue granularity is the
+  deliverable** — the standing call for #410/#423/#424/#442/#448.
 
 ### Techniques that have repeatedly beaten static reading
 
 - **Run an empirical probe instead of reading tangled code.** Decisive on the
   icon-DPI pipeline, the boolean-control ttk state rules, the menu window-move
-  dismiss, and the #394 field alignment (FlexFrame / GridFrame / raw pack are too
-  tangled to trust by eye). **Rebuild the probe rather than reading**, if one of
-  these areas comes up again.
+  dismiss, and the #394 field alignment. **Rebuild the probe rather than reading**
+  if one of these areas comes up again.
 - **Tests must fail for the RIGHT reason.** A pre-fix `AttributeError` proves
   nothing — it only shows the new method doesn't exist yet. Stub the collaborator
-  (e.g. a tiny fake `DateDialog` with `on_result`/`show`/`result`) so the failure
-  is *behavioral*. Tests that only assert "construction doesn't raise" are what let
-  #358 ship twice. Memory `feedback_tests_must_fail_for_the_right_reason`.
-- **Pair any alignment/geometry assertion with a precondition** proving the setup
-  really took effect, or it can pass vacuously. **Measure within one process** —
-  `winfo_rooty()` is NOT comparable across two runs (different window positions).
-  Memory `reference_geometry_probe_same_process`.
-- **⚠ `event_generate` on a virtual event is DROPPED for some widgets while the
-  window is unmapped — use the `shown_app` fixture, not `app`.** The `app`
-  fixture's root is **withdrawn** (`wm_state() == 'withdrawn'`, everything
-  `winfo_ismapped() == 0`). A `bs.Button` still dispatches `<<Click>>` there, but a
-  composite like `bs.Slider` receives **nothing** — not even a **raw Tcl** binding
-  bypassing Python entirely, which is what proves it is Tk dropping the event and
-  not a bootstack wiring problem. So a payload test can look like a broken fix
-  when the fix is fine. `shown_app` maps the window and it works
-  (`winfo_ismapped() == 1`). **Pre-existing** — it measures identically with any
-  event-system change stashed, so confirm that with `git stash` before blaming
-  your own diff. Cost real time during #392. Memory
-  `reference_virtual_event_needs_mapped_window`.
-- **⚠ `shown_app` is NOT enough — a widget packed into the shared root may still be
-  UNMAPPED.** The `shown_app` root is mapped, but `pack()`ing a raw frame into it
-  competes with the App's own geometry management, and **once earlier tests have
-  filled the root the frame does not get mapped at all** — so synthesized key
-  events are dropped exactly as above. The tell is a test that **passes alone and
-  fails in the suite** (#405 cost a full suite run here). Worse, it fails as a
-  *false negative about the thing under test* — the #405 control read "the trap is
-  gone" when the trap was fine and the window was not. **Build a real event target
-  in its own `Toplevel`** (`geometry(...)`, `deiconify()`, `update()`,
-  `focus_force()`), and **assert `winfo_ismapped()` as a precondition** so a repeat
-  cannot be silent. Same family as the "pair a geometry assertion with a
-  precondition" rule.
-- **⚠ Never `warnings.warn` from inside a Tk dispatch or a teardown path — use
-  `debug_log`.** `_runtime/utility.py` has **`debug_log(message)`** (added by #399)
-  beside `debug_log_exception`; both honor `BOOTSTACK_DEBUG` and **never raise**.
-  A `warnings.warn(..., RuntimeWarning)` measurably escapes `Subscription.cancel()`
-  and its `__exit__` under `-W error`, turning a diagnostic into a failure on two
-  paths documented as safe to call on an already-dead handler. A diagnostic that
-  can fail the program it is diagnosing is not one. Use `debug_log` when there is
-  no exception to log; `debug_log_exception` when there is.
+  so the failure is *behavioral*. Tests that only assert "construction doesn't
+  raise" are what let #358 ship twice.
 - **Run the BASELINE before the fix**, so a before/after transition is *observed*
-  rather than assumed. That is what turned "the branch fixes only 2 of 6" from a
-  suspicion into a fact. ⚠ **On a branch, "baseline" means CHECK OUT `main`** — a
+  rather than assumed. ⚠ **On a branch, "baseline" means CHECK OUT `main`** — a
   #417 probe read zero on both arms until it turned out to be running against
-  `main` the whole time. Print the branch, or `git checkout` it deliberately.
-- **⚠ To prove a fix does not over-reject, ENUMERATE THE PRODUCERS, don't reason
-  about the consumer.** #417's guard tightened `if not iid` to
-  `if not iid or iid not in self._row_map`. Arguing from the handler could not
-  settle whether some legitimate row is missing from `_row_map`; grepping all four
-  `self._tree.insert` sites settled it in one command — three write
-  `_row_map[iid] = rec` on the very next line, the fourth is the group parent. **A
-  guard's safety is a property of who fills the collection, not of who reads it.**
-- **⚠ AND STATE THE BOUNDARY WHEN YOU CLAIM COMPLETENESS — the scope word is
-  where these go wrong.** Round 1 of the `0.3.1` review wrote *"no other
-  `grab_set` exists in the package"*; **the package meant `dialogs/`**, and
-  `_runtime/toplevel.py` has the only other call site — which is #444, found two
-  rounds later. Round 2 of the same review had already been bitten the same way
-  (four containers classified by the mode they happened to be constructed in).
-  **A completeness claim whose scope was never written down reads as global and
-  is checked as local.** Write the command you ran, not the conclusion:
-  `grep -rn "grab_set" src/bootstack/` is the claim.
-- **⚠ A stale METRIC in this file becomes a phantom regression signal.** A recorded
-  `919 passed` went unrevised while `main` grew to 976 collected, so the next
-  session read the difference as an unexplained 46-test gap in a branch that added
-  2. `--collect-only -q` on both refs settled it in seconds. **Record the date and
-  commit beside any count, or don't record it.**
-- **⚠ `passed + skipped` CAN LEGITIMATELY EXCEED the selected count — don't
-  "fix" it.** Measured 2026-08-11 on the shared leg: ceiling `1024/1099 tests
-  collected (75 deselected)`, result `1011 passed, 14 skipped` — a sum of 1025,
-  one OVER, which looks exactly like the impossible totals this file has carried
-  five times. It is not: **a module-level skip happens at COLLECTION time** and
-  is reported in the summary while never being one of the selected items
-  (`collected 1099 items / 75 deselected / 1 skipped / 1024 selected`).
-  `1011 + 13 runtime skips = 1024` exactly. **Read the collection line before
-  concluding a total is impossible** — and note the ceiling check is still worth
-  running, it just needs this one adjustment to be applied honestly.
+  `main` the whole time. **Print the branch, or `git checkout` it deliberately.**
 - **A control experiment separates causation from correlation.** For #392 it was
   not enough that cancelling `sub_a` silenced `sub_b`; stripping the orphaned
-  binding line by hand and watching `sub_b` come back is what proved the cause. Do
-  this before filing any "X breaks Y" claim.
+  binding by hand and watching `sub_b` come back is what proved the cause.
+- ⚠ **A control that does not reach the path under test is indistinguishable from
+  a fix that works.** Round 4's first control left the test passing because the
+  give-up path was never reached; **forcing the condition itself** is what
+  exercised it.
+- ⚠ **A probe that finds nothing must be proven able to find something.** A
+  completeness scan reported **zero hits** because `ast.parse` choked on a UTF-8
+  BOM and a bare `except Exception: continue` swallowed it, silently skipping every
+  file. Reading `utf-8-sig` and re-running against the pre-fix commit as a control
+  reproduced the two known handlers, which is the only thing that made the post-fix
+  zero mean anything. **Always run the control.**
+- ⚠ **A PROBE MUST BE RUNNABLE ON EVERY BOX IT IS MEANT TO INFORM.** #430's probe
+  called `sys.exit(1)` the moment `idlelib` imported, so on Windows and macOS it
+  printed arm 1 and stopped — even though arms 2–4 did not depend on `idlelib` at
+  all. It was runnable only on the one box that could not finish the suite. **SKIP
+  and continue.** This is a recurring failure mode, not a one-off.
+- ⚠ **A GREEN SUITE IS NOT EVIDENCE OF STABILITY, and this project keeps learning
+  it the expensive way.** `0.3.1` reported exit 0 across all legs and had **two**
+  flakes at 1-in-8 and 1-in-12. **At those rates a single green run is the EXPECTED
+  outcome of a broken branch.** Two habits follow: **never re-run to disprove a
+  flake** — build a control that *creates* the condition and reports a rate — and
+  **run the narrow combination as well as the full leg**, since ordering in a
+  shared leg masks what a subset exposes.
+- ⚠ **VERIFY AT THE COMMIT YOU ARE SHIPPING, not at the last one you happened to
+  measure.** `0.3.0` round 4 verified one commit before a rewrite of the very tests
+  it was verifying, and a flake entered `main`'s queue unseen.
+- ⚠ **Re-run a recorded MEASUREMENT after any commit that changes what it
+  measures.** A stale measurement block is worse than a stale table, because it
+  reads as proof. Cause, three times over: a commit recording a decision by
+  **APPENDING** without sweeping what it contradicted.
+- ⚠ **STATE THE BOUNDARY WHEN YOU CLAIM COMPLETENESS — the scope word is where
+  these go wrong.** *"No other `grab_set` exists in the package"* meant `dialogs/`,
+  and the other call site was #444, found two rounds later. *"Not yet filed"* was
+  true of the session and not of the tracker, and nearly produced a duplicate of a
+  4-day-old issue. **A completeness claim whose scope was never written down reads
+  as global and is checked as local. Write the COMMAND you ran, not the
+  conclusion:** `grep -rn "grab_set" src/bootstack/` is the claim.
+- ⚠ **To prove a fix does not over-reject, ENUMERATE THE PRODUCERS, don't reason
+  about the consumer.** A guard's safety is a property of **who fills the
+  collection**, not of who reads it. Grepping all four `self._tree.insert` sites
+  settled in one command what arguing from the handler could not.
+- **Before fixing a silent no-op, find what is LEANING on it.** `Form.set()` applied
+  `None` to every absent field and only worked because the write was discarded —
+  repairing the sentinel alone would have turned every partial `form.set()` into a
+  destructive overwrite. **A no-op that has shipped for a while is load-bearing
+  somewhere.**
+- **When a piece of state becomes DERIVED, every existing writer becomes a silent
+  no-op — and the writers outside the file are invisible.**
+  `grep -rn 'state="readonly"' src/` found all seven. ⚠ **And a fix to a property is
+  not a fix to the setting** — round 1 fixed the setter and MISSED THE CONSTRUCTOR
+  doing the identical write. **Enumerate the ways a value can arrive (constructor,
+  setter, `configure`) and pin each.**
 - **Bisect order-dependent failures; do not theorize.** A scripted prefix-bisect
   found the culprit file in 6 runs; a geometry probe turned "state pollution" into
   "reqheight 1242 > window 828, so the geometry manager unmapped it".
-- **⚠ A GREEN SUITE IS NOT EVIDENCE OF STABILITY, and this project keeps learning
-  it the expensive way.** `0.3.0`'s round 4 verified at the wrong commit and put a
-  flake into `main`'s queue; `0.3.1` reported **exit 0, all 20 legs, 1208 passed**
-  and had **two** flakes (#446) at 1-in-8 and 1-in-12. **At those rates a single
-  green run is the EXPECTED outcome of a broken branch**, so it carries almost no
-  information. Two habits follow. **Never re-run to disprove a flake** — that is
-  how both of these hid; build the #437-style control that *creates* the condition
-  and reports a rate. And **run the narrow combination as well as the full leg**:
-  both flakes appear in five dialog files sharing one process and neither file
-  fails alone, so the shared leg's ordering masks what a subset exposes.
-- **Measure the surface before scoping a sweep.** An AST pass over public
-  `__init__` signatures + a construct-with-a-bogus-value probe turned "audit the
-  siblings" from guesswork into a table (215 kwargs, 17/24 silently accepting) —
-  which is what justified drawing #381's line at behavior modes.
+- **Measure the surface before scoping a sweep.** An AST pass over public `__init__`
+  signatures plus a construct-with-a-bogus-value probe turned "audit the siblings"
+  into a table (215 kwargs, 17/24 silently accepting).
 - **A platform-specific backend is often constructible off-platform.**
   `_NativeContextMenu` (macOS) is a `tk.Menu` wrapper and instantiates fine on
-  Windows, so macOS-only code got real coverage — and that caught a
-  `TclError`-on-separator bug. Ask "can I build the other platform's object
-  directly?" before accepting "unverifiable from this box".
-- **Before fixing a silent no-op, find what is LEANING on it.** `Form.set()`
-  applied `None` to every absent field and only worked because the write was
-  discarded — repairing the sentinel alone would have turned every partial
-  `form.set()` into a destructive overwrite. A no-op that has shipped for a while
-  is load-bearing somewhere.
-- **Prefer re-entering an existing routine over re-emitting an event by hand.**
-  The #388 fix calls the entry's own `_check_if_changed()` rather than building a
-  `ChangeEvent`, getting the `_prev_changed_value` bookkeeping for free.
-- **⚠ Spying on an instance attribute is USELESS if the bound method was already
-  captured.** `self.on_destroy(self._cleanup_x)` captures at construction, so
-  `obj._cleanup_x = spy` set afterward never fires and reads as "cleanup never
-  ran". **Patch the CLASS attribute before constructing**, or assert on the
-  observable side effect.
-- **⚠ Some failures are INVISIBLE TO PYTHON — read the interpreter's
-  background-error channel.** A binding or `after` script that references a deleted
-  Tcl command raises nothing Python can see; the suite stays green and the symptom
-  is "handlers mysteriously stopped running". Install a collector
-  (`root.tk.createcommand('bgerror', collector)`, and `deletecommand` it in a
-  `finally` so the shared root is left clean) and assert the list is empty. This is
-  what #392 was, and it is what caught a scheduling defect in #392's own fix. When a
-  bug has no public observable, this channel IS the observable — reach for it before
-  concluding "cannot be tested".
-- **⚠ Defer widget cleanup on the ROOT, never on the widget.** `widget.after_idle(cb)`
-  registers `cb` as a command owned by that widget, so destroying the widget deletes
-  `cb` while the timer is still pending and Tcl fires an orphan. Use
-  `widget._root().after_idle(...)`: the root outlives every widget, and when the root
-  goes the pending callback goes with it. Guard the callback against both `TclError`
-  **and `AttributeError`** — `destroy()` sets `_tclCommands` to `None`, which
-  `deletecommand` then cannot update. Cost a real defect in the #392 follow-up.
-- **⚠ Tkinter binding names are recycled — never let a deferred cleanup hold one.**
-  `Misc._register` names a command `repr(id(bound_method)) + func.__name__`, and
-  that bound method exists only for the registration, so releasing the command
-  frees the address for immediate reuse: **498/499** consecutive bind/cancel/bind
-  cycles returned the *identical* name. Anything that postpones a
-  `deletecommand` can therefore delete a *different, live* binding. If you defer
-  cleanup keyed on a tkinter callback name, make the name unique first (a serial
-  in `func.__name__` is enough and keeps stock's bookkeeping). Cost a critical
-  defect in #392's own fix. Memory `reference_tkinter_funcid_recycling`.
-- **⚠ When a symptom is allocator- or timing-dependent, assert the INVARIANT, not
-  the symptom.** The above fails only when the allocator happens to hand the
-  address back, so behavioral tests passed on a broken build — 1 of 3 caught it
-  on the first pre-fix run. A structural test (50 cancel/rebind cycles → 50
-  distinct ids) fails every time. Worth breaking "test public paths" for; say why
-  in the test.
-- **⚠ A bulk `pathlib` rewrite flips CRLF→LF** (repo is `core.autocrlf=true`) —
-  same class as the `sed -i` trap. Prefer the Edit tool; if scripting, write bytes.
-  Memory `reference_autocrlf_sed_gotcha`. ⚠ **AND `git diff` CANNOT SEE IT.** Git
-  normalizes on read, so a whole-file flip still shows the true 6-line diffstat —
-  the ONLY signal is the *"LF will be replaced by CRLF the next time Git touches
-  it"* **warning on stderr**, which no test run and no docs build will ever
-  surface. `file <path>` reports the working-tree truth. Bit a session on
-  2026-08-11 that had this very bullet in context.
+  Windows — which caught a `TclError`-on-separator bug. **Ask "can I build the other
+  platform's object directly?" before accepting "unverifiable from this box".**
+- **Prefer re-entering an existing routine over re-emitting an event by hand.** The
+  #388 fix calls the entry's own `_check_if_changed()` rather than building a
+  `ChangeEvent`, getting the bookkeeping for free.
+- **A docstring outlives its code, and the expensive half is not the obvious one.**
+  ⚠ **The toolkit leak looks wrong to any reader; the stale behavior looks
+  authoritative.** Check both when a fix changes what an option means, and verify in
+  the BUILT html:
+  `grep -rlE "cget|instate|5-tuple|textvariable" docs/_build/html --include=*.html`.
+- ⚠ **A warning meant for whoever EDITS a line belongs in a `#` comment, not a
+  docstring** — the docstring is for whoever reads the docs.
 
----
+### Measurement traps
 
-## Recently shipped — pointers only
+- **Pair any alignment/geometry assertion with a precondition** proving the setup
+  really took effect, or it can pass vacuously. **Measure within one process** —
+  `winfo_rooty()` is NOT comparable across two runs.
+- ⚠ **Compare captures only within ONE `bs.App` INSTANCE.** The FIRST app in a
+  process renders its content white; every later one in the same process falls back
+  to default grey, so two captures from different instances differ in ~99% of
+  pixels for reasons unrelated to what is being measured — **and a noise control
+  built from two same-population shots agreed to 14 px, so it looked sound.** That
+  produced a confident WRONG conclusion.
+- ⚠ **Build the noise floor across the SAME kind of change you are measuring.** A
+  floor built from two static back-to-back shots was far too tight for a comparison
+  that restacks a window; it was measuring text antialiasing.
+- ⚠ **Measure DEPTH, not call count**, to separate re-entrancy from "it ran twice".
+- ⚠ **A SYNTHESIZED CLICK CANNOT TEST A POINTER-ROUTED GUARD.** `tk busy` intercepts
+  by putting a window over the target, so it only catches what the window system
+  routed by pointer position; `event_generate` aimed at a widget delivers straight
+  to that widget's bindings. **Some questions need a human and the probe should say
+  so** rather than pretending otherwise.
+- ⚠ **A 1-in-N flake cannot be verified against by re-running.** Build the control
+  that **CREATES** the condition and reports a rate. `probe_437_focus_flake.py` is
+  the pattern: arm 1 is the mechanism, arm 2 the quiet-process control.
 
-Full detail (root causes, decisions, gotchas) is in
-**`docs/_dev/handoff-archive.md`**, indexed by issue/PR number.
+### Tk and tkinter traps
 
-| Release | Contents |
-|---|---|
-| **0.3.2** | SHIPPED 2026-08-13 (PyPI + tag `v0.3.2`), titled *Read-only select fields*. **`release.yml` ran clean**, docs chained off it. One user-facing fix on the patch line, no new public surface. **#453** (external report, `bLynnb2762`) — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list and changed the value, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty as the widget's own "no free typing" flag and was recomputed unconditionally; it is **derived, never storage** now, and `TimeField` is fixed with it, from the constructor and the property both. ⚠ #407 also landed since `v0.3.1` and deliberately carries NO entry — test-harness only. ⚠ The CHANGELOG was reworded AFTER the tag, so `v0.3.2` and `main` differ by design and the Release body was edited to match; the tag was NOT moved |
-| **0.3.1** | SHIPPED 2026-08-12 (PyPI + tag `v0.3.1`), titled *Dialog keyboard and modality*. **`release.yml` ran clean**, docs chained off it. Four fixes, no new public surface — the mirror-image call to `0.3.0`: a fix needs a minor only if it ADDS surface, so these rode the patch line rather than being held. **#441** Enter in a dialog's multi-line field inserted its newline and the dialog then closed on top of it; Enter is now text where it means text and a command everywhere else, keypad key included · **#440** a nested modal took the grab and released it entirely instead of handing it back, leaving the outer dialog modal in appearance only while you could drive the app underneath it · **#439** the default button's `focus_set()` ran while the window was still hidden, where Tk silently ignores it, so dialogs opened with nothing focused and no Tab origin · **#426** the layout migration error recommended `align_self=`/`justify_self=`, renamed before release and never shipped, so following it produced a second error naming an option you never wrote. ⚠ The CHANGELOG wording was corrected AFTER the tag, so `v0.3.1` and `main` differ by design and the GitHub Release body was edited to match — the tag was NOT moved. ⚠ Four review rounds ran and round 4 should not have; that is what produced `REVIEW-PROTOCOL.md`'s Stopping rules |
-| **0.3.0** | SHIPPED 2026-08-11 (PyPI + tag `v0.3.0`), titled *Screen capture and dialog results*. **`release.yml` ran clean**, docs chained off it. **A minor carrying two additions and SIX fixes** — the release that proved the "minors are for additions" reading of this file wrong. **#427** `widget.capture(path)` writes a widget, window or app to `.png`/`.jpg`/`.pdf` (PR #443, from an external user's discussion #425) · **#429** a click during `settle()` re-entered the handler: `settle()` still dispatches, and holds `tk busy` — the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS · **#428** `FormDialog.result` returned display text instead of the value, because it read after the dialog closed and every editor was destroyed (external report, PR #442) · **#437** a refused press still recorded its result, so cancelling after a refused `DataTable` Delete **deleted the record**; validation now runs only for buttons that submit · **#438** `DialogButton.closes` meant three different things and is REMOVED, replaced by returning `False` from a command. ⚠ `tk busy` is a no-op on macOS (measured in plain tkinter — a toolkit limitation, not a wrong invocation) and real on Windows; the input guard is documented as such rather than claimed to work everywhere |
-| **0.2.3** | SHIPPED 2026-08-08 (PyPI + tag `v0.2.3`), titled *Import without IDLE*. **Published by `release.yml`, which ran clean** — Actions had recovered, so the docs deploy chained off it with no manual kick. Single issue: **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python build without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the WHOLE framework rather than degrading `CodeEditor`; `idlelib` is stdlib so it could never be a declared dependency, and the fix ports `WidgetRedirector` into `textarea/redirector.py` (PR #435). Also added a PSF attribution to `NOTICE`, scoped by measurement to `redirector.py` alone — see Current state for why the other five IDLE-derived modules are deliberately NOT listed |
-| **0.2.2** | SHIPPED 2026-08-06 (PyPI + tag `v0.2.2`), titled *DataTable group headers and row events*. **Published MANUALLY with `twine` during a GitHub Actions major outage** — `release.yml` never ran, and the docs deploy had to be kicked with `gh workflow run docs.yml` because it triggers off a successful Release run (see START HERE). #417 `<Double-1>` bound unconditionally so `on_row_double_click` fires on a read-only table (PR #423) · #418/#420 group headers no longer fire row events with an empty record · #419 deferred chevron refresh after an event-driven expand · #421 click focus on group-header and checkbox-mode rows, plus the column separator that could not be dragged in checkbox mode (PR #424). ⚠ Two behavior notes shipped under `### Changed`: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks), and a read-only table's second press no longer repeats the first press's action |
-| **0.2.1** | SHIPPED 2026-08-05 (PyPI + tag `v0.2.1`), titled *event and shortcut correctness*. #403/#404 sidebar shortcut + #406 its test coverage · #405 `Command`/`Option` modifier map (PR #411) · the #392-review cluster (PR #410, merged as a **merge commit** to keep its six one-per-issue commits): #396 `emit()`/`on()` share one `_event_target()` seam · #398 `on_visibility_alpha` self-unbind · #399 unmatched-unbind report under `BOOTSTACK_DEBUG` · #400 failed cancellation no longer reports success · **#397** dialog result fired at a destroyed widget and **#401** `'break'` from a non-interactive field — both fixed and merged but **absent from the CHANGELOG**, being unreachable from public API (root causes live in `a93a47a4` / `7e204801`) |
-| **0.2.0** | SHIPPED 2026-07-30 (PyPI + tag `v0.2.0`). #332 internal `set_*_visible` → properties · #379/#385 menu-backend test portability · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 `DateField` clear + `Form.set()` merge · #388 date-picker `<<Change>>` · #394/#395 field row alignment · #392 subscription cancel (script shape + mid-dispatch `unbind` + return values inert + unique binding names) |
-| **0.1.8** | macOS sizing on Tcl/Tk 9 (Aqua 72→96 DPI baseline broke `detect_scale_factor()`) |
-| **0.1.7** | Tk 9 scroll-event contract (`<TouchpadScroll>`, ±120 deltas, X11 TIP 474) + attach theme repaint |
-| **0.1.6** | Seven form/field/validation fixes (#362–#368, #371) |
-| **0.1.5** | Boolean-control state reads + Checkbox tristate (#360) |
-| **0.1.4** | `Select.add_validation_rule` restored (#357) |
-| **0.1.3** | Form `editor_options` take public widget kwargs (#354) |
-| **0.1.2** | Dropdown/context menus dismiss on window move (#345) |
-| **0.1.1** | `pygments` declared as a runtime dependency (#344) |
-| **0.1.0** | STABLE. Ship gate (#335) + theme-repaint unification (#338) + accent contrast (#340). Public compose API FROZEN under SemVer. `bootstack.dev` stays PROVISIONAL (excluded from the freeze). |
+- ⚠ **`event_generate` on a virtual event is DROPPED while the window is unmapped —
+  use `shown_app`, not `app`.** The `app` fixture's root is **withdrawn**. A
+  `bs.Button` still dispatches `<<Click>>` there, but a composite like `bs.Slider`
+  receives **nothing** — not even a raw Tcl binding bypassing Python, which is what
+  proves it is Tk dropping the event. **Pre-existing** — confirm with `git stash`
+  before blaming your own diff.
+- ⚠ **`shown_app` is NOT enough — a widget packed into the shared root may still be
+  UNMAPPED**, because `pack()`ing a raw frame competes with the App's own geometry
+  management and **once earlier tests have filled the root the frame is not mapped
+  at all**. The tell is a test that **passes alone and fails in the suite**. Worse,
+  it fails as a *false negative about the thing under test*. **Build a real event
+  target in its own `Toplevel`** (`geometry`, `deiconify`, `update`, `focus_force`)
+  and **assert `winfo_ismapped()` as a precondition**.
+- ⚠ **Tk's `focus_set()` is a SILENT no-op when the widget or any ancestor is
+  unmapped** — `TkSetFocusWin` walks the ancestry and returns without setting
+  anything. The miss surfaces one line later as an inexplicable focus assertion.
+  ⚠ **Under X11 it is the WINDOW MANAGER, not the server, that assigns focus to a
+  newly mapped top-level.** `focus_lastfor()` returning the **empty string** is not
+  "focus is on the wrong widget" — it is "nothing in this toplevel ever held focus",
+  which is what a missing WM produces.
+- **Assert focus via `focus_lastfor()`, not `focus_get()`** — the latter reports
+  nothing unless the window is active.
+- ⚠ **`dlg.show()` runs a modal wait loop that a close scheduled with `after` does
+  NOT break.** Drive it by invoking a real footer button, and **poll for the modal
+  grab rather than firing on a fixed delay** — `show()` pumps the event loop while
+  building and positioning, so a timer can land on a half-built dialog. ⚠ **The
+  grab is the barrier because it is the last thing `show()` does before it waits** —
+  but ⚠ **the grab is set BEFORE the geometry manager maps the footer's children at
+  idle**, so a grab-only barrier is not enough when the widget under test is a
+  child. **Scope the barrier to the subtree you actually need.**
+- ⚠ **Do not synthesize keys in the shared-root suite.** Drive the routine the key
+  is bound to (`ttk::treeview::ToggleFocus`). The key-to-routine mapping is the
+  toolkit's binding table, not ours.
+- **Tk REJECTS `event_generate("<Double-1>")`** — `Double` is a binding pattern, not
+  an event type. Two presses is the only way. ⚠ **And synthesized events default to
+  `time=0` while Tk decides `Double` off the event clock**, so supply an explicit
+  `time=`.
+- ⚠ **`winfo_ismapped()` on a destroyed widget RAISES `TclError: bad window path
+  name` — it does not return 0.**
+- ⚠ **Some failures are INVISIBLE TO PYTHON — read the background-error channel.** A
+  binding or `after` script referencing a deleted Tcl command raises nothing Python
+  can see; the suite stays green and the symptom is "handlers mysteriously stopped
+  running". Install a collector (`root.tk.createcommand('bgerror', collector)`, and
+  `deletecommand` it in a `finally`). **When a bug has no public observable, this
+  channel IS the observable.**
+- ⚠ **Defer widget cleanup on the ROOT, never on the widget.**
+  `widget.after_idle(cb)` registers `cb` as a command owned by that widget, so
+  destroying it deletes `cb` while the timer is pending and Tcl fires an orphan. Use
+  `widget._root().after_idle(...)`. Guard against both `TclError` **and
+  `AttributeError`** — `destroy()` sets `_tclCommands` to `None`.
+- ⚠ **Tkinter binding names are recycled — never let a deferred cleanup hold one.**
+  `Misc._register` names a command from `id()` of a throwaway bound method, so
+  releasing it frees the address for immediate reuse: **498/499** consecutive
+  cycles returned the *identical* name. Anything postponing a `deletecommand` can
+  delete a *different, live* binding. **Make the name unique first.**
+- ⚠ **When a symptom is allocator- or timing-dependent, assert the INVARIANT, not
+  the symptom.** Behavioral tests passed on a broken build (1 of 3 caught it); a
+  structural test (50 cancel/rebind cycles → 50 distinct ids) fails every time.
+  **Worth breaking "test public paths" for; say why in the test.**
+- ⚠ **`instate(['!disabled'])` is a QUESTION returning True when the widget is
+  ENABLED.** `not instate(['!disabled'])` therefore selects the **disabled** one — a
+  double negative that silently inverts a guard. Write `not instate(['disabled'])`.
+- ⚠ **A test that schedules a hang guard must cancel it in a `finally`.** A leaked
+  10s `after` on the shared root fired during a later test and destroyed an
+  unrelated `Toplevel` — **and the test passed either way**, which is what made it
+  invisible.
+- ⚠ **Spying on an instance attribute is USELESS if the bound method was already
+  captured.** `self.on_destroy(self._cleanup_x)` captures at construction. **Patch
+  the CLASS attribute before constructing**, or assert on the observable side
+  effect.
+- ⚠ **Never `warnings.warn` from inside a Tk dispatch or a teardown path — use
+  `debug_log`.** `_runtime/utility.py` has `debug_log(message)` beside
+  `debug_log_exception`; both honor `BOOTSTACK_DEBUG` and **never raise**. A
+  `warnings.warn` measurably escapes `Subscription.cancel()` under `-W error`. **A
+  diagnostic that can fail the program it is diagnosing is not one.**
+- ⚠ **Probe output must be ASCII** — a check mark raises `UnicodeEncodeError` on the
+  Windows box's cp1252 console.
 
-Pre-0.1.0 initiatives — also in the archive: hot reload (`bootstack dev`),
-builder-function scaffolds, docs-IA 3-pillar restructure, splash screen, icon-DPI
-sizing, navigation API reshape (AppShell + Workbench), layout redesign
-(screen-axis grid engine), undecorated window chrome, media widget suite, the
-field-family reviews, field validation redesign, and the API Reference restructure.
+### ⚠ Line endings — this has bitten repeatedly, including with the warning in context
 
----
+Files in this repo are **CRLF** (`core.autocrlf=true`, `.gitattributes` declares
+`eol: crlf`). **`git diff` CANNOT SEE a flip to LF** — Git normalizes on read, so a
+whole-file flip still shows the true small diffstat.
 
-## Carryover (deferred)
-
-- **Reference docs examples** — LARGELY DONE in PR #103 (errors/scheduling/
-  shortcuts/validation enriched; new `localization.rst`). `reference/store.rst`
-  already carries the persistence patterns (`from_store`/`update(**kwargs)`,
-  store hygiene, version skew, window-geometry-stays-a-flag) from the AppSettings
-  work. Remaining: opportunistic enrichment of any still-thin reference page.
-  Memories `project_docs_initiative`, `project_app_settings_flattening`.
-- **Docs build is now warning-free** (PR #106). ⚠ Keep it that way: incremental
-  Sphinx builds MASK warnings — always clean-build (`rm -rf docs/_build`, then
-  `sphinx-build -W --keep-going`) to verify. When adding dataclass/attribute
-  docstrings, follow the attribute-docstring pattern (NO `Attributes:`/`Args:`
-  block for fields) and keep any colon OFF the first line of an attribute
-  docstring (see the colon-space gotcha under PR #106 above).
-
----
-
-## Prior initiative — Sphinx docs + public API audit (MERGED)
-
-Branch `feat/docs-api-improvements`, merged to `main`. Shipped: the docs structure,
-the public Table (`DataTable`), the typed-event redesign, the theming + font public
-APIs, the DataSource verb rename + filtering DSL, and the observable-query layer.
-Full detail lives in git history and memories; only the still-live conventions and
-the open backlog are kept here.
-
-### Still-live conventions
-
-- **Docs structure** — top-level navbar is **3 pillars** (numpy-style):
-  **User Guide · Widgets · API Reference** (`docs/index.rst`). (The old **Production**
-  pillar was folded into the User Guide as the **Developer tools** caption — PR after
-  #330, 2026-06-24; navbar overflow stays low.)
-  - **User Guide** (`docs/user-guide/index.rst`) folds Getting Started + Tasks +
-    Reference + the former Production pages into ONE pillar with four `:caption:`
-    toctree groups — **Getting started** (`/getting-started/*`), **How-to guides**
-    (`/tasks/*`, goal-indexed recipes), **Feature guides** (`/reference/*` +
-    `/production/app-settings`, subsystem-indexed usage guides — renamed from
-    **Topics** 2026-06-24; both how-to and feature guides are example-rich — the split
-    is goal-vs-subsystem, NOT recipe-vs-theory, so do NOT call them
-    "Concepts"/"Explanation"), and **Developer tools** (`/production/cli` ·
-    `hot-reload` · `debugging` · `distribution`). The leaf pages STAY in their
-    `getting-started/`/`tasks/`/`reference/`/`production/` dirs (no URL churn — the
-    `production/` dir name is now just an internal artifact); only the landing + top
-    toctree changed. The section `index.rst` landings (incl. `production/index.rst`)
-    are DELETED. **`composing-fields` → `customizing-fields`** (#323, the one accepted
-    URL churn — the title clashed with "Composing with Builders"; no redirect, per the
-    no-shims stance).
-  - **Widgets** (`docs/widgets/index.rst`) = flat leaf pages grouped by
-    `.. toctree:: :caption:` blocks (curated common-first order, NOT alphabetical);
-    kept as its own pillar (large *visual* catalog). The 10 old category landing pages
-    are RETIRED. `docs/api/` + `docs/deeper/` are GONE.
-  - **API Reference** (`docs/api-reference/index.rst`) = the by-concept lookup layer
-    (semantic groups, full-path stub titles, pandas-style card landing — see the IA
-    re-cut in `docs/_dev/api-reference-restructure.md`).
-  - `show_nav_level: 1` (collapsed by default). Do NOT promote sub-groups to top-level
-    (pydata navbar overflows ~6+). The old "Reference page pattern" is SUPERSEDED by the
-    API Reference & Guide pattern below.
-- **Title casing + how-to naming** (2026-06-15) — TWO-TIER casing, applied
-  consistently: **page titles (H1) and card/sidenav titles are Title Case**
-  (`Building Forms`, `Images and Icons` — conjunctions like `and` stay lowercase);
-  **in-page section headers are sentence case** (`Backing a widget with a data
-  source`). **How-to (`/tasks/*`) titles are action-driven gerunds** —
-  `‹Gerund› ‹object›` (`Displaying Data`, `Using the Clipboard`, `Showing Dialogs`),
-  NOT topical nouns. **Feature guides (`/reference/*`) keep noun/subsystem titles**
-  (`Events`, `Data Sources`) — that's correct, not a violation. Keep titles short enough to not
-  wrap in the sidenav (~≤20 chars; drop articles: `Setting App Icons`, not `Setting an
-  Application Icon`). **A page's H1, its User-Guide card title, and its sidenav entry
-  must all match** (the sidenav shows the H1, so a card/H1 mismatch shows as drift).
-  How-to card grid + the hidden toctree are ordered by **learning progression** (build
-  a screen → compose → app structure → ship), and both must stay in the SAME order.
-- **No Tkinter in docs or docstrings** — no `tk.*` types/terms unless strictly
-  necessary; don't feature the escape hatch. Full `src/` docstring scrub still
-  pending. LEFT BY DESIGN: `.tk`/`.var` escape-hatch property docstrings,
-  `signals/integration.py` (the Tk bridge).
-- **Event / theming / DataSource APIs are DONE** — reflected in the Architecture +
-  Gotchas sections below and in memories `project_typed_events`,
-  `project_theming_public_api`, `project_datasource_api_naming`,
-  `project_datasource_change_events`. Deferred-only: the visual theme builder
-  (Phase 5, near-ship — emits `bs.Theme(...)` code; do NOT build yet).
-
-### API/cleanup backlog (deferred, memory-tracked)
-
-- `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
-  public layer abstracts Tk; still imported by data/i18n/mixins.
-- `project_docstring_backticks` — **DONE (PR #182):** swept to single backticks
-  (`default_role="code"` makes them render as inline code). Convention is Google +
-  SINGLE backticks; RST cross-ref roles (`:class:`/`:doc:`/`:ref:`) are kept (deliberate).
-- `project_event_naming_revisit` — past-tense event names pending rename:
-  `SideNav.on_pane_toggled`/`on_display_mode_changed`, `ListView.on_selection_changed`,
-  `Calendar.on_date_selected`.
-- ~~`project_signal_subscribe_subscription`~~ — **DONE (#157)**: `Signal.subscribe()`
-  now returns a cancelable `streams.Handle` (was a `str` token), unifying with
-  events/streams.
-- `project_editfilter_public_api` — `EditFilter` DEMOTED (Tk-coupled raw text
-  indices/tags); investigate a de-Tkinter-ed CodeEditor extension API before any
-  re-promotion. `NOTE(editfilter-public-api)` in
-  `widgets/_impl/composites/textarea/filter.py`.
-- `project_window_api_hardening` — `bs.Window` leaks uncurated `**kwargs` to the
-  internal Toplevel (raw Tk options in; useful `icon`/`alpha`/`toolwindow`/
-  `window_style` only via the escape hatch), has no live properties
-  (`title`/`size`/`topmost` are construction-only), and never releases the modal
-  grab. Curate to typed params + add a live `title` + release on close. Own branch.
-- `project_show_indicator_removal` — **KEEP (reversed 2026-06-15).** `show_indicator=`
-  was briefly flagged for removal but is being kept: the `show_indicator=False` +
-  `on_icon`/`off_icon` combo is exactly what makes an icon-driven custom checkbox, and
-  removing it would orphan that. GitHub #144 closed won't-do. Do NOT re-propose removal.
-- `project_enum_option_typing` — promote recurring enumerated `str` kwargs to NAMED
-  `Literal` aliases in `widgets/types.py` (re-exported from `bootstack.types`); the
-  ALIAS docstring carries the value list once, widget docstrings describe meaning only
-  (no value enumeration — REVERSES the Code-standards "valid values per kwarg" rule for
-  aliased types; keep the default). First fixes: `accent: str`→`AccentToken` in
-  `form.py`/`menubar.py`. New aliases: `SelectionMode`/`IconPosition`/`LayoutKind`/
-  `AutoFlow`/`ExportScope`; reuse existing `Orient`/`Fill`/`Anchor`/`Sticky`. Own branch.
-- Lower-priority: bare index/landing pages (root, `widgets/`, `reference/`);
-  localization/windowing `tasks/` how-tos; screenshots pending (Tooltip/Toast, 7
-  Dialog pages); AppShell deferred improvements (`nav_pane_width=` not wired to
-  `SideNav(pane_width=)`, hardcoded nav density/font, group active-child highlight +
-  indentation, footer non-page widgets).
-
----
-
-## API Reference & Guide page pattern (established — follow exactly)
-
-The docs are a **Diátaxis-style split** (PR #107): a narrative layer (**Widgets** +
-**Guides**) plus a **unified, complete API Reference** that mirrors each submodule's
-`__all__`. **Load-bearing rule: every object has exactly ONE autodoc home, and it
-lives in the API Reference.** Narrative pages cross-link in (`:class:` / `:func:` /
-`:meth:`) and may carry a *table-only* `autosummary` summary; they never re-document.
-A second autodoc home reintroduces the "duplicate object description" warnings PR #106
-removed. Full brief + all staged-sweep decisions: `docs/_dev/api-reference-restructure.md`.
-Memory `project_api_reference_restructure`.
-
-### The autosummary templates (locked, PR #107 + Stage 2)
-
-THREE custom templates under `docs/_templates/autosummary/`, one per documenter
-kind autosummary uses for the data surface — `class.rst`, `function.rst`,
-`data.rst`. **All THREE must title the stub page with the bare `{{ objname }}`**
-(not `{{ fullname }}`). This is load-bearing: autosummary picks the template by
-object kind, and the **stub's title is what the sidebar shows**. The built-in
-fallback templates title with the full dotted path (`bootstack.data.col`), so
-relying on the fallback for functions/data produces a sidebar where classes read
-bare (`MemoryDataSource`) but functions/aliases read fully-qualified
-(`bootstack.data.col`) — the exact inconsistency Stage 2 fixed. Keep the bare-title
-line identical across all three.
-
-`class.rst` (also serves dataclasses + Protocols):
-
-```rst
-{{ objname | escape | underline }}
-
-.. currentmodule:: {{ module }}
-
-.. autoclass:: {{ objname }}
-   :members:
-   :inherited-members:
-   :show-inheritance:
-```
-
-`function.rst` → `.. autofunction:: {{ objname }}`; `data.rst` →
-`.. autodata:: {{ objname }}` — each with the same bare-title + `currentmodule`
-header.
-
-- `:inherited-members:` (class template) is what makes a concrete-source stub
-  **complete** (e.g. `SqliteDataSource` shows inherited
-  `save`/`on_change`/`observe`/`export_csv`).
-- The Protocol page stays noise-free because `undoc-members` is off and there is no
-  `:special-members:` — `_private`/dunder/Generic members are filtered out.
-- Some type aliases classify as class-like and pick up `class.rst` (e.g.
-  `Primitive`), others as data and pick up `data.rst` (e.g. `Record`) — both now
-  title bare, so it no longer matters which. A new documenter kind a future module
-  needs (e.g. `exception.rst`) must get the SAME bare-title treatment.
-- **Per-class curation** (a class needing different members than the global
-  `class.rst`): add a per-class template file `_templates/autosummary/<name>.rst`
-  and point that class's `autosummary` entry at it with `:template: <name>` —
-  **WITHOUT the `.rst` extension**. Sphinx's autosummary resolves `:template: X`
-  as `autosummary/X.rst`; passing `signal.rst` builds `autosummary/signal.rst.rst`,
-  silently misses, and falls back to the built-in `base.rst` (full title, no
-  members) — NOT even `class.rst`. `:template:` applies to every name in that
-  directive block, so put the curated class in its own one-name block. Exemplar:
-  `signal.rst` (Signal needs `__call__` shown + `tk`/`var`/`name`/`from_variable`
-  excluded); wired in `api-reference/signals.rst` as `:template: signal`.
-
-### API Reference page recipe (the autodoc home — one per submodule)
-
-A page like `docs/api-reference/data.rst`. Text-only, **NO screenshots, NO hero**.
-
-1. Title = the dotted module path (`bootstack.data`), then `.. currentmodule::` it.
-2. One prose paragraph orienting the module + a `:doc:` link to its Guide.
-3. **Group the surface into labeled sections** (`---` headings), each: a one-sentence
-   prose lead-in, then an `.. autosummary::` table with `:toctree: generated` and
-   `:nosignatures:`. The table renders as a two-column **name | first-line-summary**
-   table (pandas/SciPy style) and toctrees each name into an auto-generated per-object
-   stub under `docs/api-reference/generated/` (gitignored — regenerates at build).
-   **Grouping conventions** (from the batch-1 review, applied across all pages):
-   (a) **Don't mix kinds in one list** — separate the things you *call*
-   (functions/constructors) from the *supporting types* they produce/consume, from
-   *enumerations/aliases*. E.g. `events` = payload sections + "Supporting types"
-   (`TabRef`, a value carried *inside* a payload) + "Enumerations" (`ChangeReason`…);
-   `data` = "Query language" (`col`/`any_of`/`all_of`) vs "Query expression types"
-   (`Column`/`Condition`/`SortKey`) vs "Type aliases" (`Record`/`Primitive`). A type
-   that only appears *inside* another object (not handed to the user directly) is a
-   supporting type, not a primary entry. (b) **Order sections most-reached-for first,
-   lowest-level lookups last** — primary objects → common callables → their supporting
-   types → feature areas → bare type aliases at the bottom (`data` order: Data sources
-   → Query language → Query expression types → Readers and writers → Type aliases).
-   (c) **Don't sub-section a small/uniform module** — follow the
-   `bootstack.streams` model (intro prose + ONE `autosummary` table, no `---`
-   sub-headings) whenever a module is just a few names of the same kind. Sub-section
-   only when the surface is large OR genuinely mixes kinds (a). `streams`
-   (`Stream`/`Handle`), `validation` (`ValidationRule`/`ValidationResult`),
-   `scheduling` (`Schedule`/`Job`), `shortcuts` (3), and `errors` (5 exceptions) are
-   all single-table; `data`/`events`/`style` earn their groups. The intro carries
-   any rule-vs-result / base-vs-specific nuance — don't spend a heading on it.
-   (d) **Order ENTRIES within a group ALPHABETICALLY** — the API Reference is the
-   lookup layer, so within-group order should be predictable for scanning (the
-   pandas/NumPy convention), NOT curated/common-first. Curated common-first order
-   is the GUIDES' job (the `widgets/index.rst` caption toctrees keep it). The
-   category grouping + a one-line lead-in already carry the semantics; clusters
-   mostly stay adjacent alphabetically anyway (`Radio`/`RadioGroup`/`RadioToggleButton`,
-   `Select`/`SelectButton`, `ToggleButton`/`ToggleGroup`). (e) The audit also
-   surfaces half-public names to demote — e.g. `TraceOperation` (internal trace
-   tag, no public signature exposes it) was dropped from `bootstack.signals.__all__`
-   during this sweep.
-4. List **exactly** the module's `__all__` across the grouped tables (the reference
-   IS `__all__`). Good first-line docstrings matter — that line is the summary cell.
-5. Wire the page into `docs/api-reference/index.rst`'s toctree.
-
-Re-exported names (shallowest path wins): a name exported at two public paths gets
-ONE stub, on the **shallowest** page (`Signal` → top-level `bootstack` page). Deeper
-module pages list it in a **table-only** summary (no `:toctree:`, links up to the
-stub) and own only their module-local names.
-
-### Guide page recipe (the former `reference/*` prose pages)
-
-A page like `docs/reference/data-sources.rst`. This is the teaching layer.
-**Guiding principle: the API Reference is a LAST RESORT — the Guide carries the
-practical teaching load** (generous worked examples, common compositions, recipes,
-do/don't). A user should build real things from the Guide alone.
-
-1. Prose intro → task-ordered usage sections (code blocks) → See also.
-2. **No bottom `autoclass`** — instead end with an **"API reference"** section: a
-   one-line pointer (`:doc:` link to the API Reference page) + an at-a-glance
-   `.. autosummary::` table **WITHOUT `:toctree:`** (a table is NOT an object
-   description, so it's not a second autodoc home; its links resolve to the stubs).
-3. Cross-link types inline with roles (`:class:` / `:func:` / `:meth:` / `:data:`)
-   at the **public home path** (`bootstack.data.SqliteDataSource`, not the impl path).
-4. Inline usage only — NO separate Full Example file. Non-visual: NO screenshots.
-
-### Verify (every stage)
-
-Clean-build, always — incremental builds MASK warnings:
-`rm -rf docs/_build && sphinx-build -b html docs docs/_build/html -W --keep-going`.
-Build is warning-free; keep it there. Attribute-docstring rules (PR #106) still
-apply (no `Attributes:`/`Args:` for dataclass fields; no colon on the first line of
-an attribute docstring). A `-n` nitpicky build surfaces dangling cross-refs once a
-home moves — fix the link or add a `nitpick_ignore_regex`.
-
----
-
-## Reviewing a widget + docs standards (read first)
-
-**Before any widget review or widget-docs work, read
-`docs/_dev/widget-review-and-docs-standards.md`** — the consolidated checklist.
-It is the single source of truth for both halves; the highlights:
-
-- **A review is audit → fix → test → document → file follow-ups**, not a
-  read-through. Audit the public wrapper vs `_impl` for correctness bugs AND
-  unexposed capability. Recurring bug classes: value clamping (setters + re-clamp
-  on range change), disabled state honored on *every* input path (incl. Home/End),
-  event consistency (keyboard jumps commit like a drag-release), no Tab focus-trap.
-  Then API hygiene (typed params, `on_*` payload audit, drop dead kwargs,
-  live-vs-construction props). **File additive features / out-of-scope bugs as
-  tracked issues — don't scope-creep the review branch.**
-- **Docs: the Guide teaches; the API Reference is a last resort.** **Lead with the
-  mental model** (foundational concept up front, not buried later). **No
-  kitchen-sink — one idea per paragraph, scannable**, teach the decisions not every
-  kwarg. Examples are **tight, API-verified, with the relevant import on first
-  use** (and they must run). Use a `.. note::` for an **adjacent-but-distinct topic**
-  (placed by the relevant screenshot, linking the other section) rather than inline
-  prose — keep each topic its own section/TOC entry. Document the **Events** (change
-  vs commit — public, not an impl detail) and **Keyboard** behavior of interactive
-  widgets. **One screenshot per visually-distinct usage section**, not just the hero;
-  a behavioral-only feature (e.g. step snapping) gets prose, no screenshot.
-  Sentence-case section headers; Title Case page title.
-- Verify: GUI test files run **one per process** (#150); `tests/test_public_surface.py`
-  green; examples run; clean `-W` docs build; held for user test + per-commit approval.
-
-## Widget documentation pattern (established — follow exactly)
-
-> ⚠ **Migrating a widget = also clean up its public API** (the maintainer's
-> standing pattern, memory `feedback_cleanup_api_while_documenting`). When you home
-> a widget into the API Reference, audit it the way `App`/`AppShell`/`Window` were:
-> drop dead/redundant kwargs, demote set-once config from runtime properties to
-> construction-only (a property is "live" only if changing it has a complete effect
-> a user would bind to a control), de-Tkinter leaks, fix docstring nits.
-> **In particular, complete the typed-payload `on_*` audit for that widget** (memory
-> `project_typed_event_payloads`, INCOMPLETE): a DATA event gets its specific
-> `bootstack.events` payload type in `@overload` + impl signature; a NATIVE event
-> (`click`/`hover`/`focus`/`blur`/`resize`) keeps `Event`. Known offenders: the
-> boolean/selection controls (`Checkbox` etc.) still type `on_change`/`on_check`/…
-> as generic `Callable[[Event]]`. (Payloads render in the autodoc "Overloads:"
-> block, so fixing the source is enough.)
-
-1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
-2. **Fix wrapper** — typed params (`AccentToken`, the widget's own per-widget
-   `variant` Literal, `WidgetDensity`);
-   `@overload` event shorthands; no low-level color kwargs; layout via `**kwargs`
-   + `_split_layout_kwargs`; catch-all must be `**kwargs` not `**extra_kw`.
-3. **`docs/widgets/<widget>.rst`** (NOTE: was `docs/api/` — moved 2026-06-04) —
-   intro sentence → hero screenshot → Usage sections (code block then screenshot)
-   → Widget sizing include → See also → table-only `autosummary` API section +
-   cross-links (NO bottom `autoclass`, per the Guide-page recipe) → Full Example
-   literalinclude. No intro code block above hero.
-4. **`docs/examples/<widget>.py`** — runnable visual-states-only demo. No
-   `app.tk.after()`, no screenshot scaffolding, no `fill="x"` in RST snippets.
-5. **`docs/screenshots/<widget>.py`** — SCENES dict. Each scene: own `bs.App`,
-   tight `size=(W,H)`, `HStack(fill="x")` for button rows to avoid centering
-   offset, `app.run()`. Hero for button/action widgets: single representative
-   state with menu/popdown open if applicable.
-6. **Screenshots:** `py -3.12 docs/scripts/take_screenshots.py <widget> [--scene X] [--light]`
-   Outputs: `docs/_static/examples/<widget>-<scene>-light/dark.png`
-7. **Wire** into the matching `:caption:` toctree in `docs/widgets/index.rst`
-   (category landing pages are retired — captions group the widgets now).
-8. **Commit** on a dedicated `feat/*`/`docs/*` branch.
-
-### Screenshot image pattern
-
-```rst
-.. image:: /_static/examples/<widget>-<scene>-light.png
-   :class: bs-screenshot-light
-   :alt: <Widget> <scene> — light theme
-
-.. image:: /_static/examples/<widget>-<scene>-dark.png
-   :class: bs-screenshot-dark
-   :alt: <Widget> <scene> — dark theme
-```
-
-Hero uses `-hero-light/dark.png`. Dialogs add `bs-dialog-screenshot` to the class
-(e.g. `:class: bs-screenshot-light bs-dialog-screenshot`).
-Margin/radius owned by `docs/_static/custom.css` — no inline styles.
-
-### Widget sizing section pattern
-
-```rst
-Widget sizing
-~~~~~~~~~~~~~
-
-.. include:: ../shared/widget-sizing.rst
-```
-
-Path is file-relative from `docs/api/`. Omit from dialog pages.
+- **The ONLY signals** are the *"LF will be replaced by CRLF"* **warning on
+  stderr**, which no test run and no docs build surfaces, and **`file <path>`**,
+  which reports the working-tree truth.
+- **A bulk `pathlib` rewrite, a `sed -i`, and Python `read_text`/`write_text` all
+  flip CRLF→LF.** A `sed -i` with a `$`-anchored pattern **silently matches
+  nothing** on CRLF files.
+- **Prefer the Edit tool. If scripting, write BYTES** (strip `\r`, then re-add).
+- ⚠ **A manual edit once left a stray `u` byte before a BOM (`75 ef bb bf`) and the
+  WHOLE PACKAGE became unimportable** — `SyntaxError: invalid non-printable
+  character U+FEFF`, every affected test file erroring at collection. **Verify
+  `import bootstack` at the COMMITTED state**, not just in the working tree, when
+  anything has hand-edited a source file.
 
 ---
 
 ## Gotchas
 
 ### Layout and wrappers
-- **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column` etc.
-  are NOT explicit params. Route through `self._split_layout_kwargs(kwargs)`.
+
+- **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column`
+  etc. are NOT explicit params. Route through `self._split_layout_kwargs(kwargs)`.
 - **`**kwargs` not `**extra_kw`** — catch-all must be named `**kwargs` throughout.
-- **User options MERGE OVER framework kwargs; structural keys RAISE** (#363,
-  0.1.6). A widget that builds another widget for you — `Form`'s `editor_options`,
+- **User options MERGE OVER framework kwargs; structural keys RAISE** (#363). A
+  widget that builds another widget for you — `Form`'s `editor_options`,
   `MenuButton`'s `menu_options`, the `**kwargs` passthrough on `ButtonGroup.add` /
-  `RadioGroup.add` / `Toolbar.add_widget` — must route through
-  **`merge_kwargs`** (`widgets/_core/kwargs.py`): the caller's options win, and a
-  short `reserved` map (keys the widget must own — its `parent`, the command that
-  emits its events) raises `BootstackError` naming the API called and what to use
-  instead. Splatting a user dict alongside explicit kwargs raises
-  `TypeError: got multiple values for keyword argument` from an internal class the
-  caller never wrote — that was a live bug in six widgets. **Legacy exception:**
-  `MenuButton.__init__`'s `_RESERVED_INTERNAL_KEYS` still SILENTLY SKIPS collisions
-  (so `bs.MenuButton("X", command=fn)` quietly does nothing). Flipping a silent
-  no-op to a raise can break working user code, so converging it is a 0.2.0 item —
-  do NOT copy the silent-skip pattern into new code.
-- **`margin_x=` / `margin_y=`** — axis-specific external spacing. Never `padx=`/`pady=`.
-- **`.. include::` path is file-relative** — from `docs/api/`, use `../shared/widget-sizing.rst`.
-
-### Screenshots
-- **HStack centering** — App's VStack centers children. For button-row scenes, wrap in
-  `HStack(fill="x")` so buttons are left-aligned, not centered with dead space on the left.
-- **No `size=` by default** — omit `size=` from `bs.App` in screenshot scenes unless there
-  is a specific reason (popdown/dropdown needs room to render inside the capture bbox). Let
-  the window auto-fit its content. For input/field/slider rows use `minsize=(720, 1)` to
-  enforce a minimum width without locking height. Never add `size=` just to "feel right".
-- **Popdown menus in screenshots** — runner sets app `topmost=True` at t=800ms, grabs at
-  t=950ms. Call `mb.show_menu()` at t=850ms (after topmost set, before grab). Size the
-  app window tall enough to contain the menu within its capture bbox — the menu Toplevel
-  is captured via `ImageGrab.grab(bbox=app_region)` which is a screen grab, not a window
-  grab.
-- **`_ToplevelContextMenu` topmost** — `show()` now sets `-topmost True` on the
-  overrideredirect Toplevel so it appears above a parent with `-topmost True`.
-- **SelectBox popup topmost** — `_create_popup_toplevel` sets `-topmost True` so the
-  popup appears above the screenshot runner's topmost window.
-- **Screenshot runner 2px inset** — crops 2px from each edge to remove Windows border artifact.
-- **Dialog hero pattern** — open non-modally at t=200ms, lift dialog at t=850ms, screenshot
-  at t=950ms. Use `app._capture_target = <toplevel>` to capture a dialog instead of the app.
-- **Full-app widget sizing** — PageStack, SideNav, AppShell use `fill="both", expand=True`
-  and need `size=(W, H)` (not `minsize=`) to give the canvas a defined size.
-- **Navigation window padding** — use `padding=8` on the App for full-app nav scenes to
-  give footer-pinned items breathing room at the bottom edge.
-- **Tabs vertical scene** — use `padding=16` and `size=(W, H)` since `fill="both"` needs
-  a canvas; `minsize=` is sufficient for horizontal tabs scenes.
-
-### MenuButton specifics
-- **`icon_only` inferred** — `DropdownButton.__init__` auto-sets `icon_only=True` in
-  `style_options` when `icon` is in style_options and `text` is None/empty. The public
-  wrapper doesn't need to infer it.
-- **Menubutton layout centering** — `Menubutton.label` has `side="left"` in the ttk
-  layout. When `icon_only=True` and no dropdown, drop `side="left"` so the label fills
-  the full content area and `anchor="center"` can take effect.
-- **Item type names** — public API uses `'command'`, `'check'`, `'radio'`, `'separator'`.
-  Internal ContextMenu uses `'checkbutton'` / `'radiobutton'`. Translate at the wrapper
-  boundary via `_ITEM_TYPE_MAP`. Legacy names accepted for backwards compat.
-- **Radio group variable** — `add_radio_item()` auto-creates a shared `StringVar` on the
-  internal widget. Values are stored as strings internally. Use `selected=True` to
-  pre-select. Multiple `add_radio_item()` calls share one group variable per MenuButton.
-- **`show_menu()` respects disabled state** — guard with
-  `self._internal.instate(("!disabled", "!readonly"))` before delegating.
-- **`disabled` property** — use `instate(("disabled",))`, not string comparison on `cget`.
-- **`shortcut=` in `add_item()`** — display-only label. Passes through `format_shortcut()`
-  which handles: registered key name → platform display, `"Mod+S"` pattern → `"Ctrl+S"` /
-  `"⌘S"` (no registration required), literal string → pass-through.
-- **MenuButton hero pattern** — show a standalone "Actions" button (Edit/Duplicate/Archive/
-  Delete), NOT a File/Edit/View menubar pattern. Shortcuts section uses the File menu example.
-
-### Style rebuild pattern
-- **`configure_style_options` alone doesn't rebuild** — it only updates the stored
-  `_style_options` dict. Call `rebuild_style()` immediately after to regenerate the TTK
-  style with the new options and apply it to the widget.
-- **`emit` wraps `event_generate`** — `PublicWidgetBase.emit(event, data=...)` calls
-  `self._internal.event_generate(sequence, data=data)` directly. For internal widgets
-  use `event_generate` with `data=` natively (the event system is patched to support it).
+  `RadioGroup.add` / `Toolbar.add_widget` — must route through **`merge_kwargs`**
+  (`widgets/_core/kwargs.py`): the caller's options win, and a short `reserved` map
+  raises `BootstackError` naming the API called and what to use instead. Splatting a
+  user dict alongside explicit kwargs raises `TypeError: got multiple values for
+  keyword argument` from an internal class the caller never wrote.
+  ⚠ **Legacy exception:** `MenuButton.__init__`'s `_RESERVED_INTERNAL_KEYS` still
+  **SILENTLY SKIPS** collisions (so `bs.MenuButton("X", command=fn)` quietly does
+  nothing). **Do NOT copy the silent-skip pattern into new code.**
+- **`margin_x=` / `margin_y=`** — axis-specific external spacing. Never
+  `padx=`/`pady=`.
 
 ### Widgets and API
+
 - **Public namespace is CURATED (PR #104)** — top-level `bootstack` (`bs.*`) holds
   ONLY what you compose a UI from: every widget, `App`/`AppShell`/`Window`,
-  `Signal`, the dialog VERBS (`alert`/`confirm`/`ask_*`/`toast`), and
-  `set_theme`/`toggle_theme`. Import everything else from its submodule —
-  `from bootstack.data import SqliteDataSource, col`; `from bootstack.style import
-  Theme, get_theme_color`; `from bootstack.i18n import L, LV`;
-  `from bootstack.validation import ValidationRule`; `from bootstack.events import
-  Event, Subscription`; `from bootstack.streams import Stream`;
-  `from bootstack.scheduling import Schedule`; `from bootstack.shortcuts import
-  get_shortcuts`; `from bootstack.store import Store`; `from bootstack.errors
-  import ...`; `from bootstack.types import AccentToken`; dialog CLASSES
-  `from bootstack.dialogs import FormDialog`. `MessageCatalog`/`IntlFormatter`/
-  `get_current_app`/`Image` are INTERNAL (not public). Do NOT write `bs.Theme`/
-  `bs.col`/`bs.SqliteDataSource`/`bs.FormDialog` etc. — they no longer exist at
-  top level. Map: the `docs/api-reference/index.rst` landing (public-contract +
-  submodule list; `api-overview` was retired into it); guard:
-  `tests/test_public_surface.py`. Memory `project_toplevel_api_surface`.
-- **Dialogs live in `bootstack.dialogs`** — impl under `bootstack/dialogs/_impl/`,
-  public façade `bootstack/dialogs/__init__.py` (verbs + classes).
-  `bootstack.widgets.dialogs` is GONE. Internal deep imports use
-  `bootstack.dialogs._impl.<module>`.
-- **`disabled` on Label** — not appropriate. Label is display-only.
-- **`color=` / `background_color=`** — removed. Use `accent=` / `surface=`.
-- **`bs.App` / `bs.AppShell` config is FLAT kwargs** (settings-flattening, branch
-  `feat/app-settings-flatten`). All former `AppSettings` fields are direct
-  constructor kwargs — `theme`, `light_theme`, `dark_theme`,
-  `follow_system_appearance`, `available_themes`, `inherit_surface_color`,
-  `locale`, `localize_mode`, `window_style`, `macos_quit_behavior`,
-  `remember_window_state`, `state_path`, `app_author`, `app_version`. There is
-  **NO public `settings=` / `AppSettings` / `app.settings`** (clean break, no
-  shim — passing `settings=` raises `TypeError`). `AppSettings` survives only as
-  an internal resolved-config holder; `get_app_settings()` is internal-only.
-  Read/write config as symmetric `app.*` properties: `app.theme`/`app.locale`/
-  `app.title` set live; locale-derived values are flat read-only props
-  (`app.locale_date_format`, `app.locale_time_format`, `app.locale_decimal`,
-  `app.locale_thousands`, `app.locale_language`). Config-change events:
-  `app.on_theme_change(fn)` (→ theme name) and `app.on_locale_change(fn)`
-  (→ locale code). Persistence: `bs.App.from_store(store)` (tolerant of version
-  skew — filters to known kwargs) + `store.update(theme=...)` write-back. Shared
-  impl in `widgets/_core/app_config.py` (`AppConfigMixin`, `APP_CONFIG_KWARGS`).
-- **`bs.Signal()` is safe at module level** — the backing Tk var is created lazily on first widget binding.
-- **`textsignal=`** — standard kwarg for text-bearing widgets. `signal=` for non-text
-  (Slider, Checkbox, etc.). Never expose `textvariable=` / `variable=` publicly.
-- **`TTKWrapperBase.__init__` overwrites `self._accent`** — store accent before `super().__init__()`,
-  re-assign after.
-- **`<<BsThemeChanged>>`** fires after full rebuild (use this). `<<ThemeChanged>>` fires before.
-- **Canvas/imperatively-painted widgets — theme repaint:** NEVER bind ttk
-  `<<ThemeChanged>>` on the **root/toplevel** — it re-fires **~1400× per rebuild**
-  (once per style reconfigure); root-bound × instances = thousands of redraws (was
-  the gallery's ~3s toggle lag, PR #180). Re-resolve colors via the **STD
+  `Signal`, the dialog VERBS, and `set_theme`/`toggle_theme`. Everything else comes
+  from its submodule — `from bootstack.data import SqliteDataSource, col`;
+  `bootstack.style`, `.i18n`, `.validation`, `.events`, `.streams`, `.scheduling`,
+  `.shortcuts`, `.store`, `.errors`, `.types`; dialog CLASSES from
+  `bootstack.dialogs`. `MessageCatalog`/`IntlFormatter`/`get_current_app`/`Image`
+  are INTERNAL. **Do NOT write `bs.Theme`/`bs.col`/`bs.FormDialog`** — they no
+  longer exist at top level. Guard: `tests/test_public_surface.py`.
+- ⚠ **Write the submodule import, NOT `bs.events.ChangeEvent`** — `events` is absent
+  from `bootstack.__all__` and `bs.events` resolves only because widget code imports
+  the submodule transitively. ⚠ **`tests/test_public_surface.py` does NOT guard
+  this** — it gates the top-level *name set*, never that a submodule is unreachable
+  as a `bs.*` attribute, which is why the drift went uncaught for two months.
+- ⚠ **`emit()` and `on()` take the same names but NOT always the same target.**
+  `emit()` consults the `_event_target()` seam **only for `<<Virtual>>` sequences**;
+  the native-mapped names (`click`/`focus`/`blur`/`submit`) fire on `_internal`, so
+  `field.emit("submit")` on a retargeting composite reaches nothing bound through
+  `on()` — silently. Generating a real sequence at the inner entry *drives* the
+  widget instead of notifying about it.
+- **Dialogs live in `bootstack.dialogs`** — impl under `bootstack/dialogs/_impl/`.
+  `bootstack.widgets.dialogs` is GONE. ⚠ **`bootstack.dialogs.FormDialog` is a
+  public WRAPPER**, not the impl; reach the impl through `._internal`.
+- **`bs.App` / `bs.AppShell` config is FLAT kwargs.** There is **NO public
+  `settings=` / `AppSettings` / `app.settings`** (clean break, no shim — passing
+  `settings=` raises `TypeError`). Read/write as symmetric `app.*` properties;
+  locale-derived values are flat read-only props. Config-change events:
+  `app.on_theme_change(fn)`, `app.on_locale_change(fn)`. Persistence:
+  `bs.App.from_store(store)` + `store.update(theme=...)`.
+- **`bs.Signal()` is safe at module level** — the backing Tk var is created lazily.
+- **`textsignal=`** for text-bearing widgets; **`signal=`** for non-text. Never
+  expose `textvariable=`/`variable=` publicly.
+- **`TTKWrapperBase.__init__` overwrites `self._accent`** — store accent before
+  `super().__init__()`, re-assign after.
+- **`<<BsThemeChanged>>`** fires after full rebuild (use this). `<<ThemeChanged>>`
+  fires before.
+- ⚠ **Canvas/imperatively-painted widgets — NEVER bind ttk `<<ThemeChanged>>` on the
+  root/toplevel.** It re-fires **~1400× per rebuild** (once per style reconfigure);
+  root-bound × instances = thousands of redraws. Re-resolve via the **STD
   `Publisher`** (fires once, after rebuild) and **gate the redraw on visibility**.
-  `Frame` subclasses: call `self._enable_theme_repaint(self._redraw)` (the shared
-  hook — subscribes, gates on `winfo_viewable()`, defers off-screen to `<Map>`,
-  releases on `<Destroy>`). Non-`Frame` (Slider/RangeSlider/chrome): publisher +
-  own gate. Memory `reference_theme_repaint_mechanisms`. **#177 DONE (PR #181):**
-  textarea/code-editor (`StyleRegistry`/`SearchOverlay`/`IndentGuides`) migrated onto
-  `<<BsThemeChanged>>`; dead `FloodGauge` deleted. Nothing left on the racy event.
-- **`bs.SelectButton`** — button-styled non-editable picker. Distinct from `bs.MenuButton`
-  (action menu) and `bs.Select` (editable combobox).
-- **`bs.DataTable`** (renamed from `bs.Table`) — works with any
-  `DataSourceProtocol` source (decoupled from `SqliteDataSource`); identity reads
-  route through `_record_id`/`_public_record`/`_internal_fields`. Defaults to an
-  in-memory `SqliteDataSource` when given `rows=`. No built-in border (wrap in a
-  `Card`/`Frame`); `density=` and a footer separator are supported.
-- **`RadioGroup.set()` validates against keys**, not values.
-- **`bs.Form` uses `col_count=`**, not `columns=`.
-- **`ToggleGroup(padding=N)`** — bug fixed; safe to pass.
-- **`value=` ignored when `signal=` also passed** on boolean widgets — seed the Signal directly.
+  `Frame` subclasses: `self._enable_theme_repaint(self._redraw)`.
+- **`bs.DataTable`** (renamed from `bs.Table`) works with any `DataSourceProtocol`
+  source; identity reads route through
+  `_record_id`/`_public_record`/`_internal_fields`. No built-in border; `density=`
+  and a footer separator supported.
+- **`RadioGroup.set()` validates against keys**, not values. **`bs.Form` uses
+  `col_count=`**, not `columns=`. **`ToggleGroup(padding=N)`** is safe now.
+- ⚠ **`value=` ignored when `signal=` also passed** on boolean widgets — seed the
+  Signal directly.
+- ⚠ **`disabled` on Label** is not appropriate — Label is display-only.
+  **`color=`/`background_color=`** removed; use `accent=`/`surface=`.
 
 ### Boolean controls
-- **Switch/ToggleButton unsupported features** — Switch: no `on_icon`/`off_icon`/`icon_only`/
-  `show_indicator`/`tristate`/`density`. ToggleButton: no `tristate`/`show_indicator`.
-  Checkbox: only widget supporting `tristate`.
-- **Density** — Checkbox and Switch do NOT support `density=`. ToggleButton DOES.
+
+- **Switch** has no `on_icon`/`off_icon`/`icon_only`/`show_indicator`/`tristate`/
+  `density`. **ToggleButton** has no `tristate`/`show_indicator`. **Checkbox** is
+  the only widget supporting `tristate`. **Density**: Checkbox and Switch do NOT
+  support `density=`; ToggleButton does.
 - **Sphinx signatures** — give each subclass its own `__init__` to avoid inheriting
-  unsupported params. Use `:inherited-members: PublicWidgetBase` in autoclass.
+  unsupported params; `:inherited-members: PublicWidgetBase`.
 
 ### Layout widgets
-- **`height=`/`width=` on VStack/HStack** — setting one collapses the other axis.
-  Add `fill=` + `expand=True` for the unconstrained axis.
-- **`show_border=True` needs padding** — border is inside the frame edge.
+
+- **`height=`/`width=` on stacks** — setting one collapses the other axis. Add
+  `fill=` + `expand=True` for the unconstrained axis.
+- **`show_border=True` needs padding** — the border is inside the frame edge.
 - **`Grid columns=N` shorthand** — `columns=3` ≡ `[1,1,1]`. `0` == `'auto'`.
-- **`**extra_kw` removed from layout wrappers** — `Card`, `GroupBox`, `VStack`,
-  `HStack`, `Grid` only accept `**kwargs`.
-- **`variant=` removed from VStack/HStack** — use `bs.Card` for card-variant layout.
+- **`variant=` removed from stacks** — use `bs.Card` for card-variant layout.
 
 ### Dialogs
-- **7 doc pages** — `dialogs.rst` is toctree-only. `ColorDropperDialog` is internal.
+
+- **7 doc pages**; `dialogs.rst` is toctree-only. `ColorDropperDialog` is internal.
 - **`content_builder`** fills a PUBLIC content `Column` set as the active parent —
-  write the body parent-free (`def build(): bs.Label(...)`), like an App body;
-  `Dialog(padding=, gap=)` configures it. `def build(content)` gets an explicit
-  handle; old `def build(frame): with bs.Column(parent=frame)` still works (frame
-  is the public Column, via the `_RawTkContainer` bridge in `_resolve_parent`).
-  bootstack's own verb/Form dialogs render raw and opt out with `_raw_content=True`.
-- **`Frame.configure(surface=...)`** does NOT work at runtime — use `configure_style_options(surface=...)`.
-- **`Dialog.__init__`** is fully keyword-only; `parent=` not `master=`; `min_size=`/`max_size=`.
-- **`ButtonRole`** values: `"primary"`, `"secondary"`, `"danger"`, `"cancel"`.
-- **`bs-dialog-screenshot` CSS class** — dialog screenshots only; adds border + drop shadow.
+  write the body parent-free (`def build(): bs.Label(...)`). `Dialog(padding=, gap=)`
+  configures it. bootstack's own verb/Form dialogs render raw and opt out with
+  `_raw_content=True`.
+- **`Frame.configure(surface=...)`** does NOT work at runtime — use
+  `configure_style_options(surface=...)`.
+- **`Dialog.__init__`** is fully keyword-only; `parent=` not `master=`;
+  `min_size=`/`max_size=`. **`ButtonRole`**: `"primary"`, `"secondary"`, `"danger"`,
+  `"cancel"`.
+- ⚠ **`Dialog._toplevel` is never reset** — after a modal `show()` it is a DESTROYED
+  widget. Resolve the result target from `master`, and poll `winfo_ismapped()` in
+  modal tests.
+- ⚠ **Enter handling asks the bindtag AND the keysym, both internal.** The test is
+  **`keysym != "KP_Enter"`, NOT `== "Return"`, deliberately** — an unknown keysym
+  then reads as consumed, because standing down wrongly costs a dead key while
+  firing wrongly costs #441 itself. Pinned by its own test so it is not "simplified"
+  into the equality form. **Measured:** a button answers `<Key-Return>` **and**
+  `<Key-KP_Enter>`; a text widget answers only `Return`. ⚠ **Windows can reach this
+  path by NEITHER route** (synthesis yields keysym `??`; the physical key folds into
+  `Return`) — only X11 can run it end to end.
+- ⚠ **A DISABLED button swallowing Enter** was a real defect: a stand-down guard
+  must not assume a button that received the key acted on it.
+- ⚠ **`event_add` mapping real keys to a virtual `<<Submit>>` WORKS but does NOT
+  solve dispatch.** Measured: on a tag carrying **both**, the **PHYSICAL binding
+  wins and the virtual one does not run at all**; the mapping is
+  **per-INTERPRETER**, not per-widget; and **it does NOT change the bindtag walk**.
+  Adopt it for clarity if wanted, but **do not scope #441 around it.**
 
 ### Sliders / fields
-- **Slider/RangeSlider spacing** — `VStack gap=` does not visually separate tracks.
-  Use `margin_y=10` on each widget. Track heights: plain ≈ 24px, ticks ≈ 45px, badge+ticks ≈ 65px.
-- **Screenshot widths** — use `minsize=(720, 1)` for all input/field/slider scenes.
-- **`anchor_items="baseline"`** — invalid. Use `"s"`.
-- **`select.py` / `calendar.py` shadow stdlib** — use `selectfield.py` and `calendarwidget.py`.
 
-### Misc
-- **American English** — all docstrings and user-facing text. Spelling scrub still pending.
-- **`font="heading-md"`** not `"heading-md[bold]"` — headings already bold.
-- **`&` in `bs.Label` text** — Tkinter strips `&`. Use `"and"`.
+- **Slider/RangeSlider spacing** — `gap=` does not visually separate tracks; use
+  `margin_y=10`. Track heights: plain ≈ 24px, ticks ≈ 45px, badge+ticks ≈ 65px.
+- **`anchor_items="baseline"`** is invalid — use `"s"`.
+- **`select.py` / `calendar.py` shadow stdlib** — use `selectfield.py` and
+  `calendarwidget.py`.
+- **The property is `read_only`, not `readonly`** — a public widget is a plain
+  Python object, so a bogus attribute sticks **silently** and the field keeps
+  working. That produced a vacuous probe once.
+
+### Style rebuild / MenuButton / misc
+
+- **`configure_style_options` alone doesn't rebuild** — it only updates the stored
+  dict. Call `rebuild_style()` immediately after.
+- **`emit` wraps `event_generate`** — for internal widgets use `event_generate` with
+  `data=` natively.
+- **MenuButton item types**: public API uses `'command'`, `'check'`, `'radio'`,
+  `'separator'`; internal ContextMenu uses `'checkbutton'`/`'radiobutton'`.
+  Translate at the wrapper boundary via `_ITEM_TYPE_MAP`.
+- **`show_menu()` respects disabled state** — guard with
+  `instate(("!disabled", "!readonly"))`. **`disabled` property** — use
+  `instate(("disabled",))`, not string comparison on `cget`.
+- **American English** — all docstrings and user-facing text.
+- **`font="heading-md"`** not `"heading-md[bold]"` — headings are already bold.
+- **`&` in `bs.Label` text** — Tkinter strips it. Use `"and"`.
 - **`Expander` is internal** — use `bs.Accordion`.
-- **Run examples after editing** — always `python docs/examples/<widget>.py` before committing.
-- **Dark mode Note admonition** — override in `custom.css` inside `html[data-theme="dark"]`:
-  `--pst-color-info: #6ea8fe; --pst-color-info-bg: #0d306e`.
+- **Run examples after editing** — always `python docs/examples/<widget>.py` before
+  committing.
 - **`Shortcuts` service** — public surface is `bootstack.shortcuts`: the `Shortcuts`
-  class, the `Shortcut` dataclass, and the `get_shortcuts()` accessor.
-  `register(key, "Mod+S", fn)` + `bind_to(app)` wires the keyboard handler.
-  `format_shortcut(spec)` (in `_runtime/shortcuts.py`) resolves display text only
-  (no binding side effect) — it is INTERNAL, not exported from `bootstack.shortcuts`.
+  class, the `Shortcut` dataclass, `get_shortcuts()`. `format_shortcut(spec)` is
+  INTERNAL.
+
+### Screenshots
+
+Full patterns are in `docs/_dev/docs-authoring-patterns.md`. The traps:
+
+- **Stacks centre children** — wrap button rows in a row container with `fill="x"`.
+- **No `size=` by default**; use `minsize=(720, 1)` for input/field/slider rows.
+  Full-app widgets (PageStack, SideNav, AppShell) need `size=(W, H)`.
+- **Popdown menus** — the runner sets `topmost=True` at t=800ms and grabs at
+  t=950ms; call `show_menu()` at t=850ms. The menu Toplevel is captured via a
+  **screen** grab, so size the window to contain it.
+- **Dialog hero** — open non-modally at t=200ms, lift at t=850ms, shoot at t=950ms;
+  `app._capture_target = <toplevel>`.
+- **The runner crops 2px per edge** to remove the Windows border artifact.
 
 ---
 
 ## Architecture (settled)
 
-**Public API** is a composition layer over internal widgets. Public widgets are plain Python
-objects (NOT `tk.Widget` subclasses) holding `self._internal`.
+**Public API** is a composition layer over internal widgets. Public widgets are
+plain Python objects (**NOT** `tk.Widget` subclasses) holding `self._internal`.
 
-Constructor order: resolve parent → split layout kwargs → construct internal → attach to parent.
-`_split_layout_kwargs` strips pack/grid/place keys before internal widget construction.
-
-`.tk` property returns the underlying ttk widget — escape hatch, user's responsibility.
+Constructor order: resolve parent → split layout kwargs → construct internal →
+attach to parent. `.tk` returns the underlying ttk widget — escape hatch, the
+user's responsibility.
 
 ### Context-manager parenting
 
 ```python
 with bs.App(title="Demo", padding=16, gap=8) as app:
-    with bs.HStack(gap=4):
+    with bs.Row(gap=4):
         bs.Label("Hello")
         bs.Button("OK", on_click=lambda: ...)
 app.run()
@@ -3425,42 +1270,29 @@ app.run()
 
 `__enter__` pushes container, `__exit__` pops. App hides on enter, shows on exit.
 
-### Events  (redesigned 2026-06-05 — see memory `project_typed_events`)
+### Events
 
 ```python
-sub = widget.on_change(handler)   # → Subscription (cancellable)
-widget.on_change().debounce(300).listen(handler)  # → Stream (composable)
+sub = widget.on_change(handler)                    # -> Subscription (cancellable)
+widget.on_change().debounce(300).listen(handler)   # -> Stream (composable)
 ```
 
-All `on_*()` shorthands use `@overload`: no-arg → `Stream`, with handler → `Subscription`.
+All `on_*()` shorthands use `@overload`: no-arg → `Stream`, with handler →
+`Subscription`.
 
-**What the handler receives** (the redesign):
-- **Data events** (`change`, `input`, `select`, validation, …) → the typed
-  payload dataclass, **unpacked**: `on_change(lambda e: e.value)`. Payloads live
-  in `bootstack.events` (the catalog) — `from bootstack.events import ChangeEvent`,
-  `SliderEvent`, etc. Namespaced there ONLY, not top-level. ⚠ **Write the submodule
-  import, NOT `bs.events.ChangeEvent`** — `events` is absent from `bootstack.__all__`,
-  and `bs.events` resolves only because widget code imports the submodule
-  transitively. This line used to teach the `bs.events.X` spelling: it was written
-  2026-06-05, three days before `637b2407` (`refactor(api)!: scope framework
-  primitives into submodules`, the PR #104 curation) made it stale, and it then
-  seeded the same spelling into `docs/reference/events.rst` and
-  `PublicWidgetBase.emit`'s docstring (both fixed on PR #414). ⚠ **`tests/test_public_surface.py`
-  does NOT guard this** — it gates the curated top-level *name set* and that each
-  moved symbol is importable from its submodule; it never asserts a submodule is
-  unreachable as a `bs.*` attribute, which is why the drift went uncaught for two
-  months. ListView item events are the exception: a plain record `dict`
-  (`e["field"]`).
-- **Native events** (`click`, `hover`, `focus`, `blur`, `resize`, key, scroll) →
-  a curated, Tk-free `Event`: `widget`, `x/y/x_root/y_root`, `width/height`,
-  `delta`, modifier bools `ctrl/shift/alt/meta`, clean `key/char`, `time`.
-- `Button`/`Label` `on_click()` METHOD now passes the `Event` (the no-arg
-  `on_click=` constructor command is unchanged).
+- **Data events** (`change`, `input`, `select`, validation) → the typed payload
+  dataclass, **unpacked**: `on_change(lambda e: e.value)`. Payloads live in
+  `bootstack.events`. **ListView item events are the exception** — a plain record
+  `dict` (`e["field"]`).
+- **Native events** (`click`, `hover`, `focus`, `blur`, `resize`, key, scroll) → a
+  curated, Tk-free `Event`: `widget`, `x/y/x_root/y_root`, `width/height`, `delta`,
+  modifier bools `ctrl/shift/alt/meta`, clean `key/char`, `time`.
 - The generic `on(name, handler)` is typed `Callable[[Any], Any]` (string-keyed,
-  can't infer the payload); the precise types are on the `on_<event>()` shorthands.
-- Transform happens in `adapt_handler()` (`widgets/_core/base.py`); emit sites
-  build the dataclass: `event_generate("<<Change>>", data=ChangeEvent(...))`.
-  `_runtime/events.py` (the data-cache transport) is untouched.
+  can't infer the payload); precise types are on the `on_<event>()` shorthands.
+- Transform happens in `adapt_handler()` (`widgets/_core/base.py`); emit sites build
+  the dataclass. `on()` resolves through **one seam**,
+  `PublicWidgetBase._event_target(sequence)` — the ten retargeting wrappers override
+  only that. Regression coverage: `tests/widgets/public/test_event_target_seam.py`.
 
 ### Signals
 
@@ -3472,41 +1304,9 @@ sig.subscribe(lambda v: ...)
 
 ### Layout
 
-⚠ **This file's layout examples were STALE and are only partly swept — verify
-against a real signature before copying any of them.** Measured 2026-07-30 via
-`inspect.signature`:
-
-- **`bs.HStack` / `bs.VStack` DO NOT EXIST** — the stacks are **`bs.Row`** and
-  **`bs.Column`**. Every `HStack`/`VStack` still left in this file (the screenshot
-  patterns around the "HStack centering" gotcha, the layout-widget gotchas, the
-  context-manager example) is wrong. **Not yet swept** — do it opportunistically,
-  checking each replacement, rather than in one blind find-and-replace.
-- **`fill=` / `expand=` / `anchor=` / `sticky=` / `side=` on a layout child
-  RAISE**, they don't degrade. ⚠ **THERE ARE NOW TWO MESSAGES, and which one you
-  get depends on how the container PLACES the child — not on its class** (#426,
-  fixed on `fix/dialog-keyboard-modality`):
-  - **flex child** (`Row`, `Column`, and `Card`/`GroupBox`/`Accordion` in their
-    DEFAULT column mode) → advised `grow=` for leftover space along the stacking
-    axis, plus `horizontal=`/`vertical=` across it.
-  - **grid cell** (`Grid`, any page or pane, and any container built with
-    `layout="grid"`) → advised `horizontal=`/`vertical=` and weighting the row or
-    column on the container. ⚠ **It deliberately does NOT say `grow=`: a grid
-    cell FILTERS that kwarg away silently**, so recommending it would replace
-    advice that raises with advice that quietly does nothing.
-  ⚠ **This file was wrong about this twice and in both directions.** It first
-  called the old text a "good error — trust it over this file" when the error
-  named `align_self=`/`justify_self=`, neither of which has ever existed
-  (`bs.Picture(align_self="stretch")` raises `TclError: unknown option
-  "-align_self"`; `horizontal="stretch"` and `grow=1` both construct). Then the
-  first fix gave every container the flex advice, including four that grid.
-  **`grep -n '_reject_legacy_child_kwargs' src/` returns nine call sites** — the
-  `kind` argument is required and positional precisely so a caller who forgets
-  gets a `TypeError` rather than the wrong message reaching a user.
-  ⚠ **`attach()` is the one path still exempt** — its grid branch filters with no
-  rejection at all. Filed as **#445**, not fixed.
-- **Container defaults are `horizontal_items=` / `vertical_items=` /
-  `grow_items=` / `weights=`.** `fill_items=`, `expand_items=`, `anchor_items=`
-  and `sticky_items=` are all GONE from `Row`/`Column`/`Grid`.
+⚠ **`bs.HStack` / `bs.VStack` DO NOT EXIST** — the stacks are **`bs.Row`** and
+**`bs.Column`**. Any `HStack`/`VStack` surviving elsewhere in the docs or the
+archive is stale.
 
 ```python
 bs.Column(padding=20, gap=12)
@@ -3514,36 +1314,55 @@ bs.Row(gap=8, vertical_items="center")
 bs.Grid(columns=["auto", 1], gap=8)
 ```
 
-Full current signatures — `Row`/`Column`: `parent`, `horizontal_items`,
-`vertical_items`, `grow_items`, `weights`, `gap`, `padding`, `surface`,
-`show_border`, `width`, `height`, `**kwargs`. `Grid` swaps `grow_items`/`weights`
-for `columns`, `rows`, `auto_flow`.
+Signatures — `Row`/`Column`: `parent`, `horizontal_items`, `vertical_items`,
+`grow_items`, `weights`, `gap`, `padding`, `surface`, `show_border`, `width`,
+`height`, `**kwargs`. `Grid` swaps `grow_items`/`weights` for `columns`, `rows`,
+`auto_flow`.
 
----
+⚠ **Container defaults are `horizontal_items=` / `vertical_items=` / `grow_items=` /
+`weights=`.** `fill_items=`, `expand_items=`, `anchor_items=` and `sticky_items=`
+are all GONE.
 
-## Source structure
+⚠ **`fill=`/`expand=`/`anchor=`/`sticky=`/`side=` on a layout child RAISE**, they
+don't degrade. **THERE ARE TWO MESSAGES, and which one you get depends on how the
+container PLACES the child — not on its class:**
+
+- **flex child** (`Row`, `Column`, and `Card`/`GroupBox`/`Accordion` in their
+  DEFAULT column mode) → advised `grow=` plus `horizontal=`/`vertical=`.
+- **grid cell** (`Grid`, any page or pane, anything built with `layout="grid"`) →
+  advised `horizontal=`/`vertical=` and weighting the row or column. ⚠ **It
+  deliberately does NOT say `grow=`: a grid cell FILTERS that kwarg away silently**,
+  so recommending it would replace advice that raises with advice that quietly does
+  nothing.
+
+⚠ **This was wrong twice, in both directions** — first advising
+`align_self=`/`justify_self=`, which have never existed; then giving every container
+the flex advice, including four that grid. `grep -n '_reject_legacy_child_kwargs'
+src/` returns nine call sites; **the `kind` argument is required and positional
+precisely so a caller who forgets gets a `TypeError` rather than the wrong message
+reaching a user.** ⚠ **`attach()` is the one path still exempt** — its grid branch
+filters with no rejection at all. Filed as **#445**.
+
+### Source structure
 
 ```
 src/bootstack/
 ├── _core/       infrastructure (capabilities, colorutils, mixins, publisher, images)
 ├── _runtime/    Tk patches (app, toplevel, menu, shortcuts, events)
-├── assets/      locales, icons (themes are now Python, see style/themes/)
+├── assets/      locales, icons
 ├── data/        DataSource (Base, Memory, Sqlite, File)
 ├── dialogs/     dialog implementations
 ├── signals/     Signal, TraceOperation
-├── style/       Theme (public), themes/ (built-in Theme instances),
-│                Style/Typography/Font (internal engine), builders
+├── style/       Theme (public), themes/, Style/Typography/Font (internal), builders
 ├── validation/  ValidationRule, ValidationResult
 └── widgets/
     ├── _core/   public framework internals (base, container, context, events)
     ├── _impl/   internal implementation (primitives, composites, mixins)
     ├── app.py, button.py, ...  (~40 public wrapper files)
-    └── types.py AccentToken, WidgetDensity, SurfaceToken, per-widget variant Literals, etc.
+    └── types.py AccentToken, WidgetDensity, SurfaceToken, per-widget variants
 ```
 
----
-
-## Key API reference
+### Key API reference
 
 ```python
 import bootstack as bs
@@ -3554,7 +1373,6 @@ with bs.App(title="My App", size=(800,600), padding=16, gap=8) as app:
     bs.Button("OK", accent="primary", on_click=lambda: ...)
 app.run()
 
-# AppShell
 with bs.AppShell(title="My App", theme="bootstrap-light") as shell:
     shell.commandbar.add_button(icon="sun", command=bs.toggle_theme)
     with shell.menubar.add_menu("File") as file:
@@ -3572,37 +1390,31 @@ font    = "body|heading-lg|heading-md|caption|code|body+2[italic]"
 
 # Dialogs
 bs.alert("Done.")
-bs.confirm("Delete?")          # → bool
-bs.ask_string("Name:")         # → str | None
-bs.ask_integer("Age:", min_value=0)  # → int | None
-bs.ask_date("Pick date:")      # → date | None
-bs.ask_color()                 # → ColorChoice | None
-bs.ask_font()                  # → Font | None
+bs.confirm("Delete?")                 # -> bool
+bs.ask_string("Name:")                # -> str | None
+bs.ask_integer("Age:", min_value=0)   # -> int | None
+bs.ask_date("Pick date:")             # -> date | None
+bs.ask_color()                        # -> ColorChoice | None
+bs.ask_font()                         # -> Font | None
 ```
 
 ---
 
 ## Code standards
 
-**Docstrings:** one-line summary + description + `Args:` (name: description, no types).
-Single backtick `` `X` `` — never double. No RST roles. Valid values + defaults per kwarg.
+**Docstrings:** one-line summary + description + `Args:` (name: description, no
+types). Single backtick `` `X` `` — never double. No RST roles. Valid values +
+defaults per kwarg.
 
-**Dataclasses — document fields with ATTRIBUTE DOCSTRINGS, never `Args:`.** Put a
-one-line class summary (+ optional prose), then a short docstring string literal
-*directly under each field*. Do NOT also list the fields in an `Args:` block —
-that renders them twice (a synthesized "Parameters" block + the attribute list).
-autodoc `:members:` then renders each field once with its type + description.
-(Functions/methods keep using `Args:`.) The conf setting
-`autodoc_typehints_description_target = "documented"` suppresses the redundant
-synthesized Parameters block for dataclasses. Exemplars: `bootstack.events`
-payloads, `bootstack.style.theme.Theme`.
+**Dataclasses — document fields with ATTRIBUTE DOCSTRINGS, never `Args:`.** A
+one-line class summary, then a short docstring literal *directly under each field*.
+Do NOT also list fields in an `Args:` block — that renders them twice.
 
 ⚠ **No colon on the FIRST LINE of an attribute docstring.** napoleon splits the
-first line at the first `:` and jams the pre-colon text into a bogus `:type:`
-field — SILENTLY mangling the rendered type (it only *warns* when the split also
-breaks a backtick pair). A colon on line 2+ is fine. Use an em-dash/period to
-introduce an enum list: `"""Side to pack against — \`'top'\`, \`'bottom'\`..."""`,
-not `"""Side to pack against: ..."""`. (PR #106 swept all existing offenders.)
+first line at the first `:` and jams the pre-colon text into a bogus `:type:` field,
+**SILENTLY mangling the rendered type** (it only *warns* when the split also breaks
+a backtick pair). A colon on line 2+ is fine. Use an em-dash or period to introduce
+an enum list.
 
 ```python
 @dataclass
@@ -3616,6 +1428,7 @@ class ChangeEvent:
 ```
 
 **`on_*()` shorthands:**
+
 ```python
 @overload
 def on_change(self) -> Stream: ...
@@ -3625,16 +1438,57 @@ def on_change(self, handler=None):
     return self.on("change", handler)
 ```
 
+**No Tkinter in docs or docstrings** — no `tk.*` types or terms unless strictly
+necessary; don't feature the escape hatch. LEFT BY DESIGN: `.tk`/`.var`
+escape-hatch property docstrings, `signals/integration.py` (the Tk bridge).
+
 ---
 
 ## Open bugs
 
-- `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
+- `value=` silently ignored when `signal=`/`variable=` also passed (all boolean
+  widgets)
 - `Style._tk_widgets` grows forever — partially resolved; pages are never destroyed
 
-ButtonGroup/ToggleGroup now have **separate** style builders: `ButtonGroup`
-(action widgets) uses `style/builders/buttongroup.py`; `ToggleGroup` (selection
-widgets) uses `style/builders/togglegroup.py` (registered for the `ToggleGroup`
-ttk class; composite sets `ttk_class='ToggleGroup'`). They share the baked
-`button_group_*` nine-patch shapes but have independent colors/normal states. The
-old ToggleGroup solid-variant contrast issue is fixed.
+---
+
+## Recently shipped — pointers only
+
+**Full detail — root causes, decisions, gotchas — is in
+`docs/_dev/handoff-archive.md`, indexed by issue/PR number.**
+
+| Release | Contents |
+|---|---|
+| **0.3.2** (2026-08-13) | *Read-only select fields*. **#453** — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty and is **derived, never storage** now; `TimeField` fixed with it |
+| **0.3.1** (2026-08-12) | *Dialog keyboard and modality*. Four fixes, no new public surface. **#441** Enter in a multi-line field inserted its newline and the dialog closed on top of it · **#440** a nested modal released the grab entirely instead of handing it back · **#439** the default button's `focus_set()` ran while the window was hidden, where Tk silently ignores it · **#426** the layout migration error recommended kwargs renamed before release |
+| **0.3.0** (2026-08-11) | *Screen capture and dialog results*. **A minor carrying two additions and SIX fixes.** **#427** `widget.capture(path)` · **#429** a click during `settle()` re-entered the handler; it now holds `tk busy` (the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS) · **#428** `FormDialog.result` returned display text because it read after every editor was destroyed · **#437** a refused press still recorded its result · **#438** `DialogButton.closes` meant three things and is REMOVED. ⚠ **`tk busy` is a no-op on macOS** (a toolkit limitation, measured in plain tkinter) and real on Windows |
+| **0.2.3** (2026-08-08) | *Import without IDLE*. **#430** — `import bootstack` raised `ModuleNotFoundError` on any Python without `idlelib` (Debian/Ubuntu package IDLE separately), taking down the **whole framework**. `idlelib` is stdlib so it could never be a declared dependency; `WidgetRedirector` is **ported** into `textarea/redirector.py`. ⚠ `NOTICE` carries a PSF attribution **scoped by measurement to `redirector.py` ALONE** — the other five IDLE-derived modules share 0–7% and implement IDLE's *designs*, which is an idea, not protected expression |
+| **0.2.2** (2026-08-06) | *DataTable group headers and row events*. #417 · #418/#420 · #419 · #421. **Published MANUALLY during an Actions outage.** ⚠ Two behavior notes: a double-click delivers `on_row_click` **click, double, click** (the double lands BETWEEN the clicks, because `on_row_click` rides `<ButtonRelease-1>` while `<Double-1>` is a ButtonPress pattern), and a read-only table's second press no longer repeats the first press's action |
+| **0.2.1** (2026-08-05) | *Event and shortcut correctness*. #403/#404, #406, #405, and the #392-review cluster (#396, #398, #399, #400). **#397 and #401 fixed but deliberately absent from the CHANGELOG**, being unreachable from public API |
+| **0.2.0** (2026-07-30) | #332 · #379/#385 · #381 `InvalidChoiceError` on bad behavior-mode kwargs · #387 · #388 · #394/#395 · #392. **A minor, not a patch**, because #381 raises where it used to accept |
+| **0.1.x** | 0.1.8 macOS sizing on Tk 9 · 0.1.7 Tk 9 scroll contract · 0.1.6 seven form/field fixes · 0.1.5 boolean state reads · 0.1.4 · 0.1.3 · 0.1.2 · 0.1.1 · **0.1.0 STABLE** — public compose API FROZEN under SemVer (`bootstack.dev` excluded) |
+
+**Also shipped, unreleased or entry-free:** **#407** (harness scene reset —
+`conftest._region()` returned the root on a decorated App, so the scene reset had
+been **a no-op for content widgets for the entire life of the shared-root
+harness**; shared leg **215s → 56s**) · **#380** (CI, PR #451) · **#456** (PR #457
+— `DataTable(context_menus=)` never reached the widget, and `on_row_right_click` is
+now decoupled from it) · **#409** (PR #414, docs).
+
+Pre-0.1.0 initiatives are also in the archive: hot reload, builder-function
+scaffolds, the docs-IA restructure, splash screen, icon-DPI sizing, the navigation
+API reshape, the layout redesign, undecorated window chrome, the media widget
+suite, the field-family reviews, field validation redesign, and the API Reference
+restructure.
+
+---
+
+## Carryover (deferred)
+
+- **Reference docs examples** — LARGELY DONE (PR #103). Remaining: opportunistic
+  enrichment of any still-thin reference page.
+- **Docs build is warning-free** (PR #106). ⚠ **Keep it that way: incremental Sphinx
+  builds MASK warnings** — always clean-build to verify. ⚠ **A default `-W` build
+  does NOT catch a dangling py xref — only `-n` does.**
+- **Visual theme builder** (Phase 5, near-ship — emits `bs.Theme(...)` code). **Do
+  NOT build yet.**
