@@ -222,13 +222,29 @@ States
 Reactive binding
 ~~~~~~~~~~~~~~~~
 
-Bind a ``Signal[str]`` with ``signal=``. The field and signal stay in sync.
+Bind a ``Signal`` with ``signal=``. The field and signal stay in sync.
 
 .. code-block:: python
 
    color = bs.Signal("Red")
    bs.Select(["Red", "Green", "Blue"], signal=color)
    color.subscribe(lambda v: apply_color(v))
+
+The signal carries the option's **value**, not the label shown for it. When the
+two differ, seed the signal with a value and the field displays the matching
+label:
+
+.. code-block:: python
+
+   size = bs.Signal("m")
+   bs.Select([("Small", "s"), ("Medium", "m")], signal=size)
+   # the field shows "Medium"
+
+   size.set("s")     # the field shows "Small"
+   size()            # -> 's'
+
+Setting the signal selects the matching option and raises a change event, and
+choosing an option writes that option's value back.
 
 Updating options at runtime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
