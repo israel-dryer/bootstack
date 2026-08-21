@@ -203,9 +203,9 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | **`51a44c1c`** — PR #464 merged 2026-08-20 (the wrapper audit). `PLAN.md` archived to `development/plan-463-wrapper-audit.md` and recreated as an explicit empty |
+| `main` | **`c9fda068`** — 2026-08-21, `docs(claude):` settling the audit's four decisions. **UNPUSHED at handoff time; `origin/main` is one behind at `df59254e`** — push it or the next session reads a stale remote. Prior: PR #464 merged 2026-08-20 (the wrapper audit), whose `PLAN.md` is archived at `development/plan-463-wrapper-audit.md` |
 | branches | **NONE in flight.** `audit/wrapper-parameter-delta` merged and deleted local + remote (head **`41828ba2`**); `fix/select-signal-value-458` merged earlier (head **`51d09f6e`**). ⚠ **Both are squash/merge history now, so NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **`PLAN.md` PRESENT — the #383 gap-3 plan, NOT STARTED and blocked on its own §1.** Written 2026-08-20 for the next session; round cap **3**. The audit's plan is archived at `development/plan-463-wrapper-audit.md`. **NO `REVIEW.md`** — correct, no round has opened |
+| root of `main` | **`PLAN.md` PRESENT — the #383 gap-3 plan, NOT STARTED and NO LONGER BLOCKED.** §1 was answered 2026-08-21 (default-strict at the seam, declarative class-flag opt-out) and the plan carries the code sketch. Round cap **3**; base `c9fda068`. **NO `REVIEW.md`** — correct, no round has opened |
 | released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
 | next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
@@ -335,8 +335,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FOUR UNMILESTONED OPEN ISSUES — #431, #436, #452, #455.** All four predate the
-current work. Verify rather than counting by hand:
+**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #465.** ⚠ **#465 is an EXTERNAL BUG REPORT and the only one that is not this project's own backlog** — filed 2026-08-20 by `bLynnb2762` against `0.3.2`, and it sat unread while the audit merged the same day. **Read it before picking anything else up.** Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -351,6 +350,18 @@ current work. Verify rather than counting by hand:
   without re-deriving, plus `Field.readonly(False)` disabling the field instead of
   clearing read-only. **Latent: zero callers** anywhere. Unmilestoned because it
   gates nothing.
+- ⚠ **#465 — `Select` accepts `add_validation_rule()` but has NO `.error` or
+  `.valid`.** An external report, labeled `bug`, **reproduced and mechanism confirmed
+  2026-08-21**: `select.py:88` already says it out loud — ***Select is the one
+  Field-backed widget that does not inherit `FieldAddonMixin`***. It hand-copies
+  `add_validation_rule` and `validate` from that mixin (lines 175/199), plus
+  `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other
+  seven field widgets inherit. `hasattr(bs.Select, 'error')` is `False`; MRO is
+  `Select -> ValueSignalMixin -> PublicWidgetBase`. ⚠ **The fix ADDS PUBLIC SURFACE,
+  so it needs a MINOR** — and `0.4.0` is a minor being cut anyway, which is exactly
+  the case this file says to ask about rather than park out of habit. **Milestone is
+  a scope call — ASK.** ⚠ **Do not reflexively make `Select` inherit
+  `FieldAddonMixin`**; it opts out deliberately and the comment predates this report.
 
 ⚠ **"DO NOT ASSIGN A MILESTONE UNASKED" IS NARROWER THAN IT READS.** It guards
 against making SCOPE calls for the maintainer. **It was never about a blocker,

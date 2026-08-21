@@ -2,7 +2,7 @@
 
 **Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
 **Branch:** not yet cut — suggested `fix/unknown-kwarg-strictness-383`
-**Base:** `main` @ `6b2a3219`
+**Base:** `main` @ `c9fda068`
 **Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
 **Round cap: 3** — it lands on a minor.
 
