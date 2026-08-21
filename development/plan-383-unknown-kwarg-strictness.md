@@ -1,8 +1,12 @@
 # PLAN — mode-3 strictness: unknown keyword names (#383 gap 3)
 
+⚠ **PARKED 2026-08-21, NOT ABANDONED — this is a plan waiting for its branch, not the record of a shipped one.** It was moved out of the repo root so `PLAN.md` could hold #465, which gates the nearer release. **Move it back to `PLAN.md` when `fix/unknown-kwarg-strictness-383` is cut**, and re-check the base SHA below before trusting it.
+
+⚠ **Its milestone was RE-CONFIRMED the same day, so do not re-open the question:** #383 stays on `0.5.0`, not `0.4.0`. `0.5.0`'s other three issues (#369, #408, #416) all change what the framework accepts or returns, so moving #383 forward would not spare users a migration — it would give them **two** strictness migrations instead of one. That is the "breaks batched, not dribbled" rule, and it is the whole reason for the grouping.
+
 **Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
 **Branch:** not yet cut — suggested `fix/unknown-kwarg-strictness-383`
-**Base:** `main` @ `c9fda068`
+**Base when written:** `main` @ `c9fda068` — ⚠ **STALE, and it will keep going stale while this sits parked.** Re-base on `main`'s tip when the branch is cut; the analysis below does not depend on the SHA, but a round record that quotes it will.
 **Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
 **Round cap: 3** — it lands on a minor.
 
