@@ -3,10 +3,10 @@
 **Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
 **Branch:** not yet cut — suggested `fix/unknown-kwarg-strictness-383`
 **Base:** `main` @ `6b2a3219`
-**Status:** ⏭ **NOT STARTED, AND BLOCKED ON ONE MAINTAINER DECISION** (§1). Everything else below is measured and settled.
+**Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
 **Round cap: 3** — it lands on a minor.
 
-⚠ **DO NOT START IMPLEMENTING UNTIL §1 IS ANSWERED.** The rest of this plan is written so that answering it takes one reading, not a re-investigation. Analysis done 2026-08-20; **the numbers come from the merged audit (#463, PR #464) and were re-verified against the source, not recalled.**
+Analysis done 2026-08-20; **the numbers come from the merged audit (#463, PR #464) and were re-verified against the source, not recalled.**
 
 ---
 
@@ -53,13 +53,29 @@ if kwargs:
 
 ---
 
-## §1 — THE DECISION (blocking)
+## §1 — ✅ DECIDED (maintainer, 2026-08-21): DEFAULT-STRICT AT THE SEAM, DECLARATIVE OPT-OUT
 
-**Option B — opt-in.** A sibling `self._reject_unknown_kwargs(kwargs)` called after each split. **40 edits.** Each wrapper controls its own ordering.
+`_split_layout_kwargs` itself rejects whatever survives the split. The **5** deliberate forwarders (Chart, MenuButton, Picture, StatusBar, Toolbar) opt out with a **class flag**, not a per-call keyword. **~5 edits, not 40.**
 
-**Option A/C — default-strict at the seam.** `_split_layout_kwargs` itself rejects; the **5** forwarders opt out, via a keyword (`strict=False`) or a class flag (`_forwards_kwargs = True`). **5 edits.**
+```python
+# _core/base.py — the seam
+def _split_layout_kwargs(self, kwargs):   # was @staticmethod
+    layout_kw = _pop_layout_keys(kwargs)
+    if kwargs and not getattr(type(self), "_forwards_kwargs", False):
+        raise TypeError(
+            f"{type(self).__name__}() got unexpected "
+            f"keyword argument(s): {', '.join(sorted(kwargs))}"
+        )
+    return layout_kw
 
-**Recommendation: A/C, and the edit count is not the reason.** ⚠ **Under opt-in, the next wrapper anyone writes silently joins the 40.** Under default-strict a new wrapper is strict for free and the drift cannot recur. Given the defect class this whole milestone exists for — *"the wrappers were not sufficiently designed or reviewed"* — a fix that has to be remembered is the wrong shape.
+# toolbar.py — and the other four forwarders
+class Toolbar(PublicWidgetBase):
+    _forwards_kwargs = True   # forwards leftovers on purpose
+```
+
+**The rejected option, so it is not re-proposed:** opt-in, a sibling `self._reject_unknown_kwargs(kwargs)` after each of 40 splits. ⚠ **Under opt-in the next wrapper anyone writes silently joins the 40.** Under default-strict a new wrapper is strict for free and the drift cannot recur. Given the defect class this whole milestone exists for — *"the wrappers were not sufficiently designed or reviewed"* — a fix that has to be remembered is the wrong shape. **The edit count was never the reason.**
+
+⚠ **The class flag was chosen over a `strict=False` keyword deliberately** — see §1's second-order argument below. It is what collapses the durable guard (§5) to about ten lines instead of another source scan.
 
 **The seam is cheaper than it looks.** `_split_layout_kwargs` is a `@staticmethod` (`_core/base.py:119`), so it cannot name the widget in an error message — but **all 51 call sites already spell it `self._split_layout_kwargs(...)`** (verified: `grep -rn "_split_layout_kwargs(" | grep -v "self\._split_layout_kwargs"` returns nothing). Converting it to an instance method is source-compatible at every call site and yields `type(self).__name__`, which is exactly what the shipped guard uses.
 
