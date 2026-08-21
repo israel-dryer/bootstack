@@ -207,7 +207,7 @@ release has already run on.
 | branches | **NONE in flight.** `audit/wrapper-parameter-delta` merged and deleted local + remote (head **`41828ba2`**); `fix/select-signal-value-458` merged earlier (head **`51d09f6e`**). ⚠ **Both are squash/merge history now, so NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
 | root of `main` | **`PLAN.md` PRESENT — the #383 gap-3 plan, NOT STARTED and NO LONGER BLOCKED.** §1 was answered 2026-08-21 (default-strict at the seam, declarative class-flag opt-out) and the plan carries the code sketch. Round cap **3**; base `c9fda068`. **NO `REVIEW.md`** — correct, no round has opened |
 | released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
-| next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461 still open.** The milestone cannot close yet |
+| next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461, #465 still open.** #465 was milestoned here 2026-08-21 (maintainer). The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **1500 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-20, Windows box, `py -3.12`. ⚠ **See the environmental note below before comparing this to anything older** |
 | open milestones | **11** — verified against `gh` 2026-08-20, and they agree 1:1 with the table below. `Wrapper and internal parity` is the new one |
@@ -241,6 +241,16 @@ Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was
 
 - **#461 — `SelectButton` has #458's defect, unfixed.** Identical `signal -> textsignal` wiring at `selectbutton.py:85`. Seeding with the **label** works; seeding with the **value** — what `value=` takes and what the docstring promises — gives `text='2' value='2' selection=None`, and `sel.value = "3"` writes the *label* back. ⚠ **Narrower than #458**: plain `list[str]` options are unaffected and `<<Change>>` does fire. **On `0.4.0`, and it is why that milestone is a MINOR.**
 - **#460 — eight widgets annotate `.signal` as `Signal | None` and can never return `None`.** The wrappers forward with `getattr(self._internal, 'signal', None)` but the internal **lazily creates on first access**, so the default is dead code and the `| None` is **unreachable, not merely unobserved**. ⚠ **Do not "fix" `TextArea`, `CodeEditor`, or the `ValueSignalMixin` trio** — they genuinely return `None`. `Slider` is the honest exemplar.
+
+#### ⚠ #465 — the EXTERNAL report. Milestoned to `0.4.0` on 2026-08-21; NOT FIXED.
+
+**`Select` accepts `add_validation_rule()` but has NO `.error` or `.valid`.** Filed 2026-08-20 by `bLynnb2762` against `0.3.2`, labeled `bug` — **the only open issue that is not this project's own backlog**, and it sat unread while the audit merged the same day.
+
+**Reproduced and mechanism confirmed 2026-08-21, so do not re-derive it:** `select.py:88` already says it out loud — ***`Select` is the one Field-backed widget that does not inherit `FieldAddonMixin`***. It hand-copies `add_validation_rule` and `validate` from that mixin (lines 175/199), plus `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other seven field widgets inherit. `hasattr(bs.Select, 'error')` is `False`; MRO is `Select -> ValueSignalMixin -> PublicWidgetBase`.
+
+⚠ **Do not reflexively make `Select` inherit `FieldAddonMixin`** — it opts out deliberately and the comment predates this report.
+
+⚠ **The fix ADDS PUBLIC SURFACE, so it needs a MINOR**, which is why it landed on `0.4.0` rather than the patch line: that milestone is a minor already (forced by #461), and this file's own rule is **to ask what else is ready when a minor is being cut anyway rather than parking a fix out of habit.** The milestone was **asked for and given**, not assigned unasked.
 
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
@@ -283,7 +293,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (merged 2026-08-20), **#459, #460, #461**. Cut 2026-08-19; the next release out the door | 3 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (merged 2026-08-20), **#459, #460, #461, #465**. Cut 2026-08-19; the next release out the door. ⚠ **#465 joined 2026-08-21** — an EXTERNAL report whose fix adds public surface, so it needs a minor and this one is a minor already; the milestone endpoint therefore reads `open=4 closed=2`, and the second "closed" is **PR #462**, not an issue | 4 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -335,7 +345,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #465.** ⚠ **#465 is an EXTERNAL BUG REPORT and the only one that is not this project's own backlog** — filed 2026-08-20 by `bLynnb2762` against `0.3.2`, and it sat unread while the audit merged the same day. **Read it before picking anything else up.** Verify rather than counting by hand:
+**FOUR UNMILESTONED OPEN ISSUES — #431, #436, #452, #455.** ⚠ **It was FIVE until 2026-08-21: #465 is now on `0.4.0`** (maintainer), and its detail moved up to its own section above — **do not re-file it here.** Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -350,19 +360,6 @@ authority for *issues*; use the API figure only for the open/closed shape.
   without re-deriving, plus `Field.readonly(False)` disabling the field instead of
   clearing read-only. **Latent: zero callers** anywhere. Unmilestoned because it
   gates nothing.
-- ⚠ **#465 — `Select` accepts `add_validation_rule()` but has NO `.error` or
-  `.valid`.** An external report, labeled `bug`, **reproduced and mechanism confirmed
-  2026-08-21**: `select.py:88` already says it out loud — ***Select is the one
-  Field-backed widget that does not inherit `FieldAddonMixin`***. It hand-copies
-  `add_validation_rule` and `validate` from that mixin (lines 175/199), plus
-  `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other
-  seven field widgets inherit. `hasattr(bs.Select, 'error')` is `False`; MRO is
-  `Select -> ValueSignalMixin -> PublicWidgetBase`. ⚠ **The fix ADDS PUBLIC SURFACE,
-  so it needs a MINOR** — and `0.4.0` is a minor being cut anyway, which is exactly
-  the case this file says to ask about rather than park out of habit. **Milestone is
-  a scope call — ASK.** ⚠ **Do not reflexively make `Select` inherit
-  `FieldAddonMixin`**; it opts out deliberately and the comment predates this report.
-
 ⚠ **"DO NOT ASSIGN A MILESTONE UNASKED" IS NARROWER THAN IT READS.** It guards
 against making SCOPE calls for the maintainer. **It was never about a blocker,
 whose placement is a fact rather than a choice** — an issue that gates a release
