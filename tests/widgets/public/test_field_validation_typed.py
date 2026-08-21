@@ -143,6 +143,12 @@ def test_range_rule_empty_field_is_not_out_of_range(app):
         (lambda: bs.NumberField(value=1), "pattern"),
         (lambda: bs.DateField(value="2024-01-01"), "email"),
         (lambda: bs.TextField(), "range"),
+        # #465 — Select joined the family gate when it inherited
+        # FieldAddonMixin. Before that it had no _VALIDATION_KIND at all,
+        # so a range rule attached silently and could never pass: the rule
+        # receives the value as a string and compares it against numbers,
+        # so 7 read as out of 5..10 exactly like 1 and 12 did.
+        (lambda: bs.Select([("Five", "5")], value="5"), "range"),
     ],
 )
 def test_inapplicable_rule_rejected_at_attach(app, factory, rule):
@@ -163,6 +169,14 @@ def test_inapplicable_rule_rejected_at_attach(app, factory, rule):
         (lambda: bs.NumberField(value=1), "custom", {"func": lambda v: v > 0}),
         (lambda: bs.DateField(value="2024-01-01"), "required", {}),
         (lambda: bs.TimeField(value="08:30"), "required", {}),
+        # #465 — the other six rule types must STILL attach to a Select.
+        # The gate moved exactly one rule; pinning only the rejection would
+        # pass just as well if it had over-rejected the whole set.
+        (lambda: bs.Select([("Five", "5")], value="5"), "required", {}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "stringLength", {"min": 1}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "pattern", {"pattern": "^.*$"}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "email", {}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "custom", {"func": lambda v: True}),
     ],
 )
 def test_applicable_rule_attaches_cleanly(app, factory, rule, kwargs):

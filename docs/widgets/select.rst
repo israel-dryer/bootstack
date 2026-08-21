@@ -69,6 +69,14 @@ option list a rule sees ``"US"`` rather than ``"United States"``. A ``'custom'``
 rule runs on ``validate()`` and on form submit; pass ``trigger="always"`` to
 have it report as soon as the value changes. See :doc:`/reference/validation`.
 
+Validity is reactive state. ``select.valid`` is a ``Signal[bool]`` and
+``select.error`` a ``Signal[str]`` (the current message, ``""`` when valid) —
+bind the error straight to a label and it keeps itself in sync:
+
+.. code-block:: python
+
+   bs.Label(textsignal=country.error, accent="danger")   # shows and clears itself
+
 With ``allow_custom_values=True`` the user may also *type* a value of their own.
 
 Carrying extra data (the data bag)
