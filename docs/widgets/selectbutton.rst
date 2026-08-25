@@ -115,7 +115,7 @@ value.
 
 .. code-block:: python
 
-   theme = bs.Signal("light")
+   theme = bs.Signal("Light")
    bs.SelectButton(["Light", "Dark", "Auto"], signal=theme)
    theme.subscribe(lambda v: bs.set_theme(v.lower()))
 
