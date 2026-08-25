@@ -9,10 +9,8 @@
 **Issue:** [#472](https://github.com/israel-dryer/bootstack/issues/472) (split out of [#383](https://github.com/israel-dryer/bootstack/issues/383) gap 3) · **Milestone:** `0.4.0 — Signal binding on fields`
 **Branch:** `fix/unknown-kwarg-strictness-383`, cut 2026-08-25
 **Base:** `main` @ **`339177f5`** (re-based 2026-08-25 when the branch was cut; it was written against `c9fda068`). ⚠ **A round record must quote THIS SHA**, and `git rev-parse origin/main` settles it rather than trusting the line.
-**Status: ✅ IMPLEMENTED at `6808de00`** (2026-08-25). **Round 1 reviews `git diff origin/main...HEAD`** — base `339177f5`, one production commit. ⚠ **A REVIEW HAS NOT RUN. This session implemented, so it must not review** (`REVIEW-PROTOCOL.md` core rule). Hand a fresh session this file and nothing else.
-**Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED, BRANCH CUT.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
-**Round cap: 3 · SPENT: 0.**
-**Round cap: 3** — it lands on a minor.
+**Status:** ✅ **IMPLEMENTED at `6808de00`, NOT YET REVIEWED.** §1 was answered by the maintainer 2026-08-21 — default-strict at the seam, declarative class-flag opt-out — and that is what shipped.
+**Round cap: 3 · SPENT: 0.** ⚠ **THE REVIEWER MUST BE A FRESH SESSION** — the session that wrote this implementation also wrote this paragraph, which is exactly what `REVIEW-PROTOCOL.md`'s core rule exists to separate. **Round 1 reviews `git diff origin/main...HEAD -- src/`**: base `339177f5`, 74 insertions across 11 files.
 
 Analysis done 2026-08-20; **the numbers come from the merged audit (#463, PR #464) and were re-verified against the source, not recalled.**
 
@@ -129,6 +127,37 @@ A parameter-level guard test written to the audit's five failure modes. **This b
 - The audit probe's coverage hole. **84 params across `AppShell` (31), `Workbench` (34), `ThemeToggle`, `Notification` and `Snackbar` are UNANALYZED, not clean.**
 
 ---
+
+## ⏭ WHAT THE IMPLEMENTATION ACTUALLY DID — written for the reviewer, by the implementer
+
+**Read this before the diff.** It records where the implementation left the plan, so a round-1 finding
+lands on the decision rather than re-deriving it. It is NOT an argument that any of it was right — that is
+the review's job, and the plan's rationale sections below are deliberately not repeated here.
+
+**In scope, as planned:** the seam guard (`_core/base.py`, `@staticmethod` → instance method plus the
+raise), the five `_forwards_kwargs` opt-outs, the four `textsignal` re-orderings, tests for each.
+
+### Three deviations, each of which a reviewer should weigh independently
+
+1. ⚠ **`form.py` was changed, and it is NOT in the scope boundary below.** `choice_list()` returned as soon
+   as `items` matched, leaving the losing `values` alias in the bag, where it reached `Select(values=[...])`.
+   The split had been discarding it silently; the guard turns that into a hard failure, so the branch could
+   not ship without it. **The test covering it says in its own comment that the alias "must not leak into
+   the editor's constructor" — it did, and the test passed only because of the defect this branch fixes.**
+   Whether a production fix outside the stated scope belongs in this commit is a real question.
+2. **`test_chart.py` passed `surface="card"` to `bs.Card`, which has no such parameter** and computes its
+   own surface from the parent. A silent no-op; removed. The assertion it guards still holds.
+3. **The verification instrument was swapped.** See the Verification section — the probe the plan named
+   would have reported this fix as a tool bug.
+
+### ⚠ Three things the implementer did NOT verify, listed so silence is not read as coverage
+
+- **That the five forwarders NEED the opt-out.** The plan asserts they forward on purpose; that was taken as
+  given. What was checked is only that each still rejects a bogus key *via its internal*. §4 leaves open
+  whether they deserve a real error instead of an exemption — unanswered here.
+- **Where `_forwards_kwargs` should live.** It is a new class-level contract on `PublicWidgetBase`, chosen
+  by the implementer without a second opinion.
+- **Anything about #383's gaps 1 and 2.** Untouched, still on `0.5.0`.
 
 ## Scope boundaries
 
