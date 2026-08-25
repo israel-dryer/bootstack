@@ -148,11 +148,15 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-25) — **#472, #465 and #449 SHIPPED. NOTHING IS IN FLIGHT.**
+### ★ START HERE (2026-08-25) — **#461 + #459 ARE IN FLIGHT, AWAITING ROUND 1.**
 
-**⏭ NOTHING IS IN FLIGHT AND THERE IS NO WORK IN HAND.** #472 merged 2026-08-25 (**PR #473**, merge commit `935cf2c1`), after #465 (PR #471) and #449 (PR #470). **Round 1 found no blockers; cap 3, spent 1.** Its plan and review are archived at `development/plan-472-unknown-kwarg-strictness.md` and `development/review-472-unknown-kwarg-strictness.md`. ⚠ **Named for #472, NOT #383: #383 did NOT ship** — gaps 1 and 2 are still open on `0.5.0`.
+**⏭ IN HAND: `fix/selectbutton-signal-value-461`, two commits, NOT pushed and NO PR.** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal) — one commit each, `c85d9220` and `f39b0a88`, off `main` at `ede2d57e`. **`PLAN.md` is on the branch and was written up front; cap 3, spent 0.** ⚠ **Round 1 has NOT run — a session that wrote this code must not review it.** Review the branch: `git diff main...HEAD`.
 
-**Pick from the backlog.** `0.4.0` still needs **#459, #460, #461, #467**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
+⚠ **#461 RAISES WHERE IT USED TO ACCEPT, by maintainer decision 2026-08-25: `signal=` is value-space now, and seeding with a label raises exactly as `value=` already did for the same string.** Measured both sides; the whole account is in `PLAN.md`. **Do not re-propose tolerating labels** — a fallback puts the two spaces back on speaking terms, which is the ambiguity the fix removes.
+
+⚠ **TWO THINGS THE BRANCH CHANGES THAT ARE NOT ITS OWN:** `SelectButton` leaves **#460's population of eight** (the `| None` property it named is deleted), so that issue's table needs a comment at merge; and an off-list signal write now raises and leaves the signal ahead of the button, which is **#369's** family decision, not this fix's. The test pins the raise and deliberately not the state it leaves behind.
+
+**After it merges, `0.4.0` still needs #460 and #467**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
 
 **Three things from #472 outlive it. Read the archived review before touching the seam, the docs scripts, or #466:**
 
