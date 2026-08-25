@@ -225,3 +225,26 @@ def test_select_does_not_gate_rules_by_value_kind(app):
     for widget in (bs.TextField, bs.PasswordField, bs.PathField, bs.SpinnerField,
                    bs.NumberField, bs.DateField, bs.TimeField):
         assert widget._VALIDATION_KIND is not None, widget.__name__
+
+
+# -- the rule-type guard came with the inheritance (review round 2) ----------
+
+
+def test_select_rejects_a_non_string_rule_type(app):
+    """The one thing about a `Select` a caller can observe changing.
+
+    On `main` the hand-copied `add_validation_rule` forwarded anything at all,
+    so passing a rule OBJECT instead of the rule-type string was accepted and
+    the field then reported valid forever -- #465's own defect one level down.
+    The mixin's guard came along with the inheritance and the CHANGELOG
+    announces it, so it is pinned rather than left to a claim.
+    """
+    sel = bs.Select([("One", "1")], value="1")
+    app._tk_root.update_idletasks()
+
+    with pytest.raises(TypeError):
+        sel.add_validation_rule(object())
+
+    # ...and the guard must not have swallowed the working spelling with it
+    sel.add_validation_rule("required")
+    assert sel.validate() is True
