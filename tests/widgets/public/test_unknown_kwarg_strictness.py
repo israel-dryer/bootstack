@@ -27,6 +27,21 @@ STRICT = ["TextField", "Label", "Button", "Select", "DataTable", "Row", "Grid",
 
 FORWARDERS = ["Chart", "MenuButton", "Picture", "StatusBar", "Toolbar"]
 
+# Wrappers gated by an optional dependency. Forwarding is only OBSERVABLE once
+# the widget can construct: without the dep `bs.Chart(...)` raises "requires
+# matplotlib" before `__init__` reaches the split, and that message is not the
+# seam's -- so `test_declared_forwarders_still_forward` would pass without ever
+# testing forwarding. CI installs `-e .` only, so that is the COMMON case, not
+# the rare one. Skip instead of passing vacuously.
+#
+# NOTE: the exemption itself is NOT left unguarded on such a box --
+# `test_declared_forwarders_are_exactly_the_five` never constructs anything, so
+# it catches a lost `_forwards_kwargs` with or without the dep, and the other
+# four forwarders catch a seam that stops honoring the flag. Both measured.
+# This skip buys honesty, not coverage: a green row that proves nothing is what
+# a later session misreads as coverage.
+OPTIONAL_DEP = {"Chart": "matplotlib"}
+
 
 @pytest.mark.parametrize("name", STRICT)
 def test_unknown_keyword_is_rejected_and_named(app, name):
@@ -73,6 +88,8 @@ def test_declared_forwarders_still_forward(app, name):
     """These hand leftovers to their internal deliberately. They still reject a
     bogus name -- the internal does it -- but NOT with the seam's message, which
     is what distinguishes forwarding from the guard firing."""
+    if name in OPTIONAL_DEP:
+        pytest.importorskip(OPTIONAL_DEP[name])
     with pytest.raises(Exception) as exc:
         getattr(bs, name)(**{BOGUS: 1})
     assert "got unexpected keyword argument" not in str(exc.value)
