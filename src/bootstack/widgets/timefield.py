@@ -88,13 +88,16 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-        layout_kw = self._split_layout_kwargs(kwargs)
+        # NOTE(#383): this check must stay ABOVE the split. The split now
+        # rejects leftovers generically, so running it first would fire the
+        # generic error and make this crafted message unreachable.
         if "textsignal" in kwargs:
             raise TypeError(
                 "TimeField does not accept 'textsignal=' — a time field binds its "
                 "time value. Use signal= with a time-typed Signal "
                 "(e.g. Signal(time(9, 0)))."
             )
+        layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {

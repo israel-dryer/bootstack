@@ -119,13 +119,16 @@ class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-        layout_kw = self._split_layout_kwargs(kwargs)
+        # NOTE(#383): this check must stay ABOVE the split. The split now
+        # rejects leftovers generically, so running it first would fire the
+        # generic error and make this crafted message unreachable.
         if "textsignal" in kwargs:
             raise TypeError(
                 "Select does not accept 'textsignal=' — a select binds the "
                 "option's value, not the label shown for it. Use signal= with a "
                 "Signal seeded from an option's value (e.g. Signal('2'))."
             )
+        layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {

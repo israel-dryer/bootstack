@@ -42,6 +42,11 @@ class StatusBar(PublicWidgetBase):
 
     _auto_place = True
 
+    # Forwards whatever survives the layout split to its internal, on
+    # purpose -- it hands leftover options to the internal status bar.
+    # Without this the #383 seam guard would reject those options.
+    _forwards_kwargs = True
+
     def __init__(
         self,
         *,

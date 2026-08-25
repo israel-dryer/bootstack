@@ -1,13 +1,15 @@
 # PLAN — mode-3 strictness: unknown keyword names (#383 gap 3)
 
-⚠ **PARKED 2026-08-21, NOT ABANDONED — this is a plan waiting for its branch, not the record of a shipped one.** It was moved out of the repo root so `PLAN.md` could hold #465, which gates the nearer release. **Move it back to `PLAN.md` when `fix/unknown-kwarg-strictness-383` is cut**, and re-check the base SHA below before trusting it.
+✅ **UNPARKED 2026-08-25 — the branch is cut and this file is back at the repo root.** #465 shipped (PR #471) and freed it. The base SHA below has been re-based on `main`'s tip, as the parked note required.
 
 ⚠ **Its milestone was RE-CONFIRMED the same day, so do not re-open the question:** #383 stays on `0.5.0`, not `0.4.0`. `0.5.0`'s other three issues (#369, #408, #416) all change what the framework accepts or returns, so moving #383 forward would not spare users a migration — it would give them **two** strictness migrations instead of one. That is the "breaks batched, not dribbled" rule, and it is the whole reason for the grouping.
 
 **Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
-**Branch:** not yet cut — suggested `fix/unknown-kwarg-strictness-383`
-**Base when written:** `main` @ `c9fda068` — ⚠ **STALE, and it will keep going stale while this sits parked.** Re-base on `main`'s tip when the branch is cut; the analysis below does not depend on the SHA, but a round record that quotes it will.
-**Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
+**Branch:** `fix/unknown-kwarg-strictness-383`, cut 2026-08-25
+**Base:** `main` @ **`339177f5`** (re-based 2026-08-25 when the branch was cut; it was written against `c9fda068`). ⚠ **A round record must quote THIS SHA**, and `git rev-parse origin/main` settles it rather than trusting the line.
+**Pre-fix SHA for round 1's diff range:** the branch tip at the moment implementation ends — record it here before the first review opens.
+**Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED, BRANCH CUT.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
+**Round cap: 3 · SPENT: 0.**
 **Round cap: 3** — it lands on a minor.
 
 Analysis done 2026-08-20; **the numbers come from the merged audit (#463, PR #464) and were re-verified against the source, not recalled.**
@@ -133,7 +135,7 @@ A parameter-level guard test written to the audit's five failure modes. **This b
 
 ## Verification
 
-- **Before/after, both measured:** `--arm leftovers` must move all 40 from `dropped` to `rejected`, and must leave the 5 opt-outs and 5 already-correct wrappers unchanged. ⚠ **Run it on `main` first** — a baseline claimed rather than observed is how this project has been burned repeatedly.
+- **Before/after, both measured.** ⚠ **`probe_wrapper_parameter_delta.py --arm leftovers` IS THE WRONG INSTRUMENT for this and would report the fix as a tool bug** — it compares the STATIC verdict against construction, so a wrapper whose source still looks like a dropper but now rejects reads as a DISAGREE, under a banner saying a disagreement is a probe defect. **Use `development/probe_383_unknown_kwarg_policy.py`**, which classifies by construction only. **Baseline OBSERVED on this branch before any edit: `dropped=40 rejected=10 other=0`** (the 10 are the 5 boolean controls plus the 5 forwarders, whose internals already raise). **Target: `dropped=0 rejected=50`.** Its `--arm control` proves both outcomes are visible, so a later `dropped=0` is a measurement and not a blind probe.
 - **The 4 crafted messages:** assert the specific text, not just that *something* raised.
-- **Full suite** on the Windows box, `py -3.12 tests/run_gui.py`. Baseline at `6b2a3219` is **1500 passed / 22 skipped, 33 legs, exit 0** with `matplotlib` and `pandas` both present — ⚠ check both imports before comparing, or you will re-open this file's ninth count discrepancy.
+- **Full suite** on the Windows box, `py -3.12 tests/run_gui.py`. ⚠ **The baseline this file was written against (`6b2a3219`, 1500/22) is SUPERSEDED** — #465 and #449 landed since, and `main` at `339177f5` is **1524 passed / 22 skipped, 33 legs, exit 0** with `matplotlib` and `pandas` both present. Check both imports before comparing, or you will re-open this file's ninth count discrepancy.
 - ⚠ **Expect test churn:** any existing test passing a bogus kwarg to a wrapper starts failing. That is the fix working, but count them before assuming.

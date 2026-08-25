@@ -98,6 +98,11 @@ class MenuButton(IconProperty, PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    # Forwards whatever survives the layout split to its internal, on
+    # purpose -- it hands leftover options to the internal menu button.
+    # Without this the #383 seam guard would reject those options.
+    _forwards_kwargs = True
+
     def __init__(
         self,
         text: str = "",

@@ -722,10 +722,15 @@ class Form(Frame):
 
         def choice_list():
             """Pop the documented `items`/`values` aliases for the option list."""
-            choices = opts.pop('items', None)
-            if choices is None:
-                choices = opts.pop('values', None)
-            return choices
+            # Pop BOTH before choosing. Returning as soon as `items` hit left
+            # the losing alias in `opts`, so it leaked into the editor's
+            # constructor -- `Select(values=[...])`. That used to be discarded
+            # in silence by the layout split; #383 makes it a TypeError, which
+            # is how a test whose own comment said it "must not leak" turned
+            # out to have been passing only because of the silent drop.
+            chosen = opts.pop('items', None)
+            fallback = opts.pop('values', None)
+            return chosen if chosen is not None else fallback
 
         # Test against None, not truthiness: a falsy-but-real datum (0, False)
         # is a value, not an absent one, and blanking it here would write the

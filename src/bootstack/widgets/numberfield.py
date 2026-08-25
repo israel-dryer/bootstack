@@ -121,13 +121,16 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-        layout_kw = self._split_layout_kwargs(kwargs)
+        # NOTE(#383): this check must stay ABOVE the split. The split now
+        # rejects leftovers generically, so running it first would fire the
+        # generic error and make this crafted message unreachable.
         if "textsignal" in kwargs:
             raise TypeError(
                 "NumberField does not accept 'textsignal=' — a number field binds "
                 "its numeric value. Use signal= with a number-typed Signal "
                 "(e.g. Signal(0) or Signal(0.0))."
             )
+        layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {

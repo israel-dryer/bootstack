@@ -60,28 +60,76 @@ def test_context_stack_pop_out_of_order_is_safe():
 # G2: Layout kwarg split
 # ---------------------------------------------------------------------------
 
+# The seam is an INSTANCE method as of #383, so the error can name the widget.
+# These build a bare instance rather than a real widget: the seam reads only
+# `type(self).__name__` and the `_forwards_kwargs` class flag, so `__init__`
+# would contribute nothing but a Tk dependency.
+def _seam(name="Widget", forwards=False):
+    cls = type(name, (PublicWidgetBase,), {"_forwards_kwargs": forwards})
+    return object.__new__(cls)
+
+
 def test_split_layout_kwargs_pack():
-    kw = {"fill": "x", "expand": True, "padding": 4, "text": "hi"}
-    layout = PublicWidgetBase._split_layout_kwargs(kw)
+    # Only layout keys here: in a real wrapper a widget option like `padding`
+    # is a NAMED parameter and never reaches the catch-all, so anything the
+    # split does not claim is a typo (#383).
+    kw = {"fill": "x", "expand": True}
+    layout = _seam()._split_layout_kwargs(kw)
     assert layout == {"fill": "x", "expand": True}
-    assert kw == {"padding": 4, "text": "hi"}
+    assert kw == {}
 
 
 def test_split_layout_kwargs_grid():
-    kw = {"row": 1, "column": 2, "sticky": "ew", "text": "hello"}
-    layout = PublicWidgetBase._split_layout_kwargs(kw)
+    kw = {"row": 1, "column": 2, "sticky": "ew"}
+    layout = _seam()._split_layout_kwargs(kw)
     assert layout == {"row": 1, "column": 2, "sticky": "ew"}
-    assert kw == {"text": "hello"}
+    assert kw == {}
 
 
 def test_split_layout_kwargs_place_mode():
-    kw = {"x": 10, "y": 20, "width": 100, "text": "hi"}
-    layout = PublicWidgetBase._split_layout_kwargs(kw)
+    # A forwarder, so the surviving `width` is legal and the test can still
+    # assert the collision rule. On a strict widget `width` would be a named
+    # parameter and never arrive here at all.
+    kw = {"x": 10, "y": 20, "width": 100}
+    layout = _seam("Picture", forwards=True)._split_layout_kwargs(kw)
     # x and y are trigger keys → place mode; width stays as widget option
     assert "x" in layout
     assert "y" in layout
     assert "width" not in layout   # collision — treated as widget option
-    assert kw.get("text") == "hi"
+    assert kw == {"width": 100}
+
+
+# --- #383: whatever survives the split is a typo, not something to discard ---
+
+def test_split_rejects_a_leftover_and_names_it():
+    """The defect #383 gap 3 names: the public layer was LESS strict than the
+    internal it wraps. `bs.TextField(bogus=1)` constructed while the internal
+    `TextEntry(bogus=1)` raised.
+    """
+    with pytest.raises(TypeError) as exc:
+        _seam("Gauge")._split_layout_kwargs({"fill": "x", "densty": "compact"})
+    # the widget and the offending key both have to be in the message, or it
+    # is no more useful than the silent drop it replaces
+    assert "Gauge" in str(exc.value)
+    assert "densty" in str(exc.value)
+    assert "fill" not in str(exc.value)      # a real layout key is not a typo
+
+
+def test_split_reports_every_leftover_not_just_the_first():
+    with pytest.raises(TypeError) as exc:
+        _seam()._split_layout_kwargs({"aaa": 1, "zzz": 2})
+    assert "aaa" in str(exc.value) and "zzz" in str(exc.value)
+
+
+def test_split_leaves_leftovers_alone_for_a_declared_forwarder():
+    """The five deliberate forwarders (Chart, MenuButton, Picture, StatusBar,
+    Toolbar) read what survives the split. The opt-out is a CLASS FLAG so a
+    guard test can enumerate the exemptions; a per-call keyword could not.
+    """
+    kw = {"fill": "x", "cmap": "viridis"}
+    layout = _seam("Chart", forwards=True)._split_layout_kwargs(kw)
+    assert layout == {"fill": "x"}
+    assert kw == {"cmap": "viridis"}          # still there for the internal
 
 
 # ---------------------------------------------------------------------------
