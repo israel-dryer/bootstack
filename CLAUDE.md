@@ -148,15 +148,19 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-21) — #465 is IN FLIGHT on `fix/select-validation-surface-465`. #383 gap 3 is parked and ready behind it.
+### ★ START HERE (2026-08-25) — #465 and #449 SHIPPED to `main`. #383 gap 3 is the work in hand.
 
-**⏭ THE WORK IN HAND IS #465, NOT #383.** ⚠ **`PLAN.md` AT THE ROOT IS #465's** — the `Select` fix, round cap **2**, base `main` @ `cfae3713`, **written and NOT YET IMPLEMENTED**. **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`** and its base SHA in that file is stale by design; move it back to `PLAN.md` when its branch is cut. **Do not read the root `PLAN.md` as the #383 brief — that was true until 2026-08-21 and is the easy misread.**
+**⏭ THE WORK IN HAND IS #383 GAP 3.** #465 merged 2026-08-25 (**PR #471**), preceded by #449's harness fix (**PR #470**). ⚠ **There is NO root `PLAN.md` and that is CORRECT** — #465's is archived at `development/plan-465-select-validation-surface.md` and its review at `development/review-465-select-validation-surface.md`. **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`**; move it back to `PLAN.md` when its branch is cut, and **re-base the SHA it records.**
 
-**Why #465 jumped the queue:** it is an **external** bug report, it gates `0.4.0` (which ships before `0.5.0`, where #383 lives), and its fix is one line of inheritance plus an event map. See the #465 section below — ⚠ **including the correction that reverses this file's earlier "do not make `Select` inherit `FieldAddonMixin`" warning.**
+**Three things from #465 outlive the branch. Read the archived review before touching the field family or the harness:**
 
-#### ⏭ AFTER #465 — #383 gap 3, unblocked
+- **`Select` declares `_VALIDATION_KIND = None`, deliberately.** A `Select`'s value kind belongs to its **options**, not to the widget: `SelectBox._validation_value` decodes the label back to the option's value, so a `range` rule over numeric or `date` option values **works** and must keep working. ⚠ Declaring the mixin's `'text'` default there rejects it at attach time and **breaks running apps at construction** — that was round 1's blocking finding, and the plan's contrary measurement was taken on a `Select` whose text equals its value, which cannot reach the decode.
+- ⚠ **A `when="tail"` event can OUTLIVE its widget and be delivered to a DIFFERENT one.** Proven by payload match, not inference. Filed as **#469**, unfixed in the product; `tests/conftest.py::_reset_scene` now pumps `root.update()` before destroying, which is what closed #449. **See the Tk traps section.**
+- ⚠ **A RATE IS NOT EVIDENCE for a timing-dependent flake, because non-fixes silence it too.** Instrumenting the #449 leg made it pass; so did `update_idletasks()`, which does not drain the queue at all. **Assert the invariant.** Full account in the archived review's addendum.
 
-**Cut `fix/unknown-kwarg-strictness-383` off `main` and restore its parked plan to `PLAN.md`; round cap **3**.** The audit's headline finding — **40 of 52 wrappers silently accept an unrecognised keyword** — is #383 gap 3, and it was never a design problem: `_BooleanControlBase.__init__` already carries the six-line guard for five widgets. **Placement was the only open question and it is now ANSWERED — default-strict at the seam, declarative class-flag opt-out** (maintainer, 2026-08-21; §1 carries the code sketch). **Read `PLAN.md`; do not re-derive it.** Three things from it that a fresh session will otherwise get wrong:
+#### ⏭ THE WORK IN HAND — #383 gap 3, unblocked
+
+**Cut `fix/unknown-kwarg-strictness-383` off `main` and restore its parked plan to `PLAN.md`; round cap **3**.** The audit's headline finding — **40 of 52 wrappers silently accept an unrecognised keyword** — is #383 gap 3, and it was never a design problem: `_BooleanControlBase.__init__` already carries the six-line guard for five widgets. **Placement was the only open question and it is now ANSWERED — default-strict at the seam, declarative class-flag opt-out** (maintainer, 2026-08-21; the parked plan's §1 carries the code sketch). **Read `development/plan-383-unknown-kwarg-strictness.md`; do not re-derive it.** Three things from it that a fresh session will otherwise get wrong:
 
 - ⚠ **`App` and `Window` ARE NOT a third shape, which is the easy misread of the count below.** They forward their catch-all deliberately (`app.py:172`, `window.py:179`) and simply never call `_split_layout_kwargs`, because a top-level window is never placed in a layout — so **a seam guard does not touch them and they need no opt-out.** The real split is **40 defective / 5 already correct / 5 needing an opt-out / 2 unaffected.**
 - ⚠ **DEFAULT-STRICT AT THE SEAM SILENTLY KILLS FOUR CRAFTED ERROR MESSAGES.** `Select`, `DateField`, `NumberField` and `TimeField` run `_split_layout_kwargs` **before** their `if "textsignal" in kwargs: raise`, so the generic error would fire first — including on #458's public explanation of a deliberate behaviour change. **Move each check above its split, in the same commit, and pin the specific text with a test.** These four are the ones most likely to be skipped, because they *look* strict already.
@@ -221,14 +225,14 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | tip is the `docs(claude):` **correction** commit whose parent is **`cfae3713`** (2026-08-21, milestoning #465 onto `0.4.0`). ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 merged 2026-08-20 (the wrapper audit), whose `PLAN.md` is archived at `development/plan-463-wrapper-audit.md` |
-| branches | **`fix/select-validation-surface-465` IS IN FLIGHT** — cut 2026-08-21 off `main` @ `cfae3713`, carrying `PLAN.md` for #465 and **NO commits yet**; nothing in `src/` has been touched. Prior: `audit/wrapper-parameter-delta` merged and deleted local + remote (head **`41828ba2`**); `fix/select-signal-value-458` merged earlier (head **`51d09f6e`**). ⚠ **Both are squash/merge history now, so NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **NO `PLAN.md` on `main` — that is CORRECT, not a gap.** The root `PLAN.md` now lives on the #465 branch and is #465's. ⚠ **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`** (round cap **3**; its recorded base is stale on purpose — re-base when its branch is cut). **NO `REVIEW.md`** — correct, no round has opened |
-| released | `0.3.2`. **`## [Unreleased]` carries #456 and #458** and is what `0.4.0` will promote |
-| next release | **`0.4.0 — Signal binding on fields`** — #458 done, **#459, #460, #461, #465 still open.** #465 was milestoned here 2026-08-21 (maintainer). The milestone cannot close yet |
+| `main` | tip is this `docs(claude):` commit, whose parent is the **PR #471 merge (`62728770`, #465)**, itself preceded by the **PR #470 merge (`7e4e3c98`, #449)** — both 2026-08-25. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 (the wrapper audit), archived at `development/plan-463-wrapper-audit.md` |
+| branches | **NONE in flight.** `fix/select-validation-surface-465` merged via PR #471 (head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` via PR #470 (head **`ed174211`**), both 2026-08-25 and both still present local + remote — safe to delete. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. ⚠ **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`** (round cap **3**; its recorded base is stale on purpose — re-base when its branch is cut) |
+| released | `0.3.2`. **`## [Unreleased]` carries #456, #458 and #465**, under an **`### Added`** section as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
+| next release | **`0.4.0 — Signal binding on fields`** — #458 and #465 done, **#459, #460, #461, #467 still open.** #467 was filed out of #465's review round 1. The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1500 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-20, Windows box, `py -3.12`. ⚠ **See the environmental note below before comparing this to anything older** |
-| open milestones | **11** — verified against `gh` 2026-08-20, and they agree 1:1 with the table below. `Wrapper and internal parity` is the new one |
+| suite, `main` | **1524 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 at the #465 branch tip (`ff718b4d`, identical tree to `main`), Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
+| open milestones | **11** — verified against `gh` 2026-08-25, and they agree 1:1 with the table below |
 
 ⚠ **A NEW ENVIRONMENTAL PAIR — AND IT IS BIGGER THAN THE PANDAS ONE THIS FILE ALREADY DOCUMENTS.** The Windows box now has **matplotlib** installed, so **`test_chart.py` (44 tests behind a module-level `pytest.importorskip("matplotlib")`) COLLECTS instead of being the collection-time skip.** `pandas` arrived too. Against the `1458 / 21` recorded on 2026-08-19:
 
@@ -260,11 +264,11 @@ Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was
 - **#461 — `SelectButton` has #458's defect, unfixed.** Identical `signal -> textsignal` wiring at `selectbutton.py:85`. Seeding with the **label** works; seeding with the **value** — what `value=` takes and what the docstring promises — gives `text='2' value='2' selection=None`, and `sel.value = "3"` writes the *label* back. ⚠ **Narrower than #458**: plain `list[str]` options are unaffected and `<<Change>>` does fire. **On `0.4.0`, and it is why that milestone is a MINOR.**
 - **#460 — eight widgets annotate `.signal` as `Signal | None` and can never return `None`.** The wrappers forward with `getattr(self._internal, 'signal', None)` but the internal **lazily creates on first access**, so the default is dead code and the `| None` is **unreachable, not merely unobserved**. ⚠ **Do not "fix" `TextArea`, `CodeEditor`, or the `ValueSignalMixin` trio** — they genuinely return `None`. `Slider` is the honest exemplar.
 
-#### ⚠ #465 — the EXTERNAL report. Milestoned to `0.4.0` on 2026-08-21; NOT FIXED.
+#### ✅ #465 — the EXTERNAL report. MERGED 2026-08-25 (PR #471), on `0.4.0`. Kept for its traps.
 
 **`Select` accepts `add_validation_rule()` but has NO `.error` or `.valid`.** Filed 2026-08-20 by `bLynnb2762` against `0.3.2`, labeled `bug` — **the only open issue that is not this project's own backlog**, and it sat unread while the audit merged the same day.
 
-**Reproduced and mechanism confirmed 2026-08-21, so do not re-derive it:** `Select` does not inherit `FieldAddonMixin`. It hand-copies `add_validation_rule` and `validate` from that mixin (lines 175/199), plus `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other seven field widgets inherit. MRO is `Select -> ValueSignalMixin -> PublicWidgetBase`.
+**Cause, measured 2026-08-21 — do not re-derive it:** `Select` **did not** inherit `FieldAddonMixin`. It hand-copied `add_validation_rule` and `validate` from that mixin, plus `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other seven field widgets inherit. **Fixed by inheriting it**; the MRO is now `Select -> ValueSignalMixin -> FieldAddonMixin -> PublicWidgetBase`, and `_flex_vertical_default` comes from the mixin rather than a local copy.
 
 ⚠⚠ **AN EARLIER VERSION OF THIS ENTRY SAID "`Select` OPTS OUT DELIBERATELY — DO NOT MAKE IT INHERIT THE MIXIN." THAT WAS WRONG AND IT IS THE OPPOSITE OF THE FIX.** It was an inference nobody had checked, and it was repeated as fact three times before anyone looked. **Inheriting the mixin IS the fix.** What the evidence actually says, measured 2026-08-21:
 
@@ -273,11 +277,11 @@ Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was
 - **The family is uniform 7/7 without it** — every other field widget exposes `valid`, `error`, `insert_addon`, `update_addon`, `remove_addon`, `addons`. A real opt-out would show variation somewhere; one widget missing the whole block is the signature of a lost mixin.
 - ⚠ **The "addons don't suit a dropdown" theory is DISPROVED BY CONSTRUCTION** — `Select` **already uses addons**: its internal reports `addons=['dropdown', 'probe']` after a test insert, so **the dropdown arrow IS an addon.** Load-bearing, not merely compatible.
 
-⚠ **THERE IS A SECOND, INDEPENDENT CAUSE, and the mixin does not fix it.** `on_valid`/`on_invalid` come from the event map: `_TEXTFIELD_EVENTS` maps `valid`/`invalid`; **`_SELECT_EVENTS` carries only `change`.** `ValidationMixin` on the entry part emits both, and `Select`'s entry is a `TextEntryPart` — **so `<<Valid>>`/`<<Invalid>>` fire today with nothing listening.** Do not copy `TextField`'s wiring blind: `Select` overrides `_event_target`, so confirm which object they land on.
+⚠ **THERE WAS A SECOND, INDEPENDENT CAUSE, and the mixin does not fix it — remember this shape, it recurs.** `on_valid`/`on_invalid` come from the **event map**, not the mixin: `_SELECT_EVENTS` carried only `change` while `ValidationMixin` on the entry part had been emitting `<<Valid>>`/`<<Invalid>>` all along **with nothing listening.** Fixed by adding `valid`/`invalid`/`validate` to `_SELECT_EVENTS`. ⚠ **A missing public event name looks exactly like a widget that does not emit** — check the map before concluding the emit is absent.
 
-⚠ **THE FIX SHIPS THE KIND GATE TOO, IN `0.4.0`, AND THE "IT RAISES SO IT IS `0.5.0`" READING WAS WRONG.** Inheriting brings `_VALIDATION_KIND`. Measured across all seven rule types: **exactly one — `range` — is newly rejected, and it can never pass today.** A `Select` with `range 5..10` reports invalid at value `1`, `7` **and** `12`, because the rule receives the value as a **string** and compares it against numbers. **Nobody has working code to break**, so the migration count is zero. The batching rule guards against repeated migrations, not against the word "raises". ⚠ **Do not "protect" `0.4.0` with a gate-less override** — that preserves the exact hand-copy divergence that caused the defect.
+⚠⚠ **THE KIND GATE DID *NOT* SHIP, AND THE PARAGRAPH THAT USED TO STAND HERE ARGUING THAT IT SHOULD WAS WRONG. `Select` DECLARES `_VALIDATION_KIND = None` AND GATES NOTHING.** The old text said a `range` rule on a `Select` "can never pass today", so rejecting it broke nobody. **That measurement was taken on a `Select` whose option text EQUALS its value**, which cannot reach `SelectBox._validation_value`'s label-to-value decode and can therefore only ever hand a rule a `str`. Give the options distinct labels and the rule receives the option's **real Python object**, so `range` over `int` or `date` option values **works on the released line** — measured on both arms in `development/probe_465_select_range_kind.py`. Shipping the gate would have raised `BootstackError` **at construction** in running apps. ⚠ **A `Select`'s value kind belongs to its OPTIONS, not to the widget**, which is why `None` is the honest answer and why `field_mixin.py` skips the gate on `None`. **Do not re-propose attach-time rejection** — and note the reporter never asked for `range` at all.
 
-**`PLAN.md` on `fix/select-validation-surface-465` carries the whole analysis, the test list and the boundary of each claim. Read it rather than re-deriving.**
+**`development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md` carry the whole analysis, both review rounds, the test list and the boundary of each claim. Read them rather than re-deriving.** ⚠ **The plan's "the gate ships too" section is SUPERSEDED by round 1** — `Select` gates nothing now.
 
 ⚠ **The fix ADDS PUBLIC SURFACE, so it needs a MINOR**, which is why it landed on `0.4.0` rather than the patch line: that milestone is a minor already (forced by #461), and this file's own rule is **to ask what else is ready when a minor is being cut anyway rather than parking a fix out of habit.** The milestone was **asked for and given**, not assigned unasked.
 
@@ -300,7 +304,7 @@ Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was
 | # | what | status |
 |---|---|---|
 | **#447** | dialog focus/Enter cluster, Windows, ~4/50 | **OPEN.** The CI reproduction was a **missing window manager** and is fixed; **the Windows flake is NOT explained by that** and must not be closed on it |
-| **#449** | `test_select_change_event_value_space` pins an exact event list against an async change, ~1 in 10 full runs | **OPEN.** Two candidate causes RULED OUT by measurement: it is **not** a `Select` emitting at construction, and **not** an event leaked by the reset destroying a widget. Remaining hypothesis — stale bindings surviving destroy while Tk recycles path names — is **UNTESTED** |
+| ~~#449~~ | `test_select_change_event_value_space` saw a stray `None` ahead of its value | ✅ **FIXED 2026-08-25 (PR #470), test-only.** The harness leaked it: `_reset_scene` destroyed a test's widgets without pumping, so a `when="tail"` event queued by one test was still in the queue while the next built its widgets. **Caught by payload match, not inference** — the stray was byte-for-byte the `ChangeEvent` emitted two tests earlier, arriving at a different `Select`. ⚠ **The product half is NOT fixed: #469.** ⚠ **The route (handle reuse?) is UNPROVEN** — a 300-round probe never forced it |
 | flake C | `test_enter_on_a_disabled_button_still_reaches_the_default` | Folded into #447's family; 1 in 37, **UNEXPLAINED**, does not reproduce in a quiet process (0/40) |
 
 ⚠ **`probe_446_disabled_button_enter.py` COUNTS A BARRIER TIMEOUT AS A REPRODUCTION** — a run where the dialog never comes up yields `calls == []`, byte-identical to the flake, and the probe's READING text then points at the guard when the truth is that Enter was never pressed. **Fix that before working #447.**
@@ -322,7 +326,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (merged 2026-08-20), **#459, #460, #461, #465**. Cut 2026-08-19; the next release out the door. ⚠ **#465 joined 2026-08-21** — an EXTERNAL report whose fix adds public surface, so it needs a minor and this one is a minor already; the milestone endpoint therefore reads `open=4 closed=2`, and the second "closed" is **PR #462**, not an issue | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), **#459, #460, #461, #467**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462 and PR #471 both carry this milestone. `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -332,7 +336,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact | 1 |
-| — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, #449. Reads `open=6 closed=2`. It is rolling, so it does **NOT** close when a patch ships | 6 |
+| — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, ~~#449~~ (fixed 2026-08-25). It is rolling, so it does **NOT** close when a patch ships. ⚠ **#449's fix shipped inside `0.4.0`, not a patch** — it was test-only and merged while `0.4.0` was open, so PR #470 was left unmilestoned rather than misreporting where it landed | 5 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -374,7 +378,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FOUR UNMILESTONED OPEN ISSUES — #431, #436, #452, #455.** ⚠ **It was FIVE until 2026-08-21: #465 is now on `0.4.0`** (maintainer), and its detail moved up to its own section above — **do not re-file it here.** Verify rather than counting by hand:
+**SIX UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469.** ⚠ **#468 and #469 both came out of #465's review** and are described under its section above; #469 is the `when="tail"` hazard. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -406,9 +410,22 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-20 on `main` at `41c8bad1`**, Windows box,
-`py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and `pandas`
-BOTH PRESENT**:
+**AUTHORITATIVE — measured 2026-08-25 at `ff718b4d`** (the #465 branch tip, an
+identical tree to `main` after PR #471), Windows box, `py -3.12 tests/run_gui.py`,
+**exit 0, 33 legs**, **`matplotlib` and `pandas` BOTH PRESENT**:
+
+| | measured |
+|---|---|
+| summed, 33 legs | **1524 passed / 22 skipped** |
+
+⚠ **The `+24` over the previous `1500` is entirely NEW TESTS, and it is bounded
+rather than reconciled from memory:** `+22` from #465's two test files and `+1` for
+its rule-type guard, `+1` for #449's harness guard.
+`git diff 41c8bad1..HEAD --stat -- tests/` says how much the count was ALLOWED to
+move, and it is one command.
+
+**Superseded, kept for the environmental note it anchors — measured 2026-08-20 on
+`main` at `41c8bad1`**, same box, same deps:
 
 | | measured |
 |---|---|
@@ -535,7 +552,7 @@ must clear validation state.
     placement — and ⚠ **a blanket seam guard breaks the five that forward on
     purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), which need an
     opt-out. `App`/`Window` forward too but never call the split, so a seam
-    guard does not reach them. ⏭ **`PLAN.md` carries the whole analysis.**
+    guard does not reach them. ⏭ **`development/plan-383-unknown-kwarg-strictness.md` carries the whole analysis.**
 - **#369** — the selection family disagrees on off-list values (`SelectButton`
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
@@ -958,6 +975,26 @@ a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
   `time=`.
 - ⚠ **`winfo_ismapped()` on a destroyed widget RAISES `TclError: bad window path
   name` — it does not return 0.**
+- ⚠ **AN EVENT SENT WITH `when="tail"` CAN OUTLIVE ITS WIDGET AND BE DELIVERED TO A
+  DIFFERENT ONE.** It is queued against the emitting **window**, not the Python object,
+  so destroying the widget before the loop turns leaves it in the queue with nothing
+  valid to receive it. **Proven by payload match, not inference** (#449): the stray
+  `ChangeEvent` that failed `test_select_change_event_value_space` was byte-for-byte the
+  one emitted two tests earlier — `(value=None, prev_value='Small', text='')` — arriving
+  at a **different** `Select`. ⚠ **Tk path names are never reused** (the per-parent
+  counter only climbs), so it is not happening by name, and **the actual route is
+  UNPROVEN** — a 300-round probe built to force window-handle reuse produced zero, with
+  its control arm proving it can detect a delivery. **You do not need the route: remove
+  the precondition.** `tests/conftest.py::_reset_scene` now pumps `root.update()` before
+  destroying. **The product half is UNFIXED — #469**, and ~20 composites emit this way.
+- ⚠ **`update_idletasks()` DOES NOT SERVICE QUEUED WINDOW EVENTS — only `update()` does.**
+  Measured directly in `development/probe_449_queued_event_after_destroy.py`. This
+  matters because `update_idletasks()` **silences** the #449 flake while fixing nothing,
+  purely by shifting timing — as did instrumenting the leg, twice. ⚠⚠ **A RATE IS NOT
+  EVIDENCE FOR A TIMING-DEPENDENT FLAKE: 0/5 was reached by a fix AND by a shim.** Assert
+  the invariant instead — `test_harness_event_queue.py` queues a probe event on the root,
+  calls `_reset_scene`, and asserts it arrived; it FAILS on the shim and on the old
+  conftest, which is the only instrument that told them apart.
 - ⚠ **Some failures are INVISIBLE TO PYTHON — read the background-error channel.** A
   binding or `after` script referencing a deleted Tcl command raises nothing Python
   can see; the suite stays green and the symptom is "handlers mysteriously stopped
