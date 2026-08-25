@@ -7,7 +7,7 @@
 **Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
 **Branch:** `fix/unknown-kwarg-strictness-383`, cut 2026-08-25
 **Base:** `main` @ **`339177f5`** (re-based 2026-08-25 when the branch was cut; it was written against `c9fda068`). ⚠ **A round record must quote THIS SHA**, and `git rev-parse origin/main` settles it rather than trusting the line.
-**Pre-fix SHA for round 1's diff range:** the branch tip at the moment implementation ends — record it here before the first review opens.
+**Status: ✅ IMPLEMENTED at `6808de00`** (2026-08-25). **Round 1 reviews `git diff origin/main...HEAD`** — base `339177f5`, one production commit. ⚠ **A REVIEW HAS NOT RUN. This session implemented, so it must not review** (`REVIEW-PROTOCOL.md` core rule). Hand a fresh session this file and nothing else.
 **Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED, BRANCH CUT.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
 **Round cap: 3 · SPENT: 0.**
 **Round cap: 3** — it lands on a minor.
