@@ -1,14 +1,16 @@
 # PLAN — mode-3 strictness: unknown keyword names (#383 gap 3)
 
-⚠ **PARKED 2026-08-21, NOT ABANDONED — this is a plan waiting for its branch, not the record of a shipped one.** It was moved out of the repo root so `PLAN.md` could hold #465, which gates the nearer release. **Move it back to `PLAN.md` when `fix/unknown-kwarg-strictness-383` is cut**, and re-check the base SHA below before trusting it.
+✅ **UNPARKED 2026-08-25 — the branch is cut and this file is back at the repo root.** #465 shipped (PR #471) and freed it. The base SHA below has been re-based on `main`'s tip, as the parked note required.
 
-⚠ **Its milestone was RE-CONFIRMED the same day, so do not re-open the question:** #383 stays on `0.5.0`, not `0.4.0`. `0.5.0`'s other three issues (#369, #408, #416) all change what the framework accepts or returns, so moving #383 forward would not spare users a migration — it would give them **two** strictness migrations instead of one. That is the "breaks batched, not dribbled" rule, and it is the whole reason for the grouping.
+⚠⚠ **THE MILESTONE MOVED, 2026-08-25 (maintainer). This paragraph used to say "do not re-open the question" — it was re-opened and the answer changed, so read this and not the old reasoning.** Gap 3 is now its own issue, **[#472](https://github.com/israel-dryer/bootstack/issues/472), on `0.4.0`**. **#383 keeps gaps 1 and 2 and stays on `0.5.0`** — those are about bad *values*, which is the batch #369/#408/#416 belong to.
 
-**Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
-**Branch:** not yet cut — suggested `fix/unknown-kwarg-strictness-383`
-**Base when written:** `main` @ `c9fda068` — ⚠ **STALE, and it will keep going stale while this sits parked.** Re-base on `main`'s tip when the branch is cut; the analysis below does not depend on the SHA, but a round record that quotes it will.
-**Status:** ⏭ **NOT STARTED, NO LONGER BLOCKED.** §1 was answered by the maintainer 2026-08-21 — **default-strict at the seam, with a declarative class-flag opt-out.** Everything below is measured and settled.
-**Round cap: 3** — it lands on a minor.
+**Why the batching rule did NOT argue for holding it, measured rather than asserted:** the rule minimizes the number of releases that force a migration, and **`0.4.0` already forces one** — #465's rule-type guard raises where the framework used to accept, and #461 breaks working code outright. Without gap 3 that is two migration-forcing releases (`0.4.0` and `0.5.0`); with it, still two. **The count does not move, so waiting buys nothing.** Gap 3's blast radius on *working* code is close to nil besides: the only behaviour that changes belongs to code passing a keyword that provably did nothing.
+
+**Issue:** [#472](https://github.com/israel-dryer/bootstack/issues/472) (split out of [#383](https://github.com/israel-dryer/bootstack/issues/383) gap 3) · **Milestone:** `0.4.0 — Signal binding on fields`
+**Branch:** `fix/unknown-kwarg-strictness-383`, cut 2026-08-25
+**Base:** `main` @ **`339177f5`** (re-based 2026-08-25 when the branch was cut; it was written against `c9fda068`). ⚠ **A round record must quote THIS SHA**, and `git rev-parse origin/main` settles it rather than trusting the line.
+**Status:** ✅ **IMPLEMENTED at `6808de00`, NOT YET REVIEWED.** §1 was answered by the maintainer 2026-08-21 — default-strict at the seam, declarative class-flag opt-out — and that is what shipped.
+**Round cap: 3 · SPENT: 0.** ⚠ **THE REVIEWER MUST BE A FRESH SESSION** — the session that wrote this implementation also wrote this paragraph, which is exactly what `REVIEW-PROTOCOL.md`'s core rule exists to separate. **Round 1 reviews `git diff origin/main...HEAD -- src/`**: base `339177f5`, 74 insertions across 11 files.
 
 Analysis done 2026-08-20; **the numbers come from the merged audit (#463, PR #464) and were re-verified against the source, not recalled.**
 
@@ -126,6 +128,37 @@ A parameter-level guard test written to the audit's five failure modes. **This b
 
 ---
 
+## ⏭ WHAT THE IMPLEMENTATION ACTUALLY DID — written for the reviewer, by the implementer
+
+**Read this before the diff.** It records where the implementation left the plan, so a round-1 finding
+lands on the decision rather than re-deriving it. It is NOT an argument that any of it was right — that is
+the review's job, and the plan's rationale sections below are deliberately not repeated here.
+
+**In scope, as planned:** the seam guard (`_core/base.py`, `@staticmethod` → instance method plus the
+raise), the five `_forwards_kwargs` opt-outs, the four `textsignal` re-orderings, tests for each.
+
+### Three deviations, each of which a reviewer should weigh independently
+
+1. ⚠ **`form.py` was changed, and it is NOT in the scope boundary below.** `choice_list()` returned as soon
+   as `items` matched, leaving the losing `values` alias in the bag, where it reached `Select(values=[...])`.
+   The split had been discarding it silently; the guard turns that into a hard failure, so the branch could
+   not ship without it. **The test covering it says in its own comment that the alias "must not leak into
+   the editor's constructor" — it did, and the test passed only because of the defect this branch fixes.**
+   Whether a production fix outside the stated scope belongs in this commit is a real question.
+2. **`test_chart.py` passed `surface="card"` to `bs.Card`, which has no such parameter** and computes its
+   own surface from the parent. A silent no-op; removed. The assertion it guards still holds.
+3. **The verification instrument was swapped.** See the Verification section — the probe the plan named
+   would have reported this fix as a tool bug.
+
+### ⚠ Three things the implementer did NOT verify, listed so silence is not read as coverage
+
+- **That the five forwarders NEED the opt-out.** The plan asserts they forward on purpose; that was taken as
+  given. What was checked is only that each still rejects a bogus key *via its internal*. §4 leaves open
+  whether they deserve a real error instead of an exemption — unanswered here.
+- **Where `_forwards_kwargs` should live.** It is a new class-level contract on `PublicWidgetBase`, chosen
+  by the implementer without a second opinion.
+- **Anything about #383's gaps 1 and 2.** Untouched, still on `0.5.0`.
+
 ## Scope boundaries
 
 **IN:** the guard, its placement, the 5 opt-outs, the 4 re-orderings, tests for each.
@@ -133,7 +166,7 @@ A parameter-level guard test written to the audit's five failure modes. **This b
 
 ## Verification
 
-- **Before/after, both measured:** `--arm leftovers` must move all 40 from `dropped` to `rejected`, and must leave the 5 opt-outs and 5 already-correct wrappers unchanged. ⚠ **Run it on `main` first** — a baseline claimed rather than observed is how this project has been burned repeatedly.
+- **Before/after, both measured.** ⚠ **`probe_wrapper_parameter_delta.py --arm leftovers` IS THE WRONG INSTRUMENT for this and would report the fix as a tool bug** — it compares the STATIC verdict against construction, so a wrapper whose source still looks like a dropper but now rejects reads as a DISAGREE, under a banner saying a disagreement is a probe defect. **Use `development/probe_383_unknown_kwarg_policy.py`**, which classifies by construction only. **Baseline OBSERVED on this branch before any edit: `dropped=40 rejected=10 other=0`** (the 10 are the 5 boolean controls plus the 5 forwarders, whose internals already raise). **Target: `dropped=0 rejected=50`.** Its `--arm control` proves both outcomes are visible, so a later `dropped=0` is a measurement and not a blind probe.
 - **The 4 crafted messages:** assert the specific text, not just that *something* raised.
-- **Full suite** on the Windows box, `py -3.12 tests/run_gui.py`. Baseline at `6b2a3219` is **1500 passed / 22 skipped, 33 legs, exit 0** with `matplotlib` and `pandas` both present — ⚠ check both imports before comparing, or you will re-open this file's ninth count discrepancy.
+- **Full suite** on the Windows box, `py -3.12 tests/run_gui.py`. ⚠ **The baseline this file was written against (`6b2a3219`, 1500/22) is SUPERSEDED** — #465 and #449 landed since, and `main` at `339177f5` is **1524 passed / 22 skipped, 33 legs, exit 0** with `matplotlib` and `pandas` both present. Check both imports before comparing, or you will re-open this file's ninth count discrepancy.
 - ⚠ **Expect test churn:** any existing test passing a bogus kwarg to a wrapper starts failing. That is the fix working, but count them before assuming.

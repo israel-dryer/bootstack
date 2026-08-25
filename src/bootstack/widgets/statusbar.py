@@ -42,6 +42,9 @@ class StatusBar(PublicWidgetBase):
 
     _auto_place = True
 
+    # Forwards leftovers to the internal on purpose.
+    _forwards_kwargs = True
+
     def __init__(
         self,
         *,

@@ -115,9 +115,17 @@ class PublicWidgetBase:
             )
         return container
 
-    @staticmethod
-    def _split_layout_kwargs(kwargs: dict) -> dict:
-        """Pop and return layout kwargs from `kwargs`, mutating it in place."""
+    #: Hands whatever survives the layout split to the internal instead of
+    #: treating it as a typo. A class flag, not a keyword, so a test can
+    #: enumerate the exemptions.
+    _forwards_kwargs: bool = False
+
+    def _split_layout_kwargs(self, kwargs: dict) -> dict:
+        """Pop and return layout kwargs from `kwargs`, mutating it in place.
+
+        Whatever is left over is an unrecognized keyword and raises, unless the
+        widget declares `_forwards_kwargs`.
+        """
         from bootstack.widgets._core.container import (
             PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS, FLEX_CHILD_KEYS,
         )
@@ -130,6 +138,11 @@ class PublicWidgetBase:
         # `attached` is geometry-manager-agnostic — capture it in every mode.
         if "attached" in kwargs:
             layout["attached"] = kwargs.pop("attached")
+        if kwargs and not self._forwards_kwargs:
+            raise TypeError(
+                f"{type(self).__name__}() got unexpected keyword argument(s): "
+                f"{', '.join(sorted(kwargs))}"
+            )
         return layout
 
     @staticmethod

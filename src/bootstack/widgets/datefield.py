@@ -98,13 +98,14 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     ) -> None:
         validate_choice(selection_mode, ("single", "range"), param="selection_mode", widget="DateField")
         self._parent = self._resolve_parent(parent)
-        layout_kw = self._split_layout_kwargs(kwargs)
+        # Must stay ABOVE the split, which rejects leftovers generically.
         if "textsignal" in kwargs:
             raise TypeError(
                 "DateField does not accept 'textsignal=' — a date field binds its "
                 "date value. Use signal= with a date-typed Signal "
                 "(e.g. Signal(date.today()))."
             )
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         tk_master = self._parent._child_master() if self._parent else None
 

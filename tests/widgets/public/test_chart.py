@@ -109,7 +109,8 @@ def test_chart_inherits_container_surface(shown_app):
     def render(ax):
         ax.plot([1, 2, 3])
 
-    with bs.Card(surface="card", padding=10):
+    # `Card` has no `surface=` -- it computes its own from the parent.
+    with bs.Card(padding=10):
         chart = bs.Chart(render=render)
     shown_app._tk_root.update_idletasks()
 

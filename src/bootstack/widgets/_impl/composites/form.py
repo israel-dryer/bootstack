@@ -722,10 +722,11 @@ class Form(Frame):
 
         def choice_list():
             """Pop the documented `items`/`values` aliases for the option list."""
-            choices = opts.pop('items', None)
-            if choices is None:
-                choices = opts.pop('values', None)
-            return choices
+            # Pop BOTH: returning early leaves the losing alias in `opts`, where
+            # it reaches the editor's constructor and raises.
+            chosen = opts.pop('items', None)
+            fallback = opts.pop('values', None)
+            return chosen if chosen is not None else fallback
 
         # Test against None, not truthiness: a falsy-but-real datum (0, False)
         # is a value, not an absent one, and blanking it here would write the

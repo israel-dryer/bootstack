@@ -44,7 +44,7 @@ with bs.App(title="Chart + DataTable", min_size=(720, 620), padding=16, gap=12) 
     # (the toggle) so both views stay in sync.
     bs.DataTable(
         data_source=sales, columns=["month", "sales"],
-        enable_search=False, grow=True, horizontal="stretch",
+        searchable=False, grow=True, horizontal="stretch",
     )
 
     high_only = bs.Signal(False)

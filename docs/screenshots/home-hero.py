@@ -161,7 +161,6 @@ with bs.AppShell(title="Acme POS", size=(890, 720), show_statusbar=True,
                             rows=TXNS,
                             density="compact",
                             searchable=False,
-                            paginated=False,
                             horizontal="stretch",
                         )
 

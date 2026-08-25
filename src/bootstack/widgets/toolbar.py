@@ -46,6 +46,9 @@ class Toolbar(PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    # Forwards leftovers to the internal on purpose.
+    _forwards_kwargs = True
+
     def __init__(
         self,
         *,

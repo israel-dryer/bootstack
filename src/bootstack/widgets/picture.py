@@ -60,6 +60,9 @@ class Picture(PublicWidgetBase):
 
     _internal_class = _InternalPicture
 
+    # Forwards leftovers to the internal on purpose.
+    _forwards_kwargs = True
+
     def __init__(
         self,
         image: "Image | str | Path | None" = None,
