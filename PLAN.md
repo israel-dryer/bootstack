@@ -2,9 +2,9 @@
 
 **Issue:** [#465](https://github.com/israel-dryer/bootstack/issues/465) · **Milestone:** `0.4.0 — Signal binding on fields`
 **Branch:** `fix/select-validation-surface-465`
-**Base:** `main` @ `cfae3713`
-**Round cap: 2**
-**Status:** ⏭ NOT STARTED. Written before code, per `REVIEW-PROTOCOL.md`.
+**Base:** `main` @ `9a910235` (this file said `cfae3713` — wrong, two docs-only commits earlier; corrected 2026-08-25)
+**Round cap: 2 · SPENT: 1 · Round 2 is available and UNSPENT**
+**Status:** ✅ IMPLEMENTED (`fadedf9d`) · ✅ **ROUND 1 REVIEWED AND ITS FIX COMMITTED (`3116cabb`)**. ⚠ **Read `REVIEW.md`'s "★ PICK UP HERE" block before this file.** Round 1 found this plan's "a `range` rule can never pass on a `Select`" measurement is WRONG — it was taken on a `Select` whose option text equals its value, which cannot reach the decode. **§"The gate ships too" below is SUPERSEDED and must not be acted on**; `Select` now declares `_VALIDATION_KIND = None` and gates nothing. **§"Tests" item 5 is likewise superseded** — `range` no longer raises.
 
 ⚠ **External bug report** — filed 2026-08-20 by `bLynnb2762` against `0.3.2`. A real user is waiting, so the CHANGELOG entry matters more than usual.
 
