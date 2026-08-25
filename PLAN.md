@@ -2,9 +2,11 @@
 
 ✅ **UNPARKED 2026-08-25 — the branch is cut and this file is back at the repo root.** #465 shipped (PR #471) and freed it. The base SHA below has been re-based on `main`'s tip, as the parked note required.
 
-⚠ **Its milestone was RE-CONFIRMED the same day, so do not re-open the question:** #383 stays on `0.5.0`, not `0.4.0`. `0.5.0`'s other three issues (#369, #408, #416) all change what the framework accepts or returns, so moving #383 forward would not spare users a migration — it would give them **two** strictness migrations instead of one. That is the "breaks batched, not dribbled" rule, and it is the whole reason for the grouping.
+⚠⚠ **THE MILESTONE MOVED, 2026-08-25 (maintainer). This paragraph used to say "do not re-open the question" — it was re-opened and the answer changed, so read this and not the old reasoning.** Gap 3 is now its own issue, **[#472](https://github.com/israel-dryer/bootstack/issues/472), on `0.4.0`**. **#383 keeps gaps 1 and 2 and stays on `0.5.0`** — those are about bad *values*, which is the batch #369/#408/#416 belong to.
 
-**Issue:** [#383](https://github.com/israel-dryer/bootstack/issues/383) · **Milestone:** `0.5.0 — Strictness and value types`
+**Why the batching rule did NOT argue for holding it, measured rather than asserted:** the rule minimizes the number of releases that force a migration, and **`0.4.0` already forces one** — #465's rule-type guard raises where the framework used to accept, and #461 breaks working code outright. Without gap 3 that is two migration-forcing releases (`0.4.0` and `0.5.0`); with it, still two. **The count does not move, so waiting buys nothing.** Gap 3's blast radius on *working* code is close to nil besides: the only behaviour that changes belongs to code passing a keyword that provably did nothing.
+
+**Issue:** [#472](https://github.com/israel-dryer/bootstack/issues/472) (split out of [#383](https://github.com/israel-dryer/bootstack/issues/383) gap 3) · **Milestone:** `0.4.0 — Signal binding on fields`
 **Branch:** `fix/unknown-kwarg-strictness-383`, cut 2026-08-25
 **Base:** `main` @ **`339177f5`** (re-based 2026-08-25 when the branch was cut; it was written against `c9fda068`). ⚠ **A round record must quote THIS SHA**, and `git rev-parse origin/main` settles it rather than trusting the line.
 **Status: ✅ IMPLEMENTED at `6808de00`** (2026-08-25). **Round 1 reviews `git diff origin/main...HEAD`** — base `339177f5`, one production commit. ⚠ **A REVIEW HAS NOT RUN. This session implemented, so it must not review** (`REVIEW-PROTOCOL.md` core rule). Hand a fresh session this file and nothing else.
