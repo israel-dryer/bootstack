@@ -86,6 +86,16 @@ class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    # A Select's value kind comes from its OPTIONS, not from the widget, so
+    # there is no kind to gate rules on. `SelectBox._validation_value` decodes
+    # the displayed label back to the option's value before a rule sees it, so
+    # a decoupled option list hands the rule that option's real object -- and a
+    # `range` rule over numeric or date option values works. Declaring the
+    # mixin's `'text'` default here would reject it at attach time and break
+    # code that runs today; measured both ways in
+    # `development/probe_465_select_range_kind.py`.
+    _VALIDATION_KIND: str | None = None
+
     def __init__(
         self,
         options: list[Option] | None = None,

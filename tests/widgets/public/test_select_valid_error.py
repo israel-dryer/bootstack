@@ -180,3 +180,48 @@ def test_select_validation_comes_from_the_shared_mixin(app):
     assert issubclass(bs.Select, FieldAddonMixin)
     # add_validation_rule must be the mixin's, not a local re-definition
     assert "add_validation_rule" not in vars(bs.Select)
+
+
+# ── the value kind is the OPTIONS', not the widget's (review round 1) ─────────
+#
+# Inheriting the mixin also brings `_VALIDATION_KIND`, and the mixin's default
+# says "text". That is false for a Select: `SelectBox._validation_value` decodes
+# the displayed label back to the option's value before a rule sees it, so a
+# decoupled option list hands the rule the option's real Python object. A
+# `range` rule over numeric or date option values works — it worked before #465
+# and it has to keep working, or the fix breaks running apps at construction.
+# Measured on both sides in development/probe_465_select_range_kind.py.
+
+def test_select_range_rule_works_on_numeric_option_values(app):
+    sel = bs.Select([("One", 1), ("Seven", 7), ("Twelve", 12)], value=7)
+    app._tk_root.update_idletasks()
+    sel.add_validation_rule("range", min=5, max=10)      # must not raise
+
+    assert sel.validate() is True                        # 7 is in 5..10
+    sel.value = 12
+    assert sel.validate() is False                       # and 12 is not
+    sel.value = 7
+    assert sel.validate() is True
+
+
+def test_select_range_rule_works_on_date_option_values(app):
+    import datetime as dt
+
+    jan, jun, dec = dt.date(2024, 1, 1), dt.date(2024, 6, 1), dt.date(2024, 12, 1)
+    sel = bs.Select([("Jan", jan), ("Jun", jun), ("Dec", dec)], value=jun)
+    app._tk_root.update_idletasks()
+    sel.add_validation_rule("range", min=jan, max=dt.date(2024, 8, 1))
+
+    assert sel.validate() is True
+    sel.value = dec
+    assert sel.validate() is False
+
+
+def test_select_does_not_gate_rules_by_value_kind(app):
+    """`None` is the whole opt-out, and it must stay local to Select — a fix
+    that dropped the gate on the mixin instead would satisfy the two tests
+    above and quietly un-gate the seven fields that DO have a fixed kind."""
+    assert bs.Select._VALIDATION_KIND is None
+    for widget in (bs.TextField, bs.PasswordField, bs.PathField, bs.SpinnerField,
+                   bs.NumberField, bs.DateField, bs.TimeField):
+        assert widget._VALIDATION_KIND is not None, widget.__name__
