@@ -148,9 +148,17 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-25) — **#472 IS IN FLIGHT AND AWAITING ROUND 1.** #465 and #449 shipped.
+### ★ START HERE (2026-08-25) — **#472, #465 and #449 SHIPPED. NOTHING IS IN FLIGHT.**
 
-**⏭ THE WORK IN HAND IS A REVIEW, NOT IMPLEMENTATION.** `fix/unknown-kwarg-strictness-383` is **implemented and UNREVIEWED** — round cap **3, spent 0**. **Its `PLAN.md` is on that branch, not on `main`**, and it carries a section written for the reviewer recording where the implementation left the plan. **Round 1 reviews `git diff origin/main...HEAD -- src/`, base `339177f5`.** ⚠ **A FRESH SESSION MUST DO IT** — the implementing session wrote both the code and the handoff.
+**⏭ NOTHING IS IN FLIGHT AND THERE IS NO WORK IN HAND.** #472 merged 2026-08-25 (**PR #473**, merge commit `935cf2c1`), after #465 (PR #471) and #449 (PR #470). **Round 1 found no blockers; cap 3, spent 1.** Its plan and review are archived at `development/plan-472-unknown-kwarg-strictness.md` and `development/review-472-unknown-kwarg-strictness.md`. ⚠ **Named for #472, NOT #383: #383 did NOT ship** — gaps 1 and 2 are still open on `0.5.0`.
+
+**Pick from the backlog.** `0.4.0` still needs **#459, #460, #461, #467**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
+
+**Three things from #472 outlive it. Read the archived review before touching the seam, the docs scripts, or #466:**
+
+- ⚠⚠ **A GUARD'S BLAST RADIUS WAS MEASURED OVER `src/` AND `tests/` AND NEVER OVER `docs/` — and `docs/` is where it bit.** Two shipped scripts passed keywords that had never existed (`bs.DataTable(enable_search=…)`, the INTERNAL key for `searchable`; `bs.DataTable(paginated=…)`, nothing at all) and the guard turned both from silent no-ops into hard `TypeError`s. **Nothing caught them: the suite does not run `docs/examples/`, Sphinx `literalinclude` does not execute what it includes, and CI runs neither.** ⏭ **THE DURABLE FIX BELONGS ON #466 AND IS NOT BUILT: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** It would have caught both before the branch existed.
+- ⚠ **A VACUOUS TEST INSIDE A SUITE THAT COVERS THE BEHAVIOR ELSEWHERE IS A DIFFERENT FINDING FROM A COVERAGE HOLE — and the review got this wrong first.** `test_declared_forwarders_still_forward[Chart]` passes without testing anything wherever `matplotlib` is absent (every CI leg — `ci.yml` installs `-e .` only), because `bs.Chart(bogus=1)` raises *"requires matplotlib"* before `__init__` reaches the split. The record first concluded the exemption was therefore unguarded on CI. **It is not** — `test_declared_forwarders_are_exactly_the_five` never constructs a widget and catches it regardless. **Review the test's siblings before pricing its vacuity.**
+- ⚠ **`probe_wrapper_parameter_delta.py --arm leftovers` IS THE WRONG INSTRUMENT FOR THIS AREA NOW, and would report a working fix as a tool bug** — it compares the STATIC source verdict against construction, so a wrapper that rejects while still *looking* like a dropper reads as a DISAGREE under a banner saying a disagreement is a probe defect. **Use `development/probe_383_unknown_kwarg_policy.py`**, which classifies by construction only.
 
 ⚠ **#472 IS NEW AND IS NOT #383.** Gap 3 (unknown keyword **names**) was split out of #383 on 2026-08-25 and **moved to `0.4.0`**; **#383 keeps gaps 1 and 2 (bad *values*) and stays on `0.5.0`** with #369/#408/#416. **The batching rule did not argue for holding it**, and the measurement that overturned it is on #472: the rule minimizes the number of releases that force a migration, and `0.4.0` already forces one (#465's rule-type guard raises; #461 breaks working code), so it is two either way. **Do not re-propose deferring it.**
 
@@ -162,13 +170,13 @@ release has already run on.
 - ⚠ **A `when="tail"` event can OUTLIVE its widget and be delivered to a DIFFERENT one.** Proven by payload match, not inference. Filed as **#469**, unfixed in the product; `tests/conftest.py::_reset_scene` now pumps `root.update()` before destroying, which is what closed #449. **See the Tk traps section.**
 - ⚠ **A RATE IS NOT EVIDENCE for a timing-dependent flake, because non-fixes silence it too.** Instrumenting the #449 leg made it pass; so did `update_idletasks()`, which does not drain the queue at all. **Assert the invariant.** Full account in the archived review's addendum.
 
-#### ⏭ THE WORK IN HAND — #383 gap 3, unblocked
+#### ✅ #472 — mode 3 is FIXED and reviewed (PR #473). Kept only for what outlives it.
 
-**Cut `fix/unknown-kwarg-strictness-383` off `main` and restore its parked plan to `PLAN.md`; round cap **3**.** The audit's headline finding — **40 of 52 wrappers silently accept an unrecognised keyword** — is #383 gap 3, and it was never a design problem: `_BooleanControlBase.__init__` already carries the six-line guard for five widgets. **Placement was the only open question and it is now ANSWERED — default-strict at the seam, declarative class-flag opt-out** (maintainer, 2026-08-21; the parked plan's §1 carries the code sketch). **Read `development/plan-383-unknown-kwarg-strictness.md`; do not re-derive it.** Three things from it that a fresh session will otherwise get wrong:
+**Shipped exactly as decided: default-strict at the seam, declarative class-flag opt-out.** `_split_layout_kwargs` is an instance method that raises on whatever survives the split, naming the widget and every leftover key; the five deliberate forwarders (Chart, MenuButton, Picture, StatusBar, Toolbar) opt out with `_forwards_kwargs = True`. **Measured by construction, not read from source: `dropped=40 rejected=10` before, `dropped=0 rejected=50` after**, with the probe's control run at the base commit so the zero is a measurement. **The whole analysis is in the archived plan and review — do not re-derive it.**
 
-- ⚠ **`App` and `Window` ARE NOT a third shape, which is the easy misread of the count below.** They forward their catch-all deliberately (`app.py:172`, `window.py:179`) and simply never call `_split_layout_kwargs`, because a top-level window is never placed in a layout — so **a seam guard does not touch them and they need no opt-out.** The real split is **40 defective / 5 already correct / 5 needing an opt-out / 2 unaffected.**
-- ⚠ **DEFAULT-STRICT AT THE SEAM SILENTLY KILLS FOUR CRAFTED ERROR MESSAGES.** `Select`, `DateField`, `NumberField` and `TimeField` run `_split_layout_kwargs` **before** their `if "textsignal" in kwargs: raise`, so the generic error would fire first — including on #458's public explanation of a deliberate behaviour change. **Move each check above its split, in the same commit, and pin the specific text with a test.** These four are the ones most likely to be skipped, because they *look* strict already.
-- **The seam is cheaper than it looks:** `_split_layout_kwargs` is a `@staticmethod` and so cannot name the widget in an error, but **all 51 call sites already spell it `self._split_layout_kwargs(...)`**, so converting it to an instance method is source-compatible everywhere and yields `type(self).__name__`. ⚠ **Prefer a DECLARATIVE opt-out (a class flag) over a per-call keyword** — it is what collapses the eventual durable guard to ~10 lines instead of another source scan.
+- ⚠ **`App` and `Window` ARE NOT a third shape, which was the easy misread.** They forward their catch-all deliberately (`app.py:172`, `window.py:179`) and never call `_split_layout_kwargs`, because a top-level window is never placed in a layout — **so the seam guard does not touch them, and it did not.** They still reject, through the toolkit: `bs.App(bogus=1)` raises `TypeError` naming **`Tk.__init__`**, `bs.Window(bogus=1)` raises `TclError`. **That message shape is #383's OTHER gap (raw toolkit errors), still open on `0.5.0`.**
+- ⚠ **The four crafted `textsignal` messages were the trap, and they are the thing most likely to be re-broken by a later "simplification".** `Select`, `DateField`, `NumberField` and `TimeField` ran the split **before** their bespoke `raise`, so a strict split would have fired the generic error first and silently retired all four — including #458's public explanation of a deliberate behaviour change. **Each check now sits ABOVE its split and each is pinned by a test asserting the specific text.** `grep -n "in kwargs" src/bootstack/widgets/*.py` returns exactly those four in constructor scope; **there is no fifth.**
+- **The duplicated guards in `boolean_controls.py` and `radio_variants.py` are now DEAD CODE** — the seam raises first. Left in place deliberately (round 1 nit, no action); **do not read them as the live guard.**
 
 
 **⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` before touching any of them, and do not re-derive it. The instrument is `development/probe_wrapper_parameter_delta.py` (arms `scan`, `control`, `leftovers`, `roundtrip`); **re-run it rather than reading the wrappers again.**
@@ -177,7 +185,7 @@ release has already run on.
 |---|---|---|---|
 | 1 | never forwarded | **0** | clean |
 | 2 | wrong destination | 100 renamed destinations | **1 defect — #461.** The other 99 are `_impl` spelling |
-| 3 | swallowed as a layout key | **40 of 52 wrappers** | **THE finding.** Posted on #383 as its gap 3 |
+| 3 | swallowed as a layout key | **40 of 52 wrappers** | **THE finding.** Was #383 gap 3, split out as **#472** and ✅ **FIXED (PR #473)**. ⚠ **This row is now HISTORICAL — so is `--arm leftovers`, which reports the fix as a tool bug** |
 | 4 | accepted then ignored | not statically decidable | 1 weak candidate (`Carousel.index`) |
 | 5 | the type lies | **8** | **= #460's population exactly**, `TextArea` cleared |
 
@@ -229,13 +237,13 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent is the **PR #471 merge (`62728770`, #465)**, itself preceded by the **PR #470 merge (`7e4e3c98`, #449)** — both 2026-08-25. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 (the wrapper audit), archived at `development/plan-463-wrapper-audit.md` |
-| branches | **`fix/unknown-kwarg-strictness-383` IS IN FLIGHT** — cut 2026-08-25 off `main` @ `339177f5`, **#472 implemented at `6808de00` and AWAITING ROUND 1** (cap 3, spent 0). Its `PLAN.md` lives on that branch. Prior: `fix/select-validation-surface-465` (PR #471, head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` (PR #470, head **`ed174211`**), both merged 2026-08-25 and **deleted local + remote**. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. ⚠ **#472's `PLAN.md` is on its BRANCH, not here** — it was unparked from `development/` when the branch was cut, which is the protocol's normal cycle. **No `REVIEW.md` anywhere yet: round 1 has not run** |
-| released | `0.3.2`. **`## [Unreleased]` carries #456, #458 and #465**, under an **`### Added`** section as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
-| next release | **`0.4.0 — Signal binding on fields`** — #458 and #465 done, **#459, #460, #461, #467, #472 still open.** #467 came out of #465's review; **#472 is #383's gap 3, moved here 2026-08-25** and already implemented on its branch. The milestone cannot close yet |
+| `main` | tip is this `docs(claude):` commit, whose parent is the **PR #473 merge (`935cf2c1`, #472)**, itself preceded by the **PR #471 merge (`62728770`, #465)** and the **PR #470 merge (`7e4e3c98`, #449)** — all 2026-08-25. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 (the wrapper audit), archived at `development/plan-463-wrapper-audit.md` |
+| branches | **NONE in flight.** `fix/unknown-kwarg-strictness-383` merged via PR #473 (head **`bb8ef8ff`**), 2026-08-25. Prior: `fix/select-validation-surface-465` (PR #471, head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` (PR #470, head **`ed174211`**), both merged 2026-08-25 and **deleted local + remote**. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. #472's pair likewise, at `development/plan-472-unknown-kwarg-strictness.md` and `development/review-472-unknown-kwarg-strictness.md` — both archived on the branch *before* the merge, so `main`'s root never carried a stale pair |
+| released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #465 and #472**, under **`### Added`** and **`### Changed`** sections as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472: it RAISES where the framework used to accept, so an app can fail to start after the upgrade. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
+| next release | **`0.4.0 — Signal binding on fields`** — #458, #465 and #472 done, **#459, #460, #461, #467 still open.** #467 came out of #465's review; #472 was #383's gap 3, moved here and shipped 2026-08-25 |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1524 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 at the #465 branch tip (`ff718b4d`, identical tree to `main`), Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
+| suite, `main` | **1552 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 on `main` after the PR #473 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
 | open milestones | **11** — verified against `gh` 2026-08-25, and they agree 1:1 with the table below |
 
 ⚠ **A NEW ENVIRONMENTAL PAIR — AND IT IS BIGGER THAN THE PANDAS ONE THIS FILE ALREADY DOCUMENTS.** The Windows box now has **matplotlib** installed, so **`test_chart.py` (44 tests behind a module-level `pytest.importorskip("matplotlib")`) COLLECTS instead of being the collection-time skip.** `pandas` arrived too. Against the `1458 / 21` recorded on 2026-08-19:
@@ -330,7 +338,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), **#459, #460, #461, #467, #472**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462 and PR #471 both carry this milestone. `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), **#459, #460, #461, #467**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462, PR #471 **and PR #473** all carry this milestone. **Measured 2026-08-25 after #472 shipped: the endpoint says `open=4 closed=6` while `gh issue list` returns 7 issues, 4 open.** `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -339,7 +347,7 @@ and fix the table.**
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact | 1 |
+| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. ⏭ **#466 NEEDS A THIRD AMENDMENT, from #472's review: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** Two shipped scripts had passed keywords that never existed and **nothing caught them** — the suite does not run `docs/examples/`, `literalinclude` does not execute what it includes, and CI runs neither. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact | 1 |
 | — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, ~~#449~~ (fixed 2026-08-25). It is rolling, so it does **NOT** close when a patch ships. ⚠ **#449's fix shipped inside `0.4.0`, not a patch** — it was test-only and merged while `0.4.0` was open, so PR #470 was left unmilestoned rather than misreporting where it landed | 5 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
@@ -382,7 +390,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**SIX UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469.** ⚠ **#468 and #469 both came out of #465's review** and are described under its section above; #469 is the `when="tail"` hazard. Verify rather than counting by hand:
+**SEVEN UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474.** ⚠ **#468 and #469 both came out of #465's review** and are described under its section above; #469 is the `when="tail"` hazard. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -414,18 +422,19 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-25 at `ff718b4d`** (the #465 branch tip, an
-identical tree to `main` after PR #471), Windows box, `py -3.12 tests/run_gui.py`,
-**exit 0, 33 legs**, **`matplotlib` and `pandas` BOTH PRESENT**:
+**AUTHORITATIVE — measured 2026-08-25 on `main` after the PR #473 merge**,
+Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and
+`pandas` BOTH PRESENT**:
 
 | | measured |
 |---|---|
-| summed, 33 legs | **1524 passed / 22 skipped** |
+| summed, 33 legs | **1552 passed / 22 skipped** |
 
-⚠ **The `+24` over the previous `1500` is entirely NEW TESTS, and it is bounded
-rather than reconciled from memory:** `+22` from #465's two test files and `+1` for
-its rule-type guard, `+1` for #449's harness guard.
-`git diff 41c8bad1..HEAD --stat -- tests/` says how much the count was ALLOWED to
+⚠ **Both steps up from `1500` are entirely NEW TESTS, and each is bounded rather
+than reconciled from memory:** `+24` for #465 (`+22` from its two test files, `+1`
+for its rule-type guard, `+1` for #449's harness guard), then `+28` for #472 (25 in
+`test_unknown_kwarg_strictness.py`, 3 in `test_base_layer.py`).
+`git diff <baseline>..HEAD --stat -- tests/` says how much the count was ALLOWED to
 move, and it is one command.
 
 **Superseded, kept for the environmental note it anchors — measured 2026-08-20 on
@@ -543,20 +552,18 @@ must clear validation state.
   ARGUMENT NAME, not by widget.** Folds in `Slider.value = None` leaking a raw
   `TypeError` (reachable via `form.set({'slider_key': None})`) and `show_grid=True`
   silently accepted on `Row`.
-  - ⚠ **#383 gained a THIRD gap, and it is now MEASURED — read the comment on the
-    issue (2026-08-20) before re-deriving any of this.** The two gaps in its body
-    are about bad **values**; this one is about unknown **names** —
-    `bs.TextField(bogus_xyz=1)` constructs silently while the internal
-    `TextEntry(None, bogus_xyz=1)` raises `TclError: unknown option "-bogus_xyz"`,
-    so **the public layer is the less strict of the two** — both halves measured,
-    not inferred. ⚠ **It does NOT reuse `validate_choice`**; the name never
-    reaches a validator. **THE BLOCKER IS GONE:** of the 52 wrappers with a
-    catch-all, **40 drop / 5 reject / 5 forward / 2 never split**, and the guard
-    already ships in `_BooleanControlBase.__init__` at six lines. What is left is
-    placement — and ⚠ **a blanket seam guard breaks the five that forward on
-    purpose** (Chart, MenuButton, Picture, StatusBar, Toolbar), which need an
-    opt-out. `App`/`Window` forward too but never call the split, so a seam
-    guard does not reach them. ⏭ **`development/plan-383-unknown-kwarg-strictness.md` carries the whole analysis.**
+  - ⚠ **#383'S THIRD GAP IS GONE FROM THIS ISSUE — it was split out as #472 and
+    SHIPPED on `0.4.0` (PR #473).** That gap was about unknown **names**; the two
+    left here are about bad **values**, which is why they stay batched with
+    #369/#408/#416. ⚠ **Do not re-scope #383 to include it, and do not read the
+    audit's mode-3 row as open work.**
+  - ⚠ **BUT ONE HALF OF GAP 2 IS NOW SHARPER, NOT SOLVED.** #472 made unknown
+    *names* raise a clean `TypeError` naming the widget — and in doing so it left
+    `App`, `AppShell`, `Workbench` and `Window` as the visible exceptions:
+    measured, they raise `TypeError` naming **`Tk.__init__`** or a bare
+    `TclError`, never the widget. **That is exactly this issue's "args that raise
+    but leak a raw `TclError`/`AttributeError`" complaint, now with a shipped
+    counter-example to compare against.**
 - **#369** — the selection family disagrees on off-list values (`SelectButton`
   raises both ways; `RadioGroup` accepts at construction, raises on assignment;
   `ToggleGroup` accepts both; and where accepted, `value` says `'MX'` while
@@ -1065,6 +1072,16 @@ whole-file flip still shows the true small diffstat.
 
 - **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column`
   etc. are NOT explicit params. Route through `self._split_layout_kwargs(kwargs)`.
+  ⚠ **SINCE #472 THAT SEAM IS DEFAULT-STRICT: whatever survives the split RAISES
+  `TypeError` naming the widget.** It is an INSTANCE method now, not a
+  `@staticmethod` — call it `self._split_layout_kwargs(...)`. **A new wrapper is
+  strict for free and needs no guard of its own.** Only a wrapper that hands
+  leftovers to its internal on purpose opts out, with the class flag
+  `_forwards_kwargs = True` (Chart, MenuButton, Picture, StatusBar, Toolbar).
+  ⚠ **A sixth opt-out FAILS `test_declared_forwarders_are_exactly_the_five` on
+  purpose** — the flag is declarative precisely so the exemption list can be
+  enumerated. ⚠ **And if a wrapper needs a crafted error for a specific key, put
+  that check ABOVE its split**, or the generic error fires first and retires it.
 - **`**kwargs` not `**extra_kw`** — catch-all must be named `**kwargs` throughout.
 - **User options MERGE OVER framework kwargs; structural keys RAISE** (#363). A
   widget that builds another widget for you — `Form`'s `editor_options`,
