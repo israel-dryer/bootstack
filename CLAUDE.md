@@ -148,15 +148,40 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-25) — **#461 + #459 ARE IN FLIGHT, AWAITING ROUND 1.**
+### ★ START HERE (2026-08-25) — **#461 + #459 ARE IN FLIGHT. ROUND 1 IS DONE; THE BRANCH LOOKS READY TO MERGE.**
 
-**⏭ IN HAND: `fix/selectbutton-signal-value-461`, two commits, NOT pushed and NO PR.** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal) — one commit each, `c85d9220` and `f39b0a88`, off `main` at `ede2d57e`. **`PLAN.md` is on the branch and was written up front; cap 3, spent 0.** ⚠ **Round 1 has NOT run — a session that wrote this code must not review it.** Review the branch: `git diff main...HEAD`.
+**⏭ IN HAND: `fix/selectbutton-signal-value-461`, three commits, NOT pushed and NO PR.** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal) — one commit each, `c85d9220` and `f39b0a88`, off `main` at `ede2d57e` — plus **`51493154`, round 1's record and fixes.** **`PLAN.md` and `REVIEW.md` are both on the branch; cap 3, SPENT 1.**
+
+**⏭ NEXT STEP IS THE MERGE, not another round.** Round 1 found **one blocker, fixed on the branch**: the widget page's own reactive-binding example seeded `bs.Signal("light")` against options `["Light", "Dark", "Auto"]`, which post-fix raises `ValueError: 'light' is not one of the options`. ⚠ **The sweep that missed it asked whether the options were DECOUPLED; the question that decides a site is whether the SEED NAMES AN OPTION** — a plain-`list[str]` button is affected too. **Nothing could have caught it: an `.. code-block::` is executed by nothing** — not the suite, not CI, and unlike `literalinclude` there is not even a file to run. **That is #472's lesson through a third door, and it is #466's to close.** Verified independently at round 1: suite **1573 / 22, 33 legs, exit 0**, clean docs build warning-free, `test_public_surface.py` 166 passed.
+
+⚠⚠ **ROUND 1'S REAL PRODUCT WAS NOT THE BLOCKER — IT WAS #390, AND #390 HAS MOVED TO `0.4.0`. READ THE NEXT SECTION BEFORE PROMOTING THE CHANGELOG.**
 
 ⚠ **#461 RAISES WHERE IT USED TO ACCEPT, by maintainer decision 2026-08-25: `signal=` is value-space now, and seeding with a label raises exactly as `value=` already did for the same string.** Measured both sides; the whole account is in `PLAN.md`. **Do not re-propose tolerating labels** — a fallback puts the two spaces back on speaking terms, which is the ambiguity the fix removes.
 
 ⚠ **TWO THINGS THE BRANCH CHANGES THAT ARE NOT ITS OWN:** `SelectButton` leaves **#460's population of eight** (the `| None` property it named is deleted), so that issue's table needs a comment at merge; and an off-list signal write now raises and leaves the signal ahead of the button, which is **#369's** family decision, not this fix's. The test pins the raise and deliberately not the state it leaves behind.
 
-**After it merges, `0.4.0` still needs #460 and #467**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
+**After it merges, `0.4.0` still needs #460, #467 and #390**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
+
+#### ✅ #390 MOVED TO `0.4.0` (maintainer, 2026-08-25) — out of #461's round 1. **THE BIGGEST THING ON THAT MILESTONE NOW.**
+
+**Reason, in the maintainer's words: *"doesn't make sense to have half solved solution while we introduce new bugs."*** #458 and #461 rebound `Select` and `SelectButton` from the widget's own `StringVar` to the typed value. **A `StringVar` can hold `''`; a `Signal` cannot hold `None`.** So both widgets moved from reporting an empty selection to reporting **nothing at all** — for those two it is a **REGRESSION against `0.3.2`**, not the standing family limitation.
+
+Measured against the pre-fix wiring **in-process** — the internals still accept `textsignal=`, so this needs no worktree and carries no `PYTHONPATH` skew:
+
+```
+PRE-#461 SelectButton  value = None       widget=None signal=''  subscriber_saw=['']
+PRE-#461 SelectButton  options = [...]    widget=None signal=''  subscriber_saw=['']
+PRE-#458 Select        user clears field  widget=None signal=''  subscriber_saw=['']
+post-fix, all three                       widget=None signal='2' subscriber_saw=[]
+```
+
+⚠ **`Select`'s case is USER-reachable and its two surfaces DISAGREE ABOUT THE SAME EVENT** — a user clearing the field fires `<<Change>>` with `value=None`, so `on_change` handlers see the clear while the bound signal silently keeps the old selection. **That is sharper than "the signal goes stale" and it is not in #390's body; it is in the comment posted 2026-08-25.** `SelectButton`'s path is code-only (its popup offers only options): `button.value = None`, or assigning `options` a list the current selection is not on.
+
+⚠ **THERE IS NO NARROW FIX, AND THIS WAS MEASURED RATHER THAN ARGUED.** Pushing `''` instead of skipping is the per-type empty sentinel #390 already **considered and rejected**, and it cannot work for the siblings regardless: **`Signal(int).set('')` raises `TypeError: Expected int, got str`.** Patching `SelectButton` alone would re-create the family divergence #461 exists to remove and would leave the more reachable `Select` broken. **Do not re-propose either. The regression closes when #390 is answered, and not before.**
+
+⏭ **#390 IS BLOCKED ON DECISIONS, NOT ON WORK — three of its four are still unanswered.** The milestone move settles *"do it at all?"*. Left: **declared vs automatic** nullability, **what a non-nullable signal asked to go empty does**, and **what `map()` does over a nullable signal.** The standing recommendations are in the Backlog section below and the analysis is **COMPLETE — it needs an answer, not more analysis.** Own branch, own `PLAN.md` up front.
+
+⚠⚠ **THE TRAP, AND IT FIRES AT PROMOTION TIME.** The `0.4.0` CHANGELOG bullets for **#458 and #461 now DOCUMENT the empty-selection exception and link to #390**, which is correct only while the limitation ships. **If #390 lands in `0.4.0` as now planned, BOTH sentences must come back out before `## [Unreleased]` is promoted.** Recorded on #390 too, so it is not held only here.
 
 **Three things from #472 outlive it. Read the archived review before touching the seam, the docs scripts, or #466:**
 
@@ -245,7 +270,7 @@ release has already run on.
 | branches | **NONE in flight.** `fix/unknown-kwarg-strictness-383` merged via PR #473 (head **`bb8ef8ff`**), 2026-08-25. Prior: `fix/select-validation-surface-465` (PR #471, head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` (PR #470, head **`ed174211`**), both merged 2026-08-25 and **deleted local + remote**. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
 | root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. #472's pair likewise, at `development/plan-472-unknown-kwarg-strictness.md` and `development/review-472-unknown-kwarg-strictness.md` — both archived on the branch *before* the merge, so `main`'s root never carried a stale pair |
 | released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #465 and #472**, under **`### Added`** and **`### Changed`** sections as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472: it RAISES where the framework used to accept, so an app can fail to start after the upgrade. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
-| next release | **`0.4.0 — Signal binding on fields`** — #458, #465 and #472 done, **#459, #460, #461, #467 still open.** #467 came out of #465's review; #472 was #383's gap 3, moved here and shipped 2026-08-25 |
+| next release | **`0.4.0 — Signal binding on fields`** — #458, #465 and #472 done, **#459, #460, #461, #467, #390 still open.** #467 came out of #465's review; #472 was #383's gap 3, moved here and shipped 2026-08-25; **#390 moved here from `0.6.0` on 2026-08-25** out of #461's round 1 |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **1552 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 on `main` after the PR #473 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
 | open milestones | **11** — verified against `gh` 2026-08-25, and they agree 1:1 with the table below |
@@ -342,9 +367,9 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), **#459, #460, #461, #467**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462, PR #471 **and PR #473** all carry this milestone. **Measured 2026-08-25 after #472 shipped: the endpoint says `open=4 closed=6` while `gh issue list` returns 7 issues, 4 open.** `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), **#459, #460, #461, #467, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** See the #390 section above; it is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462, PR #471 **and PR #473** all carry this milestone. **Measured 2026-08-25 after #472 shipped: the endpoint said `open=4 closed=6` while `gh issue list` returned 7 issues, 4 open; it reads `open=5` after #390 arrived.** `gh issue list --milestone <title> --state all` is the authority for *issues* | 5 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25 | 4 |
-| 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
+| 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
 | 5 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
 | 6 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
@@ -503,17 +528,22 @@ legs yourself — `run_gui.py` prints no aggregate.
 
 ## Backlog — what to pick up
 
-**#390 is the exception to milestone order and can be taken at ANY time — it is a
-DECISION, not work.** Should signals model emptiness at all? Cheapest item on the
-board and the largest unblock, since it gates #389 shipping *whole*. **The analysis
-is COMPLETE — it needs an answer, not more analysis**, and the maintainer is
+⚠ **#390 IS NO LONGER "the exception to milestone order" — IT IS ON `0.4.0` AS OF
+2026-08-25 and is that release's biggest item.** The full reason, the measurement and
+the promotion trap are in the ★ START HERE section; **read that before this.** What
+still stands here is the shape of the decision, which has not changed.
+
+**It is a DECISION, not work.** Should signals model emptiness at all? Cheapest item
+on the board and the largest unblock, since it gates #389 shipping *whole*. **The
+analysis is COMPLETE — it needs an answer, not more analysis**, and the maintainer is
 actively evaluating (discussion #386), so do not re-derive it or ask the reporter
 to weigh in.
 
 `Signal.set(None)` raises unconditionally (`signal.py:248` — strictly monomorphic,
-type inferred from the seed). **Four decisions, in order:**
+type inferred from the seed). **Four decisions, in order — ONE IS NOW ANSWERED:**
 
-1. *Do it at all?*
+1. *Do it at all?* — ✅ **YES (maintainer, 2026-08-25)**, settled by the move to
+   `0.4.0`. **Three left.**
 2. *Declared or automatic?* — recommend **declared** (`Signal(v, nullable=True)`).
    Automatic-by-mode cannot cover `int` and is not safe to lean on: `Signal(0)` is
    Python-authoritative only *while unrealized*, so the moment anything touches
@@ -526,7 +556,11 @@ type inferred from the seed). **Four decisions, in order:**
    source breaks the **documented** Date/Time pattern.
 
 **No existing code is at risk either way** — `set(None)` raises today, so nothing
-can currently receive it. ⚠ **KEY MEASURED FINDING: the dividing line is
+can currently receive it. ⚠ **THAT IS ABOUT RELAXING THE GUARD BEING SAFE, AND IT
+STILL HOLDS — DO NOT READ IT AS "NOTHING IS BROKEN".** The COST side moved on
+2026-08-25: #458 and #461 pushed `Select` and `SelectButton` out of a `StringVar`
+binding that could carry `''` and into one that carries nothing, which is why #390
+is on `0.4.0`. ⚠ **KEY MEASURED FINDING: the dividing line is
 attached-vs-not, not object-vs-native.** `NumberField(signal=)` /
 `DateField(signal=)` are **unrealized** — `ValueSignalMixin` syncs in pure Python
 and never touches `.var`, so for a number field's value signal **there is no IntVar
