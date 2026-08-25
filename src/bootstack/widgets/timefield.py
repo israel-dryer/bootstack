@@ -133,7 +133,15 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         self._attach_to_parent(layout_kw)
 
         if signal is not None:
-            self._bind_value_signal(signal)
+            # Seeding is not a change (#459). The mixin seeds by assigning
+            # `value`, and this field is select-backed, so that setter emits a
+            # QUEUED <<Change>> a handler bound after the constructor still
+            # receives. Suppress the seed only; later writes emit normally.
+            self._internal._suppress_changed_event = True
+            try:
+                self._bind_value_signal(signal)
+            finally:
+                self._internal._suppress_changed_event = False
 
     # ----- Event routing -----
 
