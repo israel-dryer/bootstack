@@ -46,9 +46,7 @@ class Toolbar(PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
-    # Forwards whatever survives the layout split to its internal, on
-    # purpose -- it hands leftover options to the internal toolbar.
-    # Without this the #383 seam guard would reject those options.
+    # Forwards leftovers to the internal on purpose.
     _forwards_kwargs = True
 
     def __init__(

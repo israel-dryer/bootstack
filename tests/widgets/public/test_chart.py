@@ -109,10 +109,7 @@ def test_chart_inherits_container_surface(shown_app):
     def render(ax):
         ax.plot([1, 2, 3])
 
-    # NOTE(#383): no `surface=` here -- `Card` has no such parameter and
-    # computes its own surface from the parent. Passing it was a silent
-    # no-op that the seam guard now rejects; the card still resolves to
-    # `card` on a background parent, which is what this asserts.
+    # `Card` has no `surface=` -- it computes its own from the parent.
     with bs.Card(padding=10):
         chart = bs.Chart(render=render)
     shown_app._tk_root.update_idletasks()

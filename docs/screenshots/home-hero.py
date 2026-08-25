@@ -161,12 +161,6 @@ with bs.AppShell(title="Acme POS", size=(890, 720), show_statusbar=True,
                             rows=TXNS,
                             density="compact",
                             searchable=False,
-                            # NOTE(#472): `paginated=False` used to sit here and
-                            # was never a parameter -- it was silently dropped,
-                            # so the published hero was always rendered with the
-                            # default `paging_mode="standard"`. Removing it keeps
-                            # that rendering identical. To actually turn the pager
-                            # off, the switch is `paging_mode="virtual"`.
                             horizontal="stretch",
                         )
 

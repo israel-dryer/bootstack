@@ -1,16 +1,4 @@
-"""#383 gap 3 -- an unrecognised keyword name is rejected, not discarded.
-
-`bs.TextField(bogus_xyz=1)` used to construct silently while the internal it
-wraps raised `TclError: unknown option "-bogus_xyz"`, so the public layer was
-the LESS strict of the two. A typo'd real parameter (`densty="compact"`) and a
-typo'd layout key (`filll="x"`) both vanished the same way.
-
-The guard lives at the shared seam, `PublicWidgetBase._split_layout_kwargs`, so
-it is default-strict: a wrapper written tomorrow is strict for free. Five
-wrappers forward leftovers to their internal on purpose and opt out with a
-declarative class flag -- see `test_declared_forwarders_are_exactly_the_five`,
-which exists so the exemption list cannot grow unnoticed.
-"""
+"""#472 -- an unrecognised keyword name is rejected at the seam, not discarded."""
 import pytest
 
 import bootstack as bs
@@ -18,28 +6,15 @@ from bootstack.signals import Signal
 
 BOGUS = "bogus_xyz_383"
 
-# One per construction shape, not all 40 -- the seam is shared, so the value of
-# a 40-row parametrize is in the probe, not here.
-# `development/probe_383_unknown_kwarg_policy.py` classifies all 52 by
-# construction and is the instrument for the whole population.
+# A sample, not the population -- `development/probe_383_unknown_kwarg_policy.py`
+# classifies all 50 by construction.
 STRICT = ["TextField", "Label", "Button", "Select", "DataTable", "Row", "Grid",
           "Slider", "Tabs", "Form", "Calendar", "Tree"]
 
 FORWARDERS = ["Chart", "MenuButton", "Picture", "StatusBar", "Toolbar"]
 
-# Wrappers gated by an optional dependency. Forwarding is only OBSERVABLE once
-# the widget can construct: without the dep `bs.Chart(...)` raises "requires
-# matplotlib" before `__init__` reaches the split, and that message is not the
-# seam's -- so `test_declared_forwarders_still_forward` would pass without ever
-# testing forwarding. CI installs `-e .` only, so that is the COMMON case, not
-# the rare one. Skip instead of passing vacuously.
-#
-# NOTE: the exemption itself is NOT left unguarded on such a box --
-# `test_declared_forwarders_are_exactly_the_five` never constructs anything, so
-# it catches a lost `_forwards_kwargs` with or without the dep, and the other
-# four forwarders catch a seam that stops honoring the flag. Both measured.
-# This skip buys honesty, not coverage: a green row that proves nothing is what
-# a later session misreads as coverage.
+# Without the dep the widget raises before reaching the split, so the assertion
+# below would pass without testing forwarding.
 OPTIONAL_DEP = {"Chart": "matplotlib"}
 
 
@@ -47,36 +22,26 @@ OPTIONAL_DEP = {"Chart": "matplotlib"}
 def test_unknown_keyword_is_rejected_and_named(app, name):
     with pytest.raises(TypeError) as exc:
         getattr(bs, name)(**{BOGUS: 1})
-    # Naming the widget AND the key is the whole point: an error that says
-    # neither is no more useful than the silent drop it replaces.
     assert name in str(exc.value)
     assert BOGUS in str(exc.value)
 
 
 def test_a_typo_of_a_layout_key_is_rejected_too(app):
-    """`filll="x"` is not a layout key, so it falls through the split and is
-    caught here. This is the half a per-widget parameter check would miss."""
+    """A typo of a layout key is not a layout key -- the split does not claim it."""
     with pytest.raises(TypeError) as exc:
         bs.Label("hi", filll="x")
     assert "filll" in str(exc.value)
 
 
 def test_a_real_layout_key_still_passes_through(app):
-    """The guard must not eat legitimate placement kwargs -- they are popped
-    into `layout_kw` before it looks, so this is the non-over-rejection case.
-
-    Note these are the FLEX-CHILD spellings. `fill=`/`expand=` are legacy and
-    are rejected on purpose with their own message, which is the next test.
-    """
+    """Flex-child placement kwargs must still pass through."""
     row = bs.Row()
     lbl = bs.Label("hi", parent=row, grow=True, horizontal="stretch")
     assert lbl.text == "hi"
 
 
 def test_legacy_child_kwargs_keep_their_own_message(app):
-    """#383 section 3: `side=` is IN `PACK_KEYS`, so the split pops it and
-    `_reject_legacy_child_kwargs` reports it with the flex-vs-grid advice. The
-    new guard must not shadow that with a generic 'unexpected keyword'."""
+    """`side=` is a PACK key, so it keeps its migration message, not the generic one."""
     with pytest.raises(Exception) as exc:
         with bs.Row():
             bs.Label("hi", side="left")
@@ -85,9 +50,7 @@ def test_legacy_child_kwargs_keep_their_own_message(app):
 
 @pytest.mark.parametrize("name", FORWARDERS)
 def test_declared_forwarders_still_forward(app, name):
-    """These hand leftovers to their internal deliberately. They still reject a
-    bogus name -- the internal does it -- but NOT with the seam's message, which
-    is what distinguishes forwarding from the guard firing."""
+    """A forwarder still rejects, but via its internal -- not with the seam's message."""
     if name in OPTIONAL_DEP:
         pytest.importorskip(OPTIONAL_DEP[name])
     with pytest.raises(Exception) as exc:
@@ -96,8 +59,7 @@ def test_declared_forwarders_still_forward(app, name):
 
 
 def test_declared_forwarders_are_exactly_the_five(app):
-    """The opt-out is a class flag precisely so it can be enumerated. If a
-    sixth widget ever sets it, that is a decision and this test makes it one."""
+    """A sixth opt-out should be a decision, not a drift."""
     declared = {n for n in dir(bs)
                 if isinstance(getattr(bs, n, None), type)
                 and getattr(getattr(bs, n), "_forwards_kwargs", False)}
@@ -105,13 +67,7 @@ def test_declared_forwarders_are_exactly_the_five(app):
         "the #383 opt-out list changed: %s" % sorted(declared))
 
 
-# -- section 2: the four crafted messages the seam guard would have killed ----
-#
-# Select, DateField, NumberField and TimeField each raise a bespoke TypeError
-# for `textsignal=`, and each ran the split FIRST. Making the split strict would
-# have fired the generic error before the specific one ever ran, silently
-# retiring four crafted messages -- including #458's public explanation of a
-# deliberate behaviour change. Each check was moved above its split.
+# The four bespoke `textsignal=` messages a strict split would otherwise retire.
 
 @pytest.mark.parametrize("name, phrase", [
     ("Select", "a select binds the"),
@@ -124,5 +80,4 @@ def test_textsignal_keeps_its_crafted_message(app, name, phrase):
         getattr(bs, name)(textsignal=Signal("x"))
     msg = str(exc.value)
     assert phrase in msg, msg
-    # the generic guard must NOT be what fired
     assert "got unexpected keyword argument" not in msg

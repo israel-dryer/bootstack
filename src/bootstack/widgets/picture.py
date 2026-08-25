@@ -60,9 +60,7 @@ class Picture(PublicWidgetBase):
 
     _internal_class = _InternalPicture
 
-    # Forwards whatever survives the layout split to its internal, on
-    # purpose -- it does `internal_kwargs.update(kwargs)` on purpose.
-    # Without this the #383 seam guard would reject those options.
+    # Forwards leftovers to the internal on purpose.
     _forwards_kwargs = True
 
     def __init__(

@@ -115,21 +115,16 @@ class PublicWidgetBase:
             )
         return container
 
-    #: Whether this widget hands whatever survives the layout split on to its
-    #: internal, instead of treating it as a typo. Five wrappers do this on
-    #: purpose (Chart, MenuButton, Picture, StatusBar, Toolbar); everything else
-    #: is strict. ⚠ DECLARATIVE ON PURPOSE (#383): a class flag lets a guard
-    #: test enumerate the exemptions, which a per-call-site keyword would not.
+    #: Hands whatever survives the layout split to the internal instead of
+    #: treating it as a typo. A class flag, not a keyword, so a test can
+    #: enumerate the exemptions.
     _forwards_kwargs: bool = False
 
     def _split_layout_kwargs(self, kwargs: dict) -> dict:
         """Pop and return layout kwargs from `kwargs`, mutating it in place.
 
         Whatever is left over is an unrecognized keyword and raises, unless the
-        widget declares `_forwards_kwargs`. Before #383 it was discarded in
-        silence, which made the public layer less strict than the internal it
-        wraps: `bs.TextField(bogus=1)` constructed while `TextEntry(bogus=1)`
-        raised.
+        widget declares `_forwards_kwargs`.
         """
         from bootstack.widgets._core.container import (
             PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS, FLEX_CHILD_KEYS,
@@ -143,9 +138,6 @@ class PublicWidgetBase:
         # `attached` is geometry-manager-agnostic — capture it in every mode.
         if "attached" in kwargs:
             layout["attached"] = kwargs.pop("attached")
-        # NOTE(#383): this used to be a @staticmethod. It is an instance method
-        # so the error can name the widget — all 51 call sites already spelled
-        # it `self._split_layout_kwargs(...)`, so the change is source-compatible.
         if kwargs and not self._forwards_kwargs:
             raise TypeError(
                 f"{type(self).__name__}() got unexpected keyword argument(s): "

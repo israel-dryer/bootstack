@@ -112,9 +112,7 @@ class Chart(PublicWidgetBase):
 
     _internal_class = _InternalChart
 
-    # Forwards whatever survives the layout split to its internal, on
-    # purpose -- it hands leftover options to the matplotlib-backed internal.
-    # Without this the #383 seam guard would reject those options.
+    # Forwards leftovers to the internal on purpose.
     _forwards_kwargs = True
 
     def __init__(
