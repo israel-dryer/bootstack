@@ -85,6 +85,28 @@ def _reset_scene(app, keep: set[str]) -> None:
     chrome toolbars — are torn down.
     """
     root = app._tk_root
+    # Drain the event queue BEFORE tearing the test's widgets down (#449).
+    #
+    # A virtual event generated with `when="tail"` — `SelectBox.value` does this
+    # on every committed change (selectbox.py:1213), and ~20 other emit sites do
+    # the same — is queued against the emitting WINDOW, not the Python widget
+    # object. Destroying the widget with the event still queued leaves the
+    # toolkit free to deliver it to whatever window it hands out next, which is
+    # a widget the NEXT test built.
+    #
+    # Measured, not inferred: the event that failed
+    # `test_select_change_event_value_space` was byte-for-byte the one emitted
+    # two tests earlier by `test_select_options_reassignment_reconciles` —
+    # `(value=None, prev_value='Small', text='')` — arriving at a different
+    # `Select`'s handler. Pumping here delivers it to its own widget, while that
+    # widget is still alive, which is where it always belonged.
+    #
+    # ⚠ It must be `update()`, not `update_idletasks()`: a tail event is a real
+    # queue entry, not an idle task, so the idle-only pump does not drain it.
+    try:
+        root.update()
+    except Exception:
+        pass
     region = _region(app)
     region_path = str(region)
     for w in list(region.winfo_children()):
