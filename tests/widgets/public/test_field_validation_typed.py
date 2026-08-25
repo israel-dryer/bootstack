@@ -143,6 +143,10 @@ def test_range_rule_empty_field_is_not_out_of_range(app):
         (lambda: bs.NumberField(value=1), "pattern"),
         (lambda: bs.DateField(value="2024-01-01"), "email"),
         (lambda: bs.TextField(), "range"),
+        # #465 review — Select is deliberately NOT in this list. It declares
+        # _VALIDATION_KIND = None because its value kind comes from its
+        # options, so it gates nothing. See the applicable set below, which
+        # pins all seven rule types attaching to a Select.
     ],
 )
 def test_inapplicable_rule_rejected_at_attach(app, factory, rule):
@@ -163,6 +167,17 @@ def test_inapplicable_rule_rejected_at_attach(app, factory, rule):
         (lambda: bs.NumberField(value=1), "custom", {"func": lambda v: v > 0}),
         (lambda: bs.DateField(value="2024-01-01"), "required", {}),
         (lambda: bs.TimeField(value="08:30"), "required", {}),
+        # #465 — ALL SEVEN rule types must attach to a Select. Its value kind
+        # is whatever its options carry, so there is nothing to gate on and
+        # nothing moved when it inherited FieldAddonMixin. Pinning a subset
+        # would pass just as well if the gate had rejected the rest.
+        (lambda: bs.Select([("Five", "5")], value="5"), "required", {}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "stringLength", {"min": 1}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "pattern", {"pattern": "^.*$"}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "email", {}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "compare", {"other_field": None}),
+        (lambda: bs.Select([("Five", "5")], value="5"), "custom", {"func": lambda v: True}),
+        (lambda: bs.Select([("Five", 5)], value=5), "range", {"min": 0, "max": 10}),
     ],
 )
 def test_applicable_rule_attaches_cleanly(app, factory, rule, kwargs):

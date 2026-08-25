@@ -6,11 +6,10 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.selectbox import SelectBox as _InternalSelectBox
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.field_mixin import ValueSignalMixin
+from bootstack.widgets._core.field_mixin import FieldAddonMixin, ValueSignalMixin
 from bootstack.widgets._core.options import record_to_dict
-from bootstack.events import ChangeEvent, Subscription
+from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
-from bootstack.validation import RuleType
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Option, OptionDict, WidgetDensity
 
@@ -18,11 +17,14 @@ if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 _SELECT_EVENTS: dict[str, str] = {
-    "change": "<<Change>>",
+    "change":   "<<Change>>",
+    "valid":    "<<Valid>>",
+    "invalid":  "<<Invalid>>",
+    "validate": "<<Validate>>",
 }
 
 
-class Select(ValueSignalMixin, PublicWidgetBase):
+class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     """A single-selection dropdown field.
 
     The options list is the first positional argument. All options are
@@ -84,12 +86,15 @@ class Select(ValueSignalMixin, PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
-    #: Same soft cross-axis default the field family declares on
-    #: `FieldAddonMixin`. Select is the one Field-backed widget that does not
-    #: inherit that mixin, but it grows a validation-message row identically, so
-    #: without this a Select sat low beside the fields it shares a Row with
-    #: (#394).
-    _flex_vertical_default: str = "top"
+    # A Select's value kind comes from its OPTIONS, not from the widget, so
+    # there is no kind to gate rules on. `SelectBox._validation_value` decodes
+    # the displayed label back to the option's value before a rule sees it, so
+    # a decoupled option list hands the rule that option's real object -- and a
+    # `range` rule over numeric or date option values works. Declaring the
+    # mixin's `'text'` default here would reject it at attach time and break
+    # code that runs today; measured both ways in
+    # `development/probe_465_select_range_kind.py`.
+    _VALIDATION_KIND: str | None = None
 
     def __init__(
         self,
@@ -171,30 +176,6 @@ class Select(ValueSignalMixin, PublicWidgetBase):
                 self._internal._suppress_changed_event = False
 
     # ----- Validation -----
-
-    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
-        """Add a validation rule to the field.
-
-        Rules run automatically on blur or key events depending on the rule
-        type, or manually via `validate()`. Multiple rules can be added;
-        they are evaluated in order and stop at the first failure.
-
-        Args:
-            rule_type: The kind of validation rule to apply — `'required'`,
-                `'stringLength'`, `'pattern'`, `'email'`, `'compare'`, or
-                `'custom'`.
-            **kwargs: Rule-specific options:
-
-                - `message` *(all rules)* — override the default error message.
-                - `trigger` *(all rules)* — when to run: `'always'` (key and
-                  blur), `'key'`, `'blur'`, or `'manual'`. Each rule type has
-                  its own sensible default.
-                - `min`, `max` *(stringLength)* — minimum/maximum character count.
-                - `pattern` *(pattern)* — regex string the value must match.
-                - `other_field` *(compare)* — field whose value must match.
-                - `func` *(custom)* — callable `(value) -> bool`.
-        """
-        self._internal.add_validation_rule(rule_type, **kwargs)
 
     def validate(self) -> bool:
         """Run validation rules against the current selection.
@@ -356,6 +337,57 @@ class Select(ValueSignalMixin, PublicWidgetBase):
             handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
+
+    @overload
+    def on_valid(self) -> Stream: ...
+    @overload
+    def on_valid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation passes.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("valid", handler)
+
+    @overload
+    def on_invalid(self) -> Stream: ...
+    @overload
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation fails.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("invalid", handler)
+
+    @overload
+    def on_validate(self) -> Stream: ...
+    @overload
+    def on_validate(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired after any validation run.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("validate", handler)
 
 
 register_widget_events(Select, _SELECT_EVENTS)

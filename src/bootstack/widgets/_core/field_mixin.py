@@ -20,8 +20,10 @@ class FieldAddonMixin:
 
     #: The kind of value this field holds, used to reject inapplicable
     #: validation rules at attach time. Text fields keep the default; typed
-    #: field wrappers override it (`'number'`, `'date'`, `'time'`).
-    _VALIDATION_KIND: str = "text"
+    #: field wrappers override it (`'number'`, `'date'`, `'time'`). `None`
+    #: means the widget does not fix the kind — its value comes from data the
+    #: caller supplies — so no rule can be rejected on kind grounds.
+    _VALIDATION_KIND: str | None = "text"
 
     #: Cross-axis alignment a field contributes when the author set none. A
     #: field that shows a validation message is taller than one that doesn't, so
@@ -207,7 +209,9 @@ class FieldAddonMixin:
         numeric field receives a number, on a date field a `date`. Text rules
         (`stringLength`, `pattern`, `email`) apply only to text fields; `range`
         applies only to numeric/date/time fields. Attaching a rule to a field
-        whose value kind it cannot validate raises `BootstackError`.
+        whose value kind it cannot validate raises `BootstackError`. A `Select`
+        is the exception — its value kind is whatever its options carry, so it
+        accepts every rule type.
 
         Args:
             rule_type: The kind of validation rule to apply.
@@ -242,7 +246,7 @@ class FieldAddonMixin:
                 f"field.add_validation_rule('stringLength', min=3)."
             )
         kind = self._VALIDATION_KIND
-        if not rule_applies_to_kind(rule_type, kind):
+        if kind is not None and not rule_applies_to_kind(rule_type, kind):
             if kind == "text":
                 hint = "'stringLength' bounds text length."
             else:

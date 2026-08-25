@@ -141,6 +141,9 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
        :class:`~bootstack.RadioGroup`, :class:`~bootstack.ToggleGroup`
      - ``change``
      - :class:`~bootstack.events.ChangeEvent`
+   * - :class:`~bootstack.Select` only (it is a field, so it validates)
+     - ``valid`` / ``invalid`` / ``validate``
+     - :class:`~bootstack.events.ValidationEvent`
 
 **Sliders and meters**
 
