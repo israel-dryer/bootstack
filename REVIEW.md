@@ -5,8 +5,19 @@
 ## ★ PICK UP HERE (written 2026-08-21, updated 2026-08-25 after round 2)
 
 **⏭ BOTH ROUNDS ARE CLOSED, THE CAP IS SPENT, AND F13 — THE ONE THING THAT
-BLOCKED THE MERGE — IS NOW FIXED.** The branch is green: **1524 passed / 22
-skipped / 0 failed, 33 legs, exit 0.** Nothing is outstanding for a reviewer.
+BLOCKED THE MERGE — IS FIXED, BUT DELIBERATELY NOT ON THIS BRANCH.** #449 is a
+pre-existing flake on the `0.3.x` patch line whose cause is the harness never
+draining its event queue; it has nothing to do with `Select` validation, so its
+fix was split onto **`fix/scene-reset-event-queue-449`** (cut off `main` @
+`9a910235`, one commit, measured **1501 passed / 22 skipped / 0 failed**, which
+is `main`'s deps-present 1500 plus the one new guard).
+
+⚠⚠ **MERGE ORDER IS NOT OPTIONAL — `fix/scene-reset-event-queue-449` FIRST,
+then this branch rebased onto the new `main`.** Standing alone this branch
+still fails the shared-root leg ~9 runs in 10; that is F13 and it is expected,
+not a regression to re-investigate. **With that fix present the branch measured
+1524 passed / 22 skipped / 0 failed, 33 legs, exit 0.** Nothing else is
+outstanding for a reviewer.
 
 **Read in this order:** the **ADDENDUM at the very bottom** (the #449 fix and the
 trap it nearly shipped), then **round 2's F13** for how it was found.
@@ -948,12 +959,20 @@ deliveries**, with its `control` arm proving it can detect a delivery at all. So
 the route is unproven. It does not need to be: the fix removes the *precondition*
 (an event outliving its widget), which is sufficient whatever the route.
 
-## The fix
+## The fix — SHIPS ON ITS OWN BRANCH, NOT THIS ONE
 
 `tests/conftest.py::_reset_scene` now calls `root.update()` **before** the
 destroy loop, so anything the test queued is delivered to its own widget while
 that widget is still alive. Guarded with `except Exception` like the rest of the
 function, since it runs during teardown.
+
+⚠ **It lives on `fix/scene-reset-event-queue-449`, off `main` @ `9a910235`** —
+one commit, three files (`tests/conftest.py`, the guard, the probe), no `src/`.
+It was committed here first and then split out, because #449 is a different
+issue on a different milestone and the only thing tying it to #465 is that this
+branch happens to expose it. **This section stays on this branch because it
+records why #465 was blocked and how that was measured; the fix itself does
+not.**
 
 ## ⚠ THE TRAP THIS NEARLY SHIPPED — read before touching this again
 
@@ -1002,10 +1021,18 @@ cannot.
 ## Verification
 
 - **Full harness `py -3.12 tests/run_gui.py` — 1524 passed / 22 skipped / 0
-  failed, 33 legs, "All GUI test legs passed", exit 0.** Reconciles exactly
-  against round 2's figure: `1521 passed + 1 failed = 1522`, `+1` for round 2's
-  F9 test and `+1` for the new guard = **1524**, with the former failure now
-  passing.
+  failed, 33 legs, "All GUI test legs passed", exit 0.** ⚠ **Measured with the
+  #449 fix present, i.e. what this branch looks like once
+  `fix/scene-reset-event-queue-449` is on `main`** — it is NOT reproducible on
+  this branch standing alone, and a session that runs the harness here and sees
+  the leg fail is seeing F13, not a regression. Reconciles exactly against round
+  2's figure: `1521 passed + 1 failed = 1522`, `+1` for round 2's F9 test and
+  `+1` for the new guard = **1524**, with the former failure now passing.
+- **On its own branch, off `main`: 1501 passed / 22 skipped / 0 failed**, 33
+  legs, exit 0 — `main`'s deps-present 1500 plus the one new guard.
+- **The guard's control was re-run against that branch's own base**, not
+  inherited from this one: with `origin/main`'s `conftest.py` the guard FAILS,
+  with the fix it passes.
 - The shared-root leg ran **0 / 10** failures with the fix across the two rate
   measurements, against **4 / 5** for the shipped state in the same session.
 - CRLF preserved on `tests/conftest.py`, the new test file and the probe.
