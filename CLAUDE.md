@@ -148,9 +148,13 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-25) — #465 and #449 SHIPPED to `main`. #383 gap 3 is the work in hand.
+### ★ START HERE (2026-08-25) — **#472 IS IN FLIGHT AND AWAITING ROUND 1.** #465 and #449 shipped.
 
-**⏭ THE WORK IN HAND IS #383 GAP 3.** #465 merged 2026-08-25 (**PR #471**), preceded by #449's harness fix (**PR #470**). ⚠ **There is NO root `PLAN.md` and that is CORRECT** — #465's is archived at `development/plan-465-select-validation-surface.md` and its review at `development/review-465-select-validation-surface.md`. **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`**; move it back to `PLAN.md` when its branch is cut, and **re-base the SHA it records.**
+**⏭ THE WORK IN HAND IS A REVIEW, NOT IMPLEMENTATION.** `fix/unknown-kwarg-strictness-383` is **implemented and UNREVIEWED** — round cap **3, spent 0**. **Its `PLAN.md` is on that branch, not on `main`**, and it carries a section written for the reviewer recording where the implementation left the plan. **Round 1 reviews `git diff origin/main...HEAD -- src/`, base `339177f5`.** ⚠ **A FRESH SESSION MUST DO IT** — the implementing session wrote both the code and the handoff.
+
+⚠ **#472 IS NEW AND IS NOT #383.** Gap 3 (unknown keyword **names**) was split out of #383 on 2026-08-25 and **moved to `0.4.0`**; **#383 keeps gaps 1 and 2 (bad *values*) and stays on `0.5.0`** with #369/#408/#416. **The batching rule did not argue for holding it**, and the measurement that overturned it is on #472: the rule minimizes the number of releases that force a migration, and `0.4.0` already forces one (#465's rule-type guard raises; #461 breaks working code), so it is two either way. **Do not re-propose deferring it.**
+
+**#465 merged 2026-08-25 (PR #471), preceded by #449's harness fix (PR #470).** Their plan and review are archived at `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`.
 
 **Three things from #465 outlive the branch. Read the archived review before touching the field family or the harness:**
 
@@ -226,10 +230,10 @@ release has already run on.
 | | |
 |---|---|
 | `main` | tip is this `docs(claude):` commit, whose parent is the **PR #471 merge (`62728770`, #465)**, itself preceded by the **PR #470 merge (`7e4e3c98`, #449)** — both 2026-08-25. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 (the wrapper audit), archived at `development/plan-463-wrapper-audit.md` |
-| branches | **NONE in flight.** `fix/select-validation-surface-465` merged via PR #471 (head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` via PR #470 (head **`ed174211`**), both 2026-08-25 and both still present local + remote — safe to delete. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. ⚠ **#383's plan is PARKED at `development/plan-383-unknown-kwarg-strictness.md`** (round cap **3**; its recorded base is stale on purpose — re-base when its branch is cut) |
+| branches | **`fix/unknown-kwarg-strictness-383` IS IN FLIGHT** — cut 2026-08-25 off `main` @ `339177f5`, **#472 implemented at `6808de00` and AWAITING ROUND 1** (cap 3, spent 0). Its `PLAN.md` lives on that branch. Prior: `fix/select-validation-surface-465` (PR #471, head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` (PR #470, head **`ed174211`**), both merged 2026-08-25 and **deleted local + remote**. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. ⚠ **#472's `PLAN.md` is on its BRANCH, not here** — it was unparked from `development/` when the branch was cut, which is the protocol's normal cycle. **No `REVIEW.md` anywhere yet: round 1 has not run** |
 | released | `0.3.2`. **`## [Unreleased]` carries #456, #458 and #465**, under an **`### Added`** section as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
-| next release | **`0.4.0 — Signal binding on fields`** — #458 and #465 done, **#459, #460, #461, #467 still open.** #467 was filed out of #465's review round 1. The milestone cannot close yet |
+| next release | **`0.4.0 — Signal binding on fields`** — #458 and #465 done, **#459, #460, #461, #467, #472 still open.** #467 came out of #465's review; **#472 is #383's gap 3, moved here 2026-08-25** and already implemented on its branch. The milestone cannot close yet |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **1524 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 at the #465 branch tip (`ff718b4d`, identical tree to `main`), Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
 | open milestones | **11** — verified against `gh` 2026-08-25, and they agree 1:1 with the table below |
@@ -326,8 +330,8 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), **#459, #460, #461, #467**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462 and PR #471 both carry this milestone. `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
-| 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416 | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), **#459, #460, #461, #467, #472**. Cut 2026-08-19; the next release out the door. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462 and PR #471 both carry this milestone. `gh issue list --milestone <title> --state all` is the authority for *issues* | 4 |
+| 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #390, #389, #412, #415 | 4 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
 | 5 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
