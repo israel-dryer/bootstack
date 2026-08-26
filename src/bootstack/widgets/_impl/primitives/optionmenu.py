@@ -121,7 +121,7 @@ class OptionMenu(MenuButton):
         self._ttk_base.configure(self, textvariable=self._display_var)
 
         # Bind signal to change event (also keeps the face display in sync)
-        self._bind_id = self._bind_change_event()
+        self._bind_change_event()
         self._sync_display()
         # The locale-change event is generated on the root; bind there (not on
         # self) so the face re-translates live, matching the mixin's pattern.
@@ -213,7 +213,11 @@ class OptionMenu(MenuButton):
                 data=ChangeEvent(value=self._value_by_text.get(text, text) if text else None),
             )
 
-        return self.textsignal.subscribe(_on_change)
+        # Store it here, not at the call site (#476). A caller that discards the
+        # return leaves an untracked subscription the guard above can never
+        # cancel, and every one of them emits its own <<Change>>.
+        self._bind_id = self.textsignal.subscribe(_on_change)
+        return self._bind_id
 
     def _build_context_menu(self):
         # Affordance baked into the button image (focus ring + border line in
