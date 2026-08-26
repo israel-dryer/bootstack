@@ -106,8 +106,14 @@ def test_rebinding_the_textsignal_replaces_the_subscription(app):
     so this constructs the internal rather than a `bs.SelectButton`.
     """
     menu = OptionMenu(app.tk, options=list(DECOUPLED), value="1")
-    assert len(menu._textsignal._subscribers) == 1
+    previous = menu._textsignal
+    assert len(previous._subscribers) == 1
 
     menu.configure(textsignal=bs.Signal("Two"))
 
+    # Assert on the signal being REPLACED, not the new one. A count of 1 on the
+    # new signal reads the same on a broken build, because the discarded
+    # subscription stayed behind on the old one: 50 orphans across 50 rebinds
+    # before the fix, 0 after.
+    assert len(previous._subscribers) == 0
     assert len(menu._textsignal._subscribers) == 1
