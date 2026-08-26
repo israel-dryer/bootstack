@@ -151,14 +151,17 @@ class Signal(Generic[T]):
         """
         if self._var is not None:
             return
+        # This is the Python/Tcl boundary. Tcl has no null — everything is a
+        # string — so None cannot survive the crossing. Stop it here, not in the
+        # widgets: _create_variable() below is the only other way in.
         if self._nullable:
             raise BootstackError(
                 "A nullable Signal cannot be bound to a widget that stores its value "
-                "directly, such as a text field or a checkbox, because those cannot "
-                "represent an empty value. Bind it to a field that carries a typed "
-                "value instead (NumberField, DateField, TimeField, Select, "
-                "SelectButton), or drop nullable=True — a text field is already empty "
-                "at '' and a checkbox at False."
+                "directly, such as a text field or a checkbox, because the variable "
+                "backing it cannot represent an empty value. Bind it to a field that "
+                "carries a typed value instead (NumberField, DateField, TimeField, "
+                "Select, SelectButton), or drop nullable=True — a text field is "
+                "already empty at ''."
             )
         self._var = self._create_variable(self._last)
         self._trace = _SignalTrace(self._var)
@@ -276,7 +279,9 @@ class Signal(Generic[T]):
                 signal that was not declared nullable.
         """
         if value is None:
-            if not self._nullable:
+            # A signal whose type IS NoneType has always taken None (map() makes
+            # one whenever the transform returns None for the first value seen).
+            if not self._nullable and self._type is not type(None):
                 raise TypeError(
                     f"Expected {self._type.__name__}, got NoneType. Pass "
                     f"nullable=True to Signal() if this value can be empty."

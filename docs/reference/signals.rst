@@ -160,10 +160,10 @@ Clearing a bound field now reaches the signal, in both directions:
 .. note::
 
    ``nullable=True`` is for fields that carry a *typed value* — ``NumberField``,
-   ``DateField``, ``TimeField``, ``Select`` and ``SelectButton``. A text field is
-   already empty at ``""`` and a checkbox at ``False``, so they do not need it,
-   and binding a nullable signal to one raises: those widgets store the value
-   themselves and have no way to hold an empty one.
+   ``DateField``, ``TimeField``, ``Select`` and ``SelectButton``. Binding a
+   nullable signal to a text field or a checkbox raises: those widgets store the
+   value in the signal's own variable, which has no way to hold an empty one. A
+   text field is already empty at ``""``.
 
 Reacting to changes
 -------------------

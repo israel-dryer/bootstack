@@ -74,6 +74,25 @@ def test_the_rejection_message_names_the_way_out(app):
         bs.Signal(1).set(None)
 
 
+def test_a_none_typed_signal_still_no_ops_on_none(app):
+    """A signal whose type IS NoneType keeps taking `None`, as it did on 0.3.2.
+
+    `map()` produces one whenever the transform returns `None` for the value it
+    is first called with, so this shape reaches code that has no nullable signal
+    anywhere in it. The write is a no-op either way — but the guard raises out of
+    the *source's* `set()`, through the subscriber fan-out, which is a Tk trace
+    once the source is realized.
+    """
+    src = bs.Signal(0)
+    derived = src.map(lambda v: None)
+    assert derived.type is type(None)
+
+    src.set(1)
+
+    assert derived() is None
+    bs.Signal(None).set(None)  # the direct spelling, same rule
+
+
 # --------------------------------------------------------------------------
 # Bound to a field — the reported behavior
 # --------------------------------------------------------------------------
@@ -127,16 +146,27 @@ def test_clearing_a_bound_field_still_skips_a_non_nullable_signal(app):
     assert sig() == date(2024, 5, 5)
 
 
+_OPTIONS = [("One", "1"), ("Two", "2")]
+
+
 @pytest.mark.parametrize(
-    "build, seed",
+    "name, build, seed",
     [
-        (lambda s, p: bs.NumberField(signal=s, parent=p), 5),
-        (lambda s, p: bs.DateField(signal=s, parent=p), date(2024, 5, 5)),
-        (lambda s, p: bs.TimeField(signal=s, parent=p), time(9, 30)),
+        ("NumberField", lambda s, p: bs.NumberField(signal=s, parent=p), 5),
+        ("DateField", lambda s, p: bs.DateField(signal=s, parent=p), date(2024, 5, 5)),
+        ("TimeField", lambda s, p: bs.TimeField(signal=s, parent=p), time(9, 30)),
+        ("Select", lambda s, p: bs.Select(options=_OPTIONS, signal=s, parent=p), "1"),
+        ("SelectButton",
+         lambda s, p: bs.SelectButton(options=_OPTIONS, signal=s, parent=p), "1"),
     ],
 )
-def test_the_value_space_fields_all_report_a_clear(app, build, seed):
-    """Every field that binds a typed value, not display text."""
+def test_the_value_space_fields_all_report_a_clear(app, name, build, seed):
+    """Every field that binds a typed value, not display text.
+
+    `Select` and `SelectButton` are why #390 landed on this milestone at all —
+    #458 and #461 moved them off a `StringVar` that could carry `''`, which
+    turned the family limitation into a regression for those two.
+    """
     sig = bs.Signal(seed, nullable=True)
     field = build(sig, app)
     app.tk.update()
