@@ -290,7 +290,7 @@ post-fix, all three                       widget=None signal='2' subscriber_saw=
 | branches | **NONE — `main` is the only branch, local and remote, verified with `git branch -a` 2026-08-26.** Deleted on merge: `fix/selectbutton-double-change-476` (head **`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
 | root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, not a gap.** #476's are at `development/plan-476-selectbutton-double-change.md` and `development/review-476-selectbutton-double-change.md`. ⚠ **PR #478 MERGED BOTH FILES INTO `main`'s ROOT and they were archived AFTER the merge, not before** — the pre-merge archive step was missed. Harmless here because the next session found them named for a shipped branch, which is exactly the failure the rule exists to prevent. **Archive before the merge.** |
 | released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #459, #461, #465, #472 and #476**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
-| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472, #476 done; **#460, #467, #390 still open.** **#390 is the biggest item and is blocked on three unanswered decisions** |
+| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472, #476 done; **#460, #467, #390 still open.** **#390 is the biggest item and is READY TO CODE as of 2026-08-26** — all four decisions answered, in a COMMENT on the issue, not its body |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **1579 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-26 on `main` after the PR #478 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT.** Reconciles as `1573 + 6` (#476's one new test file), bounded with `git diff e8caece4..HEAD --stat -- tests/`, which shows that file is the ONLY thing that moved |
 | open milestones | **11** — verified against `gh` 2026-08-26. ⚠ **#477 was filed 2026-08-26 UNMILESTONED and #479 was filed unmilestoned then moved to `0.5.0` the same day**, so both times the unmilestoned count moved, not the milestone count |
@@ -380,7 +380,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), **#460, #467, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#476 ARRIVED AND SHIPPED THE SAME DAY, 2026-08-26** — found while asking whether `OptionMenu`'s internal `textsignal` was reachable at all; PR #478, round 1 clean in production code and it filed #479. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** It is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PRs #462, #471, #473, #475 and #478 all carry this milestone. **Verified 2026-08-26 with `gh issue list --milestone <title> --state all`: 9 issues, 6 CLOSED (#458 #459 #461 #465 #472 #476), 3 OPEN (#390 #460 #467).** That command is the authority for *issues* | 3 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), **#460, #467, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#476 ARRIVED AND SHIPPED THE SAME DAY, 2026-08-26** — found while asking whether `OptionMenu`'s internal `textsignal` was reachable at all; PR #478, round 1 clean in production code and it filed #479. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** It is the biggest item here and is READY TO CODE — all four decisions were answered 2026-08-26, in a COMMENT on the issue rather than its body. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PRs #462, #471, #473, #475 and #478 all carry this milestone. **Verified 2026-08-26 with `gh issue list --milestone <title> --state all`: 9 issues, 6 CLOSED (#458 #459 #461 #465 #472 #476), 3 OPEN (#390 #460 #467).** That command is the authority for *issues* | 3 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, **#479**. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25. ⚠ **#479 ARRIVED 2026-08-26 BY MAINTAINER DECISION AND DOES NOT MEET THIS MILESTONE'S MEMBERSHIP RULE — that is deliberate, do not "correct" it.** The rule is *raises where the framework accepts, or retypes what a public property returns*; releasing a subscription on destroy does neither and adds no public surface, so it could ship on the patch line. **It was placed here anyway, and placement is the maintainer's call, not the rule's.** | 5 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -544,32 +544,51 @@ legs yourself — `run_gui.py` prints no aggregate.
 
 ## Backlog — what to pick up
 
-⚠ **#390 IS NO LONGER "the exception to milestone order" — IT IS ON `0.4.0` AS OF
-2026-08-25 and is that release's biggest item.** The full reason, the measurement and
-the promotion trap are in the ★ START HERE section; **read that before this.** What
-still stands here is the shape of the decision, which has not changed.
+⚠⚠ **#390 IS NO LONGER A DECISION — ALL FOUR ARE ANSWERED (maintainer, 2026-08-26)
+AND IT IS NOW READY-TO-CODE WORK ON `0.4.0`, that release's biggest item.** The full
+reason for the milestone move, the measurement and the promotion trap are in the
+★ START HERE section; **read that before this.** ⏭ **The decisions are recorded in a
+COMMENT on #390 dated 2026-08-26, not in its body** — the body still presents it as
+an open design question. **Read the comment.**
 
-**It is a DECISION, not work.** Should signals model emptiness at all? Cheapest item
-on the board and the largest unblock, since it gates #389 shipping *whole*. **The
-analysis is COMPLETE — it needs an answer, not more analysis**, and the maintainer is
-actively evaluating (discussion #386), so do not re-derive it or ask the reporter
-to weigh in.
+⚠ **DO NOT RE-DERIVE ANY OF IT AND DO NOT ASK THE REPORTER.** The analysis was
+complete before the answers landed.
 
 `Signal.set(None)` raises unconditionally (`signal.py:248` — strictly monomorphic,
-type inferred from the seed). **Four decisions, in order — ONE IS NOW ANSWERED:**
+type inferred from the seed). **The four answers:**
 
-1. *Do it at all?* — ✅ **YES (maintainer, 2026-08-25)**, settled by the move to
-   `0.4.0`. **Three left.**
-2. *Declared or automatic?* — recommend **declared** (`Signal(v, nullable=True)`).
-   Automatic-by-mode cannot cover `int` and is not safe to lean on: `Signal(0)` is
-   Python-authoritative only *while unrealized*, so the moment anything touches
-   `.var`, `__call__` starts reading the IntVar and a stored `None` is lost.
-3. *What happens to a non-nullable signal asked to go empty?* — recommend a public
-   `Signal.nullable` so `ValueSignalMixin` skips rather than crashing
-   `Form.clear()`.
-4. *What does `map()` do over a nullable signal?* — it calls the transform
-   unconditionally and infers the derived type from the first result, so a `None`
-   source breaks the **documented** Date/Time pattern.
+1. *Do it at all?* — ✅ **YES** (2026-08-25), settled by the move to `0.4.0`.
+2. *Declared or automatic?* — ✅ **DECLARED: `Signal(v, nullable=True)`**, plus a
+   public read-only `Signal.nullable`. Automatic-by-mode cannot cover `int`:
+   `Signal(0)` is Python-authoritative only *while unrealized*, so the moment
+   anything touches `.var`, `__call__` starts reading the IntVar and a stored `None`
+   is lost. Additive to `Signal.__init__`, which today is `(value, name, master)` —
+   it rides the minor `0.4.0` already is. ⚠ **Nullable-always was rejected**, for the
+   attached-vs-not reason below.
+3. *A field bound to a NON-nullable signal is cleared?* — ✅ **KEEP SKIPPING,
+   SILENTLY, and that needs NO CODE.** ⚠⚠ **THE OLD WORDING HERE WAS WRONG AND
+   INVITED THE OPPOSITE READING: the skip is not a crash being averted, IT IS THE
+   STALE-SIGNAL REGRESSION.** `_to_signal` already returns early on `None`
+   (`field_mixin.py:297`), as does `_from_signal` (`:285`). So **the fix reaches only
+   signals the author marked `nullable=True`**; a non-nullable signal keeps behaving
+   exactly as on `0.3.2`. Raising was rejected — it turns `Form.clear()` into a crash
+   on any form holding one non-nullable-bound field.
+4. *What does `map()` do over a nullable signal?* — ✅ **CALL THE TRANSFORM WITH
+   `None`; THE AUTHOR GUARDS. NO CHANGE TO `map()`.** ⚠ **The claim that a `None`
+   source "breaks the documented Date/Time pattern" was CHECKED AND IS FALSE** — the
+   Date/Time examples all carry the guard (`.map(lambda d: d.strftime(…) if d else
+   "")` in `docs/examples/datefield.py`, `docs/examples/timefield.py`,
+   `docs/widgets/datefield.rst`) and survive `None` unchanged. **The one that breaks
+   is the UNGUARDED example at `docs/reference/signals.rst:109`**, which raises
+   `AttributeError`. **So decision 4's work is DOCS-ONLY.** Propagating `None` into
+   the derived signal was rejected: a derived signal is usually bound straight to
+   `bs.Label(textsignal=…)`, which is the `StringVar` corruption path.
+
+**⏭ WHAT IS LEFT TO BUILD — own branch, `PLAN.md` up front, cap 3:** the `nullable=`
+parameter and property with the `set()` guard admitting `None` only when declared;
+`ValueSignalMixin` pushing `None` through when the bound signal is nullable and still
+skipping when it is not (`field_mixin.py:285` and `:297`); and the one unguarded
+`map()` example plus the rule beside it.
 
 **No existing code is at risk either way** — `set(None)` raises today, so nothing
 can currently receive it. ⚠ **THAT IS ABOUT RELAXING THE GUARD BEING SAFE, AND IT
