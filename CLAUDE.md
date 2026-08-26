@@ -148,19 +148,37 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-25) — **#461 + #459 ARE IN FLIGHT. ROUND 1 IS DONE; THE BRANCH LOOKS READY TO MERGE.**
+### ★ START HERE (2026-08-26) — **#461/#459 SHIPPED. #476 IS IN FLIGHT AND NEEDS ROUND 1.**
 
-**⏭ IN HAND: `fix/selectbutton-signal-value-461`, three commits, NOT pushed and NO PR.** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal) — one commit each, `c85d9220` and `f39b0a88`, off `main` at `ede2d57e` — plus **`51493154`, round 1's record and fixes.** **`PLAN.md` and `REVIEW.md` are both on the branch; cap 3, SPENT 1.**
+**✅ #461 + #459 MERGED (PR #475, merge commit `c8ebfb7c`, 2026-08-26).** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal). Branch deleted local + remote, head **`e3593cd1`**. Plan and round 1 record archived at `development/plan-461-selectbutton-signal-value.md` and `development/review-461-selectbutton-signal-value.md`. Cap was 3, spent 1.
 
-**⏭ NEXT STEP IS THE MERGE, not another round.** Round 1 found **one blocker, fixed on the branch**: the widget page's own reactive-binding example seeded `bs.Signal("light")` against options `["Light", "Dark", "Auto"]`, which post-fix raises `ValueError: 'light' is not one of the options`. ⚠ **The sweep that missed it asked whether the options were DECOUPLED; the question that decides a site is whether the SEED NAMES AN OPTION** — a plain-`list[str]` button is affected too. **Nothing could have caught it: an `.. code-block::` is executed by nothing** — not the suite, not CI, and unlike `literalinclude` there is not even a file to run. **That is #472's lesson through a third door, and it is #466's to close.** Verified independently at round 1: suite **1573 / 22, 33 legs, exit 0**, clean docs build warning-free, `test_public_surface.py` 166 passed.
+**⏭ IN FLIGHT: `fix/selectbutton-double-change-476` — PR #478, pushed, `0.4.0`, and ROUND 1 HAS NOT RUN (cap 2, spent 0).** #476: every `SelectButton` fired `on_change` **twice** per selection. `PLAN.md` is on the branch. **A fresh session must review before it merges** — gate 1 fires on its non-empty `src/` diff, and the session that wrote it cannot review it.
 
-⚠⚠ **ROUND 1'S REAL PRODUCT WAS NOT THE BLOCKER — IT WAS #390, AND #390 HAS MOVED TO `0.4.0`. READ THE NEXT SECTION BEFORE PROMOTING THE CHANGELOG.**
+⚠ **#476 WAS FOUND BY ASKING A QUESTION, NOT BY A SWEEP, AND THE QUESTION IS REUSABLE:** *is this internal member reachable from public API at all?* `OptionMenu._textsignal` is not — #461 deleted the wrapper property that read it and #472 made `bs.SelectButton(textsignal=…)` raise — and chasing that turned up two live `<<Change>>` subscriptions where the code assumed one. **`_bind_change_event` returned its handle for the caller to store; `__init__` stored it, `_delegate_textsignal` discarded it, and the cancel-guard saw `None` both times.** Fixed by having it store the handle itself.
 
-⚠ **#461 RAISES WHERE IT USED TO ACCEPT, by maintainer decision 2026-08-25: `signal=` is value-space now, and seeding with a label raises exactly as `value=` already did for the same string.** Measured both sides; the whole account is in `PLAN.md`. **Do not re-propose tolerating labels** — a fallback puts the two spaces back on speaking terms, which is the ambiguity the fix removes.
+⚠ **DO NOT "FIX" IT AT THE DISCARDING CALL SITE.** `self._bind_id = self._bind_change_event()` at `optionmenu.py:368` works and leaves the identical trap for the next caller — there has already been one.
 
-⚠ **TWO THINGS THE BRANCH CHANGES THAT ARE NOT ITS OWN:** `SelectButton` leaves **#460's population of eight** (the `| None` property it named is deleted), so that issue's table needs a comment at merge; and an off-list signal write now raises and leaves the signal ahead of the button, which is **#369's** family decision, not this fix's. The test pins the raise and deliberately not the state it leaves behind.
+#### ⭐ #477 — COLLAPSE THE `_impl` LAYER BEFORE 1.0. **Maintainer's framing, filed 2026-08-26, unmilestoned.**
 
-**After it merges, `0.4.0` still needs #460, #467 and #390**; #474 (comment trim) and #466 (the durable guard) are unmilestoned.
+**The `_impl` widgets were the ORIGINAL implementation, written to stand alone; the public layer came later and wraps them.** Much of what `_impl` still carries — its own variables, signals and event plumbing — serves a standalone consumer that no longer exists, and the wrapper translates across a boundary that need not be there. **Before 1.0, collapse what no longer earns a separate existence**, because after 1.0 the surface freezes and every gap becomes permanent.
+
+**Scoping, measured 2026-08-26 (STATIC import-name AST pass — needs a construction cross-check before acting):**
+
+| | |
+|---|---|
+| classes defined under `_impl/` | **174** |
+| imported by name somewhere in `src/` | 125 |
+| **never imported by name anywhere** | **49** — its own question |
+| imported in 2+ places (shared, cannot collapse) | 83 |
+| **imported by exactly one public wrapper and nothing else** | **24** |
+
+**All 24 are LEAVES** — the subclass check returns zero, so collapsing any one is local. Two tiers: **14 with a generic or no base** (`Frame`/`GridFrame`/`Label`/none) are cheap; **10 with a behavioral base** (`OptionMenu`→`MenuButton`, the three `Field` entries, `TimeEntry`→`SelectBox`, `Switch`→`CheckButton`, two raw ttk) mean the wrapper absorbs real inherited behavior.
+
+⚠ **THE `_impl` SIGNAL MACHINERY IS NOT UNIFORMLY DEAD — A MECHANICAL SWEEP BREAKS THREE THINGS.** `localization_mixin.py:185-195` **replaces** `_textsignal` with a derived formatted signal (you can `map()` a Signal, not a `StringVar`); `Form.field_textsignal(key)` and `Field.textsignal` are live consumers; and eight-plus wrappers forward `textsignal=` legitimately, because for them the variable **is** the text so no space mismatch can arise. **`OptionMenu` is the counter-example, not the rule** — it inherited a text-variable mixin into a widget whose variable is a value KEY. That mismatch is #461; the leftover bridge is #476.
+
+⚠ **INVISIBLE TO THE #463 AUDIT, AND THAT IS THE POINT.** All five of its modes take a **constructor keyword** as their unit, so machinery no keyword reaches is outside every one of them. #463 reported "nothing new" over exactly this ground.
+
+⚠ **ONE OBSERVATION LEFT UNFILED, deliberately — it is a scope call.** `NumberField` and `DateField` emit **zero** `<<Change>>` for a programmatic `w.value = …` while `Select`, `TimeField` and `SelectButton` emit one (measured with the queue drained, so the `when="tail"` emitters are not undercounted). Possibly by design — change meaning *user commit* — but the family is not consistent. Recorded in #478's `PLAN.md` as out of scope.
 
 #### ✅ #390 MOVED TO `0.4.0` (maintainer, 2026-08-25) — out of #461's round 1. **THE BIGGEST THING ON THAT MILESTONE NOW.**
 
@@ -266,23 +284,16 @@ post-fix, all three                       widget=None signal='2' subscriber_saw=
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent is the **PR #473 merge (`935cf2c1`, #472)**, itself preceded by the **PR #471 merge (`62728770`, #465)** and the **PR #470 merge (`7e4e3c98`, #449)** — all 2026-08-25. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here.** Prior: PR #464 (the wrapper audit), archived at `development/plan-463-wrapper-audit.md` |
-| branches | **NONE in flight.** `fix/unknown-kwarg-strictness-383` merged via PR #473 (head **`bb8ef8ff`**), 2026-08-25. Prior: `fix/select-validation-surface-465` (PR #471, head **`ff718b4d`**) and `fix/scene-reset-event-queue-449` (PR #470, head **`ed174211`**), both merged 2026-08-25 and **deleted local + remote**. Prior: `audit/wrapper-parameter-delta` (head **`41828ba2`**); `fix/select-signal-value-458` (head **`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check the recorded head SHAs against `origin/main`, not the branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — that is CORRECT, not a gap.** #465's pair was archived on merge to `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`. #472's pair likewise, at `development/plan-472-unknown-kwarg-strictness.md` and `development/review-472-unknown-kwarg-strictness.md` — both archived on the branch *before* the merge, so `main`'s root never carried a stale pair |
-| released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #465 and #472**, under **`### Added`** and **`### Changed`** sections as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472: it RAISES where the framework used to accept, so an app can fail to start after the upgrade. ⚠ The `Added` section exists because `0.4.0` adds nine public members to `Select`; a reader scanning headings could not tell from `Fixed` alone |
-| next release | **`0.4.0 — Signal binding on fields`** — #458, #465 and #472 done, **#459, #460, #461, #467, #390 still open.** #467 came out of #465's review; #472 was #383's gap 3, moved here and shipped 2026-08-25; **#390 moved here from `0.6.0` on 2026-08-25** out of #461's round 1 |
+| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #475 merge (`c8ebfb7c`, #461+#459, 2026-08-26)**, the **PR #473 merge (`935cf2c1`, #472)**, the **PR #471 merge (`62728770`, #465)** and the **PR #470 merge (`7e4e3c98`, #449)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
+| branches | **ONE in flight: `fix/selectbutton-double-change-476` (PR #478, `0.4.0`, ROUND 1 NOT RUN).** ⚠ **STALE, safe to delete local + remote: `fix/unknown-kwarg-strictness-383`** (#472, PR #473, head **`bb8ef8ff`**) — confirmed an ancestor of `origin/main` 2026-08-26. Deleted on merge: `fix/selectbutton-signal-value-461` (head **`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, not a gap.** Each branch archives its pair into `development/` *before* the merge. #461's are at `development/plan-461-selectbutton-signal-value.md` and `development/review-461-selectbutton-signal-value.md`. ⚠ **#478's branch DOES carry a `PLAN.md` — that is correct while it is in flight** |
+| released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #459, #461, #465, #472 and #476**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
+| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472 done; **#460, #467, #476, #390 still open.** #476 is in flight (PR #478); **#390 is the biggest item and is blocked on three unanswered decisions** |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1552 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-25 on `main` after the PR #473 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT**. ⚠ **See the environmental note below before comparing this to anything older** |
-| open milestones | **11** — verified against `gh` 2026-08-25, and they agree 1:1 with the table below |
+| suite, `main` | **1573 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-26 on `main` after the PR #475 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT.** Reconciles as `1552 + 21` (#461/#459's two new test files), bounded with `git diff 6fb3abc9..HEAD --stat -- tests/` |
+| open milestones | **11** — verified against `gh` 2026-08-25. ⚠ **#477 was filed 2026-08-26 UNMILESTONED**, so the unmilestoned count moved, not the milestone count |
 
-⚠ **A NEW ENVIRONMENTAL PAIR — AND IT IS BIGGER THAN THE PANDAS ONE THIS FILE ALREADY DOCUMENTS.** The Windows box now has **matplotlib** installed, so **`test_chart.py` (44 tests behind a module-level `pytest.importorskip("matplotlib")`) COLLECTS instead of being the collection-time skip.** `pandas` arrived too. Against the `1458 / 21` recorded on 2026-08-19:
-
-```
-1458 + 44 (test_chart) - 2 (data leg 125/4 -> 123/6) = 1500 passed
-  21 -  1 (the collection-time skip is gone) + 2 (pandas)  =   22 skipped
-```
-
-Exact on both, and `git diff --stat <base>..HEAD -- tests/` confirms no test was added. **So a session measuring `1500 / 22` on this box is seeing the right number, and one measuring `1458 / 21` has neither dep installed.** Check with `py -3.12 -c "import matplotlib"` and `import pandas` before re-flagging either. ⚠ **This is the eighth count discrepancy this file has had to reconcile, and the first that was NOT an error** — it reconciled because the collection line was read, not because the total looked plausible.
+⚠ **A HANDOFF COMMIT THAT IS NOT PUSHED DOES NOT EXIST.** Found 2026-08-26: the two `docs(claude):` commits describing #461's flight had **never left the local box**, so `main` and `origin/main` had silently diverged and `git pull --ff-only` refused. They rebased cleanly (CLAUDE.md-only, and #475's branch had an empty CLAUDE.md diff), but **the next session would have read a `main` that knew nothing about the branch in hand.** ⏭ **`git push` after every `docs(claude):` commit, and check `git rev-parse main origin/main` agree before trusting this file.**
 
 #### ✅ #458 — MERGED (PR #462, merge commit `41c8bad1`). Kept for its traps.
 
@@ -367,7 +378,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), **#459, #460, #461, #467, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** See the #390 section above; it is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PR #462, PR #471 **and PR #473** all carry this milestone. **Measured 2026-08-25 after #472 shipped: the endpoint said `open=4 closed=6` while `gh issue list` returned 7 issues, 4 open; it reads `open=5` after #390 arrived.** `gh issue list --milestone <title> --state all` is the authority for *issues* | 5 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), **#460, #467, #476, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#476 ARRIVED 2026-08-26** — found while asking whether `OptionMenu`'s internal `textsignal` was reachable at all; in flight as PR #478, round 1 NOT run. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** It is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PRs #462, #471, #473, #475 and #478 all carry this milestone. **Verified 2026-08-26 with `gh issue list --milestone <title> --state all`: 9 issues, 5 CLOSED (#458 #459 #461 #465 #472), 4 OPEN (#390 #460 #467 #476).** That command is the authority for *issues* | 4 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -376,7 +387,7 @@ and fix the table.**
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. ⏭ **#466 NEEDS A THIRD AMENDMENT, from #472's review: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** Two shipped scripts had passed keywords that never existed and **nothing caught them** — the suite does not run `docs/examples/`, `literalinclude` does not execute what it includes, and CI runs neither. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact | 1 |
+| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. ⏭ **#466 NEEDS A THIRD AMENDMENT, from #472's review: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** Two shipped scripts had passed keywords that never existed and **nothing caught them** — the suite does not run `docs/examples/`, `literalinclude` does not execute what it includes, and CI runs neither. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact. ⚠ **#477 (the `_impl` collapse pass) is ADJACENT BUT NOT ON THIS MILESTONE, deliberately** — this one holds parity *defects* between a wrapper and its internal; #477 asks whether the internal should exist at all, and is a PRE-1.0 goal. **Do not fold them.** | 1 |
 | — | **`0.3.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #444, #445, #447, ~~#449~~ (fixed 2026-08-25). It is rolling, so it does **NOT** close when a patch ships. ⚠ **#449's fix shipped inside `0.4.0`, not a patch** — it was test-only and merged while `0.4.0` was open, so PR #470 was left unmilestoned rather than misreporting where it landed | 5 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
@@ -419,7 +430,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**SEVEN UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474.** ⚠ **#468 and #469 both came out of #465's review** and are described under its section above; #469 is the `when="tail"` hazard. Verify rather than counting by hand:
+**EIGHT UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474, #477.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified 2026-08-26. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -451,20 +462,22 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-25 on `main` after the PR #473 merge**,
+**AUTHORITATIVE — measured 2026-08-26 on `main` after the PR #475 merge**,
 Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and
 `pandas` BOTH PRESENT**:
 
 | | measured |
 |---|---|
-| summed, 33 legs | **1552 passed / 22 skipped** |
+| summed, 33 legs | **1573 passed / 22 skipped** |
 
-⚠ **Both steps up from `1500` are entirely NEW TESTS, and each is bounded rather
-than reconciled from memory:** `+24` for #465 (`+22` from its two test files, `+1`
-for its rule-type guard, `+1` for #449's harness guard), then `+28` for #472 (25 in
-`test_unknown_kwarg_strictness.py`, 3 in `test_base_layer.py`).
-`git diff <baseline>..HEAD --stat -- tests/` says how much the count was ALLOWED to
-move, and it is one command.
+⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1552 + 21`,
+the 21 being #461/#459's two new test files (15 + 6).
+`git diff 6fb3abc9..HEAD --stat -- tests/` says how much the count was ALLOWED to
+move and confirms nothing else changed — one command, and it is the check that
+catches what a self-consistent-but-wrong total does not.
+
+Prior steps, each bounded the same way: `1500 → 1552` was `+24` for #465 and `+28`
+for #472.
 
 **Superseded, kept for the environmental note it anchors — measured 2026-08-20 on
 `main` at `41c8bad1`**, same box, same deps:
@@ -620,6 +633,10 @@ must clear validation state.
   name **silently builds a `TextField`** (`_impl/composites/form.py:774`).
   `DateField` being an editor while `TimeField` is not is what makes this drift
   rather than a design boundary.
+
+### Before 1.0 — #477, the `_impl` collapse pass
+
+**Maintainer's framing, and it reframes a lot of the recent defect run:** the `_impl` widgets are the ORIGINAL implementation and the public layer wraps them, so many internals are fossils carrying translations nothing needs. **Full scoping, the two-tier split and the three things a mechanical sweep would break are in the ★ START HERE section — read that, not this line.** 24 of 125 imported `_impl` classes are 1:1 with a single wrapper, all leaves. ⚠ **The 49 classes imported by name NOWHERE are a separate question and are not part of the 24.**
 
 ### Other open items
 
