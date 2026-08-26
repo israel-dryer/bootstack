@@ -91,7 +91,7 @@ deterministically without the fix; nothing ships broken. But the test as written
 coverage of `:368` that it does not have, and a record citing it would be citing a refutation
 the instrument cannot make.
 
-### 2. The surviving subscription is still never cancelled on destroy — note, pre-existing
+### 2. The surviving subscription is still never cancelled on destroy — note, pre-existing, FILED AS #479
 
 `optionmenu.py:200-218`. `_bind_id` is created and replaced but never cancelled in a destroy
 handler. Measured: destroy an `OptionMenu` bound to an externally held signal, then write that
@@ -103,6 +103,9 @@ where the caller cannot see it.
 branch one — the fix strictly improves it. Unreachable from public API since #472 rejects
 `textsignal=` at the wrapper, and the internal's own auto-created signal dies with the widget.
 Recorded because it is the neighbourhood the fix touches and because #477 passes through here.
+**Filed as #479** at the maintainer's request, with the measurement and with
+`ValueSignalMixin._bind_value_signal` named as the in-repo exemplar: the public wrapper holds
+its subscription id and releases it on destroy, so the internal has a pattern to copy.
 
 ### 3. Test 5's structural assertion is a false-alarm surface for a future legitimate second subscriber — note
 
@@ -158,6 +161,11 @@ arms (`50 -> 0` across 50 rebinds; `1 -> 1` for the assertion it replaced). Cont
 `optionmenu.py` restored from `85b051be`, the new assertion fails on its own — verified by
 deleting the `:109` assertion so the control reaches `:113` rather than stopping short of it.
 
-### Findings 2, 3, 4 — no action
+### Finding 2 — FILED, no branch change
+
+#479. Pre-existing and out of scope for this branch, which strictly improves it (two leaked
+subscriptions per widget before the fix, one after).
+
+### Findings 3, 4 — no action
 
 Notes under stopping rule 2. Nothing in the branch changes.
