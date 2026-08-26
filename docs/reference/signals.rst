@@ -106,9 +106,64 @@ signal with ``map()`` and bind it with ``textsignal=``:
 .. code-block:: python
 
    due = bs.Signal(date(2026, 1, 15))
-   due_text = due.map(lambda d: d.strftime("%b %d, %Y"))
+   due_text = due.map(lambda d: d.strftime("%b %d, %Y") if d else "")
 
    bs.Label(textsignal=due_text)      # "Jan 15, 2026", re-derived on every change
+
+The ``if d else ""`` is worth keeping even when the value cannot be empty today.
+A transform runs on whatever the source holds, so a source that later becomes
+:ref:`nullable <signals-empty>` hands it ``None``, and the derived signal's type
+is fixed by the first result it produces. Returning a value of the same type for
+the empty case keeps the derived signal bindable throughout.
+
+.. _signals-empty:
+
+Empty values
+------------
+
+A signal holds one type, decided by the value it is created with — so by default
+it has no way to say "nothing". A field bound to such a signal keeps its last
+value when it is cleared, rather than reporting the clear.
+
+Pass ``nullable=True`` when the value can also be empty:
+
+.. code-block:: python
+
+   due = bs.Signal(date(2026, 1, 15), nullable=True)
+
+   bs.DateField(signal=due)
+
+   due.set(None)       # allowed — subscribers receive None
+   due()               # None
+
+A nullable signal may also start empty, in which case the first real value
+decides its type. Its ``type`` is ``None`` until then:
+
+.. code-block:: python
+
+   due = bs.Signal(None, nullable=True)
+   due.type            # None
+
+   due.set(date(2026, 1, 15))
+   due.type            # <class 'datetime.date'>
+   due.set(7)          # TypeError — the type is fixed from the first value on
+
+Clearing a bound field now reaches the signal, in both directions:
+
+.. code-block:: python
+
+   field = bs.DateField(signal=due)
+
+   field.value = None  # due() is None, and subscribers are notified
+   due.set(None)       # the field is emptied
+
+.. note::
+
+   ``nullable=True`` is for fields that carry a *typed value* — ``NumberField``,
+   ``DateField``, ``TimeField``, ``Select`` and ``SelectButton``. A text field is
+   already empty at ``""`` and a checkbox at ``False``, so they do not need it,
+   and binding a nullable signal to one raises: those widgets store the value
+   themselves and have no way to hold an empty one.
 
 Reacting to changes
 -------------------

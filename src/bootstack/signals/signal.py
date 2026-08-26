@@ -3,6 +3,7 @@ import weakref
 from itertools import count
 from typing import Any, Callable, Generic, Type, TypeVar
 
+from bootstack.errors import BootstackError
 from bootstack.signals.types import TraceOperation
 from bootstack._core.variables import SetVar
 from bootstack.streams import Handle
@@ -79,6 +80,12 @@ class Signal(Generic[T]):
     Bind a signal to a widget by passing it as `textsignal=` for text-bearing
     widgets, or `signal=` for boolean and numeric widgets.
 
+    A signal holds one type, decided by the value it is created with. Pass
+    `nullable=True` when the value can also be empty — a field bound to a
+    nullable signal reports being cleared, where one bound to an ordinary signal
+    silently keeps its last value. A nullable signal may be seeded with `None`,
+    in which case the first real value decides its type.
+
     Signals may be constructed at module level (before `bs.App()` exists). The
     backing Tk variable is created lazily on the first widget binding and torn
     down when the App is destroyed, so the same signal can be reused across
@@ -87,11 +94,25 @@ class Signal(Generic[T]):
 
     _cnt = count(1)
 
-    def __init__(self, value: T, name: str | None = None, master: tk.Misc | None = None):
+    def __init__(
+            self,
+            value: T,
+            name: str | None = None,
+            master: tk.Misc | None = None,
+            *,
+            nullable: bool = False,
+    ):
         self._name = name or f"SIG{next(self._cnt)}"
-        self._type: Type[T] = type(value)
         self._master: tk.Misc | None = master
-        self._object_mode = not self._is_tk_native(value)
+        self._nullable = nullable
+        if value is None and nullable:
+            # Seeded empty, so there is nothing to infer from yet. The type is
+            # locked by the first non-None set(), and stays monomorphic after.
+            self._type: Type[T] | None = None
+            self._object_mode = False
+        else:
+            self._type = type(value)
+            self._object_mode = not self._is_tk_native(value)
         # _last is always the authoritative Python value — before realization it
         # is the only store; after realization it stays in sync via the bridge.
         self._last: T = value
@@ -130,6 +151,15 @@ class Signal(Generic[T]):
         """
         if self._var is not None:
             return
+        if self._nullable:
+            raise BootstackError(
+                "A nullable Signal cannot be bound to a widget that stores its value "
+                "directly, such as a text field or a checkbox, because those cannot "
+                "represent an empty value. Bind it to a field that carries a typed "
+                "value instead (NumberField, DateField, TimeField, Select, "
+                "SelectButton), or drop nullable=True — a text field is already empty "
+                "at '' and a checkbox at False."
+            )
         self._var = self._create_variable(self._last)
         self._trace = _SignalTrace(self._var)
 
@@ -199,6 +229,8 @@ class Signal(Generic[T]):
         self._name = name or getattr(tk_var, "_name", str(tk_var))
         self._type = py_type  # type: ignore[assignment]
         self._object_mode = False
+        # The var already exists and is the widget's, so it can never be nullable.
+        self._nullable = False
         self._master = getattr(tk_var, "_master", None)
         self._subscribers = {}
         try:
@@ -235,13 +267,25 @@ class Signal(Generic[T]):
 
         Args:
             value: The new value. Must match the signal's type, except that an
-                `int` may be set on a `float`-typed signal (it is widened).
+                `int` may be set on a `float`-typed signal (it is widened), and
+                that `None` is accepted on a signal declared `nullable=True`.
 
         Raises:
             TypeError: If the value type does not match the signal's type (and is
-                not an `int` widened to a `float`).
+                not an `int` widened to a `float`), or if it is `None` on a
+                signal that was not declared nullable.
         """
-        if type(value) is not self._type:
+        if value is None:
+            if not self._nullable:
+                raise TypeError(
+                    f"Expected {self._type.__name__}, got NoneType. Pass "
+                    f"nullable=True to Signal() if this value can be empty."
+                )
+        elif self._type is None:
+            # Seeded empty — the first real value decides the type from here on.
+            self._type = type(value)
+            self._object_mode = not self._is_tk_native(value)
+        elif type(value) is not self._type:
             if self._type is float and type(value) is int:
                 value = float(value)  # type: ignore[assignment]
             else:
@@ -330,9 +374,23 @@ class Signal(Generic[T]):
         return self._name
 
     @property
-    def type(self) -> Type[T]:
-        """The original type of the signal value."""
+    def type(self) -> Type[T] | None:
+        """The type of the signal value.
+
+        `None` on a nullable signal seeded empty, until the first real value
+        sets it.
+        """
         return self._type
+
+    @property
+    def nullable(self) -> bool:
+        """Whether this signal can hold an empty value.
+
+        A nullable signal accepts `set(None)`, so a field bound to it reports
+        being cleared instead of silently keeping its last value. Declare it at
+        construction with `bs.Signal(value, nullable=True)`.
+        """
+        return self._nullable
 
     @property
     def var(self) -> tk.Variable:
