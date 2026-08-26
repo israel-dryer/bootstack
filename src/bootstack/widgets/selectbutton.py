@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import ValueSignalMixin
 from bootstack.widgets._core.icon_image_props import IconProperty
 from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
@@ -19,7 +20,7 @@ _SELECTBUTTON_EVENTS: dict[str, str] = {
 }
 
 
-class SelectButton(IconProperty, PublicWidgetBase):
+class SelectButton(ValueSignalMixin, IconProperty, PublicWidgetBase):
     """A button that opens a dropdown value list — a button-styled alternative to `Select`.
 
     Clicking the button opens a popup list of options. The selected value is
@@ -36,8 +37,9 @@ class SelectButton(IconProperty, PublicWidgetBase):
             any other keys ride along as carried data on `selection`.
         value: Initially selected value (value-space — matches an option's
             value, not its label). Must match one of the options.
-        signal: Reactive `Signal[str]` controlling the selected value. When
-            provided, `value=` is ignored — seed the Signal directly.
+        signal: Reactive `Signal` two-way bound to the selected value — the
+            option's value, not the label shown for it. When provided, `value=`
+            is ignored; seed the Signal with an option's value instead.
         disabled: If `True`, the button is non-interactive and dimmed.
             Defaults to `False`.
         accent: Accent token applied to the button.
@@ -62,7 +64,7 @@ class SelectButton(IconProperty, PublicWidgetBase):
         options: list[Option] | None = None,
         *,
         value: Any = None,
-        signal: "Signal[str] | None" = None,
+        signal: "Signal | None" = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
         variant: ButtonVariant = "default",
@@ -81,8 +83,6 @@ class SelectButton(IconProperty, PublicWidgetBase):
         }
         if value is not None:
             internal_kwargs["value"] = value
-        if signal is not None:
-            internal_kwargs["textsignal"] = signal
         if disabled:
             internal_kwargs["state"] = "disabled"
         if accent is not None:
@@ -99,6 +99,12 @@ class SelectButton(IconProperty, PublicWidgetBase):
         self._internal = _InternalOptionMenu(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+        # Bind through the `value` property, never as the internal's textsignal
+        # (#461) — that variable holds the option's TEXT, so the Signal spoke
+        # label-space where every other surface speaks value-space.
+        if signal is not None:
+            self._bind_value_signal(signal)
+
     # ----- Properties -----
 
     @property
@@ -113,6 +119,9 @@ class SelectButton(IconProperty, PublicWidgetBase):
     @value.setter
     def value(self, v: Any) -> None:
         self._internal.set(v)
+        # The mixin's on_change sync only fires on a user commit, so a
+        # programmatic set would otherwise leave a bound signal stale.
+        self._sync_value_set(self.value)
 
     @property
     def text(self) -> str:
@@ -144,11 +153,6 @@ class SelectButton(IconProperty, PublicWidgetBase):
     @options.setter
     def options(self, items: list[Option]) -> None:
         self._internal.configure(options=list(items))
-
-    @property
-    def signal(self) -> "Signal[str] | None":
-        """The reactive `Signal` linked to this button, or `None`."""
-        return getattr(self._internal, 'textsignal', None)
 
     @property
     def disabled(self) -> bool:

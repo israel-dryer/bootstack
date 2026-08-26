@@ -107,13 +107,15 @@ With icon
 Reactive binding
 ~~~~~~~~~~~~~~~~
 
-Bind a ``Signal[str]`` with ``signal=``. The button and signal stay in
-sync. When ``signal=`` is provided, ``value=`` is ignored — seed the
-Signal directly.
+Bind a ``Signal`` with ``signal=``. The button and signal stay in sync,
+and the signal carries the selected option's *value* — not the label
+shown for it, which matters when the two differ. When ``signal=`` is
+provided, ``value=`` is ignored — seed the Signal with an option's
+value.
 
 .. code-block:: python
 
-   theme = bs.Signal("light")
+   theme = bs.Signal("Light")
    bs.SelectButton(["Light", "Dark", "Auto"], signal=theme)
    theme.subscribe(lambda v: bs.set_theme(v.lower()))
 
