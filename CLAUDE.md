@@ -178,8 +178,6 @@ release has already run on.
 
 ⚠ **INVISIBLE TO THE #463 AUDIT, AND THAT IS THE POINT.** All five of its modes take a **constructor keyword** as their unit, so machinery no keyword reaches is outside every one of them. #463 reported "nothing new" over exactly this ground.
 
-⚠ **ONE OBSERVATION LEFT UNFILED, deliberately — it is a scope call.** `NumberField` and `DateField` emit **zero** `<<Change>>` for a programmatic `w.value = …` while `Select`, `TimeField` and `SelectButton` emit one (measured with the queue drained, so the `when="tail"` emitters are not undercounted). Possibly by design — change meaning *user commit* — but the family is not consistent. Recorded in #478's `PLAN.md` as out of scope.
-
 #### ✅ #390 MOVED TO `0.4.0` (maintainer, 2026-08-25) — out of #461's round 1. **THE BIGGEST THING ON THAT MILESTONE NOW.**
 
 **Reason, in the maintainer's words: *"doesn't make sense to have half solved solution while we introduce new bugs."*** #458 and #461 rebound `Select` and `SelectButton` from the widget's own `StringVar` to the typed value. **A `StringVar` can hold `''`; a `Signal` cannot hold `None`.** So both widgets moved from reporting an empty selection to reporting **nothing at all** — for those two it is a **REGRESSION against `0.3.2`**, not the standing family limitation.
@@ -1256,6 +1254,17 @@ whole-file flip still shows the true small diffstat.
 
 ### Sliders / fields
 
+- ⚠ **THE FIELD FAMILY DISAGREES ABOUT WHETHER A PROGRAMMATIC SET IS A CHANGE, and
+  nobody has decided which is right.** Measured 2026-08-26 with the event queue
+  drained (so the `when="tail"` emitters are not undercounted): `w.value = x` in code
+  emits **one** `<<Change>>` on `Select`, `TimeField` and `SelectButton`, and **zero**
+  on `NumberField` and `DateField`. Plausibly deliberate — change meaning *user
+  commit* — but it is not uniform and it is not written down anywhere.
+  ✅ **MAINTAINER DISPOSITION (2026-08-26): KEEP IN MIND, DO NOT FIX, DO NOT FILE.**
+  Unsure which behavior is correct, so nothing is being changed on it now. **Do not
+  "harmonize" the family as a drive-by**, and do not re-propose filing it — raise it
+  only if a real defect lands on top of it. Found out of #476, recorded in that
+  branch's `PLAN.md` as out of scope.
 - **Slider/RangeSlider spacing** — `gap=` does not visually separate tracks; use
   `margin_y=10`. Track heights: plain ≈ 24px, ticks ≈ 45px, badge+ticks ≈ 65px.
 - **`anchor_items="baseline"`** is invalid — use `"s"`.
