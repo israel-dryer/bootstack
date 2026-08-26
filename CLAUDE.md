@@ -148,15 +148,19 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-26) — **#461/#459 SHIPPED. #476 IS IN FLIGHT AND NEEDS ROUND 1.**
+### ★ START HERE (2026-08-26) — **NOTHING IN FLIGHT. `0.4.0` HAS THREE ISSUES LEFT AND #390 IS THE ONE THAT MATTERS.**
 
 **✅ #461 + #459 MERGED (PR #475, merge commit `c8ebfb7c`, 2026-08-26).** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal). Branch deleted local + remote, head **`e3593cd1`**. Plan and round 1 record archived at `development/plan-461-selectbutton-signal-value.md` and `development/review-461-selectbutton-signal-value.md`. Cap was 3, spent 1.
 
-**⏭ IN FLIGHT: `fix/selectbutton-double-change-476` — PR #478, pushed, `0.4.0`, and ROUND 1 HAS NOT RUN (cap 2, spent 0).** #476: every `SelectButton` fired `on_change` **twice** per selection. `PLAN.md` is on the branch. **A fresh session must review before it merges** — gate 1 fires on its non-empty `src/` diff, and the session that wrote it cannot review it.
+**✅ #476 MERGED (PR #478, merge commit `5cf398f8`, 2026-08-26).** Every `SelectButton` fired `on_change` **twice** per selection. Branch deleted local + remote, head **`5e72f9b4`**. Plan and round 1 record archived at `development/plan-476-selectbutton-double-change.md` and `development/review-476-selectbutton-double-change.md`. Cap was 2, spent 1 — round 1 found **no blockers in production code**, one should-fix in a test, and filed **#479**.
 
 ⚠ **#476 WAS FOUND BY ASKING A QUESTION, NOT BY A SWEEP, AND THE QUESTION IS REUSABLE:** *is this internal member reachable from public API at all?* `OptionMenu._textsignal` is not — #461 deleted the wrapper property that read it and #472 made `bs.SelectButton(textsignal=…)` raise — and chasing that turned up two live `<<Change>>` subscriptions where the code assumed one. **`_bind_change_event` returned its handle for the caller to store; `__init__` stored it, `_delegate_textsignal` discarded it, and the cancel-guard saw `None` both times.** Fixed by having it store the handle itself.
 
-⚠ **DO NOT "FIX" IT AT THE DISCARDING CALL SITE.** `self._bind_id = self._bind_change_event()` at `optionmenu.py:368` works and leaves the identical trap for the next caller — there has already been one.
+⚠ **DO NOT "FIX" IT AT THE DISCARDING CALL SITE.** `self._bind_id = self._bind_change_event()` at `optionmenu.py:368` works and leaves the identical trap for the next caller — there has already been one. **`_bind_change_event` stores its own handle now; a caller that discards the return is harmless.**
+
+⚠⚠ **ROUND 1'S DURABLE FINDING: A TEST CAN GO RED ON THE BROKEN BUILD AND STILL NOT TEST WHAT IT IS NAMED FOR — because pytest stops at the first assertion.** `test_rebinding_the_textsignal_replaces_the_subscription` closed on `len(menu._textsignal._subscribers) == 1`, the count on the **NEW** signal, which reads **1 on both arms**. It failed pre-fix only on its *first* assertion, so **the control never reached the line the whole test exists for.** What `:368` leaked is the orphan on the **REPLACED** signal — **50 across 50 rebinds before the fix, 0 after** — and that is what it asserts now. **When a control goes red, check WHICH assertion produced it.**
+
+⚠ **#479 CAME OUT OF ROUND 1 AND IS UNMILESTONED AND UNFIXED:** `OptionMenu` never cancels its `<<Change>>` subscription on destroy, so a destroyed widget keeps emitting — `event_generate` on a dead window raises `TclError: bad window path name` **inside the Tk trace**, invisible to whoever wrote the signal, and the subscription **pins the destroyed widget in memory** (measured with a weakref after `gc.collect()`). **Pre-existing, and #476 halved it** (two leaked subscriptions per widget before, one after). **Not reachable from public API** — #472 rejects `textsignal=` at the wrapper and `SelectButton` hands out no property that reads the internal's. ⚠ **The fix has an exemplar in the repo: `ValueSignalMixin._bind_value_signal` (`field_mixin.py:305-310`) holds its id and releases it on destroy**, measured clean (`subs 1 -> 0`, widget collected). ⚠ **It is NOT #469** — that is a *queued* `when="tail"` event reaching a *different* widget; this is a *live subscription* firing new emissions at a dead one. Re-run `development/probe_476_review_round1.py` rather than re-deriving any of it; it prints which arm it is on by reading the source.
 
 #### ⭐ #477 — COLLAPSE THE `_impl` LAYER BEFORE 1.0. **Maintainer's framing, filed 2026-08-26, unmilestoned.**
 
@@ -282,14 +286,14 @@ post-fix, all three                       widget=None signal='2' subscriber_saw=
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #475 merge (`c8ebfb7c`, #461+#459, 2026-08-26)**, the **PR #473 merge (`935cf2c1`, #472)**, the **PR #471 merge (`62728770`, #465)** and the **PR #470 merge (`7e4e3c98`, #449)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
-| branches | **ONE in flight: `fix/selectbutton-double-change-476` (PR #478, `0.4.0`, ROUND 1 NOT RUN).** ⚠ **STALE, safe to delete local + remote: `fix/unknown-kwarg-strictness-383`** (#472, PR #473, head **`bb8ef8ff`**) — confirmed an ancestor of `origin/main` 2026-08-26. Deleted on merge: `fix/selectbutton-signal-value-461` (head **`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, not a gap.** Each branch archives its pair into `development/` *before* the merge. #461's are at `development/plan-461-selectbutton-signal-value.md` and `development/review-461-selectbutton-signal-value.md`. ⚠ **#478's branch DOES carry a `PLAN.md` — that is correct while it is in flight** |
+| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #478 merge (`5cf398f8`, #476, 2026-08-26)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)**, the **PR #471 merge (`62728770`, #465)** and the **PR #470 merge (`7e4e3c98`, #449)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
+| branches | **NONE — `main` is the only branch, local and remote, verified with `git branch -a` 2026-08-26.** Deleted on merge: `fix/selectbutton-double-change-476` (head **`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, not a gap.** #476's are at `development/plan-476-selectbutton-double-change.md` and `development/review-476-selectbutton-double-change.md`. ⚠ **PR #478 MERGED BOTH FILES INTO `main`'s ROOT and they were archived AFTER the merge, not before** — the pre-merge archive step was missed. Harmless here because the next session found them named for a shipped branch, which is exactly the failure the rule exists to prevent. **Archive before the merge.** |
 | released | `0.3.2`. **`## [Unreleased]` carries #456, #458, #459, #461, #465, #472 and #476**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
-| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472 done; **#460, #467, #476, #390 still open.** #476 is in flight (PR #478); **#390 is the biggest item and is blocked on three unanswered decisions** |
+| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472, #476 done; **#460, #467, #390 still open.** **#390 is the biggest item and is blocked on three unanswered decisions** |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1573 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-26 on `main` after the PR #475 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT.** Reconciles as `1552 + 21` (#461/#459's two new test files), bounded with `git diff 6fb3abc9..HEAD --stat -- tests/` |
-| open milestones | **11** — verified against `gh` 2026-08-25. ⚠ **#477 was filed 2026-08-26 UNMILESTONED**, so the unmilestoned count moved, not the milestone count |
+| suite, `main` | **1579 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-26 on `main` after the PR #478 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT.** Reconciles as `1573 + 6` (#476's one new test file), bounded with `git diff e8caece4..HEAD --stat -- tests/`, which shows that file is the ONLY thing that moved |
+| open milestones | **11** — verified against `gh` 2026-08-26. ⚠ **#477 and #479 were both filed 2026-08-26 UNMILESTONED**, so the unmilestoned count moved, not the milestone count |
 
 ⚠ **A HANDOFF COMMIT THAT IS NOT PUSHED DOES NOT EXIST.** Found 2026-08-26: the two `docs(claude):` commits describing #461's flight had **never left the local box**, so `main` and `origin/main` had silently diverged and `git pull --ff-only` refused. They rebased cleanly (CLAUDE.md-only, and #475's branch had an empty CLAUDE.md diff), but **the next session would have read a `main` that knew nothing about the branch in hand.** ⏭ **`git push` after every `docs(claude):` commit, and check `git rev-parse main origin/main` agree before trusting this file.**
 
@@ -376,7 +380,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), **#460, #467, #476, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#476 ARRIVED 2026-08-26** — found while asking whether `OptionMenu`'s internal `textsignal` was reachable at all; in flight as PR #478, round 1 NOT run. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** It is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PRs #462, #471, #473, #475 and #478 all carry this milestone. **Verified 2026-08-26 with `gh issue list --milestone <title> --state all`: 9 issues, 5 CLOSED (#458 #459 #461 #465 #472), 4 OPEN (#390 #460 #467 #476).** That command is the authority for *issues* | 4 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), **#460, #467, #390**. Cut 2026-08-19; the next release out the door. ⚠ **#476 ARRIVED AND SHIPPED THE SAME DAY, 2026-08-26** — found while asking whether `OptionMenu`'s internal `textsignal` was reachable at all; PR #478, round 1 clean in production code and it filed #479. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It needs no retitle: #390 IS signal binding on fields.** It is the biggest item here and is blocked on three unanswered decisions. ⚠ **The endpoint counts PRs as work items**, so it reads higher than the issue count — PRs #462, #471, #473, #475 and #478 all carry this milestone. **Verified 2026-08-26 with `gh issue list --milestone <title> --state all`: 9 issues, 6 CLOSED (#458 #459 #461 #465 #472 #476), 3 OPEN (#390 #460 #467).** That command is the authority for *issues* | 3 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25 | 4 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -428,7 +432,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**EIGHT UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474, #477.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified 2026-08-26. Verify rather than counting by hand:
+**NINE UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474, #477, #479.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. ⚠ **#479 came out of #476's review** — `OptionMenu` never releases its `<<Change>>` subscription on destroy. **It is a different animal from #469: live subscription vs queued event.** Verified 2026-08-26. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -460,22 +464,23 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-26 on `main` after the PR #475 merge**,
+**AUTHORITATIVE — measured 2026-08-26 on `main` after the PR #478 merge**,
 Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and
 `pandas` BOTH PRESENT**:
 
 | | measured |
 |---|---|
-| summed, 33 legs | **1573 passed / 22 skipped** |
+| summed, 33 legs | **1579 passed / 22 skipped** |
 
-⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1552 + 21`,
-the 21 being #461/#459's two new test files (15 + 6).
-`git diff 6fb3abc9..HEAD --stat -- tests/` says how much the count was ALLOWED to
+⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1573 + 6`,
+the 6 being #476's one new test file.
+`git diff e8caece4..HEAD --stat -- tests/` says how much the count was ALLOWED to
 move and confirms nothing else changed — one command, and it is the check that
-catches what a self-consistent-but-wrong total does not.
+catches what a self-consistent-but-wrong total does not. Here it returned exactly
+one file, which is the whole check.
 
-Prior steps, each bounded the same way: `1500 → 1552` was `+24` for #465 and `+28`
-for #472.
+Prior steps, each bounded the same way: `1552 → 1573` was `+21` for #461/#459's two
+files (15 + 6); `1500 → 1552` was `+24` for #465 and `+28` for #472.
 
 **Superseded, kept for the environmental note it anchors — measured 2026-08-20 on
 `main` at `41c8bad1`**, same box, same deps:
@@ -1051,6 +1056,7 @@ a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
   its control arm proving it can detect a delivery. **You do not need the route: remove
   the precondition.** `tests/conftest.py::_reset_scene` now pumps `root.update()` before
   destroying. **The product half is UNFIXED — #469**, and ~20 composites emit this way.
+- ⚠ **A LIVE SIGNAL SUBSCRIPTION OUTLIVING ITS WIDGET IS A DIFFERENT BUG FROM #469, AND IT IS #479.** #469 is a *queued* event delivered to a *different* widget; #479 is a subscription that is never cancelled, so a **destroyed** widget keeps emitting: `event_generate` on a dead window raises `TclError: bad window path name` **inside the Tk trace**, where the caller cannot see it, and the subscription **pins the destroyed widget in memory** (measured with a weakref after `gc.collect()`). `OptionMenu` is the instance found; **`ValueSignalMixin._bind_value_signal` (`field_mixin.py:305-310`) is the pattern that gets it right** — hold the id, release it in `on_destroy`. ⚠ **Check for this whenever `_impl` code subscribes to a signal it does not own.**
 - ⚠ **`update_idletasks()` DOES NOT SERVICE QUEUED WINDOW EVENTS — only `update()` does.**
   Measured directly in `development/probe_449_queued_event_after_destroy.py`. This
   matters because `update_idletasks()` **silences** the #449 flake while fixing nothing,
