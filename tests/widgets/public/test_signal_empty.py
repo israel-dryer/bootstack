@@ -57,20 +57,19 @@ def test_the_rejection_message_names_the_way_out(app):
         bs.Signal(1).set(None)
 
 
-def test_a_signal_seeded_empty_locks_its_type_on_the_first_value(app):
-    """Deferred inference, not abandoned inference.
+def test_a_signal_that_starts_empty_declares_its_type(app):
+    """`dtype=` names the type when there is no value to read one from.
 
-    `bs.Signal(None, allow_empty=True)` is the spelling a caller reaches for when
-    the value starts empty. It has no type to infer, so the first real value
-    decides it — and the signal is monomorphic from then on, exactly as one
-    seeded with a value would be.
+    A signal that starts empty is still monomorphic from birth, exactly as one
+    seeded with a value is — the type just arrives by declaration instead of by
+    inference.
     """
-    sig = bs.Signal(None, allow_empty=True)
-    assert sig.type is None
+    sig = bs.Signal(None, allow_empty=True, dtype=date)
+    assert sig.type is date
     assert sig() is None
 
     sig.set(date(2024, 1, 2))
-    assert sig.type is date
+    assert sig() == date(2024, 1, 2)
 
     with pytest.raises(TypeError, match="Expected date, got int"):
         sig.set(5)
@@ -78,6 +77,70 @@ def test_a_signal_seeded_empty_locks_its_type_on_the_first_value(app):
     # And it can go back to empty afterwards.
     sig.set(None)
     assert sig() is None
+
+
+def test_starting_empty_without_a_declared_type_raises(app):
+    """There is no deferred type: a signal never exists without knowing its own.
+
+    Inferring from the first value written was measured to leave the signal
+    typeless for as long as the caller left it empty — long enough to be bound
+    to a widget, which is where it did damage (#390 round 2, findings 1 and 2).
+    """
+    with pytest.raises(TypeError, match="must declare one"):
+        bs.Signal(None, allow_empty=True)
+
+
+def test_a_declared_type_is_honored_alongside_a_value_seed(app):
+    """The seed may be computed, so `dtype=` cannot be conditional on it.
+
+    `bs.Signal(record.get('due'), allow_empty=True, dtype=date)` is the shape
+    this exists for: whether the seed is a value or `None` is data, not a
+    different spelling.
+    """
+    assert bs.Signal(date(2024, 1, 2), allow_empty=True, dtype=date).type is date
+    assert bs.Signal(None, allow_empty=True, dtype=date).type is date
+
+
+def test_a_seed_that_contradicts_the_declared_type_raises_at_construction(app):
+    """Named rather than discarded — the write that fails later is not the bug."""
+    with pytest.raises(TypeError, match="seeded with int but declares dtype=str"):
+        bs.Signal(5, allow_empty=True, dtype=str)
+
+
+def test_a_declared_float_widens_an_int_seed(app):
+    """The seed passes exactly the test every later write passes, widening included."""
+    sig = bs.Signal(0, allow_empty=True, dtype=float)
+    assert sig.type is float
+    assert sig() == 0.0
+
+
+def test_dtype_takes_the_type_itself_not_its_name(app):
+    """`Form`'s field spec accepts `'date'` too; a signal's does not, and says so."""
+    with pytest.raises(TypeError, match="dtype must be a type"):
+        bs.Signal(None, allow_empty=True, dtype="date")
+
+
+def test_a_declared_type_still_needs_allow_empty_to_start_empty(app):
+    """`dtype=` names a type; it does not also grant permission to be empty."""
+    with pytest.raises(TypeError, match="needs allow_empty=True"):
+        bs.Signal(None, dtype=date)
+
+
+@pytest.mark.parametrize("dtype,expected_var", [
+    (str, "StringVar"),
+    (date, "StringVar"),
+    (set, "SetVar"),
+])
+def test_a_signal_that_starts_empty_gets_the_variable_its_type_calls_for(
+        app, dtype, expected_var):
+    """The variable follows the declared type, not the seed (#390 round 2, finding 2).
+
+    Dispatching on the seed made every signal that started empty a `StringVar`
+    for life, so one that later held an `int` reported `type is int` while
+    returning `'5'`, and `clear()` raised out of its own setter.
+    """
+    sig = bs.Signal(None, allow_empty=True, dtype=dtype)
+    assert type(sig.var).__name__ == expected_var
 
 
 def test_a_none_typed_signal_still_no_ops_on_none(app):
@@ -174,12 +237,30 @@ def test_clear_still_needs_the_declaration(app):
 
     One rule, whatever the type: a signal empties only if it was declared able
     to. The message points at the keyword either way.
+
+    ⚠ The realized arm is the one that matters, and it is the one this test did
+    not have. `clear()` used to pass `_empty_value()` to `set()`, which for a
+    realized `str` signal is `''` — a valid `str`, so the `value is None` guard
+    never ran and any text signal could be cleared undeclared. Both original
+    arms are unrealized, so both passed while the rule they assert was false
+    (#390 round 2, finding 3).
     """
     with pytest.raises(TypeError, match="allow_empty=True"):
         bs.Signal("hello").clear()
 
     with pytest.raises(TypeError, match="allow_empty=True"):
         bs.Signal(date(2024, 5, 5)).clear()
+
+    realized = bs.Signal("hello")
+    field = bs.TextField(textsignal=realized, parent=app)
+    app.tk.update()
+    assert realized._var is not None, "precondition: the binding realized it"
+
+    with pytest.raises(TypeError, match="allow_empty=True"):
+        realized.clear()
+
+    assert realized() == "hello"
+    assert field.value == "hello"
 
 
 # --------------------------------------------------------------------------
@@ -325,7 +406,7 @@ def test_an_empty_text_signal_renders_blank_not_the_word_none(app):
     the widget then displays. Asserted on the variable's contents because that is
     the thing a user would see.
     """
-    sig = bs.Signal(None, allow_empty=True)
+    sig = bs.Signal(None, allow_empty=True, dtype=str)
     bs.Label(textsignal=sig, parent=app)
     app.tk.update()
 
@@ -336,6 +417,45 @@ def test_an_empty_text_signal_renders_blank_not_the_word_none(app):
     app.tk.update()
 
     assert _var_contents(app, sig) == ""
+
+
+def test_clearing_a_set_signal_gives_the_empty_set(app):
+    """A `set` empties to `set()`, not to `''` — the one type answer here.
+
+    `_empty_value()` returned `''` for any realized native-mode signal, and a
+    `SetVar` refuses a `str` outright, so `clear()` on a multi-select's signal
+    raised `Expected set or frozenset, got str` out of the caller. The empty set
+    is a legal value of the type in both stores, so it needs no proxy at all
+    (#390 round 2, finding 4).
+    """
+    sig = bs.Signal({"a"}, allow_empty=True)
+    group = bs.ToggleGroup(options=["a", "b"], mode="multi", signal=sig, parent=app)
+    app.tk.update()
+    assert sig._var is not None, "precondition: the binding realized it"
+
+    seen: list = []
+    sig.subscribe(lambda v: seen.append(v))
+
+    sig.clear()
+    app.tk.update()
+
+    assert sig() == set()
+    assert group.value == set()
+    assert seen == [set()]
+
+
+def test_a_set_signal_empties_the_same_way_before_it_is_bound(app):
+    """The control for the arm above: `set()` either way, unlike `str`.
+
+    Where a `str` signal's empty legitimately depends on whether it backs a
+    widget's variable, a `set`'s does not — so realization must not move it.
+    """
+    sig = bs.Signal({"a"}, allow_empty=True)
+    assert sig._var is None, "precondition: nothing has realized it"
+
+    sig.clear()
+
+    assert sig() == set()
 
 
 def test_clearing_a_radiogroup_signal_selects_nothing(app):
@@ -361,7 +481,21 @@ def test_clearing_a_radiogroup_signal_selects_nothing(app):
 # The floor: three types have no empty member, on any Tk version
 # --------------------------------------------------------------------------
 
-def test_binding_an_empty_signal_to_a_checkbox_raises(app):
+# Both spellings of the same declaration reach the guard. Round 2's finding 1
+# was that only the seeded one did: a signal that started empty had no type yet,
+# so `self._type in (bool, int, float)` was False and the binding went through.
+_EMPTY_BOOL = [
+    pytest.param(lambda: bs.Signal(False, allow_empty=True), id="value-seeded"),
+    pytest.param(lambda: bs.Signal(None, allow_empty=True, dtype=bool), id="starts-empty"),
+]
+_EMPTY_FLOAT = [
+    pytest.param(lambda: bs.Signal(0.0, allow_empty=True), id="value-seeded"),
+    pytest.param(lambda: bs.Signal(None, allow_empty=True, dtype=float), id="starts-empty"),
+]
+
+
+@pytest.mark.parametrize("make_signal", _EMPTY_BOOL)
+def test_binding_an_empty_signal_to_a_checkbox_raises(app, make_signal):
     """`BooleanVar` refuses both `''` and `None` at the write.
 
     A tristate `Checkbox` does have a third state — but it holds that state in
@@ -371,10 +505,11 @@ def test_binding_an_empty_signal_to_a_checkbox_raises(app):
     than reporting an indeterminate checkbox as an unchecked one.
     """
     with pytest.raises(BootstackError, match="no way to hold an empty value"):
-        bs.Checkbox("Agree", signal=bs.Signal(False, allow_empty=True), parent=app)
+        bs.Checkbox("Agree", signal=make_signal(), parent=app)
 
 
-def test_binding_an_empty_signal_to_a_slider_raises(app):
+@pytest.mark.parametrize("make_signal", _EMPTY_FLOAT)
+def test_binding_an_empty_signal_to_a_slider_raises(app, make_signal):
     """`DoubleVar` is the dangerous one: it accepts and fails later, invisibly.
 
     Measured in plain tkinter — `DoubleVar.set(None)` does not raise, it stores
@@ -382,7 +517,7 @@ def test_binding_an_empty_signal_to_a_slider_raises(app):
     trace where nothing Python can see it.
     """
     with pytest.raises(BootstackError, match="no way to hold an empty value"):
-        bs.Slider(signal=bs.Signal(0.0, allow_empty=True), parent=app)
+        bs.Slider(signal=make_signal(), parent=app)
 
 
 def test_the_refusal_message_names_the_variable_that_cannot_hold_an_empty(app):

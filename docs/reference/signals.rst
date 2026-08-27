@@ -113,8 +113,15 @@ signal with ``map()`` and bind it with ``textsignal=``:
 The ``if d else ""`` is worth keeping even when the value cannot be empty today.
 A transform runs on whatever the source holds, so a source that later
 :ref:`allows an empty value <signals-empty>` hands it that empty, and the derived
-signal's type is fixed by the first result it produces. Returning a value of the
-same type for the empty case keeps the derived signal bindable throughout.
+signal's type is fixed by the first result it produces.
+
+Return a value for the empty case, never ``None``. A derived signal is an
+ordinary signal — nothing declared it able to be empty, so ``None`` is the one
+thing it cannot take. A transform that returns it raises out of the *source's*
+``clear()``, pointing at a keyword you cannot reach for a signal you never
+constructed; and when the same clear arrives from a bound field instead, the
+write is dropped and the derived signal is left holding a value the source no
+longer has. ``if d else ""`` is the whole fix.
 
 .. _signals-empty:
 
@@ -137,17 +144,27 @@ to empty it — the same verb the fields themselves use:
    due.clear()         # allowed — subscribers are notified
    due()               # None
 
-A signal that allows an empty value may also start empty, in which case the first
-real value decides its type. Its ``type`` is ``None`` until then:
+A signal that allows an empty value may also start empty. There is no value to
+take a type from, so name it with ``dtype``:
 
 .. code-block:: python
 
-   due = bs.Signal(None, allow_empty=True)
-   due.type            # None
+   due = bs.Signal(None, allow_empty=True, dtype=date)
+   due.type            # <class 'datetime.date'>
+   due()               # None
 
    due.set(date(2026, 1, 15))
-   due.type            # <class 'datetime.date'>
-   due.set(7)          # TypeError — the type is fixed from the first value on
+   due.set(7)          # TypeError — a signal holds one type, empty or not
+
+``dtype`` is honored whenever it is given, so a seed that may or may not be there
+needs no second spelling — and a seed that contradicts it is reported where the
+two disagree rather than at some later write:
+
+.. code-block:: python
+
+   due = bs.Signal(record.get("due"), allow_empty=True, dtype=date)
+
+   bs.Signal(5, allow_empty=True, dtype=str)     # TypeError at construction
 
 Clearing a bound field now reaches the signal, in both directions:
 
@@ -177,10 +194,16 @@ empty is ``""``:
    pick.clear()
    pick()              # None — a Select's signal carries the option's value
 
-Both signals hold strings; what differs is where the value lives. The signal
-always agrees with the widget it is bound to, so comparing ``signal()`` against
-the widget's ``value`` is safe either way. Prefer a falsiness check —
-``if not name():`` — when a helper has to handle both.
+Both signals hold strings; what differs is where the value lives, and ``str`` is
+the only type where it can differ at all — a ``date``, or any other value a
+variable cannot hold natively, always empties to ``None``, and the numeric types
+are refused at the binding outright.
+
+Where it does differ, the variable wins. Bind that same ``pick`` signal to a
+``bs.Label`` as well and the variable owns the value from then on, so it empties
+to ``''`` while the ``Select`` still reports ``None`` — a Tk variable has no way
+to hold ``None``, so nothing can preserve it once one is in play. Prefer a
+falsiness check — ``if not pick():`` — which reads the same in every case.
 
 .. note::
 

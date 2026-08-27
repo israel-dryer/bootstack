@@ -36,7 +36,7 @@ with bs.App(title="probe") as app:
     r.clear()
     print(f"   RadioGroup clear()   value={rg.value!r}")
 
-    lsig = bs.Signal(None, allow_empty=True)
+    lsig = bs.Signal(None, allow_empty=True, dtype=str)
     lb = bs.Label(textsignal=lsig)
     print(f"   Label seeded empty   text={lb.text!r} raw_var={app.tk.getvar(str(lsig._var))!r}")
 

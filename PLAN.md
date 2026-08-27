@@ -146,9 +146,41 @@ them.**
 - **Writing the empty into a realized var writes `''`, never `str(None)`.** Without this an
   object-mode `Label` displays the four characters `None` instead of going blank, which is the
   exact corruption #390 exists to remove.
-- **Deferred type is unchanged from the superseded plan.** `Signal(None, allow_empty=True)` has
-  `_type is None`, `Signal.type` returns `None`, and the first non-empty `set()` locks both
-  `_type` and `_object_mode`.
+- ⚠ **DEFERRED TYPE IS GONE — REPLACED IN ROUND 2 BY A DECLARED `dtype=`.** The superseded
+  design gave `Signal(None, allow_empty=True)` a `_type` of `None` until the first non-empty
+  `set()`. **That window was reachable from a widget binding, and round 2 measured what got
+  through it** (findings 1 and 2): `self._type in (bool, int, float)` is False while the type is
+  deferred, so `bs.Slider(signal=bs.Signal(None, allow_empty=True))` **built** and then raised
+  `TypeError: unsupported operand type(s) for -: 'str' and 'float'` inside `slider.py:_on_var_write`
+  — the exact invisible-in-a-Tk-trace failure `_realize()`'s comment says the guard prevents, and
+  reached by the spelling the CHANGELOG advertises. Second, `_create_variable` dispatched on the
+  **seed**, so a signal that started empty was a `StringVar` for life: after `set(5)` it reported
+  `type is int` while `__call__` returned `'5'` and `clear()` raised out of its own setter.
+- **The rule now: `dtype` is required when the seed is `None` and `allow_empty=True`, honored
+  whenever it is given, and the seed is checked against it.** So `_type` is a real type from
+  construction, always. ⚠ **Honored-not-ignored is deliberate and was decided against both
+  alternatives** — *rejecting* `dtype` beside a value seed breaks the case it exists for
+  (`bs.Signal(record.get('due'), allow_empty=True, dtype=date)`, where whether the seed is `None`
+  is **data**, not a different spelling), and *ignoring* it silently makes `Signal(5, dtype=str)`
+  an `int` signal, which is the audit's mode 5 and the `MenuButton` silent-skip this file already
+  says not to copy into new code.
+- **The seed goes through the same check every later write does.** `_reconcile()` is the one type
+  rule — exact match, or an `int` widened into a `float` signal — called by both `__init__` and
+  `set()`. ⚠ **Coercing at construction was rejected**: it would accept `Signal('5', dtype=int)`
+  at birth while `sig.set('5')` raised for the rest of the signal's life, which is two type
+  policies on one object. The two call sites differ only in the message — construction names both
+  inputs, a bare write has only one.
+- **`_create_variable` dispatches on `self._type`**, and `_is_tk_native_type()` is its type-level
+  companion (`_is_tk_native` takes a *value*, and a signal that starts empty has none).
+- **`Signal.type` stays `Type[T]`.** The deferred design retyped it to `Type[T] | None`, which is
+  `0.5.0`'s rule; **with a declared `dtype` that retype disappears from the branch entirely**, so
+  the public surface change is now `allow_empty=`, `dtype=`, `allows_empty` and `clear()`.
+- ⚠ **`bs.Signal(None, dtype=date)` without `allow_empty=True` RAISES** — it would otherwise be a
+  fresh instance of #481 reached through the new parameter. **`bs.Signal(None)` bare is
+  untouched** and stays #481's, on `0.5.0`.
+- **`dtype` takes the type itself, not `Form`'s string spelling.** `FieldItem.dtype` accepts both
+  `'date'` and `date`; a signal's takes only the type, and the message says so. Unifying them
+  belongs to the `dtype`/codec follow-up, not here.
 
 ### 2. `src/bootstack/widgets/_core/field_mixin.py`
 

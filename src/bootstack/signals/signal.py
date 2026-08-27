@@ -85,8 +85,8 @@ class Signal(Generic[T]):
     reports being cleared, where one bound to an ordinary signal silently keeps
     its last value. Call `clear()` to empty a signal. It empties to `None`,
     except where its value lives in a widget's own variable, which holds only
-    strings and so empties to `''`. A signal that allows empty may be seeded
-    with `None`, in which case the first real value decides its type.
+    strings and so empties to `''`. A signal that allows empty may start empty,
+    in which case there is no value to read a type from and `dtype=` names it.
 
     Signals may be constructed at module level (before `bs.App()` exists). The
     backing Tk variable is created lazily on the first widget binding and torn
@@ -103,15 +103,35 @@ class Signal(Generic[T]):
             master: tk.Misc | None = None,
             *,
             allow_empty: bool = False,
+            dtype: type | None = None,
     ):
         self._name = name or f"SIG{next(self._cnt)}"
         self._master: tk.Misc | None = master
         self._allow_empty = allow_empty
-        if value is None and allow_empty:
-            # Seeded empty, so there is nothing to infer from yet. The type is
-            # locked by the first non-None set(), and stays monomorphic after.
-            self._type: Type[T] | None = None
-            self._object_mode = False
+        if dtype is not None:
+            if not isinstance(dtype, type):
+                raise TypeError(
+                    f"dtype must be a type, got {dtype!r}. Pass the type itself, as "
+                    f"in dtype=date."
+                )
+            if value is None and not allow_empty:
+                raise TypeError(
+                    "A Signal seeded with None needs allow_empty=True, or it can "
+                    "never hold the value it was created with."
+                )
+            self._type: Type[T] = dtype
+            self._object_mode = not self._is_tk_native_type(dtype)
+            if value is not None:
+                value = self._reconcile(
+                    value,
+                    f"Signal was seeded with {type(value).__name__} but declares "
+                    f"dtype={dtype.__name__}.",
+                )
+        elif value is None and allow_empty:
+            raise TypeError(
+                "A Signal that starts empty has no value to take its type from, so "
+                "it must declare one: bs.Signal(None, allow_empty=True, dtype=date)."
+            )
         else:
             self._type = type(value)
             self._object_mode = not self._is_tk_native(value)
@@ -132,6 +152,27 @@ class Signal(Generic[T]):
         """Whether a value maps to a Tk variable that round-trips it losslessly."""
         return isinstance(value, (bool, int, float, str, set))
 
+    @staticmethod
+    def _is_tk_native_type(dtype: type) -> bool:
+        """`_is_tk_native` for a declared type, where there is no value to test."""
+        return dtype in (bool, int, float, str, set)
+
+    def _reconcile(self, value: Any, context: str | None = None) -> Any:
+        """Apply the signal's one type rule, widening an `int` into a `float`.
+
+        The declared-`dtype` seed and every `set()` both come through here, so a
+        seed passes exactly the test each later write has to pass. `context`
+        names the constructor's two inputs, which a bare write does not have.
+        """
+        if type(value) is self._type:
+            return value
+        if self._type is float and type(value) is int:
+            return float(value)
+        detail = f"Expected {self._type.__name__}, got {type(value).__name__}"
+        if context:
+            raise TypeError(f"{context} {detail}.")
+        raise TypeError(detail)
+
     def _empty_value(self) -> Any:
         """The value that represents "empty" for this signal.
 
@@ -140,22 +181,37 @@ class Signal(Generic[T]):
         type: a `Select` holding `str` option keys empties to `None`, matching
         what the widget and its change event report, while a text field backed
         by the same signal type empties to `''`.
+
+        A `set` is the exception, and it is a type answer rather than a binding
+        one: the empty set is a legal value of the type in both stores, so it
+        needs no proxy — where `''` is legal only because a `str`'s empty
+        happens to be a `str`.
         """
+        if self._type is set:
+            return set()
         if self._var is not None and not self._object_mode:
             return ""
         return None
 
     def _create_variable(self, value: T) -> tk.Variable:
-        if isinstance(value, bool):
+        # Dispatch on the declared type, not on the seed. A signal that starts
+        # empty has no seed to read, and must still get the variable its type
+        # calls for rather than defaulting to a StringVar for the rest of its
+        # life. Never hand a bare None to Tk either: it stringifies to the four
+        # characters 'None' and the widget displays them.
+        if self._type is bool:
             return tk.BooleanVar(master=self._master, name=self._name, value=value)
-        elif isinstance(value, int):
+        elif self._type is int:
             return tk.IntVar(master=self._master, name=self._name, value=value)
-        elif isinstance(value, float):
+        elif self._type is float:
             return tk.DoubleVar(master=self._master, name=self._name, value=value)
-        elif isinstance(value, set):
-            return SetVar(master=self._master, name=self._name, value=value)
+        elif self._type is set:
+            empty: Any = set()
+            return SetVar(master=self._master, name=self._name,
+                          value=value if value is not None else empty)
         else:
-            return tk.StringVar(master=self._master, name=self._name, value=value)
+            return tk.StringVar(master=self._master, name=self._name,
+                                value=value if value is not None else "")
 
     def _realize(self) -> None:
         """Create the backing Tk variable and wire the single bridge trace.
@@ -180,9 +236,7 @@ class Signal(Generic[T]):
                 f"or bind the signal to a field that carries a typed value (NumberField, "
                 f"DateField, TimeField, Select, SelectButton)."
             )
-        # Never hand a bare None to Tk: it stringifies to the four characters
-        # 'None' and the widget displays them.
-        self._var = self._create_variable(self._last if self._last is not None else "")
+        self._var = self._create_variable(self._last)
         self._trace = _SignalTrace(self._var)
 
         def _bridge(value: T) -> None:
@@ -309,17 +363,8 @@ class Signal(Generic[T]):
                     f"allow_empty=True to Signal() if this value can be empty."
                 )
             value = self._empty_value()
-        elif self._type is None:
-            # Seeded empty — the first real value decides the type from here on.
-            self._type = type(value)
-            self._object_mode = not self._is_tk_native(value)
-        elif type(value) is not self._type:
-            if self._type is float and type(value) is int:
-                value = float(value)  # type: ignore[assignment]
-            else:
-                raise TypeError(
-                    f"Expected {self._type.__name__}, got {type(value).__name__}"
-                )
+        else:
+            value = self._reconcile(value)
 
         if self._var is None:
             # Unrealized — notify Python subscribers directly.
@@ -357,12 +402,17 @@ class Signal(Generic[T]):
 
         The signal must have been declared `allow_empty=True`. It clears to
         `None`, except where its value lives in a widget's Tk variable — a
-        variable holds only strings, so there it clears to `''`.
+        variable holds only strings, so there it clears to `''` — and to the
+        empty set on a `set`-typed signal.
 
         Raises:
             TypeError: If the signal was not declared able to be empty.
         """
-        self.set(self._empty_value())
+        # Through set(None), not set(_empty_value()): the empty of a realized
+        # str signal is '', which is a valid str, so passing it here walked
+        # straight past the allow_empty check and let any realized text signal
+        # be cleared without the declaration (#390 round 2, finding 3).
+        self.set(None)
 
     def map(self, transform: Callable[[T], U]) -> 'Signal[U]':
         """
@@ -416,11 +466,8 @@ class Signal(Generic[T]):
         return self._name
 
     @property
-    def type(self) -> Type[T] | None:
-        """The type of the signal value.
-
-        `None` on a signal seeded empty, until the first real value sets it.
-        """
+    def type(self) -> Type[T]:
+        """The type of the signal value — the seed's type, or a declared `dtype`."""
         return self._type
 
     @property
