@@ -1,7 +1,7 @@
 # PLAN — #390 (Signals cannot represent an empty value)
 
 Branch `fix/signal-nullable-390`, off `main` at `028b8392`. Milestone `0.4.0`.
-**Round cap: 3, spent 1.**
+**Round cap: 3, spent 2.**
 
 ⚠ **RE-SCOPED 2026-08-27 BY MAINTAINER DECISION. THIS SUPERSEDES THE PLAN AT `14ea913f`**,
 which designed a `nullable=` parameter that refused every widget-attached binding. Two things
@@ -172,6 +172,12 @@ them.**
   inputs, a bare write has only one.
 - **`_create_variable` dispatches on `self._type`**, and `_is_tk_native_type()` is its type-level
   companion (`_is_tk_native` takes a *value*, and a signal that starts empty has none).
+  ⚠ **BOTH ASK `issubclass`, NOT IDENTITY, AND SO DOES `_realize()`'s REFUSAL — the identity
+  spelling shipped first and was wrong three times over** (`baacc48f`, `1040a62d`): an `IntEnum`
+  is an `int` to `isinstance`, so identity sent it to a `StringVar`, made a declared `IntEnum`
+  object-mode while a seeded one was native, and let it walk straight past the empty guard into
+  an `IntVar`. **`grep -n "_type is \|_type in (" src/bootstack/signals/signal.py` bounds this**;
+  the one survivor is `from_variable`'s recovery chain, left on purpose.
 - **`Signal.type` stays `Type[T]`.** The deferred design retyped it to `Type[T] | None`, which is
   `0.5.0`'s rule; **with a declared `dtype` that retype disappears from the branch entirely**, so
   the public surface change is now `allow_empty=`, `dtype=`, `allows_empty` and `clear()`.

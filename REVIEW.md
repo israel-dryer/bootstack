@@ -104,7 +104,22 @@ native-mode signal is realized, **`None` cannot survive the round trip**: a Tk v
 hold it, so `set()` writes `''`, the bridge trace reads the var back, and `_last` becomes `''` —
 **even if `_empty_value()` had returned `None`.** So `_var is not None` is not a proxy for "is
 this the widget's variable"; it is the operative condition itself, *"does a Tk variable now own
-this value"*. **A flag set at bind time would change nothing observable. Do not build one.**
+this value"*. **A flag set at bind time makes things WORSE, measured — do not build one.** Forcing
+`_empty_value()` to return `None` for a realized `str` signal, which is exactly what such a flag
+would do, gives:
+
+```
+A shipped        sig()=''  _last=''    var=''  select.value=None  subscribers=['']
+B with the flag  sig()=''  _last=''    var=''  select.value=None  subscribers=['', '']
+B before a read  _last=None  then sig()=''  _last=''
+```
+
+**The public read is `''` either way**, because `__call__` on a realized native-mode signal reads
+the variable back. What the flag adds is a **second subscriber notification** — the dedupe guard
+is `if self._var.get() == value: return`, and a variable can never contain `None`, so the write
+never dedupes and the field binding's push-back echoes — plus a window where `_last` is `None`
+while `sig()` answers `''`. ⚠ **An earlier version of this record said the flag "would change
+nothing observable", which invites reading the cost as zero. It is not zero.**
 
 **The docs claim was the defect** and it is corrected: *"The signal always agrees with the widget
 it is bound to, so comparing `signal()` against the widget's `value` is safe either way"* was
@@ -142,6 +157,42 @@ bound field cannot produce. **The branch no longer widens it at all.**
 
 ---
 
+## After the round — TWO defects the FIX introduced, caught by the committing session
+
+⚠⚠ **NOT a round finding, and it is the reason a round 3 is worth spending.** `baacc48f`:
+round 2's own fix replaced `_create_variable`'s `isinstance` chain with identity tests on the
+declared type and **asserted in its commit message that the two were equivalent, without checking.**
+They are not — `isinstance` catches subclasses, `self._type is int` does not — so every `IntEnum`
+and `int` subclass silently moved to a `StringVar`. Measured against `main`: `bs.Signal(Color.RED)()`
+returns `1` there and returned `'1'` here, so **`sig() == Color.RED` went from `True` to `False`.**
+
+`_is_tk_native_type` had it too, and disagreed with its own value-taking twin — a **seeded**
+`IntEnum` was native, the **declared** same type was object mode. So did `_empty_value`'s `set`
+test, which put a `set` subclass back on the `''` path finding 4 exists to remove. All three ask
+`issubclass` now, `bool` before `int` as the `isinstance` chain did.
+
+⚠ **The suite was 1619 green when this shipped, and it was found by asking one question — "is the
+new dispatch actually equivalent?" — that the author had answered by assertion.**
+
+⚠⚠ **AND THE FIRST FIX WAS INCOMPLETE, WHICH IS THE MORE USEFUL HALF.** `1040a62d`: asking whether
+`baacc48f`'s three call sites were *all* of them found a fourth — **`_realize()`'s refusal itself**,
+reading `self._type in (bool, int, float)`. A `dtype` that is a **subclass** missed it, so
+`bs.Slider(signal=bs.Signal(None, allow_empty=True, dtype=SomeIntEnum))` **built**, took an
+`IntVar`, and reported `sig() == 0` while `allows_empty` said `True` — **a real value posing as
+empty** — with `clear()` throwing `TclError` inside a Tk callback afterwards. `dtype=int` is
+refused correctly, which is exactly what kept the hole invisible. **This is finding 1 again, at the
+same line, re-entered through a subclass.**
+
+⚠ **The pattern to carry: a fix that changes a type test has a blast radius, and `grep -n
+"_type is \|_type in ("` is the one command that bounds it.** The first fix was written from the
+symptom (`_create_variable`) outward and stopped at two neighbours; the guard was a third caller of
+the same idea and was missed until the grep was run deliberately.
+
+**No CHANGELOG entry for either**: neither regression left the branch, so no user can be affected,
+which is this project's reachability rule.
+
+---
+
 ## Settled — do NOT re-derive or re-propose
 
 | | |
@@ -151,7 +202,7 @@ bound field cannot produce. **The branch no longer widens it at all.**
 | **`dtype` is honored whenever given, not rejected and not ignored** | 2026-08-27. Rejecting breaks the computed seed (`bs.Signal(record.get('due'), allow_empty=True, dtype=date)`, where whether the seed is `None` is **data**); ignoring makes `Signal(5, dtype=str)` an `int` signal, which is the audit's mode 5 |
 | **the seed is CHECKED against `dtype`, never coerced** | Coercing would accept `Signal('5', dtype=int)` at birth while `sig.set('5')` raised forever after — two type policies on one object |
 | **`dtype` takes the type, not `Form`'s string spelling** | `FieldItem.dtype` accepts `'date'` and `date`; a signal's takes only the type. Unifying belongs to the `dtype`/codec follow-up |
-| **F5's mechanism** | Forced by the toolkit, not chosen. **A bind-time flag changes nothing observable** |
+| **F5's mechanism** | Forced by the toolkit, not chosen. **A bind-time flag is measurably worse** — same `''`, plus a duplicate notification |
 | per-type empties, the `'None'` sentinel string | Rejected before this branch. `725b3990` carries the measurements |
 
 ## Notes — gate 2, not fixes
@@ -196,7 +247,28 @@ this, and it only works if the reviewer reads it.
 
 ## If a round 3 is opened
 
-Cap allows one. `git diff d0c0c591^..d0c0c591 -- src/` is non-empty, so a round is **owed** by
-gate 1. The new surface is `dtype=`, `_reconcile()`, `_is_tk_native_type()`, `_create_variable`'s
-dispatch, `clear()` and `_empty_value()`. **Hand over this file and `PLAN.md`.** The three
-unexamined doubts above are the obvious unswept ground.
+**Cap allows one, and it is the last.** `git diff 4adf868d..HEAD -- src/` is non-empty — two fix
+commits, `d0c0c591` and `baacc48f` — so a round is **owed** by gate 1, and that range is the
+honest one to review. ⚠ **The incremental diff is correct this time**, unlike round 2's: no design
+is being replaced mid-branch, so this record covers everything before `4adf868d`.
+
+**The unreviewed surface is new PUBLIC API** — `dtype=` and `Signal.allows_empty`, plus
+`_reconcile()`, `_is_tk_native_type()`, `_create_variable`'s dispatch, `clear()` and
+`_empty_value()`. Public API is what freezes at 1.0, which is most of the argument for spending
+the round.
+
+⚠ **HAND OVER THIS FILE AND `PLAN.md`, not just the diff.** Round 2's reviewer got the diff alone
+and it cost a finding's worth of attention — see the Process section.
+
+**The unswept ground, in order:**
+
+1. **The three unexamined doubts above.** Neither round looked at them.
+2. **`from_variable`'s `py_type` chain (`signal.py:323-329`)** — the one identity test left after
+   `1040a62d`, deliberately. It picks a zero value when `tk_var.get()` fails, so a subclass
+   `py_type` falls to `""` where the plain type gives `0`. **An error-recovery path, not a guard,
+   which is why it was left — but nobody has priced it.**
+3. **Whether `_reconcile()`'s two callers have drifted in what they ACCEPT**, not only in the
+   message they raise. The constructor and `set()` are supposed to apply one rule.
+4. **`dtype` against the rest of the framework.** `Form`'s `FieldItem.dtype` takes `'date'` **or**
+   `date`; a signal's takes only the type. That divergence was a deliberate call (see Settled) but
+   it has not been reviewed by anyone who did not make it.
