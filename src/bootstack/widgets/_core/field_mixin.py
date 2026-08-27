@@ -276,13 +276,22 @@ class ValueSignalMixin:
         self._value_syncing = False
 
         current = signal()
-        if current is not None:
+        if current is not None or self._signal_allows_empty():
+            # A declared empty is a value the signal HOLDS, not the absence of
+            # one, so it wins over the widget's default the same way a real
+            # value does. Without the second arm the default is pushed back and
+            # the declared empty is destroyed at construction — invisible on
+            # four of the five value-space fields, whose own default is None
+            # anyway, and visible on NumberField, whose default is 0 (#390
+            # round 3).
             self.value = current
         else:
             self._push_to_signal(self.value)
 
         def _from_signal(v: Any) -> None:
-            if self._value_syncing or v is None:
+            # An empty value only crosses when the signal declares it can hold
+            # one; otherwise the signal has no way to mean "cleared" (#390).
+            if self._value_syncing or (v is None and not self._signal_allows_empty()):
                 return
             self._value_syncing = True
             try:
@@ -294,7 +303,7 @@ class ValueSignalMixin:
             if self._value_syncing:
                 return
             v = self.value
-            if v is None:
+            if v is None and not self._signal_allows_empty():
                 return
             self._value_syncing = True
             try:
@@ -315,17 +324,24 @@ class ValueSignalMixin:
         The `on_change`-driven sync only fires on a user commit, so a
         programmatic value set would otherwise leave the signal stale. Call this
         from the wrapper's `value` setter. A no-op when no signal is bound, while
-        a signal↔field sync is in flight, or for an empty value.
+        a signal↔field sync is in flight, or for an empty value on a signal that
+        cannot hold one.
         """
         if getattr(self, "_value_signal", None) is None:
             return
-        if getattr(self, "_value_syncing", False) or value is None:
+        if getattr(self, "_value_syncing", False):
+            return
+        if value is None and not self._signal_allows_empty():
             return
         self._value_syncing = True
         try:
             self._push_to_signal(self.value)
         finally:
             self._value_syncing = False
+
+    def _signal_allows_empty(self) -> bool:
+        """Whether the bound signal can hold an empty value (#390)."""
+        return bool(getattr(getattr(self, "_value_signal", None), "allows_empty", False))
 
     def _push_to_signal(self, value: Any) -> None:
         """Write `value` to the bound signal, reconciling numeric types.

@@ -110,6 +110,121 @@ signal with ``map()`` and bind it with ``textsignal=``:
 
    bs.Label(textsignal=due_text)      # "Jan 15, 2026", re-derived on every change
 
+A transform runs on whatever the source holds, so one whose source
+:ref:`can be empty <signals-empty>` needs a little more care.
+
+.. _signals-empty:
+
+Empty values
+------------
+
+A signal holds one type, decided by the value it is created with — so by default
+it has no way to say "nothing". A field bound to such a signal keeps its last
+value when it is cleared, rather than reporting the clear.
+
+Pass ``allow_empty=True`` when the value can also be empty, and use ``clear()``
+to empty it — the same verb the fields themselves use:
+
+.. code-block:: python
+
+   due = bs.Signal(date(2026, 1, 15), allow_empty=True)
+
+   bs.DateField(signal=due)
+
+   due.clear()         # allowed — subscribers are notified
+   due()               # None
+
+A signal that allows an empty value may also start empty. There is no value to
+take a type from, so name it with ``dtype``:
+
+.. code-block:: python
+
+   due = bs.Signal(None, allow_empty=True, dtype=date)
+   due.type            # <class 'datetime.date'>
+   due()               # None
+
+   due.set(date(2026, 1, 15))
+   due.set(7)          # TypeError — a signal holds one type, empty or not
+
+``dtype`` is honored whenever it is given, so a seed that may or may not be there
+needs no second spelling — and a seed that contradicts it is reported where the
+two disagree rather than at some later write:
+
+.. code-block:: python
+
+   due = bs.Signal(record.get("due"), allow_empty=True, dtype=date)
+
+   bs.Signal(5, allow_empty=True, dtype=str)     # TypeError at construction
+
+Clearing a bound field now reaches the signal, in both directions:
+
+.. code-block:: python
+
+   field = bs.DateField(signal=due)
+
+   field.value = None  # due() is None, and subscribers are notified
+   due.clear()         # the field is emptied
+
+What "empty" means
+~~~~~~~~~~~~~~~~~~
+
+Empty is ``None`` — except where the signal *is* the widget's own variable, as it
+is for a text field or a radio group. A variable holds only strings, so there
+empty is ``""``:
+
+.. code-block:: python
+
+   name = bs.Signal("Ada", allow_empty=True)
+   bs.TextField(textsignal=name)
+   name.clear()
+   name()              # "" — this signal is the field's variable
+
+   pick = bs.Signal("1", allow_empty=True)
+   bs.Select(options=[("One", "1"), ("Two", "2")], signal=pick)
+   pick.clear()
+   pick()              # None — a Select's signal carries the option's value
+
+Both signals hold strings; what differs is where the value lives. Bind that same
+``pick`` signal to a ``bs.Label`` as well and it empties to ``""`` too — it is
+the label's variable now. Prefer a falsiness check — ``if not pick():`` — which
+reads the same either way.
+
+A signal holding a ``set``, as a multi-select ``bs.ToggleGroup`` does, is the one
+exception: it empties to the empty set wherever it is bound, because an empty set
+is a real value of the type rather than a stand-in for one. A falsiness check
+covers that too.
+
+Deriving from a signal that can be empty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``map()`` calls the transform with whatever the source holds, and that includes
+the empty. Handle it, or the transform runs against nothing:
+
+.. code-block:: python
+
+   due = bs.Signal(date(2026, 1, 15), allow_empty=True)
+
+   due.map(lambda d: d.strftime("%b %d, %Y"))              # AttributeError on clear()
+   due.map(lambda d: d.strftime("%b %d, %Y") if d else "")  # correct
+
+**Return a value for the empty case, never** ``None``. A derived signal is an
+ordinary one — nothing declared it able to be empty — so returning ``None``
+raises out of the transform. Return the empty *of the type you are deriving*:
+``""`` above, because the result is text and is bound with ``textsignal=``.
+
+A signal that cannot be empty needs none of this, which is why the earlier
+``map()`` example has no check.
+
+.. note::
+
+   Binding a signal that allows an empty value to a checkbox, switch, toggle
+   button, slider or progress bar raises. Those widgets keep their value in the
+   signal's own variable, and a boolean or numeric variable has no way to hold an
+   empty one — ``False`` and ``0`` are real values, not absent ones. A tristate
+   checkbox is the exception worth knowing about: it *does* have a third state,
+   but it holds that state in the widget rather than in the variable, so a bound
+   signal cannot report it. Read it from the checkbox's ``value``.
+
 Reacting to changes
 -------------------
 
