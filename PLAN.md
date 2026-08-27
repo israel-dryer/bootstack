@@ -1,7 +1,7 @@
 # PLAN — #390 (Signals cannot represent an empty value)
 
 Branch `fix/signal-nullable-390`, off `main` at `028b8392`. Milestone `0.4.0`.
-**Round cap: 3, spent 2.**
+**Round cap: 3, spent 3 — the cap is reached and round 3's record is `REVIEW.md`.**
 
 ⚠ **RE-SCOPED 2026-08-27 BY MAINTAINER DECISION. THIS SUPERSEDES THE PLAN AT `14ea913f`**,
 which designed a `nullable=` parameter that refused every widget-attached binding. Two things
@@ -273,7 +273,18 @@ Each of these is run and recorded in the review, not asserted from here.
   signal stays `5`. Pre-existing (identical with `bs.Signal(0)`); the branch widens its reach.
   ⚠ **NOT FILED — maintainer decision 2026-08-27. Recorded here only. Do not file it as a
   drive-by.**
-- **Round 1 finding 9's behavior half — FILED AS #483 (maintainer decision, 2026-08-27).** A tristate
+- **Round 1 finding 9's behavior half — FILED AS #483, and DISPOSITIONED AS DOCUMENTATION rather
+  than a production fix (maintainer, 2026-08-27), "for now at least".** ⚠⚠ **THE CAUSE IS THE
+  TOOLKIT, MEASURED IN PLAIN `tkinter` WITH NO FRAMEWORK INVOLVED**
+  (`development/probe_483_ttk_alternate_variable.py`): the underlying checkbutton has **no tristate
+  or indeterminate option at all**, and its indeterminate paint is a widget state that is fully
+  orthogonal to the bound variable — it can be set while the variable reads `1`. **So the third
+  state was never a variable concept to lose.** bootstack already surfaces MORE than the toolkit
+  does, because `cb.value` reads the widget and returns `None`. **Do not re-open this as a defect.**
+  The code change that would transcend it — binding boolean controls Python-side the way
+  `ValueSignalMixin` does — is a redesign of what `signal=` means, belongs with #477, and carries
+  the standing *"`value=` ignored when `signal=` is passed"* bug with it. **Shipped docs cover the
+  gotcha:** `docs/widgets/checkbox.rst` and the note in `docs/reference/signals.rst`. A tristate
   `Checkbox` bound to a `Signal` cannot report indeterminate. ⚠ **Measured 2026-08-27, and it
   refines the floor above rather than being covered by it: `bool` DOES have an empty in this
   framework** — `Checkbox(tristate=True).value` is `None` — but the variable reads `'0'` for
@@ -284,11 +295,17 @@ Each of these is run and recorded in the review, not asserted from here.
   `signal=` is passed"* bug: honoring `value=` alone would start a checkbox indeterminate while
   its signal said `False`. ⚠ **`Switch` and `ToggleButton` reject `tristate=` outright, so this
   is about ONE widget, not about `bool`.**
-- ⚠ **THIS BRANCH DOES NOT CLOSE THE SILENT CASE, deliberately.**
-  `bs.Checkbox(tristate=True, signal=bs.Signal(False))` still tells subscribers `False` while the
-  widget reads `None`. Only the `allow_empty=True` spelling gets an error. Rejecting the
-  combination outright was considered and **declined**: it breaks apps that pass both today and
-  only ever use `True`/`False`, which is a strictness change and `0.5.0`'s rule.
+- ⚠⚠ **THE CONSTRUCTION `bs.Checkbox(tristate=True, signal=bs.Signal(False))` IS CORRECT, AND AN
+  EARLIER VERSION OF THIS BULLET CALLED IT A SILENT DEFECT. IT IS NOT.** Measured 2026-08-27: it
+  shows unchecked, `widget.value` is `False` and the signal is `False` — all three surfaces agree,
+  which is exactly what a reader expects. `tristate=True` grants the third state *and* defaults the
+  start to it; a seed — `value=` or `signal=` — overrides the start and keeps the capability,
+  precisely as `bs.Checkbox(tristate=True, value=False)` does. **Do not re-file the construction.**
+  ⚠ **The residue is the RUNTIME step, not the seed:** after `cb.value = None` the checkbox paints
+  indeterminate and reports `None` while the bound signal still says `False`. That is #483's
+  mechanism, and it is where the "select all" pattern lives. Rejecting the combination outright was
+  considered and **declined** — it breaks apps that pass both today and only use `True`/`False`,
+  which is a strictness change and `0.5.0`'s rule.
 - **NEW, measured 2026-08-27, NOT filed:** a signal whose *type* does not suit the widget is accepted
   silently. `bs.Checkbox(signal=bs.Signal('yes'))` realizes a `StringVar` and the two surfaces
   disagree — `widget=False sig='yes'` — today, on `main`, with no `allow_empty` involved
@@ -300,6 +317,15 @@ Each of these is run and recorded in the review, not asserted from here.
   `field.value` still reports `hello`, resyncing only on blur. Pre-existing, not empty-specific
   (it lags a non-empty write identically) and reproduces with an ordinary `bs.Signal`. Same
   shape as #458, which was treated as a defect.
+- **NEW, FILED AS #484 (round 3's one survivor):** every signal the framework creates for the
+  caller is `allow_empty=False` permanently, so `clear()` on one raises *"Pass `allow_empty=True`
+  to `Signal()`"* — a call that is not in the caller's code. ⚠ **Not pre-existing — `clear()`
+  arrives in this branch.** ⚠⚠ **THE FIRST FILING BLAMED `Signal.from_variable()` AND THAT ROUTE
+  IS NOT PUBLICLY REACHABLE** — `RadioGroup`/`ToggleGroup`/`Tabs` use it and expose no public
+  `.signal`. **The reachable population is six widgets** (`TextField`, `PasswordField`,
+  `PathField`, `SpinnerField`, `Slider`, `Checkbox`); the issue is retitled and carries the
+  measurement. `field.clear()` and `signal.set('')` both work, so it is a message defect plus a
+  small verb gap — and for `Slider`/`Checkbox` the refusal itself is right, only the text is wrong.
 - **`Chart`** — the one gate-2 survivor left undecided. Out of scope either way.
 - **#389** (`Form.reset()` / `Form.clear()`). This unblocks it; it does not implement it.
 - **Widening `map()`** (decision 4).
