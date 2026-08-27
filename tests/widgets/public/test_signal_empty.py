@@ -13,6 +13,7 @@ strings, so there it empties to `''`. Three types have no empty member at all â€
 widget whose variable is one of them.
 """
 from datetime import date, time
+from enum import IntEnum
 
 import pytest
 
@@ -456,6 +457,44 @@ def test_a_set_signal_empties_the_same_way_before_it_is_bound(app):
     sig.clear()
 
     assert sig() == set()
+
+
+def test_a_subclass_of_a_native_type_keeps_its_variable(app):
+    """An `IntEnum` is an `int`, and must land on the same variable one does.
+
+    The seed-dispatching `_create_variable` this replaced asked `isinstance`,
+    which catches subclasses. Asking `self._type is int` instead silently sent
+    every `IntEnum` and `int` subclass to a `StringVar`, so `sig()` returned
+    `'1'` where it had returned `1` and `sig() == Color.RED` went from True to
+    False. Measured against `main`, which returns `1`.
+    """
+    class Color(IntEnum):
+        RED = 1
+        BLUE = 2
+
+    sig = bs.Signal(Color.RED)
+    assert type(sig.var).__name__ == "IntVar"
+    assert sig() == 1
+    assert sig() == Color.RED
+
+    sig.set(Color.BLUE)
+    assert sig() == Color.BLUE
+
+
+def test_a_subclass_of_a_native_type_is_native_when_the_type_is_declared(app):
+    """The declared path must answer the way the seeded one does.
+
+    `_is_tk_native_type` had the same identity test as `_create_variable`, so a
+    declared `IntEnum` was treated as an object-mode type while the same value
+    seeded was treated as native.
+    """
+    class Color(IntEnum):
+        RED = 1
+
+    seeded = bs.Signal(Color.RED)
+    declared = bs.Signal(None, allow_empty=True, dtype=Color)
+
+    assert declared._object_mode == seeded._object_mode
 
 
 def test_clearing_a_radiogroup_signal_selects_nothing(app):

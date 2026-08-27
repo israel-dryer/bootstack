@@ -154,8 +154,12 @@ class Signal(Generic[T]):
 
     @staticmethod
     def _is_tk_native_type(dtype: type) -> bool:
-        """`_is_tk_native` for a declared type, where there is no value to test."""
-        return dtype in (bool, int, float, str, set)
+        """`_is_tk_native` for a declared type, where there is no value to test.
+
+        `issubclass`, not identity, so it answers the way `isinstance` does for
+        the same value — an `IntEnum` is a native `int`.
+        """
+        return issubclass(dtype, (bool, int, float, str, set))
 
     def _reconcile(self, value: Any, context: str | None = None) -> Any:
         """Apply the signal's one type rule, widening an `int` into a `float`.
@@ -187,7 +191,7 @@ class Signal(Generic[T]):
         needs no proxy — where `''` is legal only because a `str`'s empty
         happens to be a `str`.
         """
-        if self._type is set:
+        if issubclass(self._type, set):
             return set()
         if self._var is not None and not self._object_mode:
             return ""
@@ -199,13 +203,16 @@ class Signal(Generic[T]):
         # calls for rather than defaulting to a StringVar for the rest of its
         # life. Never hand a bare None to Tk either: it stringifies to the four
         # characters 'None' and the widget displays them.
-        if self._type is bool:
+        # issubclass, not identity: this replaced an isinstance chain, and an
+        # IntEnum has to keep landing on an IntVar the way it did there. bool
+        # is tested first because it is a subclass of int.
+        if issubclass(self._type, bool):
             return tk.BooleanVar(master=self._master, name=self._name, value=value)
-        elif self._type is int:
+        elif issubclass(self._type, int):
             return tk.IntVar(master=self._master, name=self._name, value=value)
-        elif self._type is float:
+        elif issubclass(self._type, float):
             return tk.DoubleVar(master=self._master, name=self._name, value=value)
-        elif self._type is set:
+        elif issubclass(self._type, set):
             empty: Any = set()
             return SetVar(master=self._master, name=self._name,
                           value=value if value is not None else empty)
