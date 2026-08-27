@@ -1,168 +1,256 @@
 # PLAN — #390 (Signals cannot represent an empty value)
 
 Branch `fix/signal-nullable-390`, off `main` at `028b8392`. Milestone `0.4.0`.
-**Round cap: 3.**
+**Round cap: 3, spent 1.**
 
-Cap 3 because this is a minor and it adds public surface (`nullable=`, `Signal.nullable`) on
-the most-used type in the framework. Written before any code.
+⚠ **RE-SCOPED 2026-08-27 BY MAINTAINER DECISION. THIS SUPERSEDES THE PLAN AT `14ea913f`**,
+which designed a `nullable=` parameter that refused every widget-attached binding. Two things
+changed: the concept is now **empty**, not **null**, and the **11 `StringVar`-backed bindings
+accept** instead of refusing. Round 1 (`REVIEW.md`, commit `725b3990`) reviewed the superseded
+design — its findings 1 and 9 carry forward and are folded in below; the rest are moot.
 
-## What the four decisions settle
+⚠ **Round 1's spend was against code this plan replaces.** The cap is left at 3 rather than
+reset, so there are two rounds for substantially new code. If a third is needed on top, that is
+a maintainer call, not this plan's to take.
 
-Answered by the maintainer 2026-08-26, recorded in a **comment** on #390 (its body still reads
-as an open design question — read the comment, not the body).
+## The decisions
+
+Decisions 1–4 were answered by the maintainer 2026-08-26 in a **comment** on #390 (the body
+still reads as an open design question — read the comment). Decisions 5 and 6 were answered
+2026-08-27, in session, and are what re-scoped the branch.
 
 1. **Do it at all?** YES.
-2. **Declared, not automatic** — `Signal(v, nullable=True)` plus a public read-only
-   `Signal.nullable`. Automatic-by-mode cannot cover `int`.
-3. **A field bound to a NON-nullable signal is cleared: keep skipping, silently.** This is the
-   status quo and needs no code — `_to_signal` already returns early on `None`
-   (`field_mixin.py:297`), as does `_from_signal` (`:285`).
-4. **`map()` is unchanged** — the transform is called with `None` and the author guards.
-   Docs-only.
+2. **Declared, not automatic.** Now spelled **`Signal(v, allow_empty=True)`**. Automatic-by-mode
+   cannot cover `int`: `Signal(0)` is Python-authoritative only while unrealized.
+3. **A field bound to a signal that does NOT allow empty is cleared:** keep skipping, silently.
+   Status quo; needs no code.
+4. **`map()` is unchanged** — the transform is called with the source's empty and the author
+   guards. Docs-only.
+5. **A signal that allows empty, bound to a widget that stores the value directly:** accept
+   where the backing variable has an empty member, refuse where it does not. **Replaces the
+   superseded plan's blanket refusal.**
+6. **The eligible set widens now**, in this branch, to all 11 `StringVar`-backed bindings.
 
-## Baseline — measured on this branch before any change
+## Why "empty" and not "null"
 
-`development/probe_390_nullable_baseline.py`, Windows box, `py -3.12`:
-
-```
-Signal(date).set(None)         RAISES TypeError: Expected date, got NoneType
-Signal(0).set(None)            RAISES TypeError: Expected int, got NoneType
-Signal(None) constructs, type  <class 'NoneType'>          <- already spellable, already useless
-
-realization, by binding
-   NumberField(signal=)        realized=False  object_mode=False
-   DateField(signal=)          realized=False  object_mode=True
-   Checkbox(signal=)           realized=True   object_mode=False
-   TextField(textsignal=)      realized=True   object_mode=False
-
-the regression
-   DateField cleared           field=None  signal=date(2024,5,5)  subscribers_saw=[]
-
-map()
-   guarded   .map(lambda d: … if d else "")   derived type str
-   unguarded .map(lambda d: d.strftime(…))    RAISES AttributeError on a None source
-```
-
-⚠ **ONE RECORDED MEASUREMENT ON #390 IS WRONG AND THE CORRECTION WIDENS THE HAZARD.** The
-issue body says `IntVar.set(None) -> TclError`. Measured in plain tkinter:
+**Not a naming preference — `empty` is the vocabulary the framework already speaks, and
+`nullable` was the odd one out.** `clear()` ships on nine field widgets today and already means
+one verb with a type-dependent spelling:
 
 ```
-IntVar       set OK; raw tcl='None'; get -> TclError: expected floating-point number but got "None"
-DoubleVar    set OK; raw tcl='None'; get -> TclError: expected floating-point number but got "None"
-BooleanVar   set(None) RAISES TypeError
-StringVar    set OK; raw tcl='None'; get -> 'None'
+TextField.clear()    ->  value = ""
+NumberField.clear()  ->  value = None   # docstring: "not 0 - so a cleared required field still reads as blank"
+DateField.clear()    ->  value = None
 ```
 
-**Only `BooleanVar` fails at write.** `IntVar` and `DoubleVar` accept `None`, store the literal
-`'None'` in Tcl, and detonate at an arbitrary later `.get()` — which may be in a different
-widget, a different callback, or a repaint. **So the corruption path is three var types out of
-four, and two of them are delayed-action.** This is the measurement that decides the design
-below; it is why `None` must never reach a realized signal rather than merely being discouraged.
+So the widgets already agree that *empty* is a single concept realized differently per type.
+`nullable=True` invented a second, narrower one — "can hold `None`" — and three measurements
+say that narrower promise was never keepable across the surface:
 
-## The fifth question, which the four decisions do NOT cover
+**The value type does not decide what can be empty; the binding does.**
+`development/probe_390_granularity.py`, arm A — both rows are `str`:
 
-**What happens when a nullable signal is bound to a widget that takes the Tk variable?**
+```
+TextField(textsignal=)     str  realized=True   allow_empty -> BIND RAISES
+Select(signal=) str keys   str  realized=False  allow_empty -> set(None) OK, widget=None
+```
 
-`ValueSignalMixin` syncs in pure Python and never touches `.var`, so `DateField(signal=)`,
-`NumberField(signal=)`, `TimeField(signal=)`, `Select(signal=)` and `SelectButton(signal=)` —
-every binding nullability exists to serve — stay **unrealized**. `Checkbox(signal=)` and
-`TextField(textsignal=)` **are** the widget's variable, and there `None` takes the corruption
-path above.
+**`None` cannot round-trip a realized native-mode binding.** `__call__` reads the var back
+(`signal.py:188`), so `set(None)` must come back as something the var can hold. The one escape —
+forcing object mode so `_last` stays authoritative — severs the widget→signal direction outright.
+`development/probe_390_object_mode_text.py`:
 
-**Decision taken here: a nullable signal REFUSES TO REALIZE.** `_realize()` raises
-`BootstackError` naming the problem and the fix. Rationale:
+```
+control (native mode)  user types -> call='typed by the user'  subscriber saw it
+object mode            user types -> call='seed'               subscriber told 'seed'
+```
 
-- It cannot break existing code — `nullable=True` does not exist today, so nothing can reach it.
-- The alternative is writing a per-type empty into the var as a display shadow, and **per-type
-  empties were already considered and rejected on #390** (`empty(int)=0` contradicts the shipped
-  `NumberField.clear()` decision, `empty(bool)=False` collapses tristate). It also cannot work
-  for `BooleanVar`, which raises at write.
-- The failure is loud, immediate and at the binding site, instead of a `'None'` string surfacing
-  later somewhere else.
-- Text-space and boolean widgets do not need it: a text field's empty is `''` and a checkbox's
-  is `False`, both representable already.
+**And the framework already conflates the two spellings.** `TextField.value` returns `None` for
+an empty field while its bound signal returns `''` — measured, today, with no `allow_empty`
+anywhere (`development/probe_390_empty_string_null.py`, Q1).
 
-⚠ **This is a call made in this plan, not one handed down. It is flagged for the maintainer.**
-If the answer is "allow it and shadow the var" instead, §2 and §4 change and the tests with them.
+Under `nullable=`, a text signal going to `''` on `set(None)` is a lie. Under `allow_empty=`, it
+is exactly what was promised.
+
+⚠ **This is NOT the per-type-empties proposal #390 rejected.** That one was `empty(int) = 0` and
+`empty(bool) = False`, which contradict the shipped `NumberField.clear()` decision and collapse
+tristate. Here the empty is `None` everywhere **except** where the toolkit can only hold a
+string, and `''` is a real member of `str` rather than a repurposed in-band value. **Do not read
+the rejection as covering this.**
+
+## The floor that does not move — three types have no empty member
+
+Measured in plain tkinter, `development/probe_390_no_empty_member.py`:
+
+```
+StringVar   set('')   OK    raw ''      -> ''            <- a real, legal value
+BooleanVar  set('')   RAISES TclError: expected boolean value but got ""
+BooleanVar  set(None) RAISES TypeError
+DoubleVar   set('')   OK    raw ''      -> get() RAISES TclError
+DoubleVar   set(None) OK    raw 'None'  -> get() RAISES TclError
+IntVar      set('')   OK    raw ''      -> get() RAISES TclError
+```
+
+⚠ **The `DoubleVar`/`IntVar` rows are the dangerous ones and they are why this must raise rather
+than degrade.** No error at the write, then a `TclError` at an arbitrary later `.get()` — a
+repaint, another widget's callback — **fired inside a Tk trace, where Python cannot see it.**
+That is the invisible-failure channel, not a crash anyone would find in testing.
+
+And the Python types have nothing to fall back on: `str` has `''`; `bool` has only `True`/`False`,
+where `False` means *off*, not *unset* (collapsing them is #358's tristate); `float` has none,
+since `0.0` is a real slider position.
+
+**So `Checkbox`, `Switch`, `ToggleButton`, `Slider` and `ProgressBar` refuse, under every option
+considered.** This is a property of the toolkit, not a policy. The only real fix is to bind them
+Python-side the way `ValueSignalMixin` does, which changes what `signal=` means on boolean
+controls — out of scope, and it is round 1's finding 9.
+
+## Where emptiness lands — the census
+
+`development/probe_390_signal_census.py`: **24 public widgets take a signal. 16 realize** (the
+Signal *is* the widget's Tk variable), **8 stay pure Python.**
+
+| group | count | disposition |
+|---|---|---|
+| pure-Python bindings (`ValueSignalMixin`) | 8 | `NumberField`, `DateField`, `TimeField`, `Select`, `SelectButton` **accept** — the five #390 was moved onto `0.4.0` for. `TextArea`, `CodeEditor` accept trivially (their empty is `''` and always was). `Chart` undecided, out of scope |
+| realized, `StringVar`-backed | 11 | **ACCEPT — this is the widening.** `TextField`, `PasswordField`, `PathField`, `SpinnerField`, `RadioGroup`, `ToggleGroup`, `Radio`, `RadioToggleButton`, `Label`, `Button`, `MenuButton` |
+| realized, `BooleanVar`/`DoubleVar`-backed | 5 | **REFUSE.** `Checkbox`, `Switch`, `ToggleButton`, `Slider`, `ProgressBar` — the floor above |
+
+⚠ **`RadioGroup` and `ToggleGroup` were the superseded plan's named near-miss, shelved onto
+#369.** They come in for free here: measured, `signal.set('')` leaves them with nothing selected
+and does not raise (`development/probe_390_stringvar_empty.py`). **#369 no longer needs to hold
+them.**
 
 ## The change
 
 ### 1. `src/bootstack/signals/signal.py`
 
-- `__init__(self, value, name=None, master=None, *, nullable=False)`. Keyword-only, so no
+- **`__init__(self, value, name=None, master=None, *, allow_empty=False)`.** Keyword-only, so no
   positional call site can be affected.
-- **Type inference when seeded `None`.** `Signal(None, nullable=True)` has **no type yet** —
-  `_type` stays `None` and is **locked on the first non-None `set()`**, along with
-  `_object_mode`. `Signal.type` returns `None` while undetermined. This is what makes
-  `bs.Signal(None, nullable=True)` — the spelling the #386 reporter's `clear_form` needs —
-  work at all.
-- `set()`: accept `None` when `self._nullable`; otherwise the existing guard is untouched.
-  A `None` on a nullable signal stores `_last = None` and notifies subscribers directly.
-- `_realize()`: raise `BootstackError` when `self._nullable`.
-- `nullable` read-only property.
-
-⚠ **`Signal(None)` WITHOUT `nullable=True` is left exactly as it is** — it constructs with
-`_type = NoneType` and every `set()` raises. It is useless but it is **existing behavior**, and
-making it raise is a strictness change, which is `0.5.0`'s rule, not this branch's. **File it,
-do not fix it here.**
+- **`Signal.allows_empty`** — read-only property. Spelled as a question because it is read in
+  conditions (`if signal.allows_empty:`), while the keyword is spelled as an instruction. The
+  mismatch is deliberate; it is recorded here so a review does not "harmonize" it.
+- **`Signal.clear()`** — sets the signal to its type's empty. Literally
+  `self.set(self._empty_value())`, with no special cases: on a `str` signal that is `set('')`,
+  which is legal whether or not `allow_empty` was passed; on a `date` signal it is `set(None)`,
+  which raises unless it was. **That asymmetry is the design, not an oversight** — it is what
+  lets `for s in signals: s.clear()` read the same across a mixed form.
+- **`_empty_value()`** — `'' if self._type is str else None`. Internal.
+- **`set()`** — `None` is accepted when `allow_empty`, **or when `_type is NoneType`** (round 1's
+  finding 1, kept verbatim: `map()` makes a `NoneType`-typed signal whenever the transform
+  returns `None` for the first value it sees, and `set(None)` there has always been a no-op).
+  An accepted `None` is then **normalized to `_empty_value()`**, so a `str` signal stores `''`.
+- **`_realize()`** — refuse with `BootstackError` **only** when `allow_empty` and the type is
+  `bool`, `int` or `float`. The message names the type and says its variable cannot represent an
+  empty value. Every other type realizes as `StringVar` (or `SetVar`), which can.
+- **Writing the empty into a realized var writes `''`, never `str(None)`.** Without this an
+  object-mode `Label` displays the four characters `None` instead of going blank, which is the
+  exact corruption #390 exists to remove.
+- **Deferred type is unchanged from the superseded plan.** `Signal(None, allow_empty=True)` has
+  `_type is None`, `Signal.type` returns `None`, and the first non-empty `set()` locks both
+  `_type` and `_object_mode`.
 
 ### 2. `src/bootstack/widgets/_core/field_mixin.py`
 
-The two early returns are the whole regression. Both become conditional on the bound signal
-declaring nullability:
+The three seams are unchanged in shape; the predicate is renamed. Push the empty through when
+the bound signal allows it, keep skipping silently when it does not (decision 3).
 
-- `_to_signal` (`:297`) — push `None` through when `self._value_signal.nullable`.
-- `_from_signal` (`:285`) — accept `None` and clear the field when nullable.
-- `_sync_value_set` — same rule, for the programmatic `field.value = None` path.
-
-**A non-nullable signal keeps skipping, silently, exactly as on `0.3.2`** (decision 3).
+- `_to_signal` (`:297`), `_from_signal` (`:285`), `_sync_value_set`.
 
 ### 3. Docs
 
-- `docs/reference/signals.rst:109` — the unguarded `due.map(lambda d: d.strftime(…))` is the
-  only shipped example that breaks on a `None` source. Guard it and state the rule beside it.
-- A short nullability section: what `nullable=True` is for, that it serves value-space field
-  signals, and that binding one to a text or boolean widget raises.
+- `docs/reference/signals.rst:109` — the unguarded `due.map(lambda d: d.strftime(...))` is the
+  only shipped example that breaks on an empty source. Guard it and state the rule beside it.
+- The nullability section becomes an **emptiness** section: what `allow_empty=True` is for, that
+  the empty is `''` for text and `None` otherwise, that `clear()` is the verb, and that the three
+  types with no empty member raise at the binding.
 
 ### 4. CHANGELOG
 
-One bullet under `### Added` in `## [Unreleased]`.
+One bullet under `### Added`, rewritten for `allow_empty=`.
 
-⚠⚠ **AND THE PROMOTION TRAP, WHICH FIRES AT RELEASE TIME.** The `0.4.0` bullets for **#458 and
-#461 currently document the empty-selection exception and link to #390.** That wording is
-correct only while the limitation ships. **If this lands in `0.4.0`, both sentences must come
-out before `## [Unreleased]` is promoted.**
+⚠⚠ **THE PROMOTION TRAP STILL FIRES.** The `0.4.0` bullets for **#458 and #461** were qualified
+in round 1 to say *"Declare the signal `nullable=True` and the clear reaches it"*. **Both now
+name a parameter that will not exist** — they must be swept to `allow_empty=True` in this branch,
+not at promotion time.
 
-## Tests — `tests/widgets/public/test_signal_nullable.py`
+## Tests — `tests/widgets/public/test_signal_empty.py`
 
-1. `test_a_nullable_signal_accepts_none` — `Signal(date(…), nullable=True).set(None)`; value is
-   `None`, subscribers saw `None`.
-2. `test_a_non_nullable_signal_still_raises` — the guard is untouched. The control for 1.
-3. `test_nullable_seeded_none_locks_its_type_on_first_value` — `Signal(None, nullable=True)`
-   has `type is None`, takes a `date`, then rejects an `int`. The monomorphic guarantee is
-   deferred, not abandoned.
-4. `test_clearing_a_bound_field_reaches_a_nullable_signal` — the reported bug, end to end on
-   `DateField`. Fails on baseline with a stale date.
-5. `test_clearing_a_bound_field_still_skips_a_non_nullable_signal` — decision 3, pinned so a
-   later "harmonization" cannot quietly widen it.
-6. `test_binding_a_nullable_signal_to_a_text_field_raises` — the fifth question's answer,
-   pinned with its message.
-7. `test_form_clear_reaches_nullable_signals` — the reporter's actual shape
-   (`form.set({k: None})`).
+Renamed from `test_signal_nullable.py`. Carried over, renamed: the five value-space widgets
+(round 1's finding 3 added `Select` and `SelectButton` to the parametrize — keep both), the
+non-empty-able skip (decision 3), the deferred-type lock, `Form`-shaped `form.set({k: None})`,
+and round 1's `test_a_none_typed_signal_still_no_ops_on_none`, **which must keep passing against
+`main`'s `signal.py` as well as this branch's** — it pins the baseline, not the fix.
 
-**Control, before committing:** revert `src/`, confirm 1, 3, 4, 6, 7 fail, and confirm each
-fails on the **behavior** — a stale value or a missing `None` — not on `TypeError: unexpected
-keyword argument 'nullable'`, which only proves the parameter does not exist yet.
+New, for the widening:
+
+1. `test_clear_on_a_text_signal_stores_the_empty_string` — `Signal('x', allow_empty=True).clear()`
+   gives `''`, not `None`; a bound `TextField` goes blank; the subscriber saw `''`.
+2. `test_set_none_on_a_text_signal_normalizes_to_the_empty_string` — the uniform-clearing path.
+3. `test_clearing_a_radiogroup_signal_selects_nothing` — the #369 near-miss, pinned.
+4. `test_an_empty_text_signal_renders_blank_not_the_word_none` — asserts the **var contents**, the
+   thing a user would see. This is the corruption test; it is the reason `''` is written rather
+   than `str(None)`.
+5. `test_binding_an_empty_signal_to_a_checkbox_raises` / `..._to_a_slider_raises` — the floor,
+   pinned with its message and naming the type.
+6. `test_clear_needs_no_declaration_on_a_text_signal` — `Signal('x').clear()` works;
+   `Signal(date(...)).clear()` raises naming `allow_empty`. The asymmetry, pinned so it is not
+   "simplified" away.
+
+**Control, before committing:** revert `src/bootstack/widgets/_core/field_mixin.py` **only** (not
+all of `src/`, which fails every test at the constructor and proves nothing), confirm the
+field-clearing tests fail **on the behavior** — a stale value, or `''` where the empty was
+expected — and not on `unexpected keyword argument 'allow_empty'`. Run the signal-level tests
+against `main`'s `signal.py` the same way.
 
 ## Boundary of the completeness claim
 
-`grep -rn "nullable" src/bootstack` returns nothing today, so the name is free.
-`grep -rn "_object_mode\|_realize()" src/bootstack` bounds who is affected by the deferred
-type. The value-space bindings are enumerated by `grep -rn "_bind_value_signal" src/bootstack`.
 Each of these is run and recorded in the review, not asserted from here.
 
-## Out of scope
+- `grep -rn "nullable" src/bootstack tests/ docs/` must return **nothing** when the rename is
+  done — the old name has no reason to survive anywhere.
+- `grep -rn "allow_empty\|allows_empty" src/bootstack` bounds the new surface.
+- `grep -rn "_object_mode\|_realize()" src/bootstack` bounds who is affected by the deferred type.
+- `grep -rn "_bind_value_signal" src/bootstack` enumerates the value-space bindings.
+- The census probe is re-run after the change, so the three-way table above is a measurement at
+  the shipped commit rather than at the planned one.
 
-- `Signal(None)` without `nullable=True` — see §1. **File it.**
-- #389 (`Form.reset()` / `Form.clear()`). This unblocks it; it does not implement it.
-- Widening `map()` in any way (decision 4).
+## Out of scope — file, do not fix
+
+- **#481, already filed** — `Signal(None)` without the flag constructs a signal that can never
+  hold a value.
+- **Round 1 finding 7** — `_push_to_signal`'s `except TypeError: pass` (`field_mixin.py:352`)
+  swallows the mismatch once a deferred type locks to `int`: the field shows `5.5` while the
+  signal stays `5`. Pre-existing (identical with `bs.Signal(0)`); the branch widens its reach.
+  ⚠ **NOT FILED — maintainer decision 2026-08-27. Recorded here only. Do not file it as a
+  drive-by.**
+- **Round 1 finding 9's behavior half — FILED AS #483 (maintainer decision, 2026-08-27).** A tristate
+  `Checkbox` bound to a `Signal` cannot report indeterminate. ⚠ **Measured 2026-08-27, and it
+  refines the floor above rather than being covered by it: `bool` DOES have an empty in this
+  framework** — `Checkbox(tristate=True).value` is `None` — but the variable reads `'0'` for
+  indeterminate and for off *identically*, because the third state lives in the ttk `alternate`
+  widget state (ttk has no tristate option at all). **So the cause is the binding model, not the
+  type**, and the real fix is to bind boolean controls Python-side the way `ValueSignalMixin`
+  does. That fix also carries the missing half of the standing *"`value=` silently ignored when
+  `signal=` is passed"* bug: honoring `value=` alone would start a checkbox indeterminate while
+  its signal said `False`. ⚠ **`Switch` and `ToggleButton` reject `tristate=` outright, so this
+  is about ONE widget, not about `bool`.**
+- ⚠ **THIS BRANCH DOES NOT CLOSE THE SILENT CASE, deliberately.**
+  `bs.Checkbox(tristate=True, signal=bs.Signal(False))` still tells subscribers `False` while the
+  widget reads `None`. Only the `allow_empty=True` spelling gets an error. Rejecting the
+  combination outright was considered and **declined**: it breaks apps that pass both today and
+  only ever use `True`/`False`, which is a strictness change and `0.5.0`'s rule.
+- **NEW, measured 2026-08-27, NOT filed:** a signal whose *type* does not suit the widget is accepted
+  silently. `bs.Checkbox(signal=bs.Signal('yes'))` realizes a `StringVar` and the two surfaces
+  disagree — `widget=False sig='yes'` — today, on `main`, with no `allow_empty` involved
+  (`development/probe_390_type_mismatch.py`). **Pre-existing and NOT introduced by the widening**;
+  it is why a deferred-type signal reaching a `Checkbox` is the same known gap rather than a new
+  hole. Belongs with #369/#383's family.
+- **NEW, FILED AS #482:** a field's `value` lags a programmatic signal write until the next
+  commit. `bs.TextField(textsignal=sig)`, `sig.set('world')` — the entry shows `world` while
+  `field.value` still reports `hello`, resyncing only on blur. Pre-existing, not empty-specific
+  (it lags a non-empty write identically) and reproduces with an ordinary `bs.Signal`. Same
+  shape as #458, which was treated as a defect.
+- **`Chart`** — the one gate-2 survivor left undecided. Out of scope either way.
+- **#389** (`Form.reset()` / `Form.clear()`). This unblocks it; it does not implement it.
+- **Widening `map()`** (decision 4).

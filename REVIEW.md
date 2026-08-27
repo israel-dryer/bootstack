@@ -2,12 +2,25 @@
 
 ---
 
-# ★ READ FIRST — state of play, 2026-08-26. THE BRANCH IS PAUSED ON A MAINTAINER DECISION.
+# ★ READ FIRST — THIS RECORD REVIEWED A DESIGN THAT HAS SINCE BEEN REPLACED. 2026-08-27.
 
-**Nothing is committed.** Working tree carries the branch commit `6491fd3c` plus round 1's
-fixes, unstaged: `signal.py`, `test_signal_nullable.py`, `CHANGELOG.md`,
-`docs/reference/signals.rst`, and untracked `REVIEW.md` + six probes in `development/`.
-**Suite 1598 passed / 22 skipped, 33 legs, exit 0. Docs clean-build `-W` exit 0.**
+**Round 1 reviewed the `nullable=` design and its findings were committed (`5352d9b9`,
+`725b3990`). The branch was then RE-SCOPED by maintainer decision on 2026-08-27** — the concept
+is now **empty**, not **null** (`Signal(v, allow_empty=True)`, `Signal.clear()`), and the 11
+`StringVar`-backed bindings **accept** where the reviewed design refused all 16. **`PLAN.md`
+carries the new design and the measurements behind it; read that first.**
+
+**What survives from this record:** finding 1 (a `NoneType`-typed signal must keep no-opping on
+`set(None)`) is carried into the new code and still pinned by its own test; finding 9's text fix
+stands and its behavior half is now a *deliberate documented boundary* rather than an
+undocumented one. **Findings 2–8 addressed code or wording that no longer exists.** The
+"Settled" table below is still good history, except that the fifth question's answer — *refuse
+to realize* — now applies only to `bool`, `int` and `float`, not to every binding.
+
+⚠ **A round is still owed and it must be a FRESH session.** `git diff main...HEAD -- src/` is
+non-empty and the code is substantially new. Cap 3 (`PLAN.md`), spent 1.
+
+---
 
 ## Settled — do NOT re-derive or re-propose
 
