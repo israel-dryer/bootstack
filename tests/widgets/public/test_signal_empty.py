@@ -559,6 +559,23 @@ def test_binding_an_empty_signal_to_a_slider_raises(app, make_signal):
         bs.Slider(signal=make_signal(), parent=app)
 
 
+def test_a_subclass_of_a_refused_type_is_refused_too(app):
+    """An `IntEnum` dtype must not slip the guard the plain `int` hits.
+
+    The guard read `self._type in (bool, int, float)`, so a declared `IntEnum`
+    missed it, took an `IntVar` anyway, and reported `sig() == 0` while
+    `allows_empty` said True -- a real value posing as empty, with `clear()`
+    throwing inside a Tk callback afterwards. Same defect as round 2's finding 1,
+    re-entered through a subclass.
+    """
+    class Level(IntEnum):
+        LOW = 0
+        HIGH = 1
+
+    with pytest.raises(BootstackError, match="no way to hold an empty value"):
+        bs.Slider(signal=bs.Signal(None, allow_empty=True, dtype=Level), parent=app)
+
+
 def test_the_refusal_message_names_the_variable_that_cannot_hold_an_empty(app):
     with pytest.raises(BootstackError, match="own bool variable"):
         bs.Checkbox("Agree", signal=bs.Signal(False, allow_empty=True), parent=app)

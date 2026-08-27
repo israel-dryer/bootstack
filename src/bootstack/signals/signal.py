@@ -235,7 +235,9 @@ class Signal(Generic[T]):
         # DoubleVar has no empty member: writing one either raises here or, worse,
         # stores garbage that detonates at an arbitrary later get(), inside a Tk
         # trace where nothing Python can see it.
-        if self._allow_empty and self._type in (bool, int, float):
+        # issubclass, not membership: an IntEnum declared as dtype= is an int and
+        # gets an IntVar below, so an identity test lets it straight past here.
+        if self._allow_empty and issubclass(self._type, (bool, int, float)):
             raise BootstackError(
                 f"A Signal declared allow_empty=True cannot be bound to this widget: it "
                 f"keeps its value in the signal's own {self._type.__name__} variable, and "
