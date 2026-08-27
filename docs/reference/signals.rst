@@ -116,12 +116,9 @@ A transform runs on whatever the source holds, so a source that later
 signal's type is fixed by the first result it produces.
 
 Return a value for the empty case, never ``None``. A derived signal is an
-ordinary signal — nothing declared it able to be empty, so ``None`` is the one
-thing it cannot take. A transform that returns it raises out of the *source's*
-``clear()``, pointing at a keyword you cannot reach for a signal you never
-constructed; and when the same clear arrives from a bound field instead, the
-write is dropped and the derived signal is left holding a value the source no
-longer has. ``if d else ""`` is the whole fix.
+ordinary signal — nothing declared it able to be empty — so a transform that
+returns ``None`` either raises or leaves the derived signal holding a value the
+source no longer has. ``if d else ""`` is the whole fix.
 
 .. _signals-empty:
 
@@ -194,16 +191,10 @@ empty is ``""``:
    pick.clear()
    pick()              # None — a Select's signal carries the option's value
 
-Both signals hold strings; what differs is where the value lives, and ``str`` is
-the only type where it can differ at all — a ``date``, or any other value a
-variable cannot hold natively, always empties to ``None``, and the numeric types
-are refused at the binding outright.
-
-Where it does differ, the variable wins. Bind that same ``pick`` signal to a
-``bs.Label`` as well and the variable owns the value from then on, so it empties
-to ``''`` while the ``Select`` still reports ``None`` — a Tk variable has no way
-to hold ``None``, so nothing can preserve it once one is in play. Prefer a
-falsiness check — ``if not pick():`` — which reads the same in every case.
+Both signals hold strings; what differs is where the value lives. Bind that same
+``pick`` signal to a ``bs.Label`` as well and it empties to ``""`` too — it is
+the label's variable now. Prefer a falsiness check — ``if not pick():`` — which
+reads the same either way.
 
 .. note::
 
