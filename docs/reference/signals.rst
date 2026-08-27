@@ -196,6 +196,11 @@ Both signals hold strings; what differs is where the value lives. Bind that same
 the label's variable now. Prefer a falsiness check — ``if not pick():`` — which
 reads the same either way.
 
+A signal holding a ``set``, as a multi-select ``bs.ToggleGroup`` does, is the one
+exception: it empties to the empty set wherever it is bound, because an empty set
+is a real value of the type rather than a stand-in for one. A falsiness check
+covers that too.
+
 .. note::
 
    Binding a signal that allows an empty value to a checkbox, switch, toggle
