@@ -208,8 +208,16 @@ the bound signal allows it, keep skipping silently when it does not (decision 3)
 
 ### 3. Docs
 
-- `docs/reference/signals.rst:109` — the unguarded `due.map(lambda d: d.strftime(...))` is the
-  only shipped example that breaks on an empty source. Guard it and state the rule beside it.
+- ⚠⚠ **`docs/reference/signals.rst:109` — THIS BULLET WAS WRONG AND ITS FIX WAS REVERSED
+  2026-08-27.** It said the unguarded `due.map(lambda d: d.strftime(...))` *"breaks on an empty
+  source"* and told the branch to guard it. **It does not break: its `due` is an ORDINARY signal,
+  where `clear()` and `set(None)` both raise, so the transform can never see `None`** — measured,
+  the unguarded form survives every legal write. Guarding it added dead code to a teaching example
+  and two paragraphs defending it, which taught that every `map()` needs a falsiness check.
+  **The true rule is narrower: a transform needs a guard when its SOURCE allows empty.** The
+  example is unguarded again and the guard now lives in the emptiness section, on a source that is
+  actually `allow_empty=True`, where the `AttributeError` it prevents is visible. **Do not
+  re-guard the first example.**
 - The nullability section becomes an **emptiness** section: what `allow_empty=True` is for, that
   the empty is `''` for text and `None` otherwise, that `clear()` is the verb, and that the three
   types with no empty member raise at the binding.

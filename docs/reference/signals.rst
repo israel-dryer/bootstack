@@ -106,19 +106,12 @@ signal with ``map()`` and bind it with ``textsignal=``:
 .. code-block:: python
 
    due = bs.Signal(date(2026, 1, 15))
-   due_text = due.map(lambda d: d.strftime("%b %d, %Y") if d else "")
+   due_text = due.map(lambda d: d.strftime("%b %d, %Y"))
 
    bs.Label(textsignal=due_text)      # "Jan 15, 2026", re-derived on every change
 
-The ``if d else ""`` is worth keeping even when the value cannot be empty today.
-A transform runs on whatever the source holds, so a source that later
-:ref:`allows an empty value <signals-empty>` hands it that empty, and the derived
-signal's type is fixed by the first result it produces.
-
-Return a value for the empty case, never ``None``. A derived signal is an
-ordinary signal — nothing declared it able to be empty — so a transform that
-returns ``None`` either raises or leaves the derived signal holding a value the
-source no longer has. ``if d else ""`` is the whole fix.
+A transform runs on whatever the source holds, so one whose source
+:ref:`can be empty <signals-empty>` needs a little more care.
 
 .. _signals-empty:
 
@@ -200,6 +193,27 @@ A signal holding a ``set``, as a multi-select ``bs.ToggleGroup`` does, is the on
 exception: it empties to the empty set wherever it is bound, because an empty set
 is a real value of the type rather than a stand-in for one. A falsiness check
 covers that too.
+
+Deriving from a signal that can be empty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``map()`` calls the transform with whatever the source holds, and that includes
+the empty. Handle it, or the transform runs against nothing:
+
+.. code-block:: python
+
+   due = bs.Signal(date(2026, 1, 15), allow_empty=True)
+
+   due.map(lambda d: d.strftime("%b %d, %Y"))              # AttributeError on clear()
+   due.map(lambda d: d.strftime("%b %d, %Y") if d else "")  # correct
+
+**Return a value for the empty case, never** ``None``. A derived signal is an
+ordinary one — nothing declared it able to be empty — so returning ``None``
+raises out of the transform. Return the empty *of the type you are deriving*:
+``""`` above, because the result is text and is bound with ``textsignal=``.
+
+A signal that cannot be empty needs none of this, which is why the earlier
+``map()`` example has no check.
 
 .. note::
 
