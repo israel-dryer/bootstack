@@ -135,13 +135,16 @@ class Signal(Generic[T]):
         else:
             self._type = type(value)
             self._object_mode = not self._is_tk_native(value)
-        # _last is always the authoritative Python value — before realization it
-        # is the only store; after realization it stays in sync via the bridge.
-        self._last: T = value
         # Tk var and bridge trace — None until the first widget binding.
         self._var: tk.Variable | None = None
         self._trace: _SignalTrace | None = None
         self._bridge_fid: str | None = None
+        # _last is always the authoritative Python value — before realization it
+        # is the only store; after realization it stays in sync via the bridge.
+        # An empty seed goes through _empty_value() for the reason set(None)
+        # does: a set-typed signal's empty is set(), and which of the two doors
+        # the empty arrived through must not change what the signal reads back.
+        self._last: T = self._empty_value() if value is None else value
         # Python-owned subscriber list (int id → callback). The bridge trace fans
         # these out when a widget writes the Tk var; set() notifies them directly
         # while unrealized. Replaces the old one-Tk-trace-per-subscriber model.

@@ -353,6 +353,61 @@ def test_the_value_space_fields_all_report_a_clear(app, name, build, seed):
     assert sig() is None
 
 
+@pytest.mark.parametrize(
+    "name, build, dtype",
+    [
+        ("NumberField", lambda s, p: bs.NumberField(signal=s, parent=p), int),
+        ("DateField", lambda s, p: bs.DateField(signal=s, parent=p), date),
+        ("TimeField", lambda s, p: bs.TimeField(signal=s, parent=p), time),
+        ("Select", lambda s, p: bs.Select(options=_OPTIONS, signal=s, parent=p), str),
+        ("SelectButton",
+         lambda s, p: bs.SelectButton(options=_OPTIONS, signal=s, parent=p), str),
+    ],
+)
+def test_a_field_bound_to_a_signal_that_starts_empty_starts_empty(app, name, build, dtype):
+    """The binding must not overwrite a declared empty with the widget's default.
+
+    The arm above seeds every signal with a VALUE, so it never exercised the
+    other door into the same binding. `_bind_value_signal` read a `None` from
+    the signal as "this signal has nothing to give" and seeded the signal from
+    the widget instead — correct while an empty could not be declared, and wrong
+    the moment it could.
+
+    Four of the five default to `None` themselves, so the write was invisible on
+    them. `NumberField` defaults to `0`, and its arm is the one that fails on
+    the pre-fix build: the field showed `0` and the signal had been silently
+    moved off the empty it was constructed with (#390 round 3).
+    """
+    sig = bs.Signal(None, allow_empty=True, dtype=dtype)
+    field = build(sig, app)
+    app.tk.update()
+
+    assert sig() is None, f"{name}: the binding overwrote the declared empty"
+    assert field.value is None, f"{name}: the field did not start empty"
+
+
+def test_a_set_signal_starts_empty_the_same_way_it_clears(app):
+    """The third door into finding 4's rule, and the seed was going around it.
+
+    A `set`'s empty is `set()` in both stores, so neither realization nor which
+    door the empty came through may move it. `clear()` routes through
+    `_empty_value()`; the constructor stored the raw `None`, so the same signal
+    read `None` when it started empty and `set()` when it was emptied — with
+    `type` answering `set` in both cases (#390 round 3).
+    """
+    started = bs.Signal(None, allow_empty=True, dtype=set)
+    cleared = bs.Signal({"a"}, allow_empty=True, dtype=set)
+    cleared.clear()
+
+    assert started() == set()
+    assert started() == cleared()
+
+    # And the types with no empty member of their own are untouched by that
+    # normalization — their empty stays None.
+    assert bs.Signal(None, allow_empty=True, dtype=str)() is None
+    assert bs.Signal(None, allow_empty=True, dtype=int)() is None
+
+
 def test_a_form_clear_reaches_the_signal(app):
     """The reporter's actual shape — `form.set({key: None})`."""
     sig = bs.Signal(date(2024, 5, 5), allow_empty=True)

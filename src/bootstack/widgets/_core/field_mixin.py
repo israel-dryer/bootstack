@@ -276,7 +276,14 @@ class ValueSignalMixin:
         self._value_syncing = False
 
         current = signal()
-        if current is not None:
+        if current is not None or self._signal_allows_empty():
+            # A declared empty is a value the signal HOLDS, not the absence of
+            # one, so it wins over the widget's default the same way a real
+            # value does. Without the second arm the default is pushed back and
+            # the declared empty is destroyed at construction — invisible on
+            # four of the five value-space fields, whose own default is None
+            # anyway, and visible on NumberField, whose default is 0 (#390
+            # round 3).
             self.value = current
         else:
             self._push_to_signal(self.value)
