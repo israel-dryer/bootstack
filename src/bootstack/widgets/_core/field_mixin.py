@@ -284,7 +284,7 @@ class ValueSignalMixin:
         def _from_signal(v: Any) -> None:
             # An empty value only crosses when the signal declares it can hold
             # one; otherwise the signal has no way to mean "cleared" (#390).
-            if self._value_syncing or (v is None and not self._signal_is_nullable()):
+            if self._value_syncing or (v is None and not self._signal_allows_empty()):
                 return
             self._value_syncing = True
             try:
@@ -296,7 +296,7 @@ class ValueSignalMixin:
             if self._value_syncing:
                 return
             v = self.value
-            if v is None and not self._signal_is_nullable():
+            if v is None and not self._signal_allows_empty():
                 return
             self._value_syncing = True
             try:
@@ -318,13 +318,13 @@ class ValueSignalMixin:
         programmatic value set would otherwise leave the signal stale. Call this
         from the wrapper's `value` setter. A no-op when no signal is bound, while
         a signal↔field sync is in flight, or for an empty value on a signal that
-        is not nullable.
+        cannot hold one.
         """
         if getattr(self, "_value_signal", None) is None:
             return
         if getattr(self, "_value_syncing", False):
             return
-        if value is None and not self._signal_is_nullable():
+        if value is None and not self._signal_allows_empty():
             return
         self._value_syncing = True
         try:
@@ -332,9 +332,9 @@ class ValueSignalMixin:
         finally:
             self._value_syncing = False
 
-    def _signal_is_nullable(self) -> bool:
+    def _signal_allows_empty(self) -> bool:
         """Whether the bound signal can hold an empty value (#390)."""
-        return bool(getattr(getattr(self, "_value_signal", None), "nullable", False))
+        return bool(getattr(getattr(self, "_value_signal", None), "allows_empty", False))
 
     def _push_to_signal(self, value: Any) -> None:
         """Write `value` to the bound signal, reconciling numeric types.

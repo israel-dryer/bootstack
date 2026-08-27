@@ -111,10 +111,10 @@ signal with ``map()`` and bind it with ``textsignal=``:
    bs.Label(textsignal=due_text)      # "Jan 15, 2026", re-derived on every change
 
 The ``if d else ""`` is worth keeping even when the value cannot be empty today.
-A transform runs on whatever the source holds, so a source that later becomes
-:ref:`nullable <signals-empty>` hands it ``None``, and the derived signal's type
-is fixed by the first result it produces. Returning a value of the same type for
-the empty case keeps the derived signal bindable throughout.
+A transform runs on whatever the source holds, so a source that later
+:ref:`allows an empty value <signals-empty>` hands it that empty, and the derived
+signal's type is fixed by the first result it produces. Returning a value of the
+same type for the empty case keeps the derived signal bindable throughout.
 
 .. _signals-empty:
 
@@ -125,23 +125,24 @@ A signal holds one type, decided by the value it is created with — so by defau
 it has no way to say "nothing". A field bound to such a signal keeps its last
 value when it is cleared, rather than reporting the clear.
 
-Pass ``nullable=True`` when the value can also be empty:
+Pass ``allow_empty=True`` when the value can also be empty, and use ``clear()``
+to empty it — the same verb the fields themselves use:
 
 .. code-block:: python
 
-   due = bs.Signal(date(2026, 1, 15), nullable=True)
+   due = bs.Signal(date(2026, 1, 15), allow_empty=True)
 
    bs.DateField(signal=due)
 
-   due.set(None)       # allowed — subscribers receive None
+   due.clear()         # allowed — subscribers are notified
    due()               # None
 
-A nullable signal may also start empty, in which case the first real value
-decides its type. Its ``type`` is ``None`` until then:
+A signal that allows an empty value may also start empty, in which case the first
+real value decides its type. Its ``type`` is ``None`` until then:
 
 .. code-block:: python
 
-   due = bs.Signal(None, nullable=True)
+   due = bs.Signal(None, allow_empty=True)
    due.type            # None
 
    due.set(date(2026, 1, 15))
@@ -155,15 +156,41 @@ Clearing a bound field now reaches the signal, in both directions:
    field = bs.DateField(signal=due)
 
    field.value = None  # due() is None, and subscribers are notified
-   due.set(None)       # the field is emptied
+   due.clear()         # the field is emptied
+
+What "empty" means
+~~~~~~~~~~~~~~~~~~
+
+Empty is ``None`` — except where the signal *is* the widget's own variable, as it
+is for a text field or a radio group. A variable holds only strings, so there
+empty is ``""``:
+
+.. code-block:: python
+
+   name = bs.Signal("Ada", allow_empty=True)
+   bs.TextField(textsignal=name)
+   name.clear()
+   name()              # "" — this signal is the field's variable
+
+   pick = bs.Signal("1", allow_empty=True)
+   bs.Select(options=[("One", "1"), ("Two", "2")], signal=pick)
+   pick.clear()
+   pick()              # None — a Select's signal carries the option's value
+
+Both signals hold strings; what differs is where the value lives. The signal
+always agrees with the widget it is bound to, so comparing ``signal()`` against
+the widget's ``value`` is safe either way. Prefer a falsiness check —
+``if not name():`` — when a helper has to handle both.
 
 .. note::
 
-   ``nullable=True`` is for fields that carry a *typed value* — ``NumberField``,
-   ``DateField``, ``TimeField``, ``Select`` and ``SelectButton``. Binding a
-   nullable signal to a text field or a checkbox raises: those widgets store the
-   value in the signal's own variable, which has no way to hold an empty one. A
-   text field is already empty at ``""``.
+   Binding a signal that allows an empty value to a checkbox, switch, toggle
+   button, slider or progress bar raises. Those widgets keep their value in the
+   signal's own variable, and a boolean or numeric variable has no way to hold an
+   empty one — ``False`` and ``0`` are real values, not absent ones. A tristate
+   checkbox is the exception worth knowing about: it *does* have a third state,
+   but it holds that state in the widget rather than in the variable, so a bound
+   signal cannot report it. Read it from the checkbox's ``value``.
 
 Reacting to changes
 -------------------

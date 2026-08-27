@@ -109,6 +109,14 @@ directly.
    bs.Checkbox("I agree to the terms", signal=agreed)
    agreed.subscribe(lambda v: submit_btn.disabled = not v)
 
+A bound signal carries ``True`` or ``False``, so ``tristate=True`` and
+``signal=`` do not combine. The indeterminate state is held by the checkbox
+itself rather than in the signal's variable, which has only two values — a
+signal bound to an indeterminate checkbox reads ``False``. Read the
+indeterminate state from the checkbox's ``value``, which is ``None`` there. For
+the same reason a signal created with
+:ref:`allow_empty=True <signals-empty>` is refused at the binding.
+
 Custom values
 ~~~~~~~~~~~~~
 
