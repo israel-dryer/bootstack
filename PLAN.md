@@ -130,19 +130,30 @@ them.**
 - **`Signal.allows_empty`** — read-only property. Spelled as a question because it is read in
   conditions (`if signal.allows_empty:`), while the keyword is spelled as an instruction. The
   mismatch is deliberate; it is recorded here so a review does not "harmonize" it.
-- **`Signal.clear()`** — sets the signal to its type's empty. Literally
-  `self.set(self._empty_value())`, with no special cases: on a `str` signal that is `set('')`,
-  which is legal whether or not `allow_empty` was passed; on a `date` signal it is `set(None)`,
-  which raises unless it was. **That asymmetry is the design, not an oversight** — it is what
-  lets `for s in signals: s.clear()` read the same across a mixed form.
-- **`_empty_value()`** — `'' if self._type is str else None`. Internal.
+- **`Signal.clear()`** — sets the signal to its type's empty, through **`self.set(None)`**.
+  ⚠⚠ **SUPERSEDED IN ROUND 2. THIS BULLET USED TO SPECIFY `self.set(self._empty_value())` AND
+  CALL THE RESULTING ASYMMETRY "THE DESIGN, NOT AN OVERSIGHT". IT WAS AN OVERSIGHT.** Passing the
+  empty in means a realized `str` signal receives `''`, a valid `str`, so `set()`'s `value is
+  None` check never runs and **any realized text signal could be cleared with no declaration at
+  all** — round 2's finding 3. Worse, the asymmetry that shipped was not even the one described:
+  it keyed on **realization**, not on type, so `bs.Signal('x').clear()` raised before a binding
+  and succeeded after one. `set(None)` routes through the check, and the rule is now uniform —
+  a signal empties only if it was declared able to.
+- **`_empty_value()`** — `set()` for a `set`-typed signal (the empty set is legal in both stores,
+  so it needs no proxy); otherwise `''` where the value lives in a realized native-mode variable,
+  and `None` elsewhere. Internal. ⚠ **The old spelling `'' if self._type is str else None` is
+  wrong twice** — it misses that the `''` answer belongs to the *binding* rather than the type,
+  and it sent a `set`-typed signal to `''`, which `SetVar` refuses (round 2's finding 4).
 - **`set()`** — `None` is accepted when `allow_empty`, **or when `_type is NoneType`** (round 1's
   finding 1, kept verbatim: `map()` makes a `NoneType`-typed signal whenever the transform
   returns `None` for the first value it sees, and `set(None)` there has always been a no-op).
   An accepted `None` is then **normalized to `_empty_value()`**, so a `str` signal stores `''`.
 - **`_realize()`** — refuse with `BootstackError` **only** when `allow_empty` and the type is
-  `bool`, `int` or `float`. The message names the type and says its variable cannot represent an
-  empty value. Every other type realizes as `StringVar` (or `SetVar`), which can.
+  `bool`, `int` or `float`, **tested with `issubclass`** (`1040a62d` — the identity spelling let a
+  declared `IntEnum` past into an `IntVar`). The message names the type and says its variable
+  cannot represent an empty value. ⚠ **"Every other type realizes as `StringVar` (or `SetVar`),
+  which can" WAS WRONG about `SetVar`:** `SetVar.set('')` raises `Expected set or frozenset, got
+  str`, which is round 2's finding 4. A `set` signal's empty is `set()`, not `''`.
 - **Writing the empty into a realized var writes `''`, never `str(None)`.** Without this an
   object-mode `Label` displays the four characters `None` instead of going blank, which is the
   exact corruption #390 exists to remove.
