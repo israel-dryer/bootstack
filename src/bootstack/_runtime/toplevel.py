@@ -7,6 +7,7 @@ from typing import Any, Callable, Literal, Optional, Tuple
 
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow
+from bootstack._runtime.grab import capture_grab, restore_grab
 
 
 class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
@@ -223,6 +224,14 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         """Show the window and apply modal grab if configured."""
         super().show()
         if self._modal:
+            # Remember who held the grab, and how, so it can be handed back when
+            # this window goes away. Tk drops a grab on destroy but never
+            # restores the one it displaced, so a modal opened from inside
+            # another modal used to leave its opener on screen, still blocking
+            # its caller, holding nothing at all (#444 — #440 fixed the same
+            # defect on the dialog path). Captured BEFORE the grab: once another
+            # window grabs, the previous holder's grab_status() reads None.
+            self._previous_grab = capture_grab(self)
             try:
                 if self._modal == "app":
                     self.grab_set_global()
@@ -231,6 +240,32 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
                 self.focus_set()
             except tkinter.TclError:
                 pass
+            else:
+                self._bind_grab_restore()
+
+    def _bind_grab_restore(self) -> None:
+        """Hand the displaced grab back when this window is destroyed.
+
+        Bound on destroy rather than paired around `block_until_closed()`,
+        because a modal window does not have to block — `show()` followed by a
+        later `destroy()` is an ordinary path, and pairing on the blocking one
+        alone would leave it unfixed. Measured before choosing it: the restore
+        wins its race with Tk's own grab release, so `grab_current()` reads the
+        opener again once the dust settles
+        (`development/probe_444_grab_restore_ordering.py`).
+        """
+        if getattr(self, "_grab_restore_bound", False):
+            return
+        self._grab_restore_bound = True
+
+        def _restore(event: Any) -> None:
+            # <Destroy> fires for every descendant, not just the window.
+            if event.widget is not self:
+                return
+            restore_grab(getattr(self, "_previous_grab", None))
+            self._previous_grab = None
+
+        self.bind("<Destroy>", _restore, add="+")
 
     # -------------------------------------------------------------------------
     # result property + block_until_closed()

@@ -55,7 +55,44 @@ importing back from `dialogs` would be a cycle.
   churn inside #440's tests for no behavioral gain, and gate 2 says test findings are only
   actionable for vacuity or false alarm. **Recorded so a reviewer reads it as a choice.**
 
-## The open question — WHERE to restore. Decide by measurement, not by argument.
+## ✅ The open question is ANSWERED — **B, by measurement.**
+
+`development/probe_444_grab_restore_ordering.py`: the destroy-time restore **wins** its race
+with Tk's own grab release. The `<Destroy>` handler saw the inner window still holding, restored,
+and `grab_current()` read the opener again once the dust settled — holder **and** kind.
+
+```
+outer holds:        ('.!toplevel', 'local')
+inner holds:        ('.!toplevel2', 'local')
+destroy fired       ('.!toplevel2', 'local')
+restore attempted   ('.!toplevel', 'local')
+after the dust:     ('.!toplevel', 'local')   VERDICT: OPTION B HOLDS
+```
+
+**So B ships and the non-blocking gap never opens** — nothing is filed, because nothing is left
+uncovered. `block_until_closed()` is untouched: destroy fires on that path too.
+
+⚠ **The boundary greps came back CLEAN, and one candidate was measured rather than assumed.**
+Every real `grab_set` site now pairs with capture/restore: `datedialog.py:135/140`,
+`dialog.py:477/482`, `toplevel.py:234/265`. The other `grab_set` hits are the capability methods
+themselves and the restore helper's own calls. Of the two outright `grab_release` sites,
+`datedialog.py:381` is explained by its own docstring (it destroys the window), and
+**`contextmenu.py:1423` was suspected as a sibling and is NOT one** —
+`development/probe_444_contextmenu_grab.py` shows `grab_release()` on the menu leaves an outer
+grab untouched, because the menu does not hold it. **Do not re-raise it.**
+
+⚠ **A `Dialog` does NOT now restore twice, and this was measured with a control after the first
+probe silently lied.** `Dialog._create_toplevel` (`dialog.py:515`) builds its `Toplevel` with
+`master`, `window_style` and `transient` and **never passes `modal=`**, so `Toplevel._modal` is
+falsy on the dialog path and `show()`'s grab block never runs — the dialog takes its own grab
+directly at `:478`. The two paths are disjoint. `development/probe_444_double_restore.py`
+reports **1 restore, not 2**. ⚠⚠ **ITS FIRST RUN REPORTED 0, WHICH LOOKED LIKE EVEN BETTER NEWS
+AND WAS A BROKEN SPY:** patching `_runtime.grab.restore_grab` does nothing to a name already
+bound by `from … import` in `toplevel.py`. **Patch where the name is BOUND, not where it is
+defined** — and the probe now carries a control asserting the spy can see a call at all, because
+a no-op patch and a genuine absence are the same reading.
+
+## The question as it stood before the measurement — kept for why B was not assumed
 
 The issue suggests pairing around `show()` and restoring in `block_until_closed()`'s `finally`.
 **That covers only the blocking path**, and a modal `bs.Window` does not have to block: `show()`
