@@ -1,24 +1,144 @@
-# REVIEW — #390 round 1
+# REVIEW — #390 round 2
+
+**Reviewed:** `git diff main...HEAD` in full, not the incremental diff — the design was replaced
+mid-branch (`590bfa87`), so round 1's baseline describes a `nullable=` parameter that no longer
+exists. **Round 1's record is at `725b3990`**; what still binds from it is folded into "Settled"
+below.
+
+**Cap 3 (`PLAN.md`), spent 2.** Seven findings, **all seven reproduced** — verified independently
+by construction before any was acted on, not read off the source. Four were fixed (`d0c0c591`),
+two became docs corrections, one was already dispositioned.
+
+⚠ **The instrument is `development/probe_390_review_round2_verify.py`.** One arm per finding,
+each printing HOLDS or REFUTED. It read `HOLDS` seven times before the fix and now reads REFUTED
+for F1–F4. **Re-run it rather than re-deriving any of this.**
 
 ---
 
-# ★ READ FIRST — THIS RECORD REVIEWED A DESIGN THAT HAS SINCE BEEN REPLACED. 2026-08-27.
+## Findings and dispositions
 
-**Round 1 reviewed the `nullable=` design and its findings were committed (`5352d9b9`,
-`725b3990`). The branch was then RE-SCOPED by maintainer decision on 2026-08-27** — the concept
-is now **empty**, not **null** (`Signal(v, allow_empty=True)`, `Signal.clear()`), and the 11
-`StringVar`-backed bindings **accept** where the reviewed design refused all 16. **`PLAN.md`
-carries the new design and the measurements behind it; read that first.**
+| # | what | verdict |
+|---|---|---|
+| **F1** | **The `_realize()` empty-guard missed every signal seeded empty**, so the exact binding it exists to refuse went through | **HIGH, FIXED** |
+| **F2** | **An empty-seeded signal always realized as a `StringVar`**, so it stopped returning its own type | **HIGH, FIXED** |
+| **F3** | **`clear()` bypassed the `allow_empty` declaration entirely once the signal was realized** | **MEDIUM, FIXED** |
+| **F4** | **A `set`-typed signal emptied to `''`**, which `SetVar` refuses | **MEDIUM, FIXED** |
+| **F5** | **What "empty" means is decided by whether the signal is realized**, so a second binding changes the first one's clear | **MEDIUM — DOCS CORRECTED, MECHANISM KEPT.** See below; it is forced, not chosen |
+| **F6** | **`map()` does not propagate `allow_empty`**, so the guard the docs recommend does not work | **MEDIUM — DOCS CORRECTED.** Decision 4 stands |
+| **F7** | A push the signal's type cannot take is swallowed by `_push_to_signal` | **NO ACTION — already dispositioned.** See below |
 
-**What survives from this record:** finding 1 (a `NoneType`-typed signal must keep no-opping on
-`set(None)`) is carried into the new code and still pinned by its own test; finding 9's text fix
-stands and its behavior half is now a *deliberate documented boundary* rather than an
-undocumented one. **Findings 2–8 addressed code or wording that no longer exists.** The
-"Settled" table below is still good history, except that the fifth question's answer — *refuse
-to realize* — now applies only to `bool`, `int` and `float`, not to every binding.
+### F1 and F2 — one root, and it was in the plan, not just the code
 
-⚠ **A round is still owed and it must be a FRESH session.** `git diff main...HEAD -- src/` is
-non-empty and the code is substantially new. Cap 3 (`PLAN.md`), spent 1.
+`Signal(None, allow_empty=True)` left `_type is None` until the first non-empty `set()`.
+**`self._type in (bool, int, float)` is False while the type is deferred**, so
+`bs.Slider(signal=bs.Signal(None, allow_empty=True))` **built**, and then:
+
+```
+File "...slider.py", line 342, in _value_to_pos
+    ratio = max(0.0, min(1.0, (val - self._minvalue) / span))
+TypeError: unsupported operand type(s) for -: 'str' and 'float'
+```
+
+on stderr from a Tk callback, app still running, `slider.value` returning `''`. **That is verbatim
+the failure `_realize()`'s own comment at `:169-174` says the guard prevents**, reached by the
+spelling the CHANGELOG advertises two sentences before promising a slider binding raises.
+
+⚠ **THE PLAN CONTAINED THIS, NOT ONLY THE CODE.** `PLAN.md` specified both the deferred type and
+the `bool`/`int`/`float` guard, in adjacent bullets, and did not notice they cannot both hold.
+**A design review would have caught it; reading the diff for implementation fidelity would not.**
+
+Second, `_create_variable` dispatched on the **seed**, which is `None`, so it fell through to the
+`else` branch: an empty-seeded signal was a `StringVar` for life. After `set(5)` it reported
+`type is int` while `__call__` returned `'5'`, subscribers received `'7'`, and `clear()` raised
+`Expected int, got str` **out of the signal's own setter**.
+
+**Fixed by replacing deferred inference with a declared `dtype=`** — required when the seed is
+`None` and `allow_empty=True`, honored whenever given, seed checked against it. The full rule and
+the two rejected alternatives (*reject* beside a value seed, *ignore* beside one) are in
+`PLAN.md`; **do not re-propose either.**
+
+⚠ **`Signal.type` is `Type[T]` again.** The deferred design retyped it to `Type[T] | None`, which
+is `0.5.0`'s membership rule; the declared type removes that retype from the branch entirely.
+
+### F3 — the rule was true only where the test looked
+
+`clear()` called `set(self._empty_value())`, and `_empty_value()` returns `''` for a realized
+non-object-mode signal — **a perfectly valid `str`, so `set()`'s `value is None` guard never
+ran.** `bs.Signal("hello")` with no declaration, bound to a `TextField`, cleared successfully.
+
+⚠⚠ **`test_clear_still_needs_the_declaration` asserts *"One rule, whatever the type"* and both of
+its arms were UNREALIZED, so it passed while the rule it states was false.** This is the same
+shape as #476 round 1's durable finding, one turn out: **a test can be green on a broken build
+because the arm that breaks is the arm it does not have.** It has a realized arm now, with a
+precondition asserting the binding realized the signal.
+
+**Fixed by `clear()` calling `set(None)`**, so it routes through the declaration check instead of
+around it.
+
+### F4 — a plan assertion that was not checked
+
+`PLAN.md` says every non-refused type realizes as a `StringVar` *"(or `SetVar`), which can"* hold
+an empty. **`SetVar.set('')` raises `Expected set or frozenset, got str`** — so
+`bs.ToggleGroup(mode="multi", signal=bs.Signal({"a"}, allow_empty=True))` built and `clear()`
+raised out of the caller.
+
+**Fixed by `_empty_value()` returning `set()` for a `set`-typed signal, realized or not** — a
+deliberate departure from the binding-decides rule, because **the empty set is a legal value of
+the type in both stores**, where `''` is legal only because a `str`'s empty happens to be a `str`.
+Pinned on both arms so realization cannot move it.
+
+### F5 — the mechanism is forced by the toolkit, so only the docs were wrong
+
+`_empty_value()` keys on `self._var is not None`, which flips when anything touches `.var`. A
+`Select` bound to `bs.Signal("1", allow_empty=True)` clears to `None`; add `bs.Label(textsignal=)`
+on the same signal and it clears to `''` while `select.value` is still `None`.
+
+⚠ **THE SCOPE IS ONE TYPE, AND WORKING THAT OUT IS WHAT DECIDED THE DISPOSITION.** `''` is
+returned only when realized **and** native-mode. `bool`/`int`/`float` with `allow_empty` are
+refused at realize (F1's guard), `set` is now `set()` either way (F4), and object-mode types like
+`date` always return `None` regardless. **Only `str` can diverge** — the one type a text widget's
+variable and a `Select`'s option values both use.
+
+⚠⚠ **AND IT CANNOT BE FIXED BY MAKING THE PROXY HONEST, WHICH WAS THE OBVIOUS MOVE.** Once a
+native-mode signal is realized, **`None` cannot survive the round trip**: a Tk variable cannot
+hold it, so `set()` writes `''`, the bridge trace reads the var back, and `_last` becomes `''` —
+**even if `_empty_value()` had returned `None`.** So `_var is not None` is not a proxy for "is
+this the widget's variable"; it is the operative condition itself, *"does a Tk variable now own
+this value"*. **A flag set at bind time would change nothing observable. Do not build one.**
+
+**The docs claim was the defect** and it is corrected: *"The signal always agrees with the widget
+it is bound to, so comparing `signal()` against the widget's `value` is safe either way"* was
+false, in `signals.rst` and in the CHANGELOG bullet. Both now name the one case where it cannot
+hold and point at the falsiness check the same passage already recommended.
+
+### F6 — decision 4 is right; the guard it recommends was not
+
+Decision 4: *the transform is called with the source's empty and the author guards.* **The
+recommended guard does not work.** `lambda x: x.isoformat() if x else None` returns `None`, and
+the derived signal from `Signal(transform(self()))` was never declared able to hold one, so
+`src.clear()` raises `Expected str, got NoneType. Pass allow_empty=True to Signal()` — **advice
+the caller cannot act on for a signal they did not construct.** Worse, when the same clear arrives
+through a bound field, `_push_to_signal`'s `except TypeError: pass` swallows it: source reads
+`None`, derived still reads `'2024-05-05'`, no error anywhere.
+
+⚠ **Propagating `allow_empty` into the derived signal is now WORSE, not merely out of scope** —
+the derived signal would need a `dtype` too, and it cannot be known while the source is empty. That
+means `map(transform, dtype=…)`, which is widening `map()`, excluded by `PLAN.md`.
+
+**Docs-only, as decision 4 said, with the rule stated precisely: return a value, never `None`.**
+⚠ The shipped examples were already right (`docs/examples/datefield.py`, `timefield.py` both use
+`if d else ""`); **only the new prose was loose.** The silent half is F7's swallow, not a
+separate defect.
+
+### F7 — already dispositioned, and the branch's claim to that is now stronger
+
+Round 1's finding 7, dispositioned by the maintainer 2026-08-27 as pre-existing and **not to be
+filed**, recorded in `PLAN.md` only. The reviewer re-derived it without that context.
+
+⚠ **What changed: the plan justified it partly as *"the branch widens its reach"*, because
+deferred typing let a field's first write decide the type. With `dtype` that widening is gone** —
+the type is declared at construction, so a mismatch now requires the author to declare a type the
+bound field cannot produce. **The branch no longer widens it at all.**
 
 ---
 
@@ -26,306 +146,57 @@ non-empty and the code is substantially new. Cap 3 (`PLAN.md`), spent 1.
 
 | | |
 |---|---|
-| the four #390 decisions | Answered by the maintainer 2026-08-26 in a **comment** on the issue. Do it; **declared** `nullable=True`, not automatic; a non-nullable signal **keeps skipping silently**; `map()` **unchanged**, the author guards |
-| the fifth question — a nullable signal **refuses to realize** | Made in `PLAN.md`, flagged for the maintainer, and since **corroborated structurally** (below). ⚠ Still wants a formal yes in its general form; **affirmed for boolean controls** on the evidence |
-| tristate `Checkbox` + `signal=` | **Affirmed by the maintainer 2026-08-26: a checkbox does not support an indeterminate or null state with signals.** Consistent with ttk, which has **no tristate option at all** — measured, `[o for o in ttk.Checkbutton(root).keys() if "tri" in o]` is empty, a third value in the variable reads as "not on", and `alternate` is a widget state any variable write clears. **This branch neither caused nor worsened it** — `main` and the branch measure identically, and the seed block has read `if signal is None:` since #360 (`9a695588`) |
-| the `'None'` string as a universal sentinel | **Rejected on measurement**, `development/probe_390_none_sentinel.py`. It is not the crash that kills it — it is that a user typing the ordinary word `None` produces identical bytes, the end user sees `None` on screen, and a swallowed `TclError` returns the **stale** value, which is the bug #390 exists to remove. The illegal-codepoint variant fixes only the collision |
-| per-type empties (`empty(int)=0`, `empty(bool)=False`) | Rejected on #390 before this branch. **Do not re-propose** |
-
-## Why the refusal belongs at `_realize()` and nowhere else
-
-**`None` is representable in Python and provably not in Tcl, so it must stop at the crossing.**
-The Tcl wiki's `null` page puts it as *"everything is a string, which implies that nothing is
-null"*, completed by *"the concept of null requires a separate data type so it cannot be confused
-with any other value."* Python has that separate type; Tcl does not. So this is a property of the
-toolkit, not a limitation waiting to be lifted — it holds on every Tk version and every
-`Variable` subclass.
-
-`_realize()` **is** that crossing, and the crossings are enumerable rather than argued —
-`grep -rn "self\._var = " src/bootstack/signals/signal.py` returns four: `:163` (`_realize`,
-guarded), `:252` (`from_variable`, which sets `_nullable = False` because the var is already the
-widget's), `:179` (`_drop_var` releasing) and `:42` (`_SignalTrace`'s own field, not a `Signal`).
-`_create_variable` has exactly one caller, `:163`. **Two ways in, both closed.**
-
-⚠ **The measured detail that decides it, and it is NOT what #390's body says.** Only `BooleanVar`
-fails at write. `IntVar` and `DoubleVar` **accept** `None`, store the literal `'None'`, and
-detonate at an arbitrary later `.get()` — possibly in another widget, another callback, a
-repaint. `StringVar` displays the four characters. **Three of four corrupt, two with delayed
-action.**
-
-## Where nullability makes sense — the two gates
-
-Census of all 24 public widgets taking a signal, `development/probe_390_signal_census.py`:
-**16 realize** (the Signal *is* the widget's Tk variable), **8 stay pure Python**.
-
-1. **Gate 1, mechanical — is the signal the widget's variable?** If yes, `None` cannot be stored.
-   16 out, on measurement. **A property of the toolkit; it cannot change.**
-2. **Gate 2, semantic — does the value type lack a natural empty member?** Of the 8 survivors:
-   `NumberField`, `DateField`, `TimeField`, `Select`, `SelectButton` pass — `int`/`float`, `date`,
-   `time` and an option key have no empty member. `TextArea` and `CodeEditor` **fail**: their value
-   is text, `''` is already empty, and a second empty adds ambiguity without meaning. **`Chart` is
-   the one genuinely open candidate** — arbitrary render payload, and "no data yet" is a real
-   state. **A design judgment per widget; it could change.**
-
-**The rule is self-maintaining**: a widget whose type has no empty member cannot be bound through
-a Tk variable anyway, so it lands in the eligible set on its own. The five are not a hand-drawn
-list.
-
-⚠ **`RadioGroup` / `ToggleGroup` are the near-miss worth naming.** "Nothing selected" is genuinely
-meaningful and structurally identical to `Select`'s case — but they are realized `StringVar`s
-where unselected is `''`, so they fail gate 1 and would need the same Python-side rebinding a
-tristate `Checkbox` would. **#369 is the home if it is ever wanted.** `Slider` is not a candidate:
-a slider always has a position, and its `value = None` raw `TypeError` is #383's.
-
-## OPEN — what the next session needs answered
-
-1. **Formally affirm the fifth question** (refuse to realize) in its general form. Affirmed for
-   boolean controls; the general yes is not on record.
-2. **Is `Chart` a nullable candidate?** The only gate-2 survivor not decided. Out of scope here
-   either way.
-3. **`docs/widgets/checkbox.rst:102`** claims *"The checkbox and signal stay in sync"*
-   unconditionally, which is measurably false in the indeterminate state (widget `None`, signal
-   `False`, subscriber told `False`). Now that the boundary is **deliberate**, documenting it is
-   correct rather than documenting around a defect. **Two lines, not written.**
-4. **File finding 7?** `_push_to_signal`'s `except TypeError: pass` swallows the mismatch once a
-   deferred type locks to `int`. Pre-existing, widened in reach.
-5. **Finding 9 needs no new issue** — its behavior half is the existing open bug *"`value=`
-   silently ignored when `signal=`/`variable=` also passed (all boolean widgets)"*
-   (`CLAUDE.md:1537`). ⚠ **And nullable signals are the missing half of its fix**: honoring
-   `value=` alone would give a checkbox that starts indeterminate while its signal says `False`.
-6. **Commit approval**, then **round 2 by a FRESH session** — round 1's fixes touch `src/`, so
-   gate 1 owes a round, and this session has now written code.
-
----
-
-Branch `fix/signal-nullable-390` @ `6491fd3c`, reviewed against `main` @ `028b8392`.
-Cap 3 (`PLAN.md`), spent 1. Gate 1: `git diff main...HEAD -- src/` is non-empty (2 files,
-+79/-12), so a round is owed.
-
-## What was measured, not read
-
-Windows box, `py -3.12`, provenance printed on every arm
-(`D:\Development\bootstack\src\bootstack`).
-
-| | |
-|---|---|
-| suite | `py -3.12 tests/run_gui.py` — **1595 passed / 22 skipped, 33 legs, exit 0** as reviewed; **1598** after this round's fixes. `main` measured in the worktree the same way is **1579 / 22**, so the deltas are `+16` and `+19`, exactly what the one new test file collects. `git diff main...HEAD --stat -- tests/` returns that one file and nothing else, which is what bounds it. ⚠ **A first pass summed the legs by hand and got 1596** — one too many, self-consistent, and it would have read as an unexplained test. Sum with `awk`, not by eye |
-| docs | `rm -rf docs/_build && sphinx-build -b html docs docs/_build/html -W --keep-going` — **exit 0**. (A `-n` build warns, all pre-existing; `grep -ci "signals.rst"` over that log returns **0**) |
-| control | `git checkout main -- src/bootstack/widgets/_core/field_mixin.py`, then the new test file: **6 failed on the behavior** (8 after finding 3's fix) — `assert datetime.date(2024, 5, 5) is None`, `assert 5 is None`, `assert datetime.time(9, 30) is None`. Not one failed on `unexpected keyword argument 'nullable'`, which is the failure that would have proved nothing. ⚠ **Reverting only `field_mixin.py` is what makes this control worth running** — reverting all of `src/` would have failed every test at the constructor |
-| baseline | `main` in a worktree, `PYTHONPATH=$W/src` **and** the worktree's absolute script path |
-| probes | `development/probe_390_review_round1.py`, `_round1b.py`, `_round1c.py` |
-
-**The fix does what it claims.** All five value-space widgets clear in both directions —
-`NumberField`, `DateField`, `TimeField`, `Select`, `SelectButton`; field→signal and
-signal→field; and none of the five realizes the signal (`realized=False` on all five), which
-is the precondition the whole design rests on.
-
----
-
-## 1. BLOCKING — `set(None)` on a `NoneType`-typed signal: a silent no-op became a `TypeError`
-
-`src/bootstack/signals/signal.py:278`
-
-The new branch raises whenever the signal is not nullable, without asking whether `None` is
-already the signal's type. Before, `type(None) is self._type` matched at the old guard and the
-call fell through to the equality no-op.
-
-**Reachable with no nullable signal anywhere in the program** — measured on both arms:
-
-```python
-src = bs.Signal(0)
-derived = src.map(lambda v: None)     # derived._type is NoneType
-src.set(1)
-```
-
-```
-main    src.set(1) -> OK, d2 = None
-branch  src.set(1) RAISES TypeError: Expected NoneType, got NoneType. Pass nullable=True
-        to Signal() if this value can be empty.
-```
-
-The raise comes out of the **source's** `set()`, through the subscriber fan-out — so when the
-source is realized it detonates inside a Tk trace instead. The realistic shape is not
-`lambda v: None`; it is `.map(lambda rec: rec.get("email"))` where the first record has no
-email, which types the derived signal `NoneType` and then raises on every later record that
-also has none.
-
-Two smaller things fall out of the same line: the message reads **`Expected NoneType, got
-NoneType`**, and `PLAN.md` §1's claim that `Signal(None)` without `nullable=True` is "left
-exactly as it is" is false — `bs.Signal(None).set(None)` is a no-op on `main` and raises here.
-
-**Minimal change** — raise only when `None` is not already the type:
-
-```python
-if value is None:
-    if not self._nullable and self._type is not type(None):
-        raise TypeError(...)
-```
-
-Falling through lands on the existing `self._last == value` early return, which is exactly the
-baseline. `Signal(None).set(5)` still raises `Expected NoneType, got int`, unchanged.
-
-## 2. SHOULD-FIX — the CHANGELOG contradicts itself inside one release section
-
-`CHANGELOG.md:22` (#461) and `CHANGELOG.md:30` (#458)
-
-Both bullets still say **"A `Signal` cannot hold an absent value yet, which is being decided in
-[#390]"**, three and eleven bullets below the new entry announcing that it can. Unqualified,
-they are wrong for exactly the case a reader would care about. `PLAN.md` §4 and `CLAUDE.md`
-both flag this as a promotion-time trap; deferring it to promotion time is how the trap fires,
-and the branch that makes the sentences wrong is the one that should reword them.
-
-**Minimal change:** qualify both with `nullable=True` and drop the "being decided" clause. The
-skip is still the default (decision 3), so neither bullet is deleted.
-
-## 3. SHOULD-FIX — the parametrized field test covers three of the five it claims
-
-`tests/widgets/public/test_signal_nullable.py:130`
-
-Its docstring says *"Every field that binds a typed value, not display text"* and the
-parameters are `NumberField`, `DateField`, `TimeField`. `Select` and `SelectButton` are
-missing — the two widgets #390 was moved onto `0.4.0` **for**, since #458 and #461 are what
-turned staleness into a regression there, and the two named in the new error message, the
-docs note and the CHANGELOG bullet.
-
-Both work (probe arm A: `widget=None signal=None subscriber_saw=[None]`, and
-`signal.set(None) -> widget=None`), so this is a coverage hole rather than a defect — but it is
-the hole most likely to matter, and it costs two lines.
-
-## 4. NIT — the message names a remedy a derived signal cannot use
-
-`src/bootstack/signals/signal.py:280`
-
-`map()` gives no way to declare the derived signal nullable, and decision 4 rejected propagating
-`None` into it on purpose (a derived signal is usually bound straight to
-`bs.Label(textsignal=…)`, the `StringVar` corruption path). So a transform returning `None`
-produces `… Pass nullable=True to Signal() if this value can be empty` naming a fix the caller
-cannot apply. **No change proposed** — decision 4 settles the behavior and the new docs prose
-teaches the guard. Recorded so it is not re-derived.
-
-## 5. NIT — a property that raises a non-`AttributeError` breaks duck-typing
-
-`src/bootstack/signals/signal.py:154`, consumed at `_core/capabilities/signals.py:36`
-
-`is_signal()` is `hasattr(obj, 'var') and …`, and `hasattr` swallows only `AttributeError`, so
-it now *raises* for a nullable signal instead of answering. Measured: `bs.Label(text=sig)` gives
-the binding `BootstackError` rather than the crafted `TypeError: text= expects a string; pass a
-Signal via textsignal=`. Self-correcting in practice — every mis-binding still lands on a
-message that says `drop nullable=True` — and the alternative (making `is_signal` robust) has
-blast radius well outside this branch.
-
-## 6. NIT — bind-time seeding ignores nullability
-
-`src/bootstack/widgets/_core/field_mixin.py:277`
-
-`current = signal(); if current is not None: … else: self._push_to_signal(self.value)` reads
-`None` as *unseeded*. With nullability, `None` is a value. Measured:
-
-```
-bs.DateField(value=date(2024, 5, 5), signal=bs.Signal(None, nullable=True))
-  -> field=date(2024, 5, 5)  signal=date(2024, 5, 5)
-```
-
-The signal's `None` does not clear the field, while `_from_signal` does. Defensible — an
-explicit `value=` is the more specific instruction — but asymmetric and undocumented.
-
-## 7. NOTE, FILE IT — the deferred type locks on the first keystroke and the mismatch is swallowed
-
-`src/bootstack/widgets/_core/field_mixin.py:352` (`except TypeError: pass`)
-
-```
-bs.NumberField(signal=bs.Signal(None, nullable=True))
-  value = 5     -> signal_type=int  signal=5
-  value = 5.5   -> signal_type=int  signal=5    field=5.5
-```
-
-Silently stale, which is the failure #390 exists to remove. **Pre-existing** — the control with
-`bs.Signal(0)` is identical (signal stuck at `0` while the field shows `5.5`) — so it is out of
-scope here. What the branch changes is reachability: with the deferred-type spelling the author
-never chose `int`; the first value entered chose it.
-
-## 8. NIT — docs
-
-`docs/reference/signals.rst:207` — `shout = name.map(str.upper)` sits 98 lines below new prose
-saying the empty-case guard is *"worth keeping even when the value cannot be empty today"*. Safe
-as written (a non-nullable `str` source can never hand it `None`), so no change required.
-
----
-
-## Not findings — checked and cleared
-
-- **Every value-space binding stays unrealized**, so the `_realize()` refusal cannot fire on the
-  five widgets nullability exists for. Measured on all five, not inferred.
-- **`_push_to_signal` with a deferred type** — `target = getattr(signal, "_type", None)` is
-  `None`, the reconciliation is skipped, and `set()` locks the type. Correct.
-- **The async `<<Change>>` re-entry** — `_from_signal` sets `_value_syncing`, and the `when="tail"`
-  `<<Change>>` that lands after it clears pushes a value the signal already holds, so `set()`'s
-  equality check absorbs it.
-- **`_signal_is_nullable()` defaults to `False`** for a signal-like object without the attribute
-  (`Signal.from_variable`, a foreign duck), so the old behavior is what a non-`Signal` gets.
-- **The em-dash in the new `BootstackError`** is house style — `data/base.py:521`,
-  `memory_source.py:202` and a dozen others do the same.
-- **`Signal.type` retyping to `Type[T] | None`** is a public retype, `0.5.0`'s rule — but it only
-  widens, for a spelling that did not exist before, and `0.4.0` is a minor already. Same
-  disposition the maintainer gave #460.
-
-## 9. SHOULD-FIX — "a checkbox is already empty at `False`" is false for a tristate checkbox
-
-`src/bootstack/signals/signal.py:160`, `docs/reference/signals.rst`, `CHANGELOG.md:15`
-
-All three said a checkbox does not need nullability because its empty is `False`. A **tristate**
-`Checkbox` reports indeterminate as `.value is None` (`boolean_controls.py:154`), so its empty is
-`None`. Measured:
-
-```
-tristate Checkbox, signal=bs.Signal(False):
-   value = True   -> widget=True   signal=True
-   value = None   -> widget=None   signal=False    <- the two surfaces disagree
-   subscriber saw: [True, False]
-   sig.set(None)  -> TypeError: Expected bool, got NoneType. Pass nullable=True ...
-   nullable=True at the binding -> BootstackError
-```
-
-Sharper than the `Select` case #390 was moved for: there the signal goes stale, here a subscriber
-is affirmatively told `False` while the widget reads `None`. And the new hint chain leads to a
-dead end — the `TypeError` points at `nullable=True`, which the binding then refuses.
-
-**The design decision is not what is wrong.** Indeterminate is carried in the ttk `alternate`
-state, not in the variable — `_apply_value` writes the *off* value and then flags the state
-(`boolean_controls.py:129`) — and the variable is a `BooleanVar`, which raises on `set(None)`.
-Realizing a nullable signal here could not carry the state either; it would raise at a different
-moment. **Fixed the text only:** the false clause is gone from the error message, the docs note and
-the CHANGELOG bullet. Per `feedback_docs_dont_document_around_defects`, no caveat was added in its
-place.
-
-**The underlying gap is pre-existing and wants an issue.** A tristate `Checkbox` bound to a
-`Signal` cannot report indeterminate, because `signal=` on a boolean control **is** the widget's
-variable. The only real fix is to bind it Python-side the way `ValueSignalMixin` does, which
-changes what `signal=` means on boolean controls — well outside this branch. `Form` already treats
-`None` as a real value here (`_impl/composites/form.py:766`), so `form.set({k: None})` on a
-tristate editor with a signal reaches it too.
-
-⚠ **This was found by the maintainer asking a question, not by the review.** The review repeated
-the plan's "a checkbox's empty is `False`" three times without constructing one.
-
----
-
-## Round 1 fixes — applied
-
-| # | severity | disposition |
-|---|---|---|
-| 1 | blocking | **FIXED.** `signal.py:280` raises only when `self._type is not type(None)`. Pinned by `test_a_none_typed_signal_still_no_ops_on_none`, which **fails on the unfixed branch at `src.set(1)`** and **passes against `main`'s `signal.py`** — both arms run, so it pins the baseline rather than the fix. `probe_map2.py` now reads identically on the two arms |
-| 2 | should-fix | **FIXED.** Both bullets now say *"Declare the signal `nullable=True` and the clear reaches it"* and point at the `Added` entry. Neither is deleted — the skip is still the default (decision 3) |
-| 3 | should-fix | **FIXED.** `Select` and `SelectButton` added to the parametrize, which now carries an explicit `name` so a failure names the widget instead of `<lambda>-seed1`. The control fails 8 |
-| 4, 5, 6, 8 | nit | **NO ACTION**, by the record above. 4 is settled by decision 4; 5 costs more than it saves; 6 is a design call the plan did not scope; 8 is safe as written |
-| 7 | note | **FILE IT.** Pre-existing, widened in reach. Not fixed here |
-| 9 | should-fix | **TEXT FIXED** in all three places. The behavior gap behind it is pre-existing — **FILE IT** |
-
-**Suite after the fixes: 1598 passed / 22 skipped, 33 legs, exit 0.** `1579 + 19`, the file's
-full collected count.
-
-⚠ **One process trap paid for in this round:** `git checkout HEAD -- <path>` to undo a control
-**silently discarded an uncommitted fix in the same file** — `HEAD` is the branch commit, not the
-working tree. The suite still passed, because the fix's own test had not been re-run in the same
-breath. **Stash or copy the file before a `git checkout` control, and re-run the pinning test
-after restoring.**
+| the four #390 decisions | Maintainer, 2026-08-26, in a **comment** on the issue |
+| decisions 5 and 6 (accept where the variable has an empty member; widen to the 11 `StringVar` bindings) | Maintainer, 2026-08-27 |
+| **`dtype` is honored whenever given, not rejected and not ignored** | 2026-08-27. Rejecting breaks the computed seed (`bs.Signal(record.get('due'), allow_empty=True, dtype=date)`, where whether the seed is `None` is **data**); ignoring makes `Signal(5, dtype=str)` an `int` signal, which is the audit's mode 5 |
+| **the seed is CHECKED against `dtype`, never coerced** | Coercing would accept `Signal('5', dtype=int)` at birth while `sig.set('5')` raised forever after — two type policies on one object |
+| **`dtype` takes the type, not `Form`'s string spelling** | `FieldItem.dtype` accepts `'date'` and `date`; a signal's takes only the type. Unifying belongs to the `dtype`/codec follow-up |
+| **F5's mechanism** | Forced by the toolkit, not chosen. **A bind-time flag changes nothing observable** |
+| per-type empties, the `'None'` sentinel string | Rejected before this branch. `725b3990` carries the measurements |
+
+## Notes — gate 2, not fixes
+
+- The refusal tests (`..._to_a_checkbox_raises`, `..._to_a_slider_raises`) exercised **only the
+  value-seeded arm**, which is why F1 survived them. Both are parametrized over `value-seeded`
+  and `starts-empty` now. **The empty-seeded arm fails on the pre-fix build; the value-seeded arm
+  passes on both** — that asymmetry is the whole point of the parametrize.
+- `test_clear_still_needs_the_declaration` — see F3. Vacuity-adjacent under gate 2: it did not
+  pass while the behavior was broken *in general*, it passed while the rule in its own docstring
+  was false.
+- **Control run for the fixes, at the shipped commit:** reverting `clear()` and `_empty_value()`
+  turns exactly the three new assertions red — `DID NOT RAISE`, `Expected set, got str`,
+  `None == set()`, all behavioral, none an `AttributeError` — while the other 37 stay green.
+
+## Suite
+
+**1619 passed / 22 skipped, 33 legs, exit 0** — Windows box, `py -3.12 tests/run_gui.py`,
+`matplotlib` and `pandas` both present. Reconciles as `1579 + 40` against `main`, bounded with
+`git diff main...HEAD --stat -- tests/`, which returns `test_signal_empty.py` and nothing else.
+Docs clean-build warning-free under `-W`.
+
+## Process — the review prompt carried the author's residual doubts
+
+The prompt supplied six labelled doubts and told the reviewer to find what was **not** on the
+list. **Outcome: 3 of the 7 findings originated outside it** (F3, F4, F6). Of the doubts, two
+became findings (F1/F2 from doubt 2, F5 from doubt 1) and one retired itself (doubt 4 — the
+`Signal.type` retype no longer exists). **The anchoring risk the prompt flagged did not
+materialize**, and the count is recorded here because a round that dispositions only the author's
+own list looks thorough and is not.
+
+⚠ **Doubts 3, 5 and 6 are UNEXAMINED, by this round and by round 1** — `set(None)` normalizing
+silently rather than raising; `SpinnerField(textsignal=Signal(1.0, allow_empty=True))` refusing
+while a `str` seed accepts (still true — a `float` seed realizes a `DoubleVar`); and
+`from_variable` forcing `_allow_empty = False`. **Not findings, not cleared either.**
+
+⚠⚠ **THE REVIEWER WAS POINTED AT THE DIFF AND NOT AT `PLAN.md`, AND IT COST A FINDING'S WORTH OF
+ATTENTION.** F7 was re-derived after the maintainer had dispositioned it, and F6's obvious fix had
+been excluded by a decision the reviewer could not see. **This is the mirror of "hand `REVIEW.md`
+to the next reviewer": hand `PLAN.md` too** — the out-of-scope section exists precisely to stop
+this, and it only works if the reviewer reads it.
+
+## If a round 3 is opened
+
+Cap allows one. `git diff d0c0c591^..d0c0c591 -- src/` is non-empty, so a round is **owed** by
+gate 1. The new surface is `dtype=`, `_reconcile()`, `_is_tk_native_type()`, `_create_variable`'s
+dispatch, `clear()` and `_empty_value()`. **Hand over this file and `PLAN.md`.** The three
+unexamined doubts above are the obvious unswept ground.
