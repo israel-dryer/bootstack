@@ -243,7 +243,18 @@ same defect class as round 2's**, one door out (a seed instead of a write) rathe
 and the four items round 2 flagged as unswept all came back clean or unreachable. **That is the
 signature of a branch that is finished, not of one with more in it.**
 
-⚠ **The promotion trap from `PLAN.md` is DISCHARGED and should be checked once more at promotion
-anyway:** `grep -n nullable CHANGELOG.md` is empty, and the #458 and #461 bullets now say
-*"declare it `allow_empty=True` and the clear reaches it"*. **Both must come out entirely when
-`## [Unreleased]` is promoted** — they document a limitation this branch removes.
+⚠ **The promotion trap from `PLAN.md` is DISCHARGED:** `grep -n nullable CHANGELOG.md` is empty,
+and the #458 and #461 bullets now say *"declare it `allow_empty=True` and the clear reaches it"*.
+
+⚠⚠ **AN EARLIER VERSION OF THIS LINE SAID BOTH BULLETS "MUST COME OUT ENTIRELY" AT PROMOTION.
+THAT WAS WRONG AND ACTING ON IT WOULD DELETE ACCURATE SENTENCES.** `allow_empty=True` ships in the
+SAME release, so those tails document the opt-in rather than a removed limitation, and #461's even
+points the reader at the `Signal` entry under `Added`. **The real trap was the earlier `nullable=`
+wording, and it is already swept. Leave both bullets alone.**
+
+⚠ **A SECOND COPY OF F3 WAS MISSED BY THIS ROUND AND FOUND AFTER THE MERGE.** The CHANGELOG's own
+#390 bullet stated the same two-way empty rule the docs did — *"`None` … except … `''`; a falsiness
+check covers both"* — which is wrong for a multi-select's `set` signal. **F3's completeness claim
+was scoped to `signals.rst` and that boundary was never written down**, which is exactly the failure
+this project's own rule names: a completeness claim whose scope is unstated reads as global and gets
+checked as local. Fixed on `main` in `a13b64f3`. **Write the command, not the conclusion.**
