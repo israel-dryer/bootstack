@@ -43,6 +43,27 @@ For each finding:
 The fix step appends to each finding what it actually changed, so the next
 reviewer sees intent, findings, and resolutions.
 
+### Archiving both — BEFORE the PR is opened, not after the merge
+
+Move `PLAN.md` and `REVIEW.md` into `development/` as
+`plan-<issue>-<slug>.md` and `review-<issue>-<slug>.md`, **in the branch, in a
+commit that precedes the PR.** They are the branch's record; `main`'s root
+carries neither.
+
+⚠ **Three branches in a row got the timing wrong.** PR #478 and PR #480 both
+merged them into `main`'s root and archived afterwards, each caught only because
+the next session happened to look; #444 was the first to archive first.
+**Archiving after the merge means `main` briefly ships a root `PLAN.md`
+describing work that is already done, which is worse than finding none.**
+
+⚠ **`git mv` stages the rename of the *indexed* blob.** If you edited the record
+before moving it — and the round's own record is written just before the archive,
+so you did — the edits stay UNSTAGED and `git status` reads `RM`. A plain
+`git commit` then ships the rename at **100% similarity** with a message
+describing content the commit does not contain. **`git add` the moved file after
+the `git mv`, and read `git show --stat`: a 100% rename is a failure whenever you
+meant to change the content.**
+
 ## Review step
 
 Runs at the start of a fresh session.
