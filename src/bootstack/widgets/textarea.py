@@ -151,8 +151,8 @@ class TextArea(PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[str] | None":
-        """The reactive `Signal` bound to this field, or `None`."""
-        return getattr(self._internal, "signal", None)
+        """The reactive `Signal` bound to this field, or `None` if unbound."""
+        return self._internal.signal
 
     @property
     def valid(self) -> "Signal[bool]":

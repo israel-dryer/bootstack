@@ -407,6 +407,11 @@ class TextArea(GridFrame):
         """The internal `_MultilineCore` — for advanced filter/decoration use."""
         return self._core
 
+    @property
+    def signal(self):
+        """The bound Signal, or None if nothing is bound."""
+        return self._core.signal
+
     # ── event subscriptions ───────────────────────────────────────────────
 
     def on_input(self, callback: Callable[[InputEvent], None]) -> str:

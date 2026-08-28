@@ -187,8 +187,8 @@ class CodeEditor(PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[str] | None":
-        """The reactive `Signal` bound to this editor, or `None`."""
-        return getattr(self._internal.core, "signal", None)
+        """The reactive `Signal` bound to this editor, or `None` if unbound."""
+        return self._internal.core.signal
 
     @property
     def valid(self) -> "Signal[bool]":
