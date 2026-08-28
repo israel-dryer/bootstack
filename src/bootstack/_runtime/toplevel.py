@@ -108,6 +108,10 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         # modal level — stored for use in show()
         self._modal = modal
 
+        # Grab handed back when this window is destroyed; see show().
+        self._previous_grab: tuple[Any, str | None] | None = None
+        self._grab_restore_bound = False
+
         # Apply Aqua MacWindowStyle BEFORE any setup that might pump the
         # event loop (icons, geometry, update_idletasks). Tk's docs require
         # the style to be set on a freshly-created, never-mapped window;
@@ -231,17 +235,28 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             # its caller, holding nothing at all (#444 — #440 fixed the same
             # defect on the dialog path). Captured BEFORE the grab: once another
             # window grabs, the previous holder's grab_status() reads None.
-            self._previous_grab = capture_grab(self)
+            #
+            # Captured ONCE. show() is re-callable — show(anchor_to=) re-anchors
+            # an open window and block_until_closed() shows it itself — and a
+            # later capture finds this window already holding the grab, so it
+            # would record the window as its own previous holder.
+            if not self._grab_restore_bound:
+                self._previous_grab = capture_grab(self)
             try:
                 if self._modal == "app":
                     self.grab_set_global()
                 else:
                     self.grab_set()
-                self.focus_set()
             except tkinter.TclError:
                 pass
             else:
+                # Owed because the grab was TAKEN, so bound off the grab alone —
+                # focus gets its own guard rather than standing between the two.
                 self._bind_grab_restore()
+            try:
+                self.focus_set()
+            except tkinter.TclError:
+                pass
 
     def _bind_grab_restore(self) -> None:
         """Hand the displaced grab back when this window is destroyed.
@@ -254,7 +269,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         opener again once the dust settles
         (`development/probe_444_grab_restore_ordering.py`).
         """
-        if getattr(self, "_grab_restore_bound", False):
+        if self._grab_restore_bound:
             return
         self._grab_restore_bound = True
 
@@ -262,7 +277,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             # <Destroy> fires for every descendant, not just the window.
             if event.widget is not self:
                 return
-            restore_grab(getattr(self, "_previous_grab", None))
+            restore_grab(self._previous_grab)
             self._previous_grab = None
 
         self.bind("<Destroy>", _restore, add="+")

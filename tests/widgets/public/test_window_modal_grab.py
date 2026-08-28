@@ -95,6 +95,31 @@ def test_a_modal_window_shown_without_blocking_also_hands_it_back(app):
         root.update()
 
 
+def _close_when_modal(root, win, tries=200):
+    """Close `win` once it actually holds the grab, never on a fixed delay.
+
+    ⚠ #446's lesson, and it cost a flake once already: `show()` pumps the event
+    loop while it builds and positions, so a timer scheduled with a fixed delay
+    can fire on a half-built window. Poll for the barrier instead — here the
+    modal grab, which is the last thing `show()` takes.
+    """
+    state = {"job": None, "timed_out": False}
+
+    def poll(remaining=tries):
+        holder = root.grab_current()
+        if holder is not None and str(holder) == str(win._tk_toplevel):
+            win.close()
+            return
+        if remaining <= 0:
+            state["timed_out"] = True
+            win.close()
+            return
+        state["job"] = root.after(5, poll, remaining - 1)
+
+    state["job"] = root.after(5, poll)
+    return state
+
+
 def test_the_outermost_modal_window_restores_nothing(app):
     """Nothing held the grab, so nothing may be re-grabbed on the way out.
 
@@ -196,3 +221,86 @@ def test_the_helpers_have_one_home_and_the_dialog_path_still_reaches_them():
 
     assert dialog.capture_grab is canonical.capture_grab
     assert dialog.restore_grab is canonical.restore_grab
+def test_a_modal_window_shown_twice_still_hands_the_grab_back(app):
+    """`show()` is re-callable, and the second call must not eat the token.
+
+    `show(anchor_to=...)` re-anchors a window that is already open, so a second
+    `show()` is ordinary use — and at that point the window itself holds the
+    grab. Capturing again there recorded the window as its own previous holder
+    and discarded the opener's, which is #444's symptom reintroduced by #444's
+    fix. Measured before the fix: `after=(None, None)`.
+    """
+    root = app.tk
+    outer = _opener(root)
+    try:
+        win = bs.Window(title="reshown", modal=True, parent=outer)
+        win.show()
+        root.update()
+        win.show()
+        root.update()
+        win.close()
+        root.update()
+
+        assert _grab(root) == (str(outer), "local"), (
+            "a second show() discarded the opener's grab token"
+        )
+    finally:
+        outer.destroy()
+        root.update()
+
+
+def test_a_modal_window_blocked_on_after_being_shown_hands_the_grab_back(app):
+    """The blocking path, which nothing covered — and it calls `show()` twice.
+
+    `block_until_closed()` shows the window itself, so showing it first and then
+    blocking on it drives `show()` a second time. This is the spelling a caller
+    reaches for when the window is put up and only later waited on, and it is
+    where the re-show defect was found.
+    """
+    root = app.tk
+    closer = {"job": None, "timed_out": False}
+    outer = _opener(root)
+    try:
+        win = bs.Window(title="blocked", modal=True, parent=outer)
+        win.show()
+        root.update()
+
+        closer = _close_when_modal(root, win)
+        win.block_until_closed()
+        root.update()
+        assert not closer["timed_out"], "the window never became modal"
+
+        assert _grab(root) == (str(outer), "local")
+    finally:
+        if closer["job"] is not None:
+            try:
+                root.after_cancel(closer["job"])
+            except tkinter.TclError:
+                pass
+        outer.destroy()
+        root.update()
+
+
+class _UnnameableHolder:
+    """A widget whose grab holder cannot be resolved to a Python object.
+
+    tkinter resolves the holder's path name through `_nametowidget`, which
+    raises `KeyError` — not `TclError` — for a window the toolkit created on its
+    own. A posted `ttk::combobox` popdown is a real one:
+    `development/probe_444_review_round1.py --arm keyerror` shows
+    `.!combobox.popdown` holding the grab and the lookup raising.
+    """
+
+    def grab_current(self):
+        raise KeyError("popdown")
+
+
+def test_capture_grab_degrades_to_none_when_the_holder_cannot_be_named():
+    """A holder we cannot address reads as no holder, and must not raise.
+
+    This runs on the SETUP path — `Toplevel.show()` — where a raise escapes into
+    the application, unlike `restore_grab`, which swallows on teardown.
+    """
+    from bootstack._runtime.grab import capture_grab
+
+    assert capture_grab(_UnnameableHolder()) is None

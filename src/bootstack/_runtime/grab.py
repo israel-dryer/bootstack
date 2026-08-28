@@ -30,8 +30,19 @@ def capture_grab(widget: Any) -> tuple[Any, str | None] | None:
     modality (it would block only this application). Reading the kind back from
     Tk rather than assuming it keeps this correct on every window system without
     a platform branch — whatever Tk reported, we hand back.
+
+    A holder this cannot ADDRESS reads the same as no holder at all. Resolving
+    who holds the grab goes through a name lookup that raises for a window the
+    toolkit created on its own — a posted combobox popdown is one — and there is
+    nothing to hand back to a window we cannot name. This runs on the SETUP path,
+    where a raise would escape into the application, so it degrades to `None` and
+    logs rather than propagating.
     """
-    holder = widget.grab_current()
+    try:
+        holder = widget.grab_current()
+    except (AttributeError, KeyError, tkinter.TclError):
+        _log_grab_failure("could not identify the current grab holder")
+        return None
     if holder is None:
         return None
     try:
@@ -43,28 +54,28 @@ def capture_grab(widget: Any) -> tuple[Any, str | None] | None:
 
 
 def restore_grab(previous: tuple[Any, str | None] | None) -> None:
-    """Hand the modal grab back to whatever held it before this dialog took it.
+    """Hand the modal grab back to whatever held it before the caller took it.
 
     Tk releases a grab when the window holding it is destroyed, but it does NOT
     restore the grab that window displaced. So a modal opened from inside
-    another modal — `bs.alert()` from a dialog button command, or
-    `QueryDialog._on_submit` — took the grab over and then dropped it on the
-    floor when it closed. The OUTER dialog was left on screen and still
-    blocking its caller inside `show()`, yet holding no grab at all: the user
-    could click straight back into the main window and drive the app
-    underneath it, against a dialog that was modal in appearance only
-    (issue #440).
+    another modal — `bs.alert()` from a dialog button command, or a
+    `bs.Window(modal=True)` opened from a dialog's "Advanced..." button — took
+    the grab over and then dropped it on the floor when it closed. The OUTER
+    window was left on screen and still blocking its caller, yet holding no
+    grab at all: the user could click straight back into the main window and
+    drive the app underneath it, against something that was modal in appearance
+    only (issue #440 for dialogs, #444 for windows).
 
     Pass the token `capture_grab()` returned. `None` means nothing held the
     grab, which is the outermost case and needs no restore.
 
     A failure here is deliberately swallowed. This runs on a teardown path,
     where the previous holder may itself have been destroyed while the inner
-    dialog was up, or the whole interpreter may be going down — and a dialog
+    window was up, or the whole interpreter may be going down — and something
     that has already closed must not raise on its way out. It is LOGGED rather
     than passed over in silence, because a failed restore is the very defect
-    this function exists to prevent (#440): the outer dialog stays on screen
-    holding nothing.
+    this function exists to prevent: the outer window stays on screen holding
+    nothing.
 
     ⚠ A global restore can fail where a local one cannot — `grab set -global`
     is the call Tk's viewability rule guards, and on X11 it can also lose to
@@ -88,7 +99,7 @@ def restore_grab(previous: tuple[Any, str | None] | None) -> None:
         else:
             holder.grab_set()
     except (AttributeError, tkinter.TclError):
-        _log_grab_failure("could not restore the previous dialog's grab")
+        _log_grab_failure("could not restore the previous grab holder")
 
 
 def _log_grab_failure(message: str) -> None:
