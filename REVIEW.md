@@ -494,3 +494,204 @@ decision:
 ⚠ **Do not re-derive this in round 2 and do not treat the silence as a decision.**
 It is a promotion-time call at the latest, and `0.4.0` is the release that
 promotes it.
+
+---
+
+# REVIEW — #486 round 2
+
+**Branch:** `fix/textarea-signal-binding-486` at `9be33f75`
+**Base:** `main`, merge-base `fdb367cc`
+**Round 2 of 3.** Gate 1 satisfied — `git diff 51631a07..HEAD -- src/` is two
+files, 36 insertions, which is round 1's fix and its second pass.
+**Reviewer session wrote none of this code.** `PLAN.md` and round 1's whole
+record were read first; nothing settled there is re-derived here.
+
+**Verdict: NOTHING BLOCKS. ONE ACTIONABLE TEST DEFECT UNDER GATE 2, and one
+pre-existing divergence that is not this branch's and should be filed.** Every
+production question this round asked came back clean, and three of them were
+measured against `main` so a clean answer means something. **The branch is
+done** — the fix is right, round 1's findings are closed, and what is left is one
+assertion in a test plus an issue to file.
+
+---
+
+## Re-measured independently, not taken from round 1
+
+| | |
+|---|---|
+| suite | **1687 passed / 22 skipped, 33 legs, exit 0** — `py -3.12 tests/run_gui.py`, Windows box, `matplotlib` and `pandas` present |
+| movement | `git diff main...HEAD --stat -- tests/` is **one** new file; `--collect-only` says **26**; `1661 + 26` reconciles from both directions |
+| docs | **clean `-W --keep-going` build after `rm -rf docs/_build`, exit 0**, and both reworded docstrings render — `if unbound` appears in `bootstack.TextArea.html` and `bootstack.CodeEditor.html` |
+| line endings | `file` reports **CRLF** on all three touched sources and on the test file |
+| `CLAUDE.md` | `git diff main...HEAD -- CLAUDE.md` is empty |
+
+⚠ **The docs build is the plan's own verification step and round 1's record never
+claimed it.** It was the one item on the plan's Verification list with no
+measurement behind it. It passes — the gap was in the record, not the branch.
+
+---
+
+## Finding 1 — SHOULD FIX, TEST ONLY: `test_rebinding_leaves_the_previous_signal_alone` passes with the release deleted
+
+`PLAN.md` names the release an invariant — *"Unbinding releases both hooks... or a
+rebind leaves an orphan pushing into a signal nobody is watching. ⚠ This is #479's
+shape"* — and the test named for it cannot see whether that happens.
+
+**The production code is CORRECT.** `development/probe_486_review_round2.py orphan`,
+five rebinds on one widget: **5 bind ids handed out, 0 still in the `<<Change>>`
+script.** No orphans.
+
+**The test would not notice if that stopped being true.** Arm `orphan_control`
+replaces `_unbind_signal` with a copy that keeps the subscription cancel and drops
+only the `off_change`, then runs the test's own body:
+
+```
+orphan bindings left       : 1  *** ORPHANS ***
+second() == 'after rebind' : True
+first()  == 'one'          : True
+test_rebinding_leaves_the_previous_signal_alone would : STILL PASS -- VACUOUS
+```
+
+**Cause, and it is structural rather than an oversight.** `_push_to_signal` is a
+bound method that reads `self._signal` at call time, so an orphaned `<<Change>>`
+binding always pushes into the **current** signal. An orphan therefore can never
+write into the replaced one, which is the only thing the test asserts. What an
+orphan actually costs is a duplicate binding per rebind — a leak, not a wrong
+value — and no value assertion can reach it. **The same argument covers the other
+half:** the control kept `cancel()`, but deleting that would not fail the test
+either, because `first` is never `set` after the rebind.
+
+**Fix: one assertion on the observable that moves.** Capture
+`core._signal_change_bind_id` before the rebind and assert it is gone from
+`core.text.tk.call("bind", str(core.text), "<<Change>>")` afterwards. The probe
+arm is a working version of exactly that.
+
+⚠ **This does NOT cost a round.** The fix is test-only, so gate 1 does not trigger
+round 3 — a test-only commit is self-checked.
+
+**Severity is capped by reach: rebinding is not publicly reachable.** Neither
+wrapper exposes a signal setter or the core, so `bind_signal` can only be called a
+second time from inside the framework. The invariant is worth guarding because the
+plan declared it and #479 is the failure it guards against, not because an
+application can hit it today.
+
+---
+
+## Cleared, with the measurement — do not re-derive these
+
+All from `development/probe_486_review_round2.py`, one arm per process (a second
+`bs.App` in one interpreter cannot resolve its ttk layouts, which turns an arm
+into a `TclError` rather than a result).
+
+- **A rebind releases the previous push binding.** 5 rebinds, 0 orphans, and the
+  control above shows the arm can find one.
+- **Two widgets on ONE signal converge and do not echo.** The dedupe is a
+  per-widget value compare, so a second widget is a new way to build a loop that
+  round 1 could not have seen. 10 alternating writes across two `TextArea`s
+  produced **10 notifications** and ended `sig == a.value == b.value`.
+- **Destroy now releases the subscription, and `main` does not.** Measured on both
+  arms, worktree at `main` with `PYTHONPATH` set and provenance printed:
+
+  | | `main` | branch |
+  |---|---|---|
+  | subscribers before -> after destroy | **1 -> 1 LEAKED** | **1 -> 0** |
+  | `sig.set(...)` after destroy | ***`TclError: invalid command name ".!flexframe...!text_orig"`*** | no exception |
+
+  That is #479's shape closed for these two widgets, and it is the load-bearing
+  half of `test_a_destroyed_widget_stops_receiving_and_raises_nothing` — round 1's
+  note N2 said `assert not seen` is not the assertion that fails, and this is the
+  arm that shows which one does.
+- ⚠ **The widget is still not collected after destroy — and that is NOT this
+  branch's.** `core collected: NO -- pinned` and `composite collected: NO --
+  pinned` are **identical on both arms**; it is the documented `Style._tk_widgets`
+  growth. Recorded because a weakref check run on the branch alone reads as a new
+  leak, and it is not one.
+- **`read_only=True` + a bound signal works in both directions.** Seeded from the
+  signal, a model write reaches the widget, and a programmatic write reaches the
+  signal — read-only blocks *user* edits only, which is the documented contract.
+- **Every PUBLIC write path keeps the signal in step, not just the two the tests
+  drive.** The suite covers `widget.value = ...` and a raw `text.insert`; the
+  wrappers also publish `insert`, `append`, `clear`, `undo` and `redo`. **All five
+  agree with `value` on both widgets** — including `undo`/`redo`, which was the one
+  worth asking about, since an undo that bypassed the redirector would leave the
+  signal stale with nothing to notice it.
+- **The write-back binding cannot wipe its siblings by accident.** `_unbind_signal`
+  calls `off_change` only inside `if self._signal_change_bind_id is not None`, and
+  `off_change(None)` removes **every** `<<Change>>` binding on the Text. That guard
+  is what stands between the two.
+- **The `Text` widget is created once** — `self.text = tk.Text(` appears once in
+  `core.py` — so neither the `<Destroy>` handler nor the push binding can be
+  orphaned by a rebuild.
+- **`docs/widgets/textarea.rst:108` needs no edit.** *"The field and signal stay in
+  sync automatically"*, with a `bs.Label(textsignal=content)` mirror beside it, was
+  **false before this branch and is true after it.** The docs were already
+  describing the contract #486 implements.
+- **The CHANGELOG entry is accurate as written** and headlines the right half
+  (subscribers start firing on user edits).
+
+---
+
+## Out of scope, pre-existing, and worth FILING — a `clear()` never reaches these widgets
+
+`bs.Signal("hello", allow_empty=True)` bound to a `TextArea`, then `sig.clear()`:
+
+```
+before clear : value='hello' sig='hello'
+after  clear : value='hello' sig=None   *** WIDGET IGNORED THE CLEAR ***
+on screen    : 'hello'
+```
+
+The model reads empty and the widget still shows `hello` — measured on screen, not
+only through `.value`. **`_on_signal_change` opens with `if new_value is not
+None`, so an empty arriving from the signal is dropped.**
+
+⚠ **NOT this branch.** Byte-identical on `main` in the same arm. And **not
+specific to these two widgets** — the `TextField` exemplar in the same run keeps
+showing `hello` while its own signal reads `''`, so this is the empty-value
+plumbing rather than the multiline binding.
+
+⚠ **The branch does change the CONSEQUENCE, which is why it is worth writing down
+rather than ignoring.** Before, the signal stayed empty forever. Now the next edit
+pushes the widget's text back and silently un-empties it. That is strictly better
+than a permanent divergence and strictly worse than honoring the clear.
+
+**Recommendation: file it, do not fix it here.** It is adjacent to #484 and #390's
+family but is neither — #484 is a framework-created signal refusing `clear()`;
+this is a caller-created signal accepting it and the widget ignoring the result.
+**Filing is a maintainer call; this record does not open it.**
+
+---
+
+## Notes — recorded, never fixes
+
+**N4. The comment on `_on_destroy` still overstates its own scope.** *"Released for
+any Destroy in this subtree"* — round 1 cleared that there is only ever one,
+because `core.bind()` is overridden to `self.text.bind()`. Unchanged, still
+harmless, still slightly wrong. Named again only so the next reader does not spend
+the measurement a second time.
+
+**N5. A refused bind leaves debris in the layout.** `bind_signal`'s type refusal
+raises after the core is built and gridded, so `bs.TextArea(textsignal=bs.Signal(123))`
+leaves a half-built internal frame attached to its parent before the exception
+escapes. `TextField` refuses at the same point in its own construction, so this is
+family behavior on a path where the application is crashing anyway. **Not a defect,
+and not worth a guard.**
+
+---
+
+## Process
+
+⚠ **`PLAN.md` and `REVIEW.md` are still at the branch root.** Both must be archived
+into `development/` **in the branch, before the PR opens** — that is the one thing
+#444 got right that the two branches before it did not. **`git add` the moved file
+after the `git mv`, and a 100% rename similarity means the content edit was lost.**
+
+⚠ **The deferred CHANGELOG sentence is STILL OPEN and this round did not touch
+it.** The released-line behavior change — a signal write while the placeholder
+shows now updates `value` — has no CHANGELOG line; that was raised and
+deliberately deferred by the maintainer on 2026-08-28. **Silence is not a decision,
+and `0.4.0` is the release that promotes it.**
+
+**Round 2 of 3 spent. Nothing blocking. One test-only fix, which triggers no
+further round under gate 1, and one issue to file. Recommend closing the branch
+after that.**
