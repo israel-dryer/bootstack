@@ -1,33 +1,36 @@
 # ★ HANDOFF — READ THIS FIRST (paused 2026-08-28)
 
-**Branch `fix/modal-window-grab-444`, HEAD `fca6db6f`, off `main` at `a5f2c71d`.**
+**Branch `fix/modal-window-grab-444`, HEAD `e5a0bdd5`, off `main` at `a5f2c71d`. NOT PUSHED.**
 
-⚠⚠ **NOTHING BELOW IS COMMITTED. The round-1 fix lives in the WORKING TREE ONLY.** `git log` stops
-at `fca6db6f`, which is the code round 1 found a blocker in — **the branch's last commit is the
-BROKEN version.** Commits are held for the maintainer under the per-commit-approval agreement;
-they were not withheld by accident.
+✅ **THE FIX IS COMMITTED.** `9d428485` carries round 1's fix step plus both review-stage probes;
+`e5a0bdd5` carries this record. ⚠⚠ **AN EARLIER VERSION OF THIS HEADER SAID "NOTHING BELOW IS
+COMMITTED" AND SAID THE BRANCH'S LAST COMMIT WAS THE BROKEN ONE. BOTH ARE NOW FALSE** — they were
+written while the fix sat in the working tree only, which is exactly what made `fca6db6f` being the
+broken version dangerous. **That is closed; `fca6db6f` is no longer the head.**
 
-⚠ **Run the FILTERED command, not bare `git status`** — `development/` carries ~70 pre-existing
-untracked demo and verify scripts that have nothing to do with this branch, and a bare status buries
-the six lines that matter in eighty:
+⚠ **The branch has NEVER been pushed** — there is no `origin/fix/modal-window-grab-444`. Pushing
+creates the remote branch and was deliberately left to the maintainer.
+
+The working tree should now be clean apart from two deletions that are **NOT this branch's** and
+must not ride any commit on it:
+
+```
+ D memory/feedback_demo_pattern.md
+ D memory/feedback_no_v2_terminology.md
+```
+
+They predate the branch, they are the only two files in the repo's tracked `memory/` folder, and the
+"no v2" one is already carried in the session memory store as `feedback_public_api_naming.md`.
+**Restore them or decide them separately.**
+
+⚠ **Anything else appearing under `git status` is pre-existing noise** — `development/` carries ~70
+untracked demo and verify scripts unrelated to this branch. Filter:
 
 ```
 git status --short -- src/ tests/ PLAN.md REVIEW.md development/probe_444_*
 ```
 
-It should print exactly this:
-
-```
- M PLAN.md                                        <- ONE line: the round count, 0 -> 1
- M src/bootstack/_runtime/grab.py
- M src/bootstack/_runtime/toplevel.py
- M tests/widgets/public/test_window_modal_grab.py
-?? REVIEW.md
-?? development/probe_444_grab_crossplatform.py    <- added 2026-08-28, see the ADDENDUM
-?? development/probe_444_review_round1.py
-```
-
-**If that list differs, find out why before running anything.**
+**That must print NOTHING. If it prints anything, find out why before running anything.**
 
 ⚠ **`git status` ALSO shows two deletions that are NOT this branch's** and must not ride its
 commit: `memory/feedback_demo_pattern.md` and `memory/feedback_no_v2_terminology.md`. They predate
@@ -57,9 +60,9 @@ anything on another platform.
 |---|---|
 | round 1 | **DONE** — 5 findings, all originating outside the author's risk list. Record below |
 | fix step | **DONE** — findings 1-4 fixed, finding 5 deliberately not. Record below |
-| round 2 | **NOT STARTED. Cap is 2, spent 1 — one round left** |
+| round 2 | **DONE 2026-08-28 — NOTHING BLOCKING.** Three notes, no fixes. Record at the end of this file. **Cap is 2, spent 2 — the branch is done under the cap** |
 | suite | **exit 0, 33 legs, 1638 passed / 22 skipped**, measured on the final working tree |
-| commit / PR | **neither.** No commit, no PR, nothing pushed |
+| commit / PR | **committed, NOT pushed, no PR.** `9d428485` (fix + probes), `e5a0bdd5` (this record). No `origin/` branch exists yet — pushing is the maintainer's call |
 | `CLAUDE.md` | **untouched on this branch, deliberately** — handoff state lives on `main` only. `git diff main...HEAD -- CLAUDE.md` is empty and must stay empty |
 | platforms | **Windows + Linux measured; macOS NOT.** See the CROSS-PLATFORM ADDENDUM at the end of this file. Linux: 21 passed, option B holds, and a REAL global grab round-trips as `global` |
 | suite, Linux | **exit 0, 33 legs, 1594 passed / 23 skipped** — WSL box under `xvfb-run` + `xfwm4`, 2026-08-28, against this working tree. ⚠ **Reconciles EXACTLY against the Windows figure and every difference is ENVIRONMENT** (absent `matplotlib`/`pandas`, Xvfb's missing display enumerator) — **none is platform behavior.** Table in the addendum |
@@ -67,26 +70,33 @@ anything on another platform.
 
 ## The next step, and it is not optional
 
-⚠ **ROUND 2 NEEDS A FRESH SESSION. The session that wrote the fix cannot review it** — that is the
-whole point of the boundary. **Hand the reviewer THIS FILE, not just the diff.** Round 1 was handed
-`PLAN.md` and it paid for itself: the plan's out-of-scope list and its A/B measurement kept the
-round off ground the author had already settled.
+✅ **ROUND 2 IS DONE — 2026-08-28, in a fresh session that had written none of this code, handed
+THIS FILE rather than just the diff. NOTHING BLOCKING; three notes, no fixes.** Its record is the
+last section of this file. **Cap 2, spent 2 — the review is closed and the remaining steps are
+archive, push, PR.**
 
-⚠ **The diff a round-2 reviewer wants is NOT `git diff main...HEAD -- src/`** — that range stops at
-the broken commit. It is **`git diff main -- src/`** (working tree against `main`), or
-`git diff -- src/` for the fix step alone.
+⚠ **The boundary paid for itself twice.** Round 1 was handed `PLAN.md` and stayed off ground the
+author had settled; round 2 was handed this file and spent its budget on the one thing neither the
+plan nor round 1 had measured — the CHANGELOG's own scenario, a modal `bs.Window` opened from a real
+`Dialog`, which the tests do not drive.
 
-⚠ **The 2026-08-28 pass does NOT consume the remaining round.** It ran probes and wrote no code, and
-gate 1 says a round is triggered by a non-empty `git diff <range> -- src/` and nothing else. **Cap
-is still 2, still spent 1.**
+✅ **The round-2 range is the NORMAL one now: `git diff main...HEAD -- src/`.** It spans `fca6db6f`
+and `9d428485` together, which is the whole fix. ⚠⚠ **AN EARLIER VERSION OF THIS SECTION WARNED
+AGAINST THAT RANGE AND SENT THE READER TO `git diff main -- src/` INSTEAD** — correct while the fix
+was uncommitted, wrong now. For round 1's fix step alone: `git diff fca6db6f..9d428485 -- src/`.
+
+⚠ **The 2026-08-28 cross-platform pass did NOT consume a round.** It ran probes and wrote no code,
+and gate 1 says a round is triggered by a non-empty `git diff <range> -- src/` and nothing else.
+**Round 2 is the one that spent the second slot.**
 
 ### Four things waiting on the maintainer, none of them a session's call
 
-1. **Round 2** — one round left. A fresh session is the cleaner reviewer; the 2026-08-28 session
-   wrote a probe and formed views on this branch, and although a probe is an instrument rather than
-   reviewed code, it is no longer neutral about the area.
-2. **The two untracked probes should ride the fix commit.** `development/` is tracked and all four
-   plan-stage #444 probes are already in it — see the section on this in the addendum. One `git add`.
+1. ✅ **Round 2 — RAN 2026-08-28 in a fresh session, and found NOTHING BLOCKING.** Record at the end
+   of this file. **Cap 2, spent 2.**
+2. ✅ **The two probes are TRACKED** — they rode `9d428485`, so this item is CLOSED. ⚠ **The
+   addendum's section headed "THE ROUND-1 PROBE IS UNTRACKED" is now HISTORICAL** and describes the
+   state before that commit; it is kept for the reasoning, not as a live instruction. Round 2 added a
+   third, `development/probe_444_review_round2.py`, which is untracked until this round's commit.
 3. **The stray `memory/` deletions** — restore or decide, but keep them off the #444 commit.
 4. **macOS.** The `ordering` arm is safe on that desktop and answers the design question in seconds;
    the global arms briefly grab the screen and need the env gate. Commands in the addendum.
@@ -146,15 +156,15 @@ or for `-m pytest <abs paths> -q` for the two grab files (**21 passed**).
 **The control for the three new tests** — they must fail on the GRAB STATE, not on an import error:
 
 ```
-cp src/bootstack/_runtime/{grab,toplevel}.py <somewhere-outside-the-repo>/   # keep the fix
 git checkout fca6db6f -- src/bootstack/_runtime/grab.py src/bootstack/_runtime/toplevel.py
 py -3.12 -m pytest tests/widgets/public/test_window_modal_grab.py -q        # expect 3 failed, 7 passed
-cp <somewhere-outside-the-repo>/{grab,toplevel}.py src/bootstack/_runtime/  # put the fix back
+git checkout HEAD -- src/bootstack/_runtime/grab.py src/bootstack/_runtime/toplevel.py
 ```
 
-⚠ **Revert the SOURCE only and keep the new tests in place** — that is what makes the failure
-mean something. Reverting both leaves nothing to fail. And ⚠ **copy the fix somewhere OUTSIDE the
-repo first**: it is uncommitted, so `git checkout` over it destroys it with no way back.
+⚠ **Revert the SOURCE only and keep the new tests in place** — that is what makes the failure mean
+something. Reverting both leaves nothing to fail. ⚠⚠ **AN EARLIER VERSION OF THIS BLOCK TOLD YOU TO
+COPY THE FIX OUTSIDE THE REPO FIRST, BECAUSE IT WAS UNCOMMITTED AND `git checkout` WOULD HAVE
+DESTROYED IT.** It is committed now, so `git checkout HEAD -- …` restores it and no copy is needed.
 
 ⚠ **Both probe arms carry their own controls and the record says what each control proves.** The
 `keyerror` arm still shows `_nametowidget raises: KeyError 'popdown'` AFTER the fix — **that is
@@ -650,3 +660,96 @@ exec "$@"
 
 Invoked as `xvfb-run -a -s "-screen 0 1280x1024x24" /tmp/bs_wm.sh <command>`. The WM comes up
 around poll 90-130.
+
+---
+
+# REVIEW — #444 round 2 (`fix/modal-window-grab-444`)
+
+Reviewer session; different sessions wrote the code and the addendum. Range `git diff main...HEAD -- src/`, branch head `e5a0bdd5`, off `main` at `a5f2c71d`. **Round cap 2, spent 2 — this is the last round.**
+
+`REVIEW.md` was read before the diff, as the handoff asked, and `PLAN.md` after it. Round 1's five findings, its fix step, the A/B measurement, the cleared `contextmenu.py:1423` candidate and the disjointness of the dialog and window paths are all taken as settled and are not re-litigated.
+
+## Verdict: NOTHING BLOCKING. Three notes, none of them a fix.
+
+The branch is done under the cap.
+
+## What this round measured, rather than read
+
+**The gap it went looking for: the CHANGELOG's headline scenario is not what the tests drive.** `test_window_modal_grab.py` uses a raw `tkinter.Toplevel` as the opener; the CHANGELOG says *"an 'Advanced…' button on a dialog"*. Dialog and window take their grabs through two different code paths — `dialog.py:478` grabs directly, `Toplevel.show()` grabs through the new capture/restore — and **nothing exercised them against each other.** If the cross-path case were broken, the entry would be describing a fix that does not reach the case it names.
+
+`development/probe_444_review_round2.py`, four arms:
+
+```
+ARM dialog_window   before=('.!toplevel', 'local')    after=('.!toplevel', 'local')     OK
+ARM control         before=('.!toplevel3', 'local')   after=('.!toplevel3', 'local')    OK
+ARM window_dialog   before=('.!toplevel4', 'local')   after=('.!toplevel4', 'local')    OK
+ARM three_deep      depth 2 / 1 / 0                                                     OK OK OK
+```
+
+**And the same probe at `main`'s source, which is what makes the four OKs mean anything:**
+
+```
+ARM dialog_window   before=('.!toplevel', 'local')    after=(None, None)          *** LOST ***
+ARM control         before=('.!toplevel3', 'local')   after=('.!toplevel3', 'local')    OK
+ARM window_dialog   before=('.!toplevel4', 'local')   after=('.!toplevel4', 'local')    OK
+ARM three_deep      depth 2 LOST   depth 1 LOST   depth 0 OK
+```
+
+- **`dialog_window`** — a real modal `Dialog` nests a modal `bs.Window`. LOST before, OK after. **The CHANGELOG's own scenario is fixed, and it was genuinely broken.**
+- **`control`** — the identical stretch with nothing nested, OK on **both** arms. So a LOST row is the defect and not the instrument reporting LOST everywhere.
+- **`window_dialog`** — the reverse direction, OK on **both** arms. Correct and expected: that is #440's path, already fixed in `0.3.1`. **A row that does not move is evidence the probe is reading the right thing, not evidence it is asleep.**
+- **`three_deep`** — three nested modal `bs.Window`s unwound one at a time. Every depth restores its own opener, and the outermost restores nothing. **Depth was never measured before this round.**
+
+⚠ The probe polls for the grab as its barrier rather than firing on a fixed delay (#446), skips and continues per arm, and prints its provenance.
+
+## The control on the new tests — all seven fail at `main`, and four fail on the GRAB STATE
+
+Re-run independently of round 1's record, reverting the source only and keeping the tests:
+
+```
+8 failed, 2 passed
+E  AssertionError: the modal window did not hand the grab back ...
+E  assert (None, None) == ('.!toplevel', 'local')      <- hands_the_grab_back_to_its_opener
+E  assert (None, None) == ('.!toplevel3', 'local')     <- shown_without_blocking
+E  assert (None, None) == ('.!toplevel8', 'local')     <- shown_twice
+E  assert (None, None) == ('.!toplevel10', 'local')    <- blocked_on_after_being_shown
+E  ModuleNotFoundError: No module named 'bootstack._runtime.grab'   (x3, the move tests)
+```
+
+⚠ **The 2 that pass at `main` are supposed to.** `test_the_outermost_modal_window_restores_nothing` and `test_a_non_modal_window_never_touches_the_grab` assert that **nothing happens**, and nothing happened before the fix either. They guard against over-restoring, which is the failure mode that would be worse than the bug — they are not weak tests, they are the other half of the invariant.
+
+## Suite, and it is bounded rather than eyeballed
+
+**Windows box, `py -3.12 tests/run_gui.py`, `matplotlib` and `pandas` both present: exit 0, 33 legs, 1638 passed / 22 skipped.** Reconciles from two directions: `1628 + 10` — `main`'s figure plus this file's ten tests — and `git diff main...HEAD --stat -- tests/` returns **one file, 306 insertions, nothing else**. ⚠ Summed from the per-leg summary lines only; `grep -cE "collected .*skipped"` returns **0**, so no collection line contaminated the total.
+
+**Stability, because a single green run is the expected outcome of a branch with a 1-in-8 flake:** `test_window_modal_grab.py` + `test_dialog_nested_modality.py` run **10 times, 0 failures**. Both round-1 probe arms re-read as recorded — `reshow` **5 restored / 0 lost**, `keyerror` still `_nametowidget raises: KeyError 'popdown'` with `capture_grab -> None`.
+
+## 1. NOTE — one test can pass without the window ever having been modal
+
+`test_a_modal_window_shown_without_blocking_also_hands_it_back` has no precondition that the inner window took the grab. Its sibling `test_a_modal_window_hands_the_grab_back_to_its_opener` has one (`assert root.grab_current() is not outer`). `show()` swallows a failed grab (`except tkinter.TclError: pass`, `toplevel.py:250-251`), so on a build where the grab silently did not happen the opener would still hold it and the final assertion would pass — while the window was never modal at all.
+
+⚠ **BOUNDARY, and it is why this is a note and not a fix. It is NOT vacuous as measured**: it fails at `main` with `(None, None)`, so it does test the fix today. **I could not construct the silent grab failure from public API** — `show()` deiconifies before grabbing, and I found no reachable way to leave the window non-viewable at that point. Gate 2 makes vacuity actionable, but a vacuity that needs an unreachable precondition is a hypothesis, not a demonstration. **Recorded; do not close it by writing a test.**
+
+## 2. NOTE — `focus_set()` now runs on a path where it previously did not
+
+Before this branch, `grab_set()` and `focus_set()` shared one `try`, so a `TclError` from the grab skipped the focus. Round 1's finding-4 fix split them, and its record describes that as *"removing the coupling"* and *"behavior-preserving on every path I could reach"*. **Both are true, and the reachability of `focus_set()` still widened**: a window whose grab fails now gets a focus request it did not get before. Harmless — `CLAUDE.md` records that `focus_set()` is a **silent no-op** on an unmapped widget rather than a raise, which is the only state a failed grab leaves it in. **Note so the widening is on the record, not a defect.**
+
+## 3. NOTE — `_bind_grab_restore()` sets its flag before the bind it guards
+
+`toplevel.py:255` calls it from the `else` of the grab's `try`, un-guarded, and the method sets `_grab_restore_bound = True` **before** `self.bind(...)`. If `bind` raised, the flag would be set with nothing bound, and every later `show()` would then also decline to re-capture. **Structural only** — `bind` on a live toplevel that has just successfully taken a grab does not raise, and I did not construct it. Same class as round 1's finding 4, and it is recorded on the same terms.
+
+## What was checked and came back clean
+
+- **`git diff main...HEAD -- CLAUDE.md` is EMPTY**, as the branch hygiene rule requires.
+- **The helper has exactly one home and every consumer resolves.** `grep -rn "capture_grab\|restore_grab\|_log_grab_failure" src/ tests/` returns `_runtime/grab.py` (definitions), `toplevel.py:10` and `dialog.py:20` (direct imports), and `datedialog.py:19` reaching both **through** `dialog.py` — which still resolves, because an ordinary `from … import` binds the names in `dialog.py`'s namespace. No re-export machinery, no alias, no second copy.
+- **No new grab site and no new outright release.** `grep -rn "grab_set\|grab_release\|grab_current\|grab_status" src/bootstack/` matches what `PLAN.md` recorded: `datedialog.py:136/381`, `dialog.py:478`, `contextmenu.py:1423`, the capability methods in `_core/capabilities/grab.py`, and the new pair. **Nothing was added off the audited list.**
+- **`bs.Window` is still the only route to `modal=` on a `Toplevel`.** Every other `modal=` hit goes to `Dialog.show`, and the six other `Toplevel(...)` constructions in the tree — contextmenu, selectbox popdown, tableview, toast, tooltip, splash — pass no `modal=` at all. **The blast radius is exactly `bs.Window(modal=…)`**, which round 1 also concluded and which I re-derived rather than inherited.
+- **`_log_grab_failure` cannot raise from a teardown path.** `debug_log_exception` (`_runtime/utility.py:369-384`) returns early when debug is off and wraps everything else in `except Exception: pass`. Every call site is inside an `except` block, so there is a live exception for `print_exc()` to report.
+- **The CHANGELOG entry is accurate**, and its headline scenario is now measured rather than asserted (the `dialog_window` arm above). It sits under `### Fixed` in `## [Unreleased]`.
+- **`capture_grab`'s `KeyError` guard covers the only lookup that can raise one.** `grab_current()` resolves a path through `_nametowidget`; `grab_status()` is a plain Tcl call with no name lookup, so the narrower `except` on it is correct rather than an oversight.
+
+## What this round did NOT cover, stated so the silence is bounded
+
+- **macOS, all three cross-platform arms.** Unchanged from the addendum, and it is still the real gap. Windows and Linux are measured.
+- **A real GLOBAL grab on Windows.** Still stub-only here, for the reason #440 gave.
+- **`Toplevel.hide()` then a re-show.** Re-checked as not publicly reachable: `bs.Window` exposes `show`, `block_until_closed`, `title` and `result` and **no `hide`**. Latent, unchanged.
