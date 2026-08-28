@@ -126,18 +126,46 @@ def test_alternating_writes_do_not_echo(app, name, factory):
     assert sig() == widget.value == "w9"
 
 
+def _change_bindings(widget) -> str:
+    """The Tcl script bound to `<<Change>>` on the core's text widget.
+
+    A released binding leaves the script; an orphaned one stays in it. This is
+    the only observable that moves, which is why the test below reads it —
+    see the comment there.
+    """
+    text = _core(widget).text
+    return text.tk.call("bind", str(text), "<<Change>>")
+
+
 @pytest.mark.parametrize("name,factory", WIDGETS, ids=IDS)
-def test_rebinding_leaves_the_previous_signal_alone(app, name, factory):
+def test_rebinding_releases_the_previous_hooks(app, name, factory):
+    # ⚠ THIS ASSERTS ON THE HOOKS, NOT ON THE REPLACED SIGNAL'S VALUE, AND THAT
+    # IS THE WHOLE POINT OF THE TEST. `_push_to_signal` is a bound method that
+    # reads `self._signal` at call time, so an orphaned <<Change>> binding
+    # pushes into the CURRENT signal and can never write into the replaced one.
+    # An earlier version closed on `first() == "one"` and therefore passed with
+    # the release deleted -- measured, one orphan binding left and both value
+    # assertions still green. What a leaked hook actually costs is a duplicate
+    # binding and a live subscription per rebind, which is #479's shape, so
+    # those are what get asserted.
     first = bs.Signal("one")
     second = bs.Signal("two")
     widget = factory(textsignal=first)
     _pump(app)
+    stale_bind_id = _core(widget)._signal_change_bind_id
+    assert stale_bind_id, "precondition failed — nothing was bound to push"
 
     _core(widget).bind_signal(second)
     _pump(app)
     widget.value = "after rebind"
     _pump(app)
 
+    assert stale_bind_id not in _change_bindings(widget), (
+        "the previous <<Change>> push binding is still installed"
+    )
+    assert not first._subscribers, (
+        "the replaced signal still has %d subscriber(s)" % len(first._subscribers)
+    )
     assert second() == "after rebind"
     assert first() == "one", "the replaced signal is still receiving edits"
 
