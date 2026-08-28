@@ -171,9 +171,9 @@ class _BooleanControlBase(PublicWidgetBase):
         self._apply_value(self._checked_value if v else self._unchecked_value)
 
     @property
-    def signal(self) -> "Signal | None":
-        """The reactive `Signal` linked to this control, or `None`."""
-        return getattr(self._internal, 'signal', None)
+    def signal(self) -> "Signal":
+        """The reactive `Signal` linked to this control."""
+        return self._internal.signal
 
     @property
     def disabled(self) -> bool:

@@ -167,9 +167,9 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
         self._internal.configure(values=v)
 
     @property
-    def signal(self) -> "Signal[str] | None":
-        """The reactive `Signal` bound to this field, or `None`."""
-        return getattr(self._internal, "signal", None)
+    def signal(self) -> "Signal[str]":
+        """The reactive `Signal` bound to this field."""
+        return self._internal.signal
 
     @property
     def disabled(self) -> bool:

@@ -215,9 +215,9 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         self._internal.configure(default_filename=v)
 
     @property
-    def signal(self) -> "Signal[str] | None":
-        """The reactive `Signal` bound to this field, or `None`."""
-        return getattr(self._internal, "signal", None)
+    def signal(self) -> "Signal[str]":
+        """The reactive `Signal` bound to this field."""
+        return self._internal.signal
 
     @property
     def disabled(self) -> bool:
