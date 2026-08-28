@@ -695,3 +695,48 @@ and `0.4.0` is the release that promotes it.**
 **Round 2 of 3 spent. Nothing blocking. One test-only fix, which triggers no
 further round under gate 1, and one issue to file. Recommend closing the branch
 after that.**
+
+## Round 2 fix — Finding 1 closed
+
+`test_rebinding_leaves_the_previous_signal_alone` is now
+`test_rebinding_releases_the_previous_hooks`, and it asserts the two things a
+leaked hook actually moves rather than a value that cannot move.
+
+**What it asserts now, and why these two.** A rebind leaks a duplicate
+`<<Change>>` binding and a live subscription, which is #479's shape — not a
+wrong value, because `_push_to_signal` reads `self._signal` at call time and so
+always pushes into the *current* signal. So the test captures
+`core._signal_change_bind_id` before the rebind and asserts it is gone from the
+Tcl script `bind <text> <<Change>>` afterwards, and asserts the replaced signal
+has no subscribers left. The two original value assertions stay — they were not
+wrong, only unable to fail.
+
+⚠ **It reads two internals on purpose.** The binding script and
+`Signal._subscribers` are the only observables a released hook moves; there is
+no public reading of either. This is the same trade the repo already makes for
+structural invariants — a behavioral assertion here passes on a broken build,
+which is precisely the defect.
+
+### Both halves controlled, and the failing line was read in each
+
+| control | what was removed | assertion that went red |
+|---|---|---|
+| A | `self.off_change(self._signal_change_bind_id)` -> `pass` | `stale_bind_id not in _change_bindings(widget)` — *"the previous `<<Change>>` push binding is still installed"* |
+| B | `self._signal_trace_id.cancel()` -> `pass` | `not first._subscribers` — *"the replaced signal still has 1 subscriber(s)"* |
+
+**The precondition passed first in both**, so neither red is the test failing to
+set itself up. `src/` was restored with `git checkout` after each arm and
+verified clean.
+
+### Verification
+
+- **Suite: 1687 passed / 22 skipped, 33 legs, exit 0**, `py -3.12 tests/run_gui.py`,
+  Windows box. Unchanged, as it must be — the test was renamed and re-pointed,
+  not added, so the file still collects **26**.
+- **CRLF verified** on the test file after the edit (`file`, 0 bare LF lines).
+- **No `src/` change.** `git diff main...HEAD -- src/` is byte-identical to what
+  round 2 reviewed, so gate 1 triggers no round 3.
+
+**Round 2 closed. One round remains under the cap and there is nothing for it to
+review.** What is left is the `clear()` issue to file and the two process items
+above.
