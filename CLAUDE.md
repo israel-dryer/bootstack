@@ -148,9 +148,9 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-28) — **#444 IS IN FLIGHT ON PR #485, CI GREEN, AWAITING MERGE. `0.4.0` HAS THREE ISSUES LEFT: #444, #460, #467.**
+### ★ START HERE (2026-08-28) — **#444 MERGED. `0.4.0` HAS TWO ISSUES LEFT: #460 AND #467.**
 
-#### ⭐ #444 — IN FLIGHT. **PR #485 open against `main`, all 5 CI jobs green, NOT merged.** Branch `fix/modal-window-grab-444`, head **`85c77bde`**.
+#### ✅ #444 SHIPPED (PR #485, merge commit `baced70b`, 2026-08-28). Branch deleted local + remote, head **`85c77bde`**. Kept for its traps.
 
 **A modal `bs.Window` took the grab and nothing ever handed it back.** `grep -rn "grab_release\|grab_current" src/bootstack/_runtime/toplevel.py` returned nothing, which is the whole defect in one command. Tk drops a grab when its holder is destroyed but does **not** restore the grab that holder displaced, so a modal opened from inside another modal left the outer one on screen, still blocking its caller, holding nothing — the user clicked straight past it into the main window. **Pre-existing, identical in `0.2.3` and `0.3.0`, NOT a regression from #440**, which fixed the same defect scoped to the dialog classes.
 
@@ -162,7 +162,7 @@ release has already run on.
 
 ⚠⚠ **ROUND 2's DURABLE FINDING: THE TESTS DROVE A STAND-IN FOR THE SCENARIO THE CHANGELOG NAMES, AND NOBODY HAD CHECKED THE REAL ONE.** The entry headlines *"an 'Advanced…' button on a dialog"*; the tests use a raw `tkinter.Toplevel` as the opener. **Dialog and window take their grabs through different code paths** (`dialog.py:478` directly, `Toplevel.show()` through the new helpers) **and nothing exercised them against each other.** `development/probe_444_review_round2.py` drives the real pairing: `*** LOST ***` at `main`, `OK` after — with a no-nesting **control OK on both arms**, so a LOST row is the defect and not the instrument. **Three-deep nesting unwinds correctly at every depth; depth had never been measured.** The reverse direction (a dialog inside a modal window) is OK on both arms, which is correct — that is #440's path. **Re-run the probe rather than re-deriving any of it.**
 
-**Two rounds under a cap of 2, each in a fresh session.** Round 1: five findings, all originating outside the author's risk list, one blocking; 1-4 fixed, 5 left under gate 2. Round 2: **nothing blocking**, three structural notes, no fixes. Plan and both records archived **in the branch, before the PR opened** — `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`.
+**Two rounds under a cap of 2, each in a fresh session.** Round 1: five findings, all originating outside the author's risk list, one blocking; 1-4 fixed, 5 left under gate 2. Round 2: **nothing blocking**, three structural notes, no fixes. Plan and both records archived **in the branch, before the PR opened** — `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`, so nothing landed in `main`'s root at merge.
 
 ⚠ **CROSS-PLATFORM: Windows and Linux MEASURED, macOS NOT.** The no-platform-branch design (read the kind back from Tk rather than assuming) is measured on X11 with a **REAL global grab**, not the stub — an isolated Xvfb display makes that safe, which no live desktop does. Kind reads back faithfully and a displaced global grab survives the round trip as `global`. **macOS is the whole remaining gap** and folds into #452's trip; the arms and commands are in the archived review. ⚠ **`tk busy` is already a measured silent no-op on Aqua (#429), so the worry is concrete** — but only ONE of the two outcomes is this branch's problem, and the archived review says which.
 
@@ -304,14 +304,14 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #480 merge (`e6f67961`, #390, 2026-08-27)**, the **PR #478 merge (`5cf398f8`, #476)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)** and the **PR #471 merge (`62728770`, #465)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
-| branches | **ONE — `fix/modal-window-grab-444`, local and remote, head `85c77bde`, PR #485 OPEN and CI green. Verified with `git branch -a` 2026-08-28.** Deleted on merge: `fix/signal-nullable-390` (head **`cfa29a75`**), `fix/selectbutton-double-change-476` (**`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, not a gap.** #390's are at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. ✅ **#444 BROKE THE STREAK: PR #485 archived both into `development/` IN THE BRANCH, BEFORE the PR was opened**, so nothing lands in `main`'s root at merge. ⚠⚠ **The two branches before it — PR #478 and PR #480 — both merged them into `main`'s ROOT and archived AFTER, each caught only because the next session looked. Archive before you open the PR** |
-| released | `0.3.2`. **`## [Unreleased]` carries #444, #456, #458, #459, #461, #465, #472 and #476**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ #444's bullet is on the BRANCH, not on `main` — it arrives with the PR #485 merge. ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
-| next release | **`0.4.0 — Signal binding on fields`** — #458, #459, #461, #465, #472, #476 and **#390** done; **#444 fixed and awaiting the PR #485 merge; #460 and #467 open.** ⚠ **#444 ARRIVED 2026-08-27 from the patch line** by maintainer decision, in the same pass that closed `0.3.x — Patch line` and cut `0.4.x`. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all`: 10 issues, 7 CLOSED, 3 OPEN (#444 #460 #467).** That command is the authority for *issues*; the milestone API endpoint counts PRs too, and reads `open=4` because PR #485 carries the milestone |
+| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #485 merge (`baced70b`, #444, 2026-08-28)**, the **PR #480 merge (`e6f67961`, #390, 2026-08-27)**, the **PR #478 merge (`5cf398f8`, #476)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)** and the **PR #471 merge (`62728770`, #465)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
+| branches | **NONE — `main` only, local and remote. Verified with `git branch -a` 2026-08-28 after the PR #485 merge.** Deleted on merge: `fix/modal-window-grab-444` (head **`85c77bde`**), `fix/signal-nullable-390` (head **`cfa29a75`**), `fix/selectbutton-double-change-476` (**`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — CORRECT, and VERIFIED on `main` after the PR #485 merge, not assumed.** #444's are at `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`; #390's at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. ✅ **#444 BROKE THE STREAK AND IT WORKED: PR #485 archived both into `development/` IN THE BRANCH, BEFORE the PR was opened**, so the merge left the root clean with no follow-up commit. ⚠⚠ **The two branches before it — PR #478 and PR #480 — both merged them into `main`'s ROOT and archived AFTER, each caught only because the next session looked. Archive before you open the PR** |
+| released | `0.3.2`. **`## [Unreleased]` carries #444, #456, #458, #459, #461, #465, #472 and #476**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote — **all eight bullets are on `main` now**, #444's having arrived with the PR #485 merge. ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
+| next release | **`0.4.0 — Signal binding on fields`** — #390, #444, #458, #459, #461, #465, #472 and #476 done; **#460 and #467 are the ONLY two left.** ⚠ **#444 ARRIVED 2026-08-27 from the patch line** by maintainer decision, in the same pass that closed `0.3.x — Patch line` and cut `0.4.x`. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all` AFTER the PR #485 merge: 10 issues, 8 CLOSED, 2 OPEN (#460 #467).** That command is the authority for *issues*; the milestone API endpoint counts PRs too, and reads `open=2 closed=15` because all seven PRs carry the milestone |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1628 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-27 on `main` after the PR #480 merge, Windows box, `py -3.12`, **`matplotlib` and `pandas` BOTH PRESENT.** Reconciles as `1579 + 49` (#390's one new test file), bounded with `git diff e8caece4..HEAD --stat -- tests/`. ⚠ **#444's branch measures `1638 / 22`** — `1628 + 10`, its one new test file — so expect that figure after the PR #485 merge |
-| open milestones | **11** — verified against `gh` 2026-08-28. ⚠⚠ **THE COUNT IS UNCHANGED BUT THE COMPOSITION IS NOT: `0.3.x — Patch line` is CLOSED and `0.4.x — Patch line` was cut in its place** (2026-08-27), which is the rolling line's own rule — a line that turns over gets a NEW milestone, never a rename. **Do not read the unchanged 11 as an unchanged list** |
+| suite, `main` | **1638 passed / 22 skipped, 33 legs, exit 0** — measured 2026-08-28 on `main` at `baced70b`, after the PR #485 merge, Windows box, `py -3.12`, **`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT.** Reconciles as `1628 + 10` from two directions: `git diff 2b9089ce..HEAD --stat -- tests/` returns only `test_window_modal_grab.py`, and that file collects exactly 10 |
+| open milestones | **11** — verified against `gh` 2026-08-28, unchanged by the PR #485 merge. ⚠⚠ **THE COUNT IS UNCHANGED BUT THE COMPOSITION IS NOT: `0.3.x — Patch line` is CLOSED and `0.4.x — Patch line` was cut in its place** (2026-08-27), which is the rolling line's own rule — a line that turns over gets a NEW milestone, never a rename. **Do not read the unchanged 11 as an unchanged list** |
 
 ⚠ **A HANDOFF COMMIT THAT IS NOT PUSHED DOES NOT EXIST.** Found 2026-08-26: the two `docs(claude):` commits describing #461's flight had **never left the local box**, so `main` and `origin/main` had silently diverged and `git pull --ff-only` refused. They rebased cleanly (CLAUDE.md-only, and #475's branch had an empty CLAUDE.md diff), but **the next session would have read a `main` that knew nothing about the branch in hand.** ⏭ **`git push` after every `docs(claude):` commit, and check `git rev-parse main origin/main` agree before trusting this file.**
 
@@ -398,7 +398,7 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), ~~#390~~ (2026-08-27, PR #480), **#444** (fixed, PR #485 OPEN and green), **#460, #467**. Cut 2026-08-19; the next release out the door. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It shipped as `allow_empty=`, NOT the `nullable=` its branch name and the 2026-08-26 issue comment both say.** ⚠ **#444 ARRIVED 2026-08-27 from the patch line** — it adds no public surface, so it needed no minor; it rides this one because the minor is being cut anyway, which is this file's own standing rule. ⚠ **The endpoint counts PRs as work items** — PRs #462, #471, #473, #475, #478, #480 and #485 all carry this milestone. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all`: 10 issues, 7 CLOSED (#390 #458 #459 #461 #465 #472 #476), 3 OPEN (#444 #460 #467).** That command is the authority for *issues* | 3 |
+| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), ~~#390~~ (2026-08-27, PR #480), ~~#444~~ (2026-08-28, PR #485), **#460, #467**. Cut 2026-08-19; the next release out the door. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It shipped as `allow_empty=`, NOT the `nullable=` its branch name and the 2026-08-26 issue comment both say.** ⚠ **#444 ARRIVED 2026-08-27 from the patch line** — it adds no public surface, so it needed no minor; it rides this one because the minor is being cut anyway, which is this file's own standing rule. ⚠ **The endpoint counts PRs as work items** — PRs #462, #471, #473, #475, #478, #480 and #485 all carry this milestone. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all` AFTER the PR #485 merge: 10 issues, 8 CLOSED (#390 #444 #458 #459 #461 #465 #472 #476), 2 OPEN (#460 #467).** That command is the authority for *issues* | 2 |
 | 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, **#445**, **#479**, **#481**. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25. ⚠ **#445 ARRIVED FROM THE PATCH LINE 2026-08-27** and does meet the rule — `attach()`'s grid branch filters legacy layout kwargs with no rejection at all, so fixing it RAISES where the framework accepts. ⚠ **#481 came out of #390** (`Signal(None)` bare builds a signal that can never hold a value); **its title still says `nullable=True`, a parameter that never shipped.** ⚠ **#479 ARRIVED 2026-08-26 BY MAINTAINER DECISION AND DOES NOT MEET THIS MILESTONE'S MEMBERSHIP RULE — that is deliberate, do not "correct" it.** The rule is *raises where the framework accepts, or retypes what a public property returns*; releasing a subscription on destroy does neither. **Placement is the maintainer's call, not the rule's.** | 7 |
 | 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
 | 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
@@ -482,22 +482,23 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-27 on `main` after the PR #480 merge**,
-Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**, **`matplotlib` and
-`pandas` BOTH PRESENT**:
+**AUTHORITATIVE — measured 2026-08-28 on `main` at `baced70b`, after the PR #485
+merge**, Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
+**`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT**:
 
 | | measured |
 |---|---|
-| summed, 33 legs | **1628 passed / 22 skipped** |
+| summed, 33 legs | **1638 passed / 22 skipped** |
 
-⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1579 + 49`, the 49 being
-#390's one new test file. `git diff main...HEAD --stat -- tests/` returned that file and nothing
-else, and the file's own collection was checked at each of its three review records — **40 at
-round 2, 43 after the two subclass fixes, 49 at round 3** — so the total reconciles from two
-directions rather than one.
+⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1628 + 10`, the 10 being
+#444's one new test file. `git diff 2b9089ce..HEAD --stat -- tests/` returned
+`tests/widgets/public/test_window_modal_grab.py` and nothing else, and that file's own
+`--collect-only` says **10** — so the total reconciles from two directions rather than one.
 
-**Superseded, kept for the reconciliation it anchors:** `1573 + 6`,
-the 6 being #476's one new test file.
+**Superseded, kept for the reconciliation it anchors — measured 2026-08-27 after the PR #480
+merge:** `1628` = `1579 + 49`, the 49 being #390's one new test file, whose collection was checked
+at each of its three review records (**40 at round 2, 43 after the two subclass fixes, 49 at round
+3**). Before that, `1573 + 6`, the 6 being #476's one new test file.
 `git diff e8caece4..HEAD --stat -- tests/` says how much the count was ALLOWED to
 move and confirms nothing else changed — one command, and it is the check that
 catches what a self-consistent-but-wrong total does not. Here it returned exactly
@@ -661,8 +662,8 @@ must clear validation state.
   them on a flex child. Pre-existing, filed out of `0.3.1` round 3. ⚠ **NO LONGER
   ON THE PATCH LINE — moved to `0.5.0` on 2026-08-27**, because the fix RAISES
   where the framework accepts, which is that milestone's rule. ⚠ **Its sibling
-  #444 is FIXED and on PR #485** — see the ★ START HERE section; do not read this
-  pair as two open patch-line items any more.
+  #444 SHIPPED on `0.4.0` (PR #485, 2026-08-28)** — do not read this pair as two
+  open patch-line items any more.
 - **#432** — **DID NOT REPRODUCE** across two Linux runs; #407 appears to have
   removed it. It was the stated blocker on the whole CI workstream, so **closing
   or re-scoping it is a maintainer call that is now cheap to make.**
@@ -693,7 +694,7 @@ must clear validation state.
   internal Toplevel, and `size`/`topmost` are construction-only. Own branch.
   ⚠ **Two thirds of this entry are now WRONG and it was never corrected — read the
   measurement, not the old wording.** *"Never releases the modal grab"* was #444 and
-  is **FIXED** (PR #485). *"Has no live properties"* is false: `title` and `result`
+  is **FIXED AND MERGED** (PR #485, 2026-08-28). *"Has no live properties"* is false: `title` and `result`
   are both live get/set (`window.py:291-306`). **What is left is the `**kwargs`
   passthrough and the two construction-only settings.** ⚠ No memory file backs this
   entry — `project_window_api_hardening.md` is not in the store, so this bullet is
