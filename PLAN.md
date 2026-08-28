@@ -1,7 +1,9 @@
 # PLAN — #444 (a modal `bs.Window` never restores the grab it took)
 
 Branch `fix/modal-window-grab-444`, off `main` at `a5f2c71d`. Milestone `0.4.0`.
-**Round cap: 2, spent 0.**
+**Round cap: 2, spent 1** — round 1 ran 2026-08-27 and its record plus the fix step are in
+`REVIEW.md`. ⚠ **Read `REVIEW.md` before this file**: round 1 found a blocker in the fix this plan
+describes, and the shape below is what shipped BEFORE that fix.
 
 Patch-shaped — **adds no public surface** — riding `0.4.0` because that minor is being cut
 anyway and the standing rule is to ask what else is ready rather than park a fix out of habit.
