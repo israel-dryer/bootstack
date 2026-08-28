@@ -190,3 +190,187 @@ def test_a_destroyed_widget_stops_receiving_and_raises_nothing(app, name, factor
             root.deletecommand("bgerror")
         except Exception:
             pass
+
+
+# ── the placeholder is chrome, not content (round 1, finding 1) ────────────
+#
+# The write-back lives on the core, which holds the raw document. The composite
+# above inserts the placeholder INTO that document to render it, so the core
+# cannot tell the user's content from the widget's chrome on its own -- and the
+# first version of the write-back pushed the placeholder string into the
+# caller's signal. `TextArea` is the whole population: `CodeEditor` has no
+# placeholder.
+#
+# The composite already treats a visible placeholder as "not content" in three
+# other places -- `value` returns "", and both `<<Input>>` and `<<Changed>>` are
+# suppressed -- so the signal was the one observable of the same widget that
+# disagreed with the rest. The entry-backed family answered the same question by
+# detaching the textvariable while the placeholder shows (`textentry_part.py`,
+# "so the Signal is never set to the placeholder text").
+
+
+def _blur(app, widget) -> None:
+    """Drive a real `<FocusOut>` at the core text, which is where the composite
+    binds the handler that shows the placeholder."""
+    _core(widget).text.event_generate("<FocusOut>")
+    _pump(app)
+
+
+def test_the_placeholder_never_reaches_the_bound_signal(app):
+    sig = bs.Signal("hello")
+    ta = bs.TextArea(placeholder="Type something here", textsignal=sig)
+    _pump(app)
+
+    ta.value = ""
+    _pump(app)
+    _blur(app, ta)
+
+    # Precondition: without it this passes vacuously whenever the placeholder
+    # simply never appeared, which is the state the defect needs.
+    assert ta._internal._showing_placeholder is True, (
+        "precondition failed — the placeholder is not showing, so nothing was tested"
+    )
+    assert sig() == "", "the placeholder was written into the caller's signal: %r" % (sig(),)
+
+
+def test_every_observable_agrees_while_the_placeholder_shows(app):
+    # The invariant the finding actually broke: `text` and `value` are a pair and
+    # must agree on whether the field is empty (`composites/field.py`). A signal
+    # is a fourth reader of the same widget and does not get its own answer.
+    sig = bs.Signal("hello")
+    ta = bs.TextArea(placeholder="Type something here", textsignal=sig)
+    _pump(app)
+
+    changes: list = []
+    inputs: list = []
+    pushes: list = []
+    ta.on_change(lambda e: changes.append(e.value))
+    ta.on_input(lambda e: inputs.append(e.text))
+    sig.subscribe(pushes.append)
+
+    ta.value = ""
+    _pump(app)
+    changes.clear()
+    inputs.clear()
+    pushes.clear()
+
+    _blur(app, ta)
+
+    assert ta._internal._showing_placeholder is True, (
+        "precondition failed — the placeholder is not showing, so nothing was tested"
+    )
+    assert ta.value == ""
+    assert changes == [], "on_change reported the placeholder as a change: %r" % (changes,)
+    assert inputs == [], "on_input reported the placeholder as input: %r" % (inputs,)
+    assert pushes == [], "the signal reported the placeholder as content: %r" % (pushes,)
+    assert sig() == ""
+
+
+def test_a_placeholder_does_not_switch_the_write_back_off(app):
+    # The control that bounds the guard. Suppressing the write-back entirely
+    # whenever `placeholder=` was passed would satisfy both tests above while
+    # reinstating exactly the one-way binding #486 exists to remove -- so this
+    # asserts an edit still travels, on a widget that HAS a placeholder, and
+    # that the placeholder comes back afterwards without polluting anything.
+    sig = bs.Signal("hello")
+    ta = bs.TextArea(placeholder="Type something here", textsignal=sig)
+    _pump(app)
+
+    ta.value = "typed by user"
+    _pump(app)
+    assert sig() == "typed by user", "the write-back is off on a placeholder widget"
+
+    ta.value = ""
+    _pump(app)
+    _blur(app, ta)
+
+    assert ta._internal._showing_placeholder is True
+    assert sig() == ""
+
+
+def test_a_code_write_while_the_placeholder_shows_is_not_reverted(app):
+    # The reader seam has to have a writer to match it. `_on_signal_change`
+    # writing the core's raw document leaves `_showing_placeholder` standing;
+    # the reader then answers "" for a document that is not empty, and the push
+    # sends that "" straight back over the caller's write -- so `sig.set(...)`
+    # from application code is silently LOST. Found by driving the demo, not by
+    # the suite, and it is why the write goes through the composite's setter.
+    sig = bs.Signal("hello")
+    ta = bs.TextArea(placeholder="Type something here", textsignal=sig)
+    _pump(app)
+
+    ta.value = ""
+    _pump(app)
+    _blur(app, ta)
+    assert ta._internal._showing_placeholder is True, (
+        "precondition failed -- the placeholder is not showing, so nothing was tested"
+    )
+
+    sig.set("written by code")
+    _pump(app)
+
+    assert sig() == "written by code", "the widget reverted the caller's write: %r" % (sig(),)
+    assert ta.value == "written by code"
+    assert ta._internal._showing_placeholder is False, (
+        "the placeholder is still marked as showing over real content"
+    )
+
+
+# ── the EDIT door, not the setter door ─────────────────────────────────────
+#
+# Every other test in this file writes `widget.value = ...`. That is one of two
+# doors into the write-back, and the other one -- an actual edit -- was untested.
+# Two problems in this branch came out of that gap: a code write while the
+# placeholder showed was silently reverted, and the round 1 record justified the
+# fix with an invariant that does not hold for the family.
+#
+# ⚠ THESE DRIVE `text.insert` / `text.delete`, NOT SYNTHESIZED KEYS, AND THAT IS
+# MEASURED RATHER THAN STYLISTIC. A `<KeyPress-a>` generated in the shared-root
+# suite does NOTHING: the root is withdrawn, so `focus_force` is a silent no-op
+# on an unmapped widget, the key never reaches the Text's class bindings, and the
+# document stays empty -- a test built on it passes or fails for reasons that have
+# nothing to do with the write-back. `insert` rides the same `WidgetRedirector`
+# a keystroke does, which is the leg this file needs to cover; the key-to-insert
+# leg above it belongs to the toolkit.
+
+
+@pytest.mark.parametrize("name,factory", WIDGETS, ids=IDS)
+def test_an_incremental_edit_reaches_the_signal(app, name, factory):
+    # Asserted after EVERY character, not just at the end: a write-back that only
+    # fired on whole-document replacement -- which is all the setter tests can
+    # see -- would still pass a single end-state assertion.
+    sig = bs.Signal("")
+    widget = factory(textsignal=sig)
+    _pump(app)
+    text = _core(widget).text
+
+    for i, ch in enumerate("abc", start=1):
+        text.insert("end", ch)
+        _pump(app)
+        assert sig() == "abc"[:i], (
+            "the signal did not follow edit %d: %r" % (i, sig())
+        )
+
+    text.delete("1.0", "end")
+    _pump(app)
+    assert sig() == ""
+
+
+def test_clearing_by_editing_then_blurring_keeps_the_placeholder_out(app):
+    # The finding's scenario reached through the edit door instead of the setter.
+    sig = bs.Signal("hello")
+    ta = bs.TextArea(placeholder="Type something here", textsignal=sig)
+    _pump(app)
+    text = _core(ta).text
+
+    text.delete("1.0", "end")
+    _pump(app)
+    assert sig() == "", "clearing by editing did not reach the signal: %r" % (sig(),)
+
+    _blur(app, ta)
+
+    assert ta._internal._showing_placeholder is True, (
+        "precondition failed -- the placeholder is not showing, so nothing was tested"
+    )
+    assert sig() == "", "the placeholder was written into the signal: %r" % (sig(),)
+    assert ta.value == ""

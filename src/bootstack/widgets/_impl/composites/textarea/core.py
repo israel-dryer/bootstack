@@ -55,6 +55,8 @@ class _MultilineCore(tk.Frame):
         self._signal = None
         self._signal_trace_id = None
         self._signal_change_bind_id = None
+        self._signal_text_source = None
+        self._signal_text_sink = None
 
         # Detect windowing system for mousewheel handling
         self.winsys: str = self.tk.call("tk", "windowingsystem")
@@ -300,7 +302,7 @@ class _MultilineCore(tk.Frame):
         # Set initial value from signal
         v = signal()
         if v is not None:
-            self.value = str(v)
+            self._apply_signal_text(str(v))
 
     def _unbind_signal(self) -> None:
         if self._signal is not None and self._signal_trace_id is not None:
@@ -323,15 +325,37 @@ class _MultilineCore(tk.Frame):
         # time this runs and would miss the echo every time.
         if self._signal is None:
             return
-        text = self.value
+        text = self._signal_text()
         if self._signal() != text:
             self._signal.set(text)
+
+    def _signal_text(self) -> str:
+        # The core holds the raw document, and the raw document is not always
+        # the user's content: the composite above inserts a placeholder into it
+        # as chrome. Only that layer can tell the two apart, so it installs a
+        # reader -- its own public value -- and the signal then carries exactly
+        # what the widget reports through every other observable.
+        if self._signal_text_source is not None:
+            return self._signal_text_source()
+        return self.value
+
+    def _apply_signal_text(self, text: str) -> None:
+        # The write half of the `_signal_text` seam, and it has to be symmetric
+        # with it: the composite's own setter clears the placeholder before
+        # writing, so a value arriving from the model lands as content. Writing
+        # the raw document instead leaves the placeholder flag standing, the
+        # reader then answers "" for a document that is not empty, and the push
+        # sends that "" straight back over the caller's write.
+        if self._signal_text_sink is not None:
+            self._signal_text_sink(text)
+        else:
+            self.value = text
 
     def _on_signal_change(self, new_value) -> None:
         if new_value is not None:
             text = str(new_value)
-            if self.value != text:
-                self.value = text
+            if self._signal_text() != text:
+                self._apply_signal_text(text)
 
     # ── dirty tracking ────────────────────────────────────────────────────
 
