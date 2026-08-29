@@ -211,13 +211,8 @@ class ValidationRule:
         Returns:
             The end-user message for a predicate that raised.
         """
-        # This runs INSIDE the except block that absorbs the func's exception,
-        # so anything it raises escapes the guard and re-opens #467. `message`
-        # is author-supplied and validated nowhere, and `rstrip` does not exist
-        # on a non-str: measured in review round 2, `message=42` escaped as an
-        # AttributeError. Coerce rather than require, so a non-str message still
-        # reaches the user, and guard the whole body -- `str()` is user code on
-        # a custom object. Guarding only `rstrip` would leave that open.
+        # Runs inside the except block that absorbs the func's exception, so
+        # anything raised here escapes the guard (#467).
         try:
             if not self.message:
                 return UNCHECKABLE_MESSAGE
