@@ -1,8 +1,15 @@
 import re
+import sys
 from typing import Callable
 
+from bootstack._runtime.utility import debug_log_exception
 from bootstack.validation.types import RuleTriggerType, RuleType
 from bootstack.validation.validation_result import ValidationResult
+
+
+# Shown when a `'custom'` rule's func raised instead of returning a verdict, and
+# the rule carries no message of its own. See `_uncheckable_message`.
+UNCHECKABLE_MESSAGE = "Could not check this value."
 
 
 # Rules that operate on a text value; meaningless on a typed (number/date/time)
@@ -93,6 +100,8 @@ class ValidationRule:
         self.message = message
         self.trigger = kwargs.pop('trigger', self._default_trigger())
         self.params = kwargs
+        # One-shot latch for `_report_func_error`; see its docstring.
+        self._func_error_reported = False
 
     def validate(self, value: str) -> ValidationResult:
         """Apply this rule to a value and return the result.
@@ -103,6 +112,12 @@ class ValidationRule:
         Returns:
             A ValidationResult with `is_valid=True` on success or `is_valid=False`
             with an error message on failure.
+
+            A `'custom'` rule whose `func` raises is reported invalid rather
+            than allowed to propagate. Its message is "Could not check this
+            value (expected: …)", carrying the rule's own `message` as an
+            expectation rather than as a verdict; a rule with no `message`
+            reports `UNCHECKABLE_MESSAGE`.
         """
         msg = self.message or self._default_message()
 
@@ -154,10 +169,67 @@ class ValidationRule:
                 return ValidationResult(False, msg)
         elif self.type == "custom":
             func: Callable[[str], bool] = self.params.get("func")
-            if func and not func(value):
-                return ValidationResult(False, msg)
+            if func:
+                try:
+                    passed = func(value)
+                except Exception as exc:
+                    # NOTE(#467): `Exception`, not `TypeError` -- a user func
+                    # can raise anything, and narrowing this re-opens the defect
+                    # for every other type. BaseException is deliberately out.
+                    self._report_func_error(exc, value)
+                    return ValidationResult(False, self._uncheckable_message())
+                if not passed:
+                    return ValidationResult(False, msg)
 
         return ValidationResult(True)
+
+    def _uncheckable_message(self) -> str:
+        """Return what to show the end user when the func raised.
+
+        Composes `self.message` and not the resolved `msg`: the default for
+        `'custom'` is "Invalid value.", which would give "Could not check this
+        value (expected: Invalid value.)".
+
+        Returns:
+            The end-user message for a predicate that raised.
+        """
+        # Runs inside the except block that absorbs the func's exception, so
+        # anything raised here escapes the guard (#467).
+        try:
+            if not self.message:
+                return UNCHECKABLE_MESSAGE
+            expected = str(self.message).rstrip('.')
+        except Exception:
+            return UNCHECKABLE_MESSAGE
+        return f"Could not check this value (expected: {expected})."
+
+    def _report_func_error(self, exc: BaseException, value: object) -> None:
+        """Report a `'custom'` func that raised, without ever raising itself.
+
+        Once per rule, not per raise: a rule with `trigger='always'` runs on
+        every keystroke, so an unconditional print floods the console as the
+        user types.
+
+        Args:
+            exc: The exception the func raised.
+            value: The value the func was given.
+        """
+        try:
+            if not self._func_error_reported:
+                self._func_error_reported = True
+                print(
+                    f"bootstack: a 'custom' validation rule's func raised "
+                    f"{type(exc).__name__}: {exc} -- the value is reported "
+                    f"invalid. Set BOOTSTACK_DEBUG=1 for the traceback.",
+                    file=sys.stderr,
+                )
+            debug_log_exception(
+                f"custom validation rule raised for value {value!r}"
+            )
+        except Exception:
+            # `__repr__` and `__str__` here are user code: a diagnostic must
+            # never become the failure it reports (#467).
+            pass
 
     @staticmethod
     def _read_other(other: object) -> object:

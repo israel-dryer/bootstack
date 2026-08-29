@@ -139,6 +139,19 @@ Unlike the built-in rules, ``'custom'`` and ``'compare'`` also run on an empty
 field — only your predicate can say what an empty value means. On an optional
 field, accept it explicitly: ``func=lambda v: not v or v.isdigit()``.
 
+If your predicate raises, the value is reported **invalid** — a predicate that
+could not judge a value has not cleared it. The field shows *"Could not check
+this value (expected: must be over 5)"*, carrying your ``message`` as an
+expectation rather than as a verdict: the check never ran, so asserting your
+message of this value could be plainly false, but discarding it would leave the
+user nothing to act on. Your ``message`` is shown on its own, as the verdict,
+when the predicate actually returns ``False``. The first time a rule's predicate raises,
+one line naming the exception is written to stderr so the failure is not silent;
+set ``BOOTSTACK_DEBUG=1`` for the full traceback. This matters most on an
+optional field: a predicate that assumes a value is present raises on the empty
+case, and the field then reads as invalid rather than passing. Handle the empty
+value explicitly, as above, rather than relying on the rule to absorb it.
+
 Confirming a second field
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
