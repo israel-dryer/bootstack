@@ -148,141 +148,54 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-29) — **#467 IS IMPLEMENTED AND AWAITING ROUND 1 ON `fix/custom-rule-exception-467`. IT IS `0.4.0`'s LAST ISSUE.**
+### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. NOTHING IN FLIGHT.**
 
-#### ⭐⭐ #467 — **IMPLEMENTED, NOT REVIEWED. Branch `fix/custom-rule-exception-467`, head `8b8e0964`, pushed, NO PR YET. Cap 2, spent 0 — round 1 has not run.**
+**`0.4.0 — Signal binding on fields` released to PyPI, tag `v0.4.0`, 2026-08-29.**
+13 issues: #390, #444, #449, #456, #458, #459, #460, #461, #465, #467, #472, #476,
+#486, plus the unmilestoned chore PRs #492/#493/#494. Milestone closed.
 
-⏭ **NEXT ACTION IS A REVIEW ROUND IN A FRESH SESSION.** `PLAN.md` is at the branch root and ends with a **FOR THE REVIEWER** section naming the five places the fix is most likely to be wrong. **Read that, not the argument above it** — the protocol says not to read the implementer's rationale for why the approach was sound, and much of that file is exactly that.
+**Its detail is in `docs/_dev/handoff-archive.md`** under the 2026-08-29 split, and
+each branch's `PLAN.md`/`REVIEW.md` is at `development/plan-<issue>-<slug>.md` and
+`development/review-<issue>-<slug>.md`. **Read those before re-deriving anything.**
 
-⚠⚠ **THE ISSUE AS FILED IS WRONG ABOUT ITS OWN REPRODUCTION, AND THAT IS THE HEADLINE.** `custom` rules default to `trigger="manual"` (`validation_rules.py:221-222`), which `docs/reference/validation.rst:190-192` states plainly — so the repro in the body **never runs on blur** and cannot produce the escape it describes. Measured: `validate('6','blur')` returns `True` with the rule skipped. **Reaching the defect needs a deliberate `trigger="blur"`/`"always"`.** The re-measurement is a 2026-08-29 comment on #467. **Do not re-derive it, and do not trust the issue body.**
+✅ **Release verified 11/11 by `development/verify_release.py 0.4.0`** — reusable,
+takes the version as an argument. Its control run against `0.3.2` fails exactly one
+check (the #467 fix in the wheel), which is what shows it discriminates. ⚠ **Read
+its exit code without a pipe** — the first control run was piped to `tail` and
+reported `EXIT=0` over three failures.
 
-⚠ **THE HARM THAT JUSTIFIES THE FIX IS NOT THE ONE THE ISSUE LEADS WITH.** That the author cannot catch the exception is defensible as author error. **What is not theirs is the field silently keeping stale validity** — measured `f.valid: True` after the rule blew up — so the end user sees a field that quietly stopped validating. That is the standing principle: the framework absorbs the problem, and an end-user outcome worse than the bug is not a fix.
+#### ⚠ WHAT #467's TWO ROUNDS LEFT BEHIND
 
-⚠ **TWO DECISIONS IN THE FIX ARE DELIBERATE AND BOTH ARE WORTH ATTACKING.** (1) **The manual path absorbs too**, so `field.validate()` returns `False` where it used to raise — the issue argued manual was fine as-is, and `PLAN.md` calls this the decision most worth overturning. (2) **`except Exception`, not `TypeError`** — a user func can raise anything, but it also swallows `NameError` and typos and reports them to the end user as "invalid". **`BaseException` is NOT caught; a `KeyboardInterrupt` test pins that.**
+**Round 2's finding is the durable one: all three of its findings were regressions
+introduced by ROUND 1's OWN FIX STEP**, measured against the branch's pre-fix commit
+rather than against `main`. A fix step is code, and the next round must scope its
+diff to the fix, not the branch.
 
-⚠ **`debug_log_exception` IS GATED ON `BOOTSTACK_DEBUG`, SO BY DEFAULT NOTHING IS PRINTED.** The issue's second option was *"propagate, but not silently."* This ships the absorb half plus a surface half that is off by default. **Whether that is a fix or a silent swallow wearing a log call is question 4 for the reviewer.**
+⚠ **A demo found round 1's second blocker after a green suite AND a written review
+had both missed it** — a field holding `6` reporting *"must exceed 5"*, because the
+predicate had crashed rather than judged. **Drive the thing by hand before calling a
+round clean.** Same lesson #486 paid for.
 
-**Measured on the branch, do not re-derive:** suite **1690 / 33, exit 0, 33 legs** on macOS (`1676 + 14`, bounded by the one new test file and its `--collect-only`); the new tests **fail 9 of 14** against stashed `src/`, each on a propagating exception rather than a missing attribute; docs clean-build passes `-W`; no import cycle from the new `_runtime.utility` import.
+⚠ **`_uncheckable_message` runs INSIDE the `except` block that absorbs the func's
+exception, so anything it raises escapes the guard.** That is why its body is
+wrapped. Do not flatten it.
 
-⚠ **`PLAN.md` IS STILL AT THE BRANCH ROOT ON PURPOSE — the reviewer reads it there.** Archive it and `REVIEW.md` into `development/` **in the branch, before the PR opens**, which is the rule three of the last five branches broke.
+**Open from those rounds, all unmilestoned except #500:** **#497** (`'compare'`
+invokes user code unguarded — same class as #467, documented public surface),
+**#499** (a test asserts total stderr silence and so fails under `BOOTSTACK_DEBUG=1`,
+the variable the new message tells the author to set), and **#500** on `0.5.0`
+(a rule's own configuration accepted unchecked — a non-callable `func`, or a `range`
+bound that cannot be ordered against the field's values). ⚠ **#500 does NOT subsume
+all of #495**, which it replaced: a `Select` declares `_VALIDATION_KIND = None` by
+#465's decision, so a `range` rule over one receives whatever the option carries,
+with bounds that were never wrong. That residue travels with #500.
 
-#### FOUR MERGES SINCE THE PRIOR HANDOFF: #489, #492, #493, #494.
-
-#### ⭐⭐ THE DEAD-CODE SWEEP — **THREE CHORE PRs, ~1,900 LINES REMOVED, THREE LATENT DEFECTS FIXED. 2026-08-29.**
-
-**Not milestoned, no issues filed, no CHANGELOG entries — all three are private-layer removals with no reachable surface.** ⚠ **They were found by ASKING ONE QUESTION OF A MODULE THE MAINTAINER HAPPENED TO OPEN: *is this actually used, and does the framework already do it elsewhere?*** That question found three separate dead layers in a row. **It is the same question that found #476** (*is this internal member reachable from public API at all?*) — **reusable, and cheaper than any sweep.**
-
-| PR | what | merge |
-|---|---|---|
-| **#492** | `_core/publisher.py` — the STD `Publisher`/`Channel`/`Subscriber` pub-sub | `983cfa45` |
-| **#493** | `_core/colorutils.py` — a duplicate of six functions in `style/utility.py` | `5201de45` |
-| **#494** | `_core/capabilities/` — the Tk-surface mixin veneer | `20106128` |
-
-⚠⚠ **THE DURABLE LESSON, AND IT IS THE ONE TO CARRY: A PASS-THROUGH LAYER IS NOT INERT — IT SHADOWS.** The capabilities veneer re-declared 91 methods, **66 of them pure `super()` delegation**, and three of those re-declarations were **broken**: `grid_propagate()`/`pack_propagate()` re-typed native's `flag=Misc._noarg_` sentinel as `flag=None` and so took the **setter** branch on a no-arg call (**measured: `None` where plain tkinter says `True`**); `WidgetCapabilitiesMixin.forget()` shadowed `ttk.Panedwindow.forget(child)` with a zero-arg method, so the real ttk API raised `TypeError`; and `selection_own_set()` called a keyword-only native positionally and **had never worked**. **Deleting them WAS the fix for all three.** ⚠ **A layer that only forwards can still be wrong, because the signature is part of the behavior.**
-
-⚠⚠ **AND THE COUNTER-LESSON FROM THE SAME BRANCH: `forget()` HAD ZERO CALLERS, AND THE ONE FILE THAT WANTED IT HAD ALREADY ROUTED AROUND IT.** `splitview.py` carried `tk.call(str(w), "forget", pane)` with a comment naming the collision — **a correct workaround for broken inheritance, not caller misuse.** It reverted to the natural `self._internal.forget(pane._frame)`. **Before pricing a shadowing method as load-bearing, grep its call sites: `grep -rn "\.forget()"` returned ONE hit and it was the comment.**
-
-⚠⚠ **THE BREAK THAT NEARLY SHIPPED, AND IT WAS INVISIBLE TO `git diff` REVIEW: AN IDE "OPTIMIZE IMPORTS" HOISTED A FUNCTION-LOCAL IMPORT TO MODULE SCOPE AND CLOSED AN IMPORT CYCLE.** `base.py` gained `from bootstack.widgets._core.container import resolve_pack_order` at line 7, while `container.py:94` imports `PublicWidgetBase` **from `base.py`** with a comment saying exactly why it is late. **`import bootstack` failed outright** — every test leg would have died at collection. **The fix is to keep it function-local**, inside `attach()`'s existing import list. ⏭ **`.venv/bin/python -c "import bootstack"` IS THE CHEAPEST GATE THERE IS — run it before the suite, not after.**
-
-✅ **A PRE-EXISTING LATENT `NameError` WAS CLOSED AS A SIDE EFFECT.** `resolve_pack_order` was **called at `base.py:526` and never imported** on `main`. It survived because the call sits in the `placement.method == "pack"` branch and bootstack's flex containers **grid** their children, so `attach(index=0)` on a `Column` takes the grid path and never reaches it. **Nobody would guess this from the diff — it is worth knowing that the pack branch of `attach()` is effectively untested.**
-
-⚠ **AN OVER-BROAD FIND/REPLACE CORRUPTED FOUR MARKDOWN FILES AND `git diff` LOOKED FINE.** Renaming the module to `signal_binding.py` swept the bare word `signals` in `development/wrapper-parameter-audit-463.md` (Chart's **parameter destination**), `docs/_dev/api-reference-restructure.md` (the **public** `bootstack.signals` docs subsystem), `docs/_dev/handoff-archive.md` (the `docs/reference/signals` page — **the archive**) and the branch's own plan. **All reverted.** ⚠ **A rename sweep over prose must be scoped to the identifier, not the word** — and the archive is history, so a wrong entry there reads as authoritative.
-
-**Details, with the measurements, are in `development/plan-capabilities-collapse.md`** — the full 91-method classification, the native-signature comparison and the three defect controls. **Do not re-derive it.**
-
-⚠ **`_core/capabilities/` NO LONGER EXISTS.** `signals.py` → **`_core/signal_binding.py`** (renamed to stop it reading as the public `bootstack/signals/` package — the only two live modules in the package were never mixins), `localization.py` → **`_core/localization.py`**, both 100% renames. 13 survivors folded into `_core/mixins/widget.py`: `after_repeat`, four `bindtags_*`, `clipboard_set`, and the seven layout methods that dispatch to `_on_child_*` hooks on `GridFrame`/`PackFrame`. ⚠ **Those hooks are the ONLY load-bearing thing the veneer carried — everything else was delegation.**
-
-⚠ **`_core/colorutils.py` IS GONE — use `bootstack.style.utility`.** The color chooser was its only consumer. ⚠ **The two copies had DIVERGED: `style/utility.conform_color_model` CLAMPS each channel and the `_core` copy did not**, so the chooser gained clamping it never had. Outputs measured identical at every call shape in use.
-
-⚠ **THE `_windowingsystem` DUPLICATION IS STILL OPEN AND BELONGS ON #477.** Two private twins — `_runtime/wheel.py:38` and `widgets/toast.py:25` — plus **18 raw `tk.call("tk", "windowingsystem")` sites** across `_runtime`, `widgets` and `_impl`. ⚠ **Their fallbacks DISAGREE**: wheel returns `""` (degrades to the generic path, correct) and toast returns `"win32"` (**asserts Windows**, which drives a platform-specific default corner). **Not folded into these three because 8 of the 18 cache the value at construction, so consolidating changes WHEN the probe happens, not just where.**
-
-#### ✅ #486 SHIPPED (PR #489, merge commit `313f44fc`, 2026-08-29). Branch deleted local; ⚠ **the REMOTE branch `origin/fix/textarea-signal-binding-486` still exists at `9f45baf5` — delete it.** **Cap 3, spent 2 — round 2 said there was nothing for round 3 to review.**
-
-⚠⚠ **ITS PR BODY SILENTLY CLOSED AN UNRELATED OPEN ISSUE, AND NOBODY NOTICED FOR A DAY. AN ISSUE REFERENCE INSIDE EXPLANATORY PROSE STILL TRIGGERS GITHUB'S CLOSING KEYWORDS.** The body said *"…which closes #479's shape for these two"* — meaning `TextArea`/`CodeEditor` — and GitHub closed **#479**, which is about `OptionMenu`, two seconds after the merge. **Re-measured on `main` at `245b4df2` and REOPENED 2026-08-29: `subscribers 1 -> 1` across destroy, `sig.set()` reports success while a `TclError: bad window path name ".!optionmenu"` is raised inside the Tk trace.** Unchanged; `grep -n destroy optionmenu.py` still returns only the context menu. ⏭ **Write `#479's shape` with NO verb in front of it**, and after any merge check that the PR closed only what it meant to — `gh issue list --state closed --search "closed:>=<merge-date>"`.
-
-**READ `development/review-486-textarea-signal-binding.md` FIRST, THEN `development/plan-486-textarea-signal-binding.md`.** ✅ **BOTH WERE ARCHIVED IN THE BRANCH BEFORE THE PR OPENED** — the rule, and the second branch after #444 to follow it. They carry the design, both rejected alternatives, every measurement and two rounds of cleared lists. **Do not re-derive any of it.**
-
-⚠⚠ **THE ROUND'S HEADLINE: THE FIX WORKS, AND THE FIRST DRAFT OF THE RECORD SAID OTHERWISE.** Scored against the invariant a two-way binding claims — `sig() == widget.value` — **`main` disagrees in 4 of 5 states** (it reads back whatever its own code last wrote, through typing, clearing, blurring and refocusing) while the **branch disagrees in 0 of 5 without a placeholder and 1 of 5 with one.** Every state `main` gets right, the branch gets right.
-
-⚠⚠ **AND THE REASON THE FIRST DRAFT GOT IT BACKWARDS IS THE DURABLE LESSON: A POLLUTION DETECTOR SCORES A DEAD BINDING AS CLEAN.** The first probe only asked *"is the placeholder string in the signal?"*, so `main` — which never writes anything back at all — passed it, and the record called the branch a regression. **Ask whether the value is RIGHT, not whether the known-bad value is absent.** `development/probe_486_review_round1.py` now carries the agreement arm and says in its own docstring that arms 1–2 mislead without it.
-
-⚠⚠ **THE HEADLINE THAT OUTLIVES THE BRANCH: A READER SEAM WITHOUT A WRITER SEAM SILENTLY REVERTS `sig.set(...)` FROM APPLICATION CODE — AND A DEMO CAUGHT IT, NOT THE SUITE.** Round 1's finding was that the placeholder reached the bound signal, and its fix gave the core a reader (`_signal_text_source`) so the composite could answer `""` while its placeholder is up. **With only that half**, a model write landed in the raw document, the reader answered `""` because the flag still stood, and the push sent that `""` **back over the caller's value** — text gone, signal emptied, suite green. `_signal_text_sink` is the write half; **both are installed together, before `bind_signal`, and they must agree about what the widget's text is.**
-
-⚠⚠ **THE GAP THAT PRODUCED IT IS THE ONE TO CARRY: EVERY TEST DROVE THE WIDGET AND THEN THE MODEL, NEVER THE MODEL WHILE THE WIDGET WAS IN THE STATE THE FIX TOUCHED.** That is #390 round 3's finding in a new place — a feature with two doors into the same code, tested through one. **Clicking through the states is not a lesser instrument than the suite**; `development/demo_486_textarea_signal.py` is the demo that found it. The edit door is covered now.
-
-⚠ **THE MIRROR-IMAGE BUG WAS PULLED INTO SCOPE, AND THAT WAS FORCED RATHER THAN CHOSEN. AN EARLIER VERSION OF THIS SECTION SAID "DO NOT LET THE FIX GROW INTO IT" — THAT IS NOW WRONG.** Routing the model write through the composite's setter *is* the fix for it, and the alternative is data loss. **`TextArea` now reports the same thing through screen, `value` and signal in that state.**
-
-⚠ **`_showing_placeholder` IS NOT THE SUSPEND FLAG THE PLAN FORBIDS.** The ban is on a flag raised and lowered *around a write*, which a `when="tail"` event outlives. This is **durable state**, still `True` when the tail delivery arrives. Consulting it is sound; the echo guard's value comparison stays as it is.
-
-✅ **ROUND 2: NOTHING BLOCKING, one gate-2 vacuity in a test.** `test_rebinding_leaves_the_previous_signal_alone` **passed with the release deleted**, because `_push_to_signal` reads `self._signal` at call time — so an orphan can only ever push into the *current* signal and **no value assertion can see a leaked hook.** It asserts the hooks now (stale bind id gone from the binding script, no subscribers left on the replaced signal), each half controlled by deleting it. **Test-only, so gate 1 triggered no round 3.**
-
-⚠ **ROUND 2 MEASURED DESTROY ON BOTH ARMS AND `main` IS WORSE THAN ROUND 1 KNEW:** subscribers `1 -> 1` and `sig.set(...)` after destroy raises `TclError` on `main`; `1 -> 0` and silent here. **That closes #479's shape for these two widgets.** Also cleared, each measured: a rebind releases the push binding (5 rebinds, 0 orphans), two widgets on one signal converge with no echo, `read_only` works both ways, and all five public write paths (`insert`, `append`, `clear`, `undo`, `redo`) keep the signal in step.
-
-✅ **THE DEFERRED CHANGELOG LINE IS RESOLVED AND IN — in STRONGER wording than either round proposed, because the measurement forced it. Do not weaken it back.** On `v0.3.2` (byte-identical to `main` on this path, so the tag is a legitimate arm), writing a bound signal while the placeholder showed left `_showing_placeholder` standing — and `_on_core_change` and `_on_focus_out` both gate on it, so `value` returned `""` and **`on_input`/`on_change` fired ZERO times for everything typed afterwards, permanently.** The deferred wording named only `value` and read as a typing nit.
-
-⏭ **WHAT IS LEFT ON THE TEXTSIGNAL WORK, verified against `gh` 2026-08-29 — FOUR OPEN ISSUES AND ONE UNDECIDED DESIGN CALL.** **#488** (the core teardown has never run), **#490** (`Signal.clear()` never reaches these two), **#491** (`insert()`/`append()` write alongside the placeholder) — **all three unmilestoned**; plus **#479**, reopened above, on `0.5.0`. ⚠ **The design call is the one that is not an issue and will not surface as one:** `.signal` means **two different things** across the family — see the text-space/value-space split recorded under #458 below. **That is a family decision nobody has made, and no bug report will force it.**
-
-⚠ **TWO PRE-EXISTING `TextArea` DEFECTS WERE FILED OUT OF THIS BRANCH AND ARE NOT FIXED BY IT.** **#490** — a `Signal.clear()` never reaches `TextArea`/`CodeEditor`: **7 of the 9 field widgets that take a signal honor it, these two do not**, because `_on_signal_change` drops `None` and `None` is exactly what an empty arrives as for a widget with no Tk variable. ⚠ **The control is the argument it is a defect: the SAME `TextArea` honors the clear when a `TextField` elsewhere happens to realize the signal's variable, and ignores it otherwise.** **#491** — `TextArea.insert()`/`append()` reach `self._internal._core.insert(...)` directly, never clear the placeholder flag, and concatenate onto the placeholder on screen while `value` reads `""` and events stay suppressed. **The CHANGELOG line is scoped to a bound signal on purpose; do not widen it.** Probes: `development/probe_486_clear_divergence.py` and `development/probe_486_changelog_reach.py`.
-
-**`TextArea` and `CodeEditor` bound `textsignal=` in ONE direction, and `.signal` returned `None` unconditionally.** Both from one cause: the textarea core holds the bound signal at a private `_signal` and neither exposed it nor ever wrote to it. **Fixed entirely in `_impl` — the wrappers were reading the right name all along**, so `core` gained a public `signal` property, the `TextArea` composite delegates to it, and the wrappers only lost their now-dead `getattr`.
-
-⚠⚠ **THE ECHO GUARD IS A VALUE COMPARISON AND MUST NOT BE "SIMPLIFIED" INTO A SUSPEND FLAG.** `ChangeNotifier._notify` emits `<<Change>>` with **`when="tail"`**, so a flag raised around the write is already cleared when the handler runs and misses the echo every time. **This is the same trap `Form` hit in PR #354** (`reference_async_change_event_suspend_guard`). Both directions dedupe on value. Measured: **exactly 20 subscriber fires for 20 alternating writes**, no amplification.
-
-⚠ **A non-`str` textsignal is REFUSED AT BIND — maintainer decision, 2026-08-28. Do not re-propose accepting it.** ⚠ **The hazard fires at BIND, not on the first keystroke**, because `bind_signal` seeds the widget and that seed is itself an edit: measured before the guard, `bs.TextArea(textsignal=bs.Signal(123))` printed a bare traceback at construction, left the signal on its old value, and put **nothing on the background-error channel**. The guard reads the **public `Signal.type`** and reproduces `_reconcile`'s message shape, so it is byte-identical to `bs.TextField(textsignal=bs.Signal(123))` — pinned by a test that asserts the two messages match rather than assuming it.
-
-⚠⚠ **A PRE-EXISTING DEFECT WAS FOUND BY THE DESTROY TEST AND IS ONLY HALF FIXED HERE — #488.** `_on_destroy` opens with `if event.widget is not self: return`, and **the only `<Destroy>` it ever receives names the inner `Text`**, so the guard rejects every call and the entire cleanup block has never run. Measured identical on both arms of `git stash push -- src/`, so it is **not** a consequence of this branch. **Only the signal hooks are released here.** ⚠ **DO NOT "FIX" IT BY CORRECTING THE GUARD** — `_chain.destroy()` and the wheel `unbind_class` sweep sit behind the same condition, so repairing it starts running long-dead teardown for the first time, with a blast radius nobody has measured.
-
-**⏭ BOTH ROUNDS CLEARED A LONG LIST WITH MEASUREMENTS — do not re-derive them.** The full account with commands is in `development/review-486-textarea-signal-binding.md`.
-
-- **`off_change(bind_id)` does NOT wipe its siblings**, which was the round's most expected hazard: `core.text` carries **five other `<<Change>>` bindings** (`_on_core_change`, `CodeEditor`'s typed-change emitter, the line-number sidebar, the search overlay, user callbacks), and tkinter's `unbind(seq, funcid)` historically dropped every binding for the sequence. **On the project's `>=3.12` floor `Misc._unbind` is selective** — measured: an unrelated handler still fires after a rebind.
-- **The refusal is WIDER than the plan's `int` example and is still consistent.** `signal.type is not str` rejects **any** non-`str` type, `NoneType` included, so `bs.TextArea(textsignal=bs.Signal(None))` is accepted on `main` and refused here — and **`TextField` refuses `Signal(None)` with the byte-identical message.** The consistency claim holds beyond the case the test pins.
-- **`Signal.set('')` needs no `allow_empty`** (`''` is an ordinary `str` to `_reconcile`), so clearing a bound field cannot raise.
-- **The destroy change touches exactly ONE widget.** `core.bind()` is overridden onto `self.text`, so the handler only ever receives the inner `Text`'s own `<Destroy>` and `_unbind_signal()` runs once. ⚠ The code comment says *"any Destroy in this subtree"*, which overstates it.
-- **Chrome-versus-content sweep is complete.** `grep -rn "text\.insert\|text\.delete"` over the package returns the placeholder pair, search-and-replace, undo, smart-indent and the core's own setters — **the placeholder is the only one writing something that is not the user's content**, which bounds Finding 1.
-- **Two gate-2 notes, NO test fixes.** `test_a_destroyed_widget_stops_receiving_and_raises_nothing` names the background-error channel as its observable, but the signal is unrealized so `Signal.set` notifies **synchronously** and the control on `main` fails by a raise propagating out of `sig.set(...)` — so its `assert not seen` is the assertion that **cannot** fail, and the load-bearing one is implicit. ⚠ **It becomes vacuous the moment anyone wraps that `sig.set` in a `try`.** And `test_alternating_writes_do_not_echo` bounds at `<= 25` against a measured 20, which is correct slack for an unbounded failure — **do not "tighten" it.**
-- ⚠ **Two-way binding doubles the per-keystroke cost and it scales with document size** — measured on a 480 KB / 6000-line `CodeEditor` with a signal bound: **1.99 ms per keystroke on `main`, 3.92 ms on the branch.** Inside a frame budget at that size, linear beyond it, paid only when a signal is bound. **Inherent to the contract — not a defect and not a fix**, recorded so a later `CodeEditor` performance report is not re-derived.
-
-#### ✅ #460 SHIPPED (PR #487, merge commit `6d03a2a9`, 2026-08-28). Branch deleted local + remote, head **`dd15815c`**.
-
-**Seven widgets annotated `.signal` as `Signal | None` and could never return `None`** — each forwarded with `getattr(self._internal, 'signal', None)` while the internal's `signal`/`textsignal` lazily create on first access, so the default was dead code. Dropped the `| None` and collapsed the `getattr` to direct delegation, matching `Slider`. **Plan archived at `development/plan-460-signal-annotation.md`.**
-
-⚠⚠ **IT MERGED WITH NO REVIEW ROUND, AND WITH `PLAN.md` STILL IN `main`'s ROOT** — archived in a follow-up commit (`fdb367cc`), which is exactly the failure the protocol's archive-before-PR rule exists to prevent.
-
-⚠ **THE ISSUE'S OWN TABLE WAS STALE AND SAID SIX LOCATIONS / EIGHT WIDGETS. IT WAS FIVE AND SEVEN.** `SelectButton` was the sixth until **#461 moved it onto `ValueSignalMixin`**, after which it correctly returns `None` when unbound. **Measure the population before trusting an issue written against an older `main`.**
-
-⚠ **`TextArea` and `CodeEditor` were excluded, but NOT for the reason the issue gives.** It lists them as "correct, do not fix" having checked only the *unbound* case. Their `| None` is accurate; the `Signal[str]` half was the unreachable one. **That is #486.**
-
-#### ✅ #444 SHIPPED (PR #485, merge commit `baced70b`, 2026-08-28). Branch deleted local + remote, head **`85c77bde`**. Kept for its traps.
-
-**A modal `bs.Window` took the grab and nothing ever handed it back.** `grep -rn "grab_release\|grab_current" src/bootstack/_runtime/toplevel.py` returned nothing, which is the whole defect in one command. Tk drops a grab when its holder is destroyed but does **not** restore the grab that holder displaced, so a modal opened from inside another modal left the outer one on screen, still blocking its caller, holding nothing — the user clicked straight past it into the main window. **Pre-existing, identical in `0.2.3` and `0.3.0`, NOT a regression from #440**, which fixed the same defect scoped to the dialog classes.
-
-⚠ **The helpers were MOVED, not copied.** #440's `capture_grab`/`restore_grab`/`_log_grab_failure` now live in `_runtime/grab.py`; `dialogs/_impl/dialog.py` imports the two names, so `datedialog.py:19` and #440's eight test call sites keep resolving **through `dialog.py`** with no alias and no re-export. **The move was forced by direction** — `dialogs` imports `Toplevel` from `_runtime`, so `_runtime` reaching back would be a cycle. **Do not write a second pair.**
-
-⚠ **Restore is bound on `<Destroy>`, not paired around `block_until_closed()`, and that was MEASURED before it was chosen.** A modal window does not have to block, so a blocking-only pairing leaves `show()`-then-`destroy()` unfixed. The risk was that Tk's own grab release might land after our handler; `development/probe_444_grab_restore_ordering.py` shows the restore wins the race, on **win32 and X11**. **Do not re-propose option A.**
-
-⚠⚠ **ROUND 1's BLOCKING FINDING IS THE ONE TO CARRY: A GUARD ON ONE HALF OF A PAIR IS NOT A GUARD.** `show()` captured the token **unconditionally** while `_bind_grab_restore` guarded itself against re-entry. On a second `show()` the window already holds the grab, so it captured **itself** and discarded the opener's token — **#444's symptom reintroduced by #444's fix**, on three ordinary public spellings (`show()` twice; `show()` then `block_until_closed()`, which shows it again itself; `show()` then `show(anchor_to=…)`, which is what that parameter is *for*). Measured `restored 2 / lost 3` before, `5 / 0` after. **Both halves now share one gate, `_grab_restore_bound`.** ⚠ **The gate is the BIND flag, not "have we captured before"** — if the first `grab_set()` fails, nothing was bound and a later `show()` **should** capture again.
-
-⚠⚠ **ROUND 2's DURABLE FINDING: THE TESTS DROVE A STAND-IN FOR THE SCENARIO THE CHANGELOG NAMES, AND NOBODY HAD CHECKED THE REAL ONE.** The entry headlines *"an 'Advanced…' button on a dialog"*; the tests use a raw `tkinter.Toplevel` as the opener. **Dialog and window take their grabs through different code paths** (`dialog.py:478` directly, `Toplevel.show()` through the new helpers) **and nothing exercised them against each other.** `development/probe_444_review_round2.py` drives the real pairing: `*** LOST ***` at `main`, `OK` after — with a no-nesting **control OK on both arms**, so a LOST row is the defect and not the instrument. **Three-deep nesting unwinds correctly at every depth; depth had never been measured.** The reverse direction (a dialog inside a modal window) is OK on both arms, which is correct — that is #440's path. **Re-run the probe rather than re-deriving any of it.**
-
-**Two rounds under a cap of 2, each in a fresh session.** Round 1: five findings, all originating outside the author's risk list, one blocking; 1-4 fixed, 5 left under gate 2. Round 2: **nothing blocking**, three structural notes, no fixes. Plan and both records archived **in the branch, before the PR opened** — `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`, so nothing landed in `main`'s root at merge.
-
-⚠ **CROSS-PLATFORM: Windows and Linux MEASURED, macOS NOT.** The no-platform-branch design (read the kind back from Tk rather than assuming) is measured on X11 with a **REAL global grab**, not the stub — an isolated Xvfb display makes that safe, which no live desktop does. Kind reads back faithfully and a displaced global grab survives the round trip as `global`. **macOS is the whole remaining gap** and folds into #452's trip; the arms and commands are in the archived review. ⚠ **`tk busy` is already a measured silent no-op on Aqua (#429), so the worry is concrete** — but only ONE of the two outcomes is this branch's problem, and the archived review says which.
-
-⚠⚠ **`git mv` STAGES THE RENAME OF THE *INDEXED* BLOB, SO EDITS MADE BEFORE IT STAY UNSTAGED — AND THIS PROJECT RUNS THAT EXACT OPERATION ON EVERY BRANCH.** Archiving `PLAN.md`/`REVIEW.md` with `git mv` after editing them produced `RM` in `git status`, and a plain `git commit` then shipped the rename at **100% similarity** with a message describing a record the commit did not contain. Caught only by reading `git show --stat`. **`git add` the moved file after the `git mv`, and check the rename similarity is NOT 100% when you meant to change the content.**
-
-
-**✅ #461 + #459 MERGED (PR #475, merge commit `c8ebfb7c`, 2026-08-26).** #461 (`SelectButton`'s `signal=` bound the option's LABEL, not its value) and #459 (`TimeField` emitted a change while seeding from a signal). Branch deleted local + remote, head **`e3593cd1`**. Plan and round 1 record archived at `development/plan-461-selectbutton-signal-value.md` and `development/review-461-selectbutton-signal-value.md`. Cap was 3, spent 1.
-
-**✅ #476 MERGED (PR #478, merge commit `5cf398f8`, 2026-08-26).** Every `SelectButton` fired `on_change` **twice** per selection. Branch deleted local + remote, head **`5e72f9b4`**. Plan and round 1 record archived at `development/plan-476-selectbutton-double-change.md` and `development/review-476-selectbutton-double-change.md`. Cap was 2, spent 1 — round 1 found **no blockers in production code**, one should-fix in a test, and filed **#479**.
-
-⚠ **#476 WAS FOUND BY ASKING A QUESTION, NOT BY A SWEEP, AND THE QUESTION IS REUSABLE:** *is this internal member reachable from public API at all?* `OptionMenu._textsignal` is not — #461 deleted the wrapper property that read it and #472 made `bs.SelectButton(textsignal=…)` raise — and chasing that turned up two live `<<Change>>` subscriptions where the code assumed one. **`_bind_change_event` returned its handle for the caller to store; `__init__` stored it, `_delegate_textsignal` discarded it, and the cancel-guard saw `None` both times.** Fixed by having it store the handle itself.
-
-⚠ **DO NOT "FIX" IT AT THE DISCARDING CALL SITE.** `self._bind_id = self._bind_change_event()` at `optionmenu.py:368` works and leaves the identical trap for the next caller — there has already been one. **`_bind_change_event` stores its own handle now; a caller that discards the return is harmless.**
-
-⚠⚠ **ROUND 1'S DURABLE FINDING: A TEST CAN GO RED ON THE BROKEN BUILD AND STILL NOT TEST WHAT IT IS NAMED FOR — because pytest stops at the first assertion.** `test_rebinding_the_textsignal_replaces_the_subscription` closed on `len(menu._textsignal._subscribers) == 1`, the count on the **NEW** signal, which reads **1 on both arms**. It failed pre-fix only on its *first* assertion, so **the control never reached the line the whole test exists for.** What `:368` leaked is the orphan on the **REPLACED** signal — **50 across 50 rebinds before the fix, 0 after** — and that is what it asserts now. **When a control goes red, check WHICH assertion produced it.**
-
-⚠ **#479 CAME OUT OF ROUND 1. ON `0.5.0` (maintainer, 2026-08-26), UNFIXED:** `OptionMenu` never cancels its `<<Change>>` subscription on destroy, so a destroyed widget keeps emitting — `event_generate` on a dead window raises `TclError: bad window path name` **inside the Tk trace**, invisible to whoever wrote the signal, and the subscription **pins the destroyed widget in memory** (measured with a weakref after `gc.collect()`). **Pre-existing, and #476 halved it** (two leaked subscriptions per widget before, one after). **Not reachable from public API** — #472 rejects `textsignal=` at the wrapper and `SelectButton` hands out no property that reads the internal's. ⚠ **The fix has an exemplar in the repo: `ValueSignalMixin._bind_value_signal` (`field_mixin.py:305-310`) holds its id and releases it on destroy**, measured clean (`subs 1 -> 0`, widget collected). ⚠ **It is NOT #469** — that is a *queued* `when="tail"` event reaching a *different* widget; this is a *live subscription* firing new emissions at a dead one. Re-run `development/probe_476_review_round1.py` rather than re-deriving any of it; it prints which arm it is on by reading the source.
-
+⚠⚠ **#479 WAS CLOSED TWICE BY PROSE, THE SECOND TIME BY THE COMMIT DOCUMENTING THE
+FIRST.** `0e31f7ad`'s body quotes PR #489's phrase *"which closes #479's shape"* —
+and GitHub's parser re-triggered on the quotation, 61 seconds after the reopen.
+**The trap is not limited to PR bodies: a commit message on the default branch
+closes issues the same way, and QUOTING the bad phrase re-arms it.** Write the
+keyword and the number apart. Reopened 2026-08-29.
 #### ⭐ #477 — COLLAPSE THE `_impl` LAYER BEFORE 1.0. **Maintainer's framing, filed 2026-08-26, unmilestoned.**
 
 ⏭ **THE `_windowingsystem` DUPLICATION BELONGS HERE — measured 2026-08-29, not yet filed on the issue.** Two private twins with the same body (`_runtime/wheel.py:38`, `widgets/toast.py:25`) plus **18 raw `tk.call("tk", "windowingsystem")` sites**; **8 of the 18 cache the result as `self.winsys` at construction**, so consolidating changes *when* the probe runs, not just where. ⚠ **Their fallbacks DISAGREE and one is load-bearing**: wheel returns `""` on failure (nothing equals it, so it degrades to the generic path — correct), toast returns `"win32"` (**asserts Windows**, and that drives `_resolve_corner`'s platform default). **Deliberately left out of PRs #492/#493/#494.**
@@ -305,162 +218,18 @@ release has already run on.
 
 ⚠ **INVISIBLE TO THE #463 AUDIT, AND THAT IS THE POINT.** All five of its modes take a **constructor keyword** as their unit, so machinery no keyword reaches is outside every one of them. #463 reported "nothing new" over exactly this ground.
 
-#### ✅ #390 SHIPPED (PR #480, merge commit `e6f67961`, 2026-08-27) — **`0.4.0`'s biggest item is in.**
-
-**A `Signal` can hold an empty value when it declares one: `bs.Signal(v, allow_empty=True)`, `Signal.clear()`, `Signal.allows_empty`, and `dtype=` for a signal that starts empty.** Branch deleted local + remote, head **`cfa29a75`**. Plan and all three review records archived at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. **Cap was 3, spent 3** — round 1 reviewed a design that was replaced mid-branch, so only rounds 2 and 3 saw shipped code.
-
-⚠ **THE BRANCH NAME WAS A LIE AND SO IS THE 2026-08-26 COMMENT ON #390 — both say `nullable=`.** The shipped spelling is **`allow_empty=`**, re-scoped 2026-08-27: the concept is *empty*, not *null*, because `clear()` already ships on nine field widgets meaning one verb with a type-dependent spelling. **Read the archived plan, not the issue comment.**
-
-⚠⚠ **THE EMPTY IS DECIDED BY THE BINDING, NOT THE TYPE, AND THERE ARE THREE ANSWERS — NOT TWO.** `None` normally; `''` where the signal **is** the widget's own variable (a variable holds only strings); and **`set()` for a `set`-typed signal, realized or not**, because an empty set is a real member of the type. **The two-answer version was written into `signals.rst` AND the CHANGELOG and was wrong in both.** Round 3 caught the docs; the CHANGELOG copy survived to `a13b64f3` because the completeness claim was scoped to `signals.rst` without saying so. **Write the command, not the conclusion.**
-
-⚠ **`bool`, `int` and `float` REFUSE at the binding — `issubclass`, never identity.** Their variables have no empty member, and the failure they would otherwise produce is invisible: no error at the write, then a `TclError` at an arbitrary later `.get()` inside a Tk trace. **The identity spelling shipped first and was wrong four times over** — an `IntEnum` is an `int` to `isinstance`, so it walked past the guard into an `IntVar` and reported `sig() == 0` while `allows_empty` said `True`. **`grep -n "_type is \|_type in (" src/bootstack/signals/signal.py` bounds it**; the one survivor is `from_variable`'s recovery chain, left on purpose.
-
-⚠⚠ **ROUND 3'S DURABLE FINDING, AND IT IS ROUND 2'S ONE TURN OUT: A PARAMETRIZE OVER WIDGETS IS BREADTH ALONG ONE AXIS ONLY.** `test_the_value_space_fields_all_report_a_clear` covered all five value-space fields and **seeded every one with a value**, so the bind-time door went untested — and that is where the defect was. `_bind_value_signal` read a `None` from the signal as *"nothing to give"* and seeded the signal **from the widget**, destroying a declared empty at construction. **Invisible on four of the five, whose own default is `None`; `NumberField` defaults to `0` and reported it.** **When a feature has two doors into the same code — a seed and a later write — a test that uses only one is half a test.**
-
-⚠ **A `map()` TRANSFORM NEEDS A GUARD ONLY WHEN ITS SOURCE ALLOWS EMPTY**, and it must return the empty of the type it derives, never `None` (`map()` does not propagate `allow_empty` — decision 4, unchanged). ⚠ **The branch first guarded the example whose source is an ORDINARY signal, where the guard is dead code, and wrote two paragraphs defending it** — reversed in `cfa29a75`. **Do not re-guard it.** The live example is in `signals.rst`'s emptiness section.
-
-⚠ **THE PROMOTION TRAP IS DISCHARGED — AND THE LAST WORD ON IT WAS WRONG TWICE, SO READ THIS ONE.** The #458 and #461 CHANGELOG tails now say *"declare it `allow_empty=True` and the clear reaches it"*. **They are accurate and they STAY**: `allow_empty=True` ships in the same release, so they document the opt-in, not a removed limitation. The real trap was the earlier `nullable=` wording and it is swept — `grep -n nullable CHANGELOG.md` is empty. **Do not delete those sentences at promotion.**
-
-**Filed out of it and OPEN: #481** (`Signal(None)` bare still builds a signal that can never hold a value — on `0.5.0`; ⚠ **its title still says `nullable=True`**, a parameter that never shipped), **#482** (a field's `value` lags a programmatic signal write until the next commit — pre-existing, reproduces with an ordinary signal), and **#484** (every framework-created signal is `allow_empty=False`, so `clear()` on one raises advice naming a constructor the caller never wrote — **six reachable widgets**; ⚠ **the original `Signal.from_variable()` framing was wrong and that route is NOT publicly reachable**, since `RadioGroup`/`ToggleGroup`/`Tabs` expose no public `.signal`).
-
-⚠⚠ **#483 IS DOCUMENTATION, NOT A CODE FIX (maintainer, 2026-08-27), and the construction it names is CORRECT.** Measured in plain `tkinter`: the toolkit's checkbutton has **no tristate or indeterminate option at all**, and its indeterminate paint is a widget state fully orthogonal to the bound variable — settable while the variable reads `1`. **So the third state was never a variable concept to lose**, and bootstack already surfaces more than the toolkit does, because `checkbox.value` returns `None`. ⚠ **`bs.Checkbox(tristate=True, signal=bs.Signal(False))` shows unchecked, reports `False` and its signal reads `False` — all three agree. DO NOT RE-FILE IT.** The residue is the runtime `cb.value = None`, where the widget paints indeterminate and the signal still says `False`; only a Python-side rebinding of boolean controls closes that, which is #477's territory.
-
-**Three things from #472 outlive it. Read the archived review before touching the seam, the docs scripts, or #466:**
-
-- ⚠⚠ **A GUARD'S BLAST RADIUS WAS MEASURED OVER `src/` AND `tests/` AND NEVER OVER `docs/` — and `docs/` is where it bit.** Two shipped scripts passed keywords that had never existed (`bs.DataTable(enable_search=…)`, the INTERNAL key for `searchable`; `bs.DataTable(paginated=…)`, nothing at all) and the guard turned both from silent no-ops into hard `TypeError`s. **Nothing caught them: the suite does not run `docs/examples/`, Sphinx `literalinclude` does not execute what it includes, and CI runs neither.** ⏭ **THE DURABLE FIX BELONGS ON #466 AND IS NOT BUILT: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** It would have caught both before the branch existed.
-- ⚠ **A VACUOUS TEST INSIDE A SUITE THAT COVERS THE BEHAVIOR ELSEWHERE IS A DIFFERENT FINDING FROM A COVERAGE HOLE — and the review got this wrong first.** `test_declared_forwarders_still_forward[Chart]` passes without testing anything wherever `matplotlib` is absent (every CI leg — `ci.yml` installs `-e .` only), because `bs.Chart(bogus=1)` raises *"requires matplotlib"* before `__init__` reaches the split. The record first concluded the exemption was therefore unguarded on CI. **It is not** — `test_declared_forwarders_are_exactly_the_five` never constructs a widget and catches it regardless. **Review the test's siblings before pricing its vacuity.**
-- ⚠ **`probe_wrapper_parameter_delta.py --arm leftovers` IS THE WRONG INSTRUMENT FOR THIS AREA NOW, and would report a working fix as a tool bug** — it compares the STATIC source verdict against construction, so a wrapper that rejects while still *looking* like a dropper reads as a DISAGREE under a banner saying a disagreement is a probe defect. **Use `development/probe_383_unknown_kwarg_policy.py`**, which classifies by construction only.
-
-⚠ **#472 IS NEW AND IS NOT #383.** Gap 3 (unknown keyword **names**) was split out of #383 on 2026-08-25 and **moved to `0.4.0`**; **#383 keeps gaps 1 and 2 (bad *values*) and stays on `0.5.0`** with #369/#408/#416. **The batching rule did not argue for holding it**, and the measurement that overturned it is on #472: the rule minimizes the number of releases that force a migration, and `0.4.0` already forces one (#465's rule-type guard raises; #461 breaks working code), so it is two either way. **Do not re-propose deferring it.**
-
-**#465 merged 2026-08-25 (PR #471), preceded by #449's harness fix (PR #470).** Their plan and review are archived at `development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md`.
-
-**Three things from #465 outlive the branch. Read the archived review before touching the field family or the harness:**
-
-- **`Select` declares `_VALIDATION_KIND = None`, deliberately.** A `Select`'s value kind belongs to its **options**, not to the widget: `SelectBox._validation_value` decodes the label back to the option's value, so a `range` rule over numeric or `date` option values **works** and must keep working. ⚠ Declaring the mixin's `'text'` default there rejects it at attach time and **breaks running apps at construction** — that was round 1's blocking finding, and the plan's contrary measurement was taken on a `Select` whose text equals its value, which cannot reach the decode.
-- ⚠ **A `when="tail"` event can OUTLIVE its widget and be delivered to a DIFFERENT one.** Proven by payload match, not inference. Filed as **#469**, unfixed in the product; `tests/conftest.py::_reset_scene` now pumps `root.update()` before destroying, which is what closed #449. **See the Tk traps section.**
-- ⚠ **A RATE IS NOT EVIDENCE for a timing-dependent flake, because non-fixes silence it too.** Instrumenting the #449 leg made it pass; so did `update_idletasks()`, which does not drain the queue at all. **Assert the invariant.** Full account in the archived review's addendum.
-
-#### ✅ #472 — mode 3 is FIXED and reviewed (PR #473). Kept only for what outlives it.
-
-**Shipped exactly as decided: default-strict at the seam, declarative class-flag opt-out.** `_split_layout_kwargs` is an instance method that raises on whatever survives the split, naming the widget and every leftover key; the five deliberate forwarders (Chart, MenuButton, Picture, StatusBar, Toolbar) opt out with `_forwards_kwargs = True`. **Measured by construction, not read from source: `dropped=40 rejected=10` before, `dropped=0 rejected=50` after**, with the probe's control run at the base commit so the zero is a measurement. **The whole analysis is in the archived plan and review — do not re-derive it.**
-
-- ⚠ **`App` and `Window` ARE NOT a third shape, which was the easy misread.** They forward their catch-all deliberately (`app.py:172`, `window.py:179`) and never call `_split_layout_kwargs`, because a top-level window is never placed in a layout — **so the seam guard does not touch them, and it did not.** They still reject, through the toolkit: `bs.App(bogus=1)` raises `TypeError` naming **`Tk.__init__`**, `bs.Window(bogus=1)` raises `TclError`. **That message shape is #383's OTHER gap (raw toolkit errors), still open on `0.5.0`.**
-- ⚠ **The four crafted `textsignal` messages were the trap, and they are the thing most likely to be re-broken by a later "simplification".** `Select`, `DateField`, `NumberField` and `TimeField` ran the split **before** their bespoke `raise`, so a strict split would have fired the generic error first and silently retired all four — including #458's public explanation of a deliberate behaviour change. **Each check now sits ABOVE its split and each is pinned by a test asserting the specific text.** `grep -n "in kwargs" src/bootstack/widgets/*.py` returns exactly those four in constructor scope; **there is no fifth.**
-- **The duplicated guards in `boolean_controls.py` and `radio_variants.py` are now DEAD CODE** — the seam raises first. Left in place deliberately (round 1 nit, no action); **do not read them as the live guard.**
-
-
-**⏭ THE MEASUREMENT PASS IS DONE AND FILED NOTHING NEW.** Every real finding lands on an issue that already existed. **The pass's product is the MEASUREMENT those issues were missing** — read `development/wrapper-parameter-audit-463.md` before touching any of them, and do not re-derive it. The instrument is `development/probe_wrapper_parameter_delta.py` (arms `scan`, `control`, `leftovers`, `roundtrip`); **re-run it rather than reading the wrappers again.**
-
-| mode | what | measured | verdict |
-|---|---|---|---|
-| 1 | never forwarded | **0** | clean |
-| 2 | wrong destination | 100 renamed destinations | **1 defect — #461.** The other 99 are `_impl` spelling |
-| 3 | swallowed as a layout key | **40 of 52 wrappers** | **THE finding.** Was #383 gap 3, split out as **#472** and ✅ **FIXED (PR #473)**. ⚠ **This row is now HISTORICAL — so is `--arm leftovers`, which reports the fix as a tool bug** |
-| 4 | accepted then ignored | not statically decidable | 1 weak candidate (`Carousel.index`) |
-| 5 | the type lies | **8** | **= #460's population exactly**, `TextArea` cleared |
-
-⚠⚠ **THE FIVE MODES ALL TAKE A CONSTRUCTOR KEYWORD AS THEIR UNIT, SO A MISSING METHOD OR PROPERTY IS INVISIBLE TO EVERY ONE OF THEM — "FILED NOTHING NEW" IS BOUNDED BY THAT, AND IT IS NOT A CLEAN BILL OF HEALTH.** #465 is the proof: `Select` forwards every parameter it declares — **clean under all five modes** — while hiding six public members its internal has fully wired. It was filed by an external user three days after this pass reported nothing new. **There is a MODE 6, capability gap: what can the internal do that the wrapper gives no way to reach?**
-
-⚠ **A one-hop scan exists — `development/probe_wrapper_capability_gap.py` (arms `scan`, `control`) — and its OWN CONTROL PROVES IT CANNOT SEE #465.** The capability sits two hops down (`_internal._entry._valid_signal`) behind underscore names, while the scan diffs one hop over public names. It finds the neighbourhood (`on_valid`/`on_invalid` show up on `Select`) and misses the members the user asked for. `--arm control` asserts that miss on purpose, so a quiet row cannot be read as coverage.
-
-⚠ **AND ITS SILENCE MEANS NOTHING, WHICH IS THE POINT.** It reports **1267 one-hop candidate rows (75 "strong")**, and a further **1815 two-hop members across 155 sub-widget objects are enumerated but UNEXAMINED** — **zero classified**, with three hops and beyond not enumerated at all. **75 strong is a sample from an unbounded region, not a population**, and the ~29 wrappers it names are not evidence that the other 28 are clean. **Do not quote the 75 as findings.**
-
-⚠ **WHAT WOULD MAKE SILENCE MEANINGFUL IS A CENSUS WITH A VERDICT ON EVERY ROW, NOT A BIGGER FINDER** — the design #466 already chose for mode 2: pin every row to a committed snapshot with a reason column and assert the snapshot MATCHES, so a new row fails once at the commit that introduces it. **#466 needs amending on this: a parameter-level snapshot cannot see members.**
-
-⚠ **BUT A CENSUS IS NOT WHAT DECIDES A SINGLE WIDGET, AND REACHING FOR ONE IS THE TRAP THIS ALREADY FELL INTO.** `docs/_dev/widget-review-and-docs-standards.md` Part 1 step 1 **already** covers this — *"Unexposed capability / API gaps — internal features the public layer never surfaces, or surfaces inconsistently"* — as a **per-widget human read**. Parameters mechanize; capabilities do not, because the wrapper deliberately **renames, reshapes and hides** (the internal's `on_valid`/`off_valid`/`on_validated` callback pair becomes `valid`/`error` Signals **plus** `on_valid`/`on_invalid`, with `on_validated` dropped — none of it derivable from the internal's surface). ⚠ **"The internal has it" IS NOT THE STANDARD; applying it mechanically would re-Tkinterize the public layer.** **Walk one widget at a time against the existing checklist.** The field family is where the defects concentrate — #453, #455, #458, #460, #461, #465, #415 and #416 are all field-family.
-
-- ⚠ **MODE 2 CAME OUT ESSENTIALLY CLEAN, AND THAT IS A NEGATIVE RESULT WORTH SOMETHING ONLY BECAUSE THE CONTROLS PASS** — the same scan finds #461 on `main` and finds #458 at the pre-fix commit. **The wrapper layer's forwarding is in better shape than the recent defect run suggested; the exposure is strictness (mode 3), not mis-wiring.**
-- **What got 100 mode-2 rows down to 1 was DIVERGENCE**, not the rename itself: a public name that lands on a *different* internal key in some other wrapper. `max_value -> maxvalue` is ordinary; `signal -> textsignal` when nine siblings say `signal` is #461. **Reuse that ranking, don't re-invent one.**
-- ⚠ **#383 GAP 3 IS NO LONGER BLOCKED.** Its open question was *"the shared split seam needs the wrappers that legitimately forward `**kwargs` counted first."* Counted: **40 drop, 5 reject, 5 forward, 2 never split.** And **the fix already ships** — `_BooleanControlBase.__init__` has the six-line guard covering five public widgets. Gap 3 needs no design, only placement.
-- ⚠ **`Select`, `DateField`, `NumberField` and `TimeField` LOOK strict and are NOT.** They carry an `if "textsignal" in kwargs: raise` guard, which rejects **one known name** and says nothing about the rest. **A specific-key guard is not a leftover guard** — the audit's own static pass credited all four with rejecting until construction disproved it.
-- ⚠ **NOT COVERED, AND NOT CLEAN: 84 params across `AppShell` (31), `Workbench` (34), `ThemeToggle`, `Notification`, `Snackbar`.** They build no internal in their own `__init__`. `App`, `Window` and `Splash` were in that list until the probe learned the alias hop.
-- ⚠ **THE SURFACE FIGURE MOVED AND BOTH NUMBERS ARE RIGHT.** The audit plan (`development/plan-463-wrapper-audit.md`) says **77 classes / 890 params / 62 catch-alls**; the scan reports **65 / 810 / 52**. The plan counted every class in the wrapper modules; the scan counts only what a public `__all__` exports, skipping 17. **Different populations, not a discrepancy** — say which you mean.
-
-**⏭ THE PASS IS OVER; WHAT IS LEFT IS FOUR MAINTAINER DECISIONS, none of which a session should make alone:**
-
-1. ✅ **Mode 3: shared seam or per-wrapper? — DECIDED (maintainer, 2026-08-21): DEFAULT-STRICT AT THE SEAM, with a DECLARATIVE class-flag opt-out** for the five wrappers that forward leftovers on purpose (Chart, MenuButton, Picture, StatusBar, Toolbar). **`PLAN.md` §1 carries the shape, the code sketch and the reason.** ⚠ **The reason is not the edit count** — under opt-in the next wrapper anyone writes silently joins the 40; under default-strict a new wrapper is strict for free. **Do not re-propose per-wrapper opt-in.** Lands on **#383 / `0.5.0`** — the fix raises, which is that milestone's rule.
-2. ✅ **#460's fix vs its milestone — DECIDED (maintainer, 2026-08-21): it STAYS ON `0.4.0`.** Dropping `| None` from eight annotations does retype what a public property returns, which is `0.5.0`'s membership rule verbatim — **but the released line is `0.3.2`, and deferring a typing fix two minors to honor a rule about batching migrations costs more than it saves.** `0.4.0` is a minor already (forced by #461), so the retype rides a minor either way. **Ship it with the other fixes. Do not re-propose the move.**
-3. ✅ **#463's disposition — DECIDED (maintainer, 2026-08-21): CLOSED as completed**, with the table as its artifact. The durable guard was filed FRESH as **#466** rather than re-scoping #463, because #463's title, body, controls table and explicit *"ships no production code"* boundary all describe a finished measurement pass. **Do not re-open #463 to hold guard work.**
-4. ✅ **The `_impl` naming inconsistency — DECIDED (maintainer, 2026-08-21): NOT AN ISSUE, it is internal.** (`readonly`/`read_only`, `maxvalue`/`maximum`, `items`/`options`/`values`, `override_redirect`/`overrideredirect`.) **Verified reachable-from-public before closing it, not assumed:** `Form`'s `editor_options` builds the PUBLIC wrapper and the bag carries that widget's public options (`_impl/composites/form.py:650`); `readonly` at `textfield.py:127` is the ttk STATE string, not a bootstack parameter; `MenuButton.menu_options`, `ButtonGroup.add`, `RadioGroup.add` and `Toolbar.add_widget` all route through `merge_kwargs` against public options. ⚠ **The one real leak path is `Picture` and `Chart`**, which do `internal_kwargs.update(kwargs)` (`picture.py:96`, `chart.py:158`) — so THEIR internals' vocabulary is reachable public surface. **None of the four names appear on those two internals** (grepped), so it does not touch this decision — but it is why `PLAN.md` §4 asks whether the five forwarders deserve a better error instead of an opt-out. **That is a #383 question, not a naming one.**
-
-**The durable guard is the half that does not decay. It is now FILED AS #466 and still NOT BUILT.** A parameter-level `test_public_surface.py`-shaped test written **to the five modes**. ⚠ **Read #466 rather than re-deriving its shape** — it carries three things this file will not repeat: that it must not inherit the existing file's blind spot (that one gates the top-level *name set* and never asserts a submodule is unreachable as `bs.*`, which is how the `bs.events.X` drift survived two months); that the **84 unanalysed params are a hole, not coverage**; and the mode-2 design below.
-
-⚠ **#466 AS FILED IS PARAMETER-LEVEL AND THEREFORE CANNOT SEE A MISSING METHOD OR PROPERTY — IT NEEDS AMENDING, and #465 is the proof it would have missed.** See the mode-6 block above for the measurement (1267 one-hop rows, 1815 two-hop members unexamined, zero classified) and for why the answer is a **census with a verdict per row**, not another finder. ⚠ **And do not let that census block a single-widget fix** — capabilities are a per-widget read against `docs/_dev/widget-review-and-docs-standards.md`, not a mechanizable diff.
-
-⚠ **MODE 2 IS NOT A PLAIN ASSERTION AND MUST NOT BE BUILT AS ONE.** It is the only undecidable mode — #463's run flagged **100 rows to find 1 defect**, and **three of that pass's five tool defects were FALSE ALARMS pointing at working code**. A hard-failing mode 2 is a false-alarm generator, which is an actionable defect under gate 2. #466's shape: pin every wrapper-param-to-internal-key crossing to a **committed snapshot** with a per-row classification and a **reason column**, and assert the snapshot MATCHES. A new crossing fails once, at the commit that introduces it; existing rows never re-litigate. It answers *"did the forwarding change unnoticed?"* instead of *"is this forwarding correct?"* — **and #458 and #461 would both have failed such a snapshot.**
-
-⚠ **THE PASS SHIPPED NO PRODUCTION CODE, as planned.** `git diff main...HEAD -- src/` was empty for its whole life. **Fixes are scoped separately, by the maintainer.**
-
-⚠ **FIVE TOOL DEFECTS WERE FOUND WHILE RUNNING IT, AND FOUR WERE CAUGHT BY RUNNING SOMETHING RATHER THAN READING IT** — three of those were **false alarms pointing at working code** (`TimeField(read_only=True)` was reported as writing a key nothing accepts; it works). **A static wrapper audit that is not cross-checked against construction ships false findings.** That is why the probe has an arm that constructs all 52 wrappers and compares the outcome to the static verdict (51 agree, 0 disagree). **Keep that habit for the guard.**
-
-⚠ **AND THE `main~` TRAP, WHICH COST THE FIRST CONTROL RUN A FALSE FAILURE:** the #458 before/after arm was pointed at `main~`, which is **two `docs(claude):` commits AFTER the merge** — the defect was long gone. **The commit that bounds a control has to be the one the defect actually lived in**, here `1f9a62d1^`, the fix's parent. It is pinned with a comment saying why.
-
-✅ **PLACEMENT DECIDED (maintainer, 2026-08-20): [#463](https://github.com/israel-dryer/bootstack/issues/463) on its own UNNUMBERED milestone `Wrapper and internal parity`.**
-
-⚠ **The reason it is unnumbered is specific and should survive: the findings will span compatibility categories.** Some fixes will RAISE where the framework accepts today (`0.5.0`-shaped), some add no surface (patch-line-shaped), some add public API (minor-shaped). **Until the table exists nobody knows the mix or the size**, so a release number would promise unmeasured scope. Findings get milestoned individually, by compatibility, once they are real.
-
-⚠ **NOT folded into `0.5.0 — Strictness and value types`, and that is settled on `0.5.0`'s OWN terms** — its membership rule is *"a change belongs here if it RAISES where the framework currently accepts, or RETYPES what a public property returns"*, and the audit as a whole does not meet it. **Do not re-propose the merge.**
-
-**Nothing was moved onto it.** #383 stays on `0.5.0` (its fix raises, so it meets that rule already); #460 and #461 stay on `0.4.0`, which they gate. ⏭ **#455 is the obvious candidate and was deliberately left alone** — unmilestoned, latent, and literally mode 4 (`Field.enable()/disable()/readonly()` write the ttk readonly state without re-deriving). **Moving it is a scope call, so it is a proposal, not a decision.**
-
 #### STATE OF THE WORLD
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #494 merge (`20106128`, the capabilities collapse, 2026-08-29)**, the **PR #493 merge (`5201de45`, colorutils)**, the **PR #492 merge (`983cfa45`, publisher)**, the **PR #489 merge (`313f44fc`, #486, 2026-08-29)**, **`b95f032e`** (the stray `memory/` files dropped), **`fdb367cc`** (#460's plan archived after the fact), the **PR #487 merge (`6d03a2a9`, #460, 2026-08-28)**, the **PR #485 merge (`baced70b`, #444, 2026-08-28)**, the **PR #480 merge (`e6f67961`, #390, 2026-08-27)**, the **PR #478 merge (`5cf398f8`, #476)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)** and the **PR #471 merge (`62728770`, #465)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
-| branches | **ONE — `fix/custom-rule-exception-467`, local and remote, head `8b8e0964`. Implemented, NOT reviewed, NO PR. Cap 2, spent 0.** ⚠ **`PLAN.md` is at its root deliberately** — the reviewer reads it there; archive before the PR opens. Verified 2026-08-29.** ⚠⚠ **THREE STALE REFS NEED CLEANING, and two of them are the "non-ancestor ≠ unmerged" trap in both directions:** the REMOTE **`origin/fix/textarea-signal-binding-486` (`9f45baf5`) still exists** though PR #489 merged — delete it on GitHub; local **`fix/datatable-context-menus-456` (`5176eebb`) IS an ancestor of `origin/main`** and is safe to delete; local **`feat/widget-capture-427` (`1654c60e`) is NOT an ancestor** — **check its PR state before touching it, do not assume either way.** Deleted on merge: `chore/collapse-capabilities-veneer` (**`d60044d7`**), `fix/textarea-signal-binding-486` local (**`9f45baf5`**), `fix/signal-annotation-460` (head **`dd15815c`**), `fix/modal-window-grab-444` (**`85c77bde`**), `fix/signal-nullable-390` (head **`cfa29a75`**), `fix/selectbutton-double-change-476` (**`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — verified at `b95f032e`.** #460's plan is at `development/plan-460-signal-annotation.md` (**no review record — that branch merged without a round**); #444's at `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`; #390's at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. ⚠⚠ **#460 PUT ONE THERE AGAIN — the PR merged with `PLAN.md` still in the root and it was archived afterwards in `fdb367cc`. THAT IS THREE OF THE LAST FIVE BRANCHES** (PR #478, PR #480, PR #487); only #444 archived in the branch before opening the PR, which is the rule. ✅ **#486 BROKE THE STREAK AND IT HELD: PR #489 archived both into `development/` IN THE BRANCH, BEFORE the PR opened** (`development/plan-486-textarea-signal-binding.md`, `development/review-486-textarea-signal-binding.md`), and the merge left the root clean with no follow-up commit — **verified at `20106128`**. ⚠ **The three chore PRs (#492/#493/#494) were reviewed by the MAINTAINER directly rather than through a protocol round, and no `REVIEW.md` was written.** Gate 1 was triggered by all three (each has a non-empty `git diff -- src/`) — **the review happened; the ARTIFACT did not.** `development/plan-capabilities-collapse.md` is #494's plan, written up front and archived in the branch; #492 and #493 have no artifact at all. ⚠ **So if one of these comes back, the evidence has to be re-derived** — that is the cost of the missing record, and it is the only one |
-| released | `0.3.2`. **`## [Unreleased]` carries #444, #456, #458, #459, #460, #461, #465, #472, #476 and #486 on `main`**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ✅ **#486's bullet landed with the PR #489 merge and is on `main` now** — it carries an upgrade warning of its own (a subscriber on a signal bound to a `TextArea` starts firing on user edits). ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade. ⚠ **PRs #492/#493/#494 deliberately added NOTHING here** — all three are private-layer removals with no reachable surface, which is the convention working, not an omission |
-| next release | **`0.4.0 — Signal binding on fields`** — #390, #444, #449, #456, #458, #459, #460, #461, #465, #472, #476 and #486 done; **#467 is the ONLY one left and it is IMPLEMENTED, awaiting round 1** (*a `custom` validation rule's exception escapes into the event loop on an automatic trigger*, not started). **Verified with `gh` 2026-08-29: 11 issues, 10 CLOSED, 1 OPEN (#467).** ⚠ **#486 ARRIVED 2026-08-28**, filed out of #460's measurement pass and milestoned by maintainer decision the same day. ⚠ **#444 ARRIVED 2026-08-27 from the patch line**, in the same pass that closed `0.3.x — Patch line` and cut `0.4.x`. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all`: 11 issues, 9 CLOSED, 2 OPEN (#467 #486).** That command is the authority for *issues*; the milestone API endpoint counts PRs too |
-| CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | ⚠⚠ **TWO PLATFORM FIGURES NOW, AND THEY ARE NOT COMPARABLE — SAY WHICH BOX YOU MEAN.** **macOS: `1676 passed / 33 skipped`, 33 legs, exit 0** — measured 2026-08-29 on `main` at `20106128`, `.venv/bin/python` 3.14.0, **`matplotlib` 3.11.0 PRESENT, `pandas` ABSENT**. **Windows: `1661 / 22`** at `f38482e1` (2026-08-28, `py -3.12`, both deps present) — that box has not been re-measured since, so **the Windows number is now THREE merges stale.** ⚠ **The four merges since moved the count by ZERO on macOS** (`1676` measured identically on the branch and on `main`): #486 added a test file, and #492/#493/#494 are pure removals that touched no test. ⚠⚠ **`test_capture.py` FAILED 11 OF ITS 23 ON THE FIRST macOS RUN AND PASSED 23/23 STANDALONE MINUTES LATER** — `PIL.UnidentifiedImageError`, i.e. the screenshot came back unreadable because macOS screen capture needs an **active, unlocked display**. **That is the environment, not a defect — do not chase it, and do not record a `1665` total from a locked screen** |
-| open milestones | **11** — verified against `gh` 2026-08-28, unchanged by the PR #485 merge. ⚠⚠ **THE COUNT IS UNCHANGED BUT THE COMPOSITION IS NOT: `0.3.x — Patch line` is CLOSED and `0.4.x — Patch line` was cut in its place** (2026-08-27), which is the rolling line's own rule — a line that turns over gets a NEW milestone, never a rename. **Do not read the unchanged 11 as an unchanged list** |
-
-⚠ **A HANDOFF COMMIT THAT IS NOT PUSHED DOES NOT EXIST.** Found 2026-08-26: the two `docs(claude):` commits describing #461's flight had **never left the local box**, so `main` and `origin/main` had silently diverged and `git pull --ff-only` refused. They rebased cleanly (CLAUDE.md-only, and #475's branch had an empty CLAUDE.md diff), but **the next session would have read a `main` that knew nothing about the branch in hand.** ⏭ **`git push` after every `docs(claude):` commit, and check `git rev-parse main origin/main` agree before trusting this file.**
-
-#### ✅ #458 — MERGED (PR #462, merge commit `41c8bad1`). Kept for its traps.
-
-`Select` mapped its public `signal=` onto the internal **`textsignal=`**, installing the `Signal`'s Tk variable as the entry's textvariable — so writes landed in the display text, bypassing the value-to-label map and the commit path. **One wiring line, two symptoms**, and the reported one was the milder: decoupled options displayed the raw value (reported), while a signal write moved the display but **not** the selection, leaving `.value`/`.selection` stale with **no `<<Change>>`** — on plain `list[str]` options too, and it did not self-heal. Fixed by binding through `ValueSignalMixin`.
-
-⚠ **`signal=` IS NOW VALUE-SPACE — a deliberate, maintainer-approved behavior change.** Both directions moved: `sel.value = '2'` used to write the label `'Two'` into the signal and now writes `'2'`. **Do not re-litigate it.**
-
-⚠ **`.signal` MEANS TWO DIFFERENT THINGS ACROSS THE PUBLIC API, and #458 widened the split rather than causing it.** Text-space: `TextField`, `PasswordField`, `PathField`, `SpinnerField`, `TextArea`, `CodeEditor`, **`SelectButton`**. Value-space: `NumberField`, `DateField`, `TimeField`, `Select`. **That is the real content of #460 and #461 taken together, and it is a family decision nobody has made.** ⚠ The CHANGELOG was corrected pre-merge for claiming the fix *"matches the other fields that take a `signal=`"* — **it does not match `SelectButton`**, which is the nearest sibling and still binds the label. **A closed list cannot over-claim the way an open one did.**
-
-⚠ **THE MINOR WAS FORCED BY #461, NOT BY THE ADDITION.** #458 adds public surface (`Select` gains a `signal` property), and the standing rule says an addition needs a minor — but **#461 BREAKS WORKING CODE**, which is the stronger reason: seeding a `SelectButton` signal with an option's **label** works today and is the only spelling that does. That is #381's shape. **Do not re-read this as "#458 was only an addition".**
-
-⚠ **ONE RESIDUAL, STILL UNDECIDED:** the #458 CHANGELOG bullet does not mention that `Select` gained a public `signal` property. **Announcing it is a maintainer call, not a defect.**
-
-**Two review records, archived to `development/plan-458-select-signal.md` and `development/review-458-select-signal.md`** — round 1 (four findings, none in production code) plus an **off-protocol verification pass** that should not have opened (it reviewed a test-only commit, which gate 1 exists to keep out) and whose two re-reports cost a round of attention because **the reviewer was not handed `REVIEW.md`**. Cap was 2, spent 1.
-
-⚠ **ITS ONE REAL FINDING IS THE ONE TO CARRY: a test can drive the right path and still assert nothing that can fail.** Round 1's own fix added a signal write to the read-only test but no assertion sensitive to the entry state — `read_only` reads the stored **setting** (#453 decoupled it from the entry on purpose) and the shown text is correct either way, so **both assertions passed while the field was silently editable**. Closed by asserting `entry_widget.instate(["readonly"])`, with a control that breaks the applier and watches the three older assertions still clear.
-
-#### Two issues came out of that work — ✅ BOTH NOW SHIPPED
-
-- ✅ **#461 — `SelectButton` had #458's defect.** Identical `signal -> textsignal` wiring at `selectbutton.py:85`. Seeding with the **label** worked; seeding with the **value** — what `value=` takes and what the docstring promises — gave `text='2' value='2' selection=None`, and `sel.value = "3"` wrote the *label* back. **Fixed 2026-08-26 (PR #475) by moving it onto `ValueSignalMixin`, and it is why `0.4.0` is a MINOR.** ⚠ **That move is what made #460's issue text stale** — it removed `SelectButton` from #460's population.
-- ✅ **#460 — widgets annotated `.signal` as `Signal | None` and could never return `None`.** The wrappers forwarded with `getattr(self._internal, 'signal', None)` while the internal **lazily creates on first access**, so the default was dead code and the `| None` was **unreachable, not merely unobserved**. **Fixed 2026-08-28 (PR #487): five locations, seven widgets** — ⚠ **not the six/eight the issue said**, see the ★ section. `Slider` was the exemplar. ⚠ **The `ValueSignalMixin` widgets keep their `| None` and are correct.** ⚠ **`TextArea` and `CodeEditor` also keep theirs — but for the OPPOSITE reason to the one #460 gave, and that is #486.**
-
-#### ✅ #465 — the EXTERNAL report. MERGED 2026-08-25 (PR #471), on `0.4.0`. Kept for its traps.
-
-**`Select` accepts `add_validation_rule()` but has NO `.error` or `.valid`.** Filed 2026-08-20 by `bLynnb2762` against `0.3.2`, labeled `bug` — **the only open issue that is not this project's own backlog**, and it sat unread while the audit merged the same day.
-
-**Cause, measured 2026-08-21 — do not re-derive it:** `Select` **did not** inherit `FieldAddonMixin`. It hand-copied `add_validation_rule` and `validate` from that mixin, plus `_flex_vertical_default` for #394 — **but not `valid`/`error`**, which the other seven field widgets inherit. **Fixed by inheriting it**; the MRO is now `Select -> ValueSignalMixin -> FieldAddonMixin -> PublicWidgetBase`, and `_flex_vertical_default` comes from the mixin rather than a local copy.
-
-⚠⚠ **AN EARLIER VERSION OF THIS ENTRY SAID "`Select` OPTS OUT DELIBERATELY — DO NOT MAKE IT INHERIT THE MIXIN." THAT WAS WRONG AND IT IS THE OPPOSITE OF THE FIX.** It was an inference nobody had checked, and it was repeated as fact three times before anyone looked. **Inheriting the mixin IS the fix.** What the evidence actually says, measured 2026-08-21:
-
-- **No reason is recorded anywhere.** The comment at `select.py:88` explains `_flex_vertical_default` and merely *states* the non-inheritance in passing. It justifies nothing.
-- **The class declaration traces to `a41b539e`, the flat-surface migration** — a refactor, not a decision. #357 (`884b8027`, 2026-07-20) then hand-restored `add_validation_rule` **alone**, a month after the mixin already carried `valid`/`error` and the kind gate. **Incomplete at birth, not drifted.**
-- **The family is uniform 7/7 without it** — every other field widget exposes `valid`, `error`, `insert_addon`, `update_addon`, `remove_addon`, `addons`. A real opt-out would show variation somewhere; one widget missing the whole block is the signature of a lost mixin.
-- ⚠ **The "addons don't suit a dropdown" theory is DISPROVED BY CONSTRUCTION** — `Select` **already uses addons**: its internal reports `addons=['dropdown', 'probe']` after a test insert, so **the dropdown arrow IS an addon.** Load-bearing, not merely compatible.
-
-⚠ **THERE WAS A SECOND, INDEPENDENT CAUSE, and the mixin does not fix it — remember this shape, it recurs.** `on_valid`/`on_invalid` come from the **event map**, not the mixin: `_SELECT_EVENTS` carried only `change` while `ValidationMixin` on the entry part had been emitting `<<Valid>>`/`<<Invalid>>` all along **with nothing listening.** Fixed by adding `valid`/`invalid`/`validate` to `_SELECT_EVENTS`. ⚠ **A missing public event name looks exactly like a widget that does not emit** — check the map before concluding the emit is absent.
-
-⚠⚠ **THE KIND GATE DID *NOT* SHIP, AND THE PARAGRAPH THAT USED TO STAND HERE ARGUING THAT IT SHOULD WAS WRONG. `Select` DECLARES `_VALIDATION_KIND = None` AND GATES NOTHING.** The old text said a `range` rule on a `Select` "can never pass today", so rejecting it broke nobody. **That measurement was taken on a `Select` whose option text EQUALS its value**, which cannot reach `SelectBox._validation_value`'s label-to-value decode and can therefore only ever hand a rule a `str`. Give the options distinct labels and the rule receives the option's **real Python object**, so `range` over `int` or `date` option values **works on the released line** — measured on both arms in `development/probe_465_select_range_kind.py`. Shipping the gate would have raised `BootstackError` **at construction** in running apps. ⚠ **A `Select`'s value kind belongs to its OPTIONS, not to the widget**, which is why `None` is the honest answer and why `field_mixin.py` skips the gate on `None`. **Do not re-propose attach-time rejection** — and note the reporter never asked for `range` at all.
-
-**`development/plan-465-select-validation-surface.md` and `development/review-465-select-validation-surface.md` carry the whole analysis, both review rounds, the test list and the boundary of each claim. Read them rather than re-deriving.** ⚠ **The plan's "the gate ships too" section is SUPERSEDED by round 1** — `Select` gates nothing now.
-
-⚠ **The fix ADDS PUBLIC SURFACE, so it needs a MINOR**, which is why it landed on `0.4.0` rather than the patch line: that milestone is a minor already (forced by #461), and this file's own rule is **to ask what else is ready when a minor is being cut anyway rather than parking a fix out of habit.** The milestone was **asked for and given**, not assigned unasked.
-
+| `main` | released at **`v0.4.0`** (`05ecf307`), plus this `docs(claude):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
+| branches | **NONE, local or remote. Verified `git branch -a` 2026-08-29.** The three stale refs this file used to list are all gone |
+| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #467 archived both in the branch before the PR opened, which is the rule; that is two branches in a row after #486 |
+| released | **`0.4.0`** on PyPI. `## [Unreleased]` is **empty — the next fix creates it** |
+| next release | **nothing scheduled.** `0.5.0 — Strictness and value types` is the largest open milestone at 8 |
+| CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
+| suite, `main` | **macOS `1699 / 33`, 33 legs, exit 0**, measured 2026-08-29 at the #467 merge, `.venv/bin/python` 3.14.0, matplotlib present, **pandas ABSENT**. ⚠ **Windows is `1661 / 22` at `f38482e1` and is now MANY merges stale — re-measure before trusting it.** The two are NOT comparable |
+| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29 |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
 **The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
@@ -502,17 +271,17 @@ and fix the table.**
 
 | Order | Milestone | Open |
 |---|---|---|
-| 1 | **`0.4.0 — Signal binding on fields`** — ~~#458~~ (2026-08-20), ~~#465~~ (2026-08-25, PR #471), ~~#472~~ (2026-08-25, PR #473), ~~#459~~ and ~~#461~~ (2026-08-26, PR #475), ~~#476~~ (2026-08-26, PR #478), ~~#390~~ (2026-08-27, PR #480), ~~#444~~ (2026-08-28, PR #485), ~~#460~~ (2026-08-28, PR #487), **#486** (done, **PR #489 open**, two rounds reviewed, nothing blocking), **#467** (not started). Cut 2026-08-19; the next release out the door. ⚠ **#390 ARRIVED 2026-08-25 from `0.6.0`** — #458/#461 turned its staleness into a regression, so the release that introduces it answers it. **It shipped as `allow_empty=`, NOT the `nullable=` its branch name and the 2026-08-26 issue comment both say.** ⚠ **#444 ARRIVED 2026-08-27 from the patch line** — it adds no public surface, so it needed no minor; it rides this one because the minor is being cut anyway, which is this file's own standing rule. ⚠ **The endpoint counts PRs as work items** — PRs #462, #471, #473, #475, #478, #480 and #485 all carry this milestone. **Verified 2026-08-29: 13 issues, 12 CLOSED (#390 #444 #449 #456 #458 #459 #460 #461 #465 #472 #476 #486), 1 OPEN (#467).** That command is the authority for *issues*. ⚠⚠ **#449 AND #456 ARRIVED 2026-08-29 FROM THE CLOSED `0.3.x` LINE, AND THE REASON THEY WERE STRANDED IS THE RULE TO CARRY: THE PATCH LINE IS A HOLDING PLACE, AND ITS CONTENTS MOVE TO THE MINOR ONCE ONE IS ESTABLISHED.** Both merged **after** `v0.3.2` (2026-08-13, the line's last release), so neither could ever ship as a patch — they release with `0.4.0`. ⚠ **The 2026-08-27 turnover moved #444 and #445 off the line and missed these two BECAUSE IT SCANNED OPEN ISSUES AND BOTH WERE ALREADY CLOSED.** ⏭ **When a patch line turns over, sweep it `--state all`, not just open** | 1 |
-| 2 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, **#445**, **#479**, **#481**. ⚠ **#383 KEEPS ONLY ITS GAPS 1 AND 2 (bad *values*)** — gap 3 (unknown *names*) was split out as #472 and moved to `0.4.0` on 2026-08-25. ⚠ **#445 ARRIVED FROM THE PATCH LINE 2026-08-27** and does meet the rule — `attach()`'s grid branch filters legacy layout kwargs with no rejection at all, so fixing it RAISES where the framework accepts. ⚠ **#481 came out of #390** (`Signal(None)` bare builds a signal that can never hold a value); **its title still says `nullable=True`, a parameter that never shipped.** ⚠ **#479 ARRIVED 2026-08-26 BY MAINTAINER DECISION AND DOES NOT MEET THIS MILESTONE'S MEMBERSHIP RULE — that is deliberate, do not "correct" it.** The rule is *raises where the framework accepts, or retypes what a public property returns*; releasing a subscription on destroy does neither. **Placement is the maintainer's call, not the rule's.** | 7 |
-| 3 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415. ⚠ **#390 LEFT for `0.4.0` on 2026-08-25** — and it **gates #389 shipping whole**, so #389's readiness now moves with a different release | 3 |
-| 4 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
-| 5 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
-| 6 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
+| — | ~~`0.4.0 — Signal binding on fields`~~ — **SHIPPED 2026-08-29, milestone CLOSED.** 13 issues. Detail in the archive |  |
+| 1 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, #445, #479, #481, **#500**. ⚠ **#383 keeps only gaps 1 and 2 (bad *values*)**; gap 3 (unknown *names*) shipped as #472. ⚠ **#500 arrived 2026-08-29 from #467's rounds** and replaced #495/#496, which were closed as one decision rather than two. ⚠ **#479 does NOT meet this milestone's membership rule — that is deliberate, do not "correct" it**; placement is the maintainer's call, not the rule's | 8 |
+| 2 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415 | 3 |
+| 3 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
+| 4 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
+| 5 | **`0.9.0 — Structured editing`** — #192, #314 | 2 |
 | — | **`Tcl/Tk 9 support`** (unnumbered, blocked on hardware) — #376, #378 | 2 |
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
-| — | **`Wrapper and internal parity`** (unnumbered — its findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. Cut 2026-08-20. ⏭ **#466 NEEDS A THIRD AMENDMENT, from #472's review: an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter or a layout key.** Two shipped scripts had passed keywords that never existed and **nothing caught them** — the suite does not run `docs/examples/`, `literalinclude` does not execute what it includes, and CI runs neither. **~~#463~~ CLOSED 2026-08-21**: the measurement pass ran the same day it was cut (PR #464) and filed NOTHING NEW — its findings landed on #383/#460/#461, and the table at `development/wrapper-parameter-audit-463.md` is its artifact. ⚠ **#477 (the `_impl` collapse pass) is ADJACENT BUT NOT ON THIS MILESTONE, deliberately** — this one holds parity *defects* between a wrapper and its internal; #477 asks whether the internal should exist at all, and is a PRE-1.0 goal. **Do not fold them.** | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447. Cut 2026-08-27. It is rolling, so it does **NOT** close when a patch ships. ⚠⚠ **`0.3.x — Patch line` IS CLOSED AND THIS ONE REPLACED IT** — that is the rule working, not drift: a rolling line that turns over gets a NEW milestone, never a rename, because renaming would relabel `0.3.x`'s 3 closed issues as `0.4.x`. ⚠ **The turnover MOVED TWO ISSUES OFF THE PATCH LINE ENTIRELY: #444 to `0.4.0`** (adds no surface, but the minor was being cut anyway) **and #445 to `0.5.0`** (its fix raises). ⚠⚠ **IT MISSED #449 AND #456, WHICH WERE ALREADY CLOSED — a scan of OPEN issues cannot see them.** Both merged after `v0.3.2` and so could never ship as a patch; **moved to `0.4.0` on 2026-08-29**, leaving `0.3.x` holding only #453, the one issue that genuinely shipped in that line. ⏭ **Sweep a turning-over line with `--state all`.** ⚠ #449's PR (#470) is still deliberately unmilestoned — it was test-only, and the PR is not the issue | 3 |
+| — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 3 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -586,122 +355,44 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-⚠⚠ **THERE ARE NOW TWO AUTHORITATIVE FIGURES, ONE PER BOX, AND MIXING THEM IS THE
-EIGHTH WAY TO GET THIS WRONG.** Platform gating differs; **neither number is the
-other's baseline.**
+⚠⚠ **TWO FIGURES, ONE PER BOX. They are NOT comparable and neither is the
+other's baseline** — platform gating differs. Say which box you mean.
 
-**macOS — measured 2026-08-29 on `main` at `20106128`**, after the PR #494 merge,
-`.venv/bin/python` (3.14.0) `tests/run_gui.py`, **exit 0, 33 legs**,
-**`matplotlib` 3.11.0 PRESENT, `pandas` ABSENT**:
+| box | measured | when |
+|---|---|---|
+| **macOS** | **`1699 passed / 33 skipped`**, 33 legs, exit 0 | 2026-08-29 at the #467 merge, `.venv/bin/python` 3.14.0, matplotlib present, **pandas ABSENT** |
+| **Windows** | `1661 / 22`, 33 legs, exit 0 | 2026-08-28 at `f38482e1`, `py -3.12`, both deps present. ⚠ **MANY merges stale — re-measure before trusting it** |
 
-| | measured |
-|---|---|
-| summed, 33 legs | **1676 passed / 33 skipped** |
+⚠ **`pandas` is ABSENT on the macOS box**, so its data leg runs the two tests that
+exist only when pandas is missing (`125 / 4` absent vs `123 / 6` present — a
+documented environmental pair, not a discrepancy). `matplotlib` matters more:
+`test_chart.py` is **44 tests** behind a module-level `importorskip`. Check both
+before re-flagging a total.
 
-⚠ **Bounded, not guessed: the four merges since the Windows figure moved macOS by
-ZERO.** `1676` was measured on `fix/textarea-signal-binding-486`'s successor tree and again on
-`main` after all four merges. `git diff 313f44fc..20106128 --stat -- tests/` returns **nothing** —
-#492/#493/#494 are pure removals that touch no test file, so the count *cannot* have moved, and
-the measurement agrees.
-
-⚠ **`pandas` is ABSENT on the macOS box**, so its data leg runs the two tests that exist only when
-pandas is missing. `.venv/bin/python -c "import pandas"` before comparing anything.
-
-⚠ **`tests/signals/test_signal.py` IS NOT IN `testpaths` AND `run_gui.py` DOES NOT ADD IT** — it is
-**22 tests that no suite run collects**, in a directory the existing `tests/widgets/*.py` warning
-does not name. It had to be run directly (`22 passed`) to verify PR #494's import edit. **Add it to
-the #380 family rather than assuming a green suite covered it.**
-
-**Windows — measured 2026-08-28 on `main` at `f38482e1`**, after the PR #487
-merge, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
-**`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT**. ⚠ **THREE MERGES STALE —
-re-measure before trusting it:**
-
-| | measured |
-|---|---|
-| summed, 33 legs | **1661 passed / 22 skipped** |
-
-⚠ **Reconciled by BOUNDING THE MOVEMENT, not by looking plausible:** `1638 + 23`, the 23 being
-#460's one new test file. `git diff baced70b..HEAD --stat -- tests/` returned
-`tests/widgets/public/test_signal_property_contract.py` and nothing else, and that file's own
-`--collect-only` says **23** — so the total reconciles from two directions rather than one.
-
-⚠ **`fix/textarea-signal-binding-486` measures `1687 / 22`, exit 0, 33 legs** — `1661 + 26`, its one
-new test file, bounded the same way and its collection checked. **Re-measured independently in round
-2.** **That is a BRANCH figure; do not record it as `main`'s.**
-
-**Superseded, kept for the reconciliation each anchors:** `1638` = `1628 + 10`, the 10 being #444's
-one new test file (2026-08-28, PR #485). `1628` = `1579 + 49`, the 49 being #390's one new test
-file, whose collection was checked at each of its three review records (**40 at round 2, 43 after
-the two subclass fixes, 49 at round 3**). Before that, `1573 + 6`, the 6 being #476's one new test
-file.
-`git diff e8caece4..HEAD --stat -- tests/` says how much the count was ALLOWED to
-move and confirms nothing else changed — one command, and it is the check that
-catches what a self-consistent-but-wrong total does not. Here it returned exactly
-one file, which is the whole check.
-
-Prior steps, each bounded the same way: `1552 → 1573` was `+21` for #461/#459's two
-files (15 + 6); `1500 → 1552` was `+24` for #465 and `+28` for #472.
-
-**Superseded, kept for the environmental note it anchors — measured 2026-08-20 on
-`main` at `41c8bad1`**, same box, same deps:
-
-| | measured |
-|---|---|
-| summed, 33 legs | **1500 passed / 22 skipped** |
-| shared leg | **1106 / 13** against **1119** selected |
-| data leg | **123 / 6** (`pandas` present) |
-
-The shared leg reconciles against its own collection line: `collected 1194 / 75
-deselected / 1119 selected`, and `1106 passed + 13 runtime skips = 1119`.
-
-⚠ **THIS SUPERSEDES `1458 / 21`, AND THE DIFFERENCE IS ENTIRELY ENVIRONMENTAL —
-it is the first of this file's eight count discrepancies that was NOT an error.**
-Against the 2026-08-19 figure (same box, both deps ABSENT):
-
-```
-1458 + 44 (test_chart.py now collects) - 2 (data leg 125/4 -> 123/6) = 1500 passed
-  21 -  1 (its collection-time skip is gone) + 2 (pandas)            =   22 skipped
-```
-
-**`test_chart.py` is 44 tests behind a module-level `pytest.importorskip("matplotlib")`** — it *was* the `1 skipped` in the old collection line and now contributes all 44. **Check `py -3.12 -c "import matplotlib"` and `import pandas` before re-flagging either total**; both are legitimate on this box depending on what is installed.
-
-⚠ **It reconciled because the COLLECTION LINE was read, not because the total
-looked plausible.** The old line said `collected 1150 ... / 1 skipped / 1075
-selected`; the new one says `collected 1194 ... / 1119 selected` with no
-collection-time skip at all. **That vanished `1 skipped` is the whole tell** — a
-session comparing only the summed totals would have seen +42 and had nothing to
-attribute it to.
-
-⚠ **A first pass summed `22` skipped by matching the `1 skipped` INSIDE the
-collection line — sum the per-leg summary lines only.**
+⚠ **`tests/widgets/*.py` NEVER RUNS** — `testpaths` is `tests/cli`,
+`tests/widgets/public`, `tests/data`; 12 files / 25 tests under `tests/widgets/`
+are collected by nothing. Same class: `tests/test_public_surface.py` (166 tests)
+and **`tests/signals/test_signal.py` (22 tests)**, neither run by `run_gui.py`.
+All pass run directly. Folded into **#380**; CI runs the first two.
 
 **The three checks, in order of what they actually prove:**
 
-1. **The ceiling.** `passed + skipped` cannot exceed the selected count.
+1. **The ceiling.** `passed + skipped` cannot exceed the selected count:
    `pytest <paths> -m "not isolated" --collect-only -q | tail -2`.
-2. ⚠ **But `passed + skipped` CAN LEGITIMATELY EXCEED it by the collection-time
-   skips** — a module-level skip is reported in the summary while never being one
-   of the selected items. **Read the collection line before concluding a total is
-   impossible.**
+2. ⚠ **But it CAN legitimately exceed it by the collection-time skips** — a
+   module-level skip is reported in the summary while never being selected.
+   **Read the collection line before concluding a total is impossible.**
 3. ⚠ **Self-consistency proves the run summed correctly, NOT that it selected the
-   right population.** A wrong ceiling reconciles just as neatly as a right one —
-   that is how the seventh error got through. **Bound the movement instead:**
-   `git diff --stat <baseline>..HEAD -- tests/` says how much the count is
-   ALLOWED to have changed, and it is one command.
-
-⚠ **Platform figures are NOT comparable.** Linux at `5921dc41` read `1427 / 22`;
-that is a different platform with different gating. **Do not close a gap by
-picking whichever number makes the arithmetic work.**
-
-⚠ **The data leg reads `125 / 4` when `pandas` is ABSENT and `123 / 6` when it is
-installed** — two tests run only when it is missing. Documented environmental
-pair, not a discrepancy. `py -3.12 -c "import pandas"` settles it.
+   right population.** A wrong ceiling reconciles just as neatly — that is how the
+   seventh error got through. **Bound the movement instead:**
+   `git diff --stat <baseline>..HEAD -- tests/` says how much the count is ALLOWED
+   to have changed, and it is one command. It is the check that catches what a
+   self-consistent-but-wrong total does not.
 
 **Record the DATE and the COMMIT beside any count, or don't record it.** Sum the
-legs yourself — `run_gui.py` prints no aggregate.
-
----
+legs yourself — `run_gui.py` prints no aggregate. ⚠ **A first pass once summed the
+skips by matching the `1 skipped` INSIDE a collection line — sum the per-leg
+summary lines only.**
 
 ## Backlog — what to pick up
 
@@ -856,7 +547,7 @@ must clear validation state.
 
 ## Release flow
 
-`py -3.12 -m bumpversion bump patch` → push `main` + the `v*` tag → `release.yml`
+`py -3.12 -m bumpversion bump patch` (**`bump minor` for a minor — the verb decides the version, and `bump patch` on a minor release silently ships the wrong number to a tag you cannot move**) → push `main` + the `v*` tag → `release.yml`
 (PyPI + GitHub Release) → `docs.yml` deploys. `release.yml` fires on `v*` tags
 only. There is **no `development` branch**.
 
@@ -1002,6 +693,10 @@ a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
   bug, is not a fix.
 
 ### ⚠ Branch and worktree hygiene
+
+⚠ **Verified 2026-08-29: NO branches exist, local or remote, beyond `main`.** The
+three stale refs this file listed for weeks are all deleted; do not re-add them
+from memory.
 
 - **DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** The review reads files on disk,
   not only `git diff`, so it reviews a moving target. If follow-up cannot wait, use
@@ -1696,6 +1391,7 @@ escape-hatch property docstrings, `signals/integration.py` (the Tk bridge).
 
 | Release | Contents |
 |---|---|
+| **0.4.0** (2026-08-29) | *Signal binding on fields*. **13 issues** — #390 (`Signal(…, allow_empty=True)`) · #444 (a modal `Window` never handed the grab back) · #456 · #458 / #461 (a `Select`/`SelectButton` signal bound the LABEL, not the value) · #459 · #460 · #465 (a rule on a `Select` had nowhere to report) · #467 (a `custom` rule's raise escaped into the event loop) · #472 (an unknown keyword now RAISES) · #476 · #486 (`TextArea`/`CodeEditor` bound `textsignal=` one way only). ⚠ **Two entries break running code: #472 and #461** — but only #461 breaks code that WORKED; #472 only turns a silent no-op into a message |
 | **0.3.2** (2026-08-13) | *Read-only select fields*. **#453** — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty and is **derived, never storage** now; `TimeField` fixed with it |
 | **0.3.1** (2026-08-12) | *Dialog keyboard and modality*. Four fixes, no new public surface. **#441** Enter in a multi-line field inserted its newline and the dialog closed on top of it · **#440** a nested modal released the grab entirely instead of handing it back · **#439** the default button's `focus_set()` ran while the window was hidden, where Tk silently ignores it · **#426** the layout migration error recommended kwargs renamed before release |
 | **0.3.0** (2026-08-11) | *Screen capture and dialog results*. **A minor carrying two additions and SIX fixes.** **#427** `widget.capture(path)` · **#429** a click during `settle()` re-entered the handler; it now holds `tk busy` (the first fix, which stopped dispatching, was REVERSED because it photographed stale pixels on macOS) · **#428** `FormDialog.result` returned display text because it read after every editor was destroyed · **#437** a refused press still recorded its result · **#438** `DialogButton.closes` meant three things and is REMOVED. ⚠ **`tk busy` is a no-op on macOS** (a toolkit limitation, measured in plain tkinter) and real on Windows |
