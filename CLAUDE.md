@@ -148,9 +148,37 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-28) — **#486 IS DONE AND ON PR #489. WHEN IT MERGES, `0.4.0` HAS ONE ISSUE LEFT: #467.**
+### ★ START HERE (2026-08-29) — **`0.4.0` HAS ONE ISSUE LEFT: #467. FOUR MERGES SINCE THE LAST HANDOFF: #489, #492, #493, #494.**
 
-#### ⭐⭐ #486 — **DONE. TWO ROUNDS SPENT, PR #489 OPEN, NOTHING BLOCKING.** Branch `fix/textarea-signal-binding-486`, head **`9f45baf5`**. **Cap 3, spent 2 — round 2 says there is nothing for round 3 to review.**
+#### ⭐⭐ THE DEAD-CODE SWEEP — **THREE CHORE PRs, ~1,900 LINES REMOVED, THREE LATENT DEFECTS FIXED. 2026-08-29.**
+
+**Not milestoned, no issues filed, no CHANGELOG entries — all three are private-layer removals with no reachable surface.** ⚠ **They were found by ASKING ONE QUESTION OF A MODULE THE MAINTAINER HAPPENED TO OPEN: *is this actually used, and does the framework already do it elsewhere?*** That question found three separate dead layers in a row. **It is the same question that found #476** (*is this internal member reachable from public API at all?*) — **reusable, and cheaper than any sweep.**
+
+| PR | what | merge |
+|---|---|---|
+| **#492** | `_core/publisher.py` — the STD `Publisher`/`Channel`/`Subscriber` pub-sub | `983cfa45` |
+| **#493** | `_core/colorutils.py` — a duplicate of six functions in `style/utility.py` | `5201de45` |
+| **#494** | `_core/capabilities/` — the Tk-surface mixin veneer | `20106128` |
+
+⚠⚠ **THE DURABLE LESSON, AND IT IS THE ONE TO CARRY: A PASS-THROUGH LAYER IS NOT INERT — IT SHADOWS.** The capabilities veneer re-declared 91 methods, **66 of them pure `super()` delegation**, and three of those re-declarations were **broken**: `grid_propagate()`/`pack_propagate()` re-typed native's `flag=Misc._noarg_` sentinel as `flag=None` and so took the **setter** branch on a no-arg call (**measured: `None` where plain tkinter says `True`**); `WidgetCapabilitiesMixin.forget()` shadowed `ttk.Panedwindow.forget(child)` with a zero-arg method, so the real ttk API raised `TypeError`; and `selection_own_set()` called a keyword-only native positionally and **had never worked**. **Deleting them WAS the fix for all three.** ⚠ **A layer that only forwards can still be wrong, because the signature is part of the behavior.**
+
+⚠⚠ **AND THE COUNTER-LESSON FROM THE SAME BRANCH: `forget()` HAD ZERO CALLERS, AND THE ONE FILE THAT WANTED IT HAD ALREADY ROUTED AROUND IT.** `splitview.py` carried `tk.call(str(w), "forget", pane)` with a comment naming the collision — **a correct workaround for broken inheritance, not caller misuse.** It reverted to the natural `self._internal.forget(pane._frame)`. **Before pricing a shadowing method as load-bearing, grep its call sites: `grep -rn "\.forget()"` returned ONE hit and it was the comment.**
+
+⚠⚠ **THE BREAK THAT NEARLY SHIPPED, AND IT WAS INVISIBLE TO `git diff` REVIEW: AN IDE "OPTIMIZE IMPORTS" HOISTED A FUNCTION-LOCAL IMPORT TO MODULE SCOPE AND CLOSED AN IMPORT CYCLE.** `base.py` gained `from bootstack.widgets._core.container import resolve_pack_order` at line 7, while `container.py:94` imports `PublicWidgetBase` **from `base.py`** with a comment saying exactly why it is late. **`import bootstack` failed outright** — every test leg would have died at collection. **The fix is to keep it function-local**, inside `attach()`'s existing import list. ⏭ **`.venv/bin/python -c "import bootstack"` IS THE CHEAPEST GATE THERE IS — run it before the suite, not after.**
+
+✅ **A PRE-EXISTING LATENT `NameError` WAS CLOSED AS A SIDE EFFECT.** `resolve_pack_order` was **called at `base.py:526` and never imported** on `main`. It survived because the call sits in the `placement.method == "pack"` branch and bootstack's flex containers **grid** their children, so `attach(index=0)` on a `Column` takes the grid path and never reaches it. **Nobody would guess this from the diff — it is worth knowing that the pack branch of `attach()` is effectively untested.**
+
+⚠ **AN OVER-BROAD FIND/REPLACE CORRUPTED FOUR MARKDOWN FILES AND `git diff` LOOKED FINE.** Renaming the module to `signal_binding.py` swept the bare word `signals` in `development/wrapper-parameter-audit-463.md` (Chart's **parameter destination**), `docs/_dev/api-reference-restructure.md` (the **public** `bootstack.signals` docs subsystem), `docs/_dev/handoff-archive.md` (the `docs/reference/signals` page — **the archive**) and the branch's own plan. **All reverted.** ⚠ **A rename sweep over prose must be scoped to the identifier, not the word** — and the archive is history, so a wrong entry there reads as authoritative.
+
+**Details, with the measurements, are in `development/plan-capabilities-collapse.md`** — the full 91-method classification, the native-signature comparison and the three defect controls. **Do not re-derive it.**
+
+⚠ **`_core/capabilities/` NO LONGER EXISTS.** `signals.py` → **`_core/signal_binding.py`** (renamed to stop it reading as the public `bootstack/signals/` package — the only two live modules in the package were never mixins), `localization.py` → **`_core/localization.py`**, both 100% renames. 13 survivors folded into `_core/mixins/widget.py`: `after_repeat`, four `bindtags_*`, `clipboard_set`, and the seven layout methods that dispatch to `_on_child_*` hooks on `GridFrame`/`PackFrame`. ⚠ **Those hooks are the ONLY load-bearing thing the veneer carried — everything else was delegation.**
+
+⚠ **`_core/colorutils.py` IS GONE — use `bootstack.style.utility`.** The color chooser was its only consumer. ⚠ **The two copies had DIVERGED: `style/utility.conform_color_model` CLAMPS each channel and the `_core` copy did not**, so the chooser gained clamping it never had. Outputs measured identical at every call shape in use.
+
+⚠ **THE `_windowingsystem` DUPLICATION IS STILL OPEN AND BELONGS ON #477.** Two private twins — `_runtime/wheel.py:38` and `widgets/toast.py:25` — plus **18 raw `tk.call("tk", "windowingsystem")` sites** across `_runtime`, `widgets` and `_impl`. ⚠ **Their fallbacks DISAGREE**: wheel returns `""` (degrades to the generic path, correct) and toast returns `"win32"` (**asserts Windows**, which drives a platform-specific default corner). **Not folded into these three because 8 of the 18 cache the value at construction, so consolidating changes WHEN the probe happens, not just where.**
+
+#### ✅ #486 SHIPPED (PR #489, merge commit `313f44fc`, 2026-08-29). Branch deleted local; ⚠ **the REMOTE branch `origin/fix/textarea-signal-binding-486` still exists at `9f45baf5` — delete it.** **Cap 3, spent 2 — round 2 said there was nothing for round 3 to review.**
 
 **READ `development/review-486-textarea-signal-binding.md` FIRST, THEN `development/plan-486-textarea-signal-binding.md`.** ✅ **BOTH WERE ARCHIVED IN THE BRANCH BEFORE THE PR OPENED** — the rule, and the second branch after #444 to follow it. They carry the design, both rejected alternatives, every measurement and two rounds of cleared lists. **Do not re-derive any of it.**
 
@@ -234,6 +262,8 @@ release has already run on.
 ⚠ **#479 CAME OUT OF ROUND 1. ON `0.5.0` (maintainer, 2026-08-26), UNFIXED:** `OptionMenu` never cancels its `<<Change>>` subscription on destroy, so a destroyed widget keeps emitting — `event_generate` on a dead window raises `TclError: bad window path name` **inside the Tk trace**, invisible to whoever wrote the signal, and the subscription **pins the destroyed widget in memory** (measured with a weakref after `gc.collect()`). **Pre-existing, and #476 halved it** (two leaked subscriptions per widget before, one after). **Not reachable from public API** — #472 rejects `textsignal=` at the wrapper and `SelectButton` hands out no property that reads the internal's. ⚠ **The fix has an exemplar in the repo: `ValueSignalMixin._bind_value_signal` (`field_mixin.py:305-310`) holds its id and releases it on destroy**, measured clean (`subs 1 -> 0`, widget collected). ⚠ **It is NOT #469** — that is a *queued* `when="tail"` event reaching a *different* widget; this is a *live subscription* firing new emissions at a dead one. Re-run `development/probe_476_review_round1.py` rather than re-deriving any of it; it prints which arm it is on by reading the source.
 
 #### ⭐ #477 — COLLAPSE THE `_impl` LAYER BEFORE 1.0. **Maintainer's framing, filed 2026-08-26, unmilestoned.**
+
+⏭ **THE `_windowingsystem` DUPLICATION BELONGS HERE — measured 2026-08-29, not yet filed on the issue.** Two private twins with the same body (`_runtime/wheel.py:38`, `widgets/toast.py:25`) plus **18 raw `tk.call("tk", "windowingsystem")` sites**; **8 of the 18 cache the result as `self.winsys` at construction**, so consolidating changes *when* the probe runs, not just where. ⚠ **Their fallbacks DISAGREE and one is load-bearing**: wheel returns `""` on failure (nothing equals it, so it degrades to the generic path — correct), toast returns `"win32"` (**asserts Windows**, and that drives `_resolve_corner`'s platform default). **Deliberately left out of PRs #492/#493/#494.**
 
 **The `_impl` widgets were the ORIGINAL implementation, written to stand alone; the public layer came later and wraps them.** Much of what `_impl` still carries — its own variables, signals and event plumbing — serves a standalone consumer that no longer exists, and the wrapper translates across a boundary that need not be there. **Before 1.0, collapse what no longer earns a separate existence**, because after 1.0 the surface freezes and every gap becomes permanent.
 
@@ -356,13 +386,13 @@ release has already run on.
 
 | | |
 |---|---|
-| `main` | tip is this `docs(claude):` commit, whose parent chain runs through **`b95f032e`** (the stray `memory/` files dropped), **`fdb367cc`** (#460's plan archived after the fact), the **PR #487 merge (`6d03a2a9`, #460, 2026-08-28)**, the **PR #485 merge (`baced70b`, #444, 2026-08-28)**, the **PR #480 merge (`e6f67961`, #390, 2026-08-27)**, the **PR #478 merge (`5cf398f8`, #476)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)** and the **PR #471 merge (`62728770`, #465)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
-| branches | **ONE — `fix/textarea-signal-binding-486`, local and remote, head `9f45baf5`. **PR #489 OPEN**, milestone `0.4.0`. Two rounds reviewed, nothing blocking, records archived IN the branch. Verified with `git branch -a` 2026-08-28.** Deleted on merge: `fix/signal-annotation-460` (head **`dd15815c`**), `fix/modal-window-grab-444` (**`85c77bde`**), `fix/signal-nullable-390` (head **`cfa29a75`**), `fix/selectbutton-double-change-476` (**`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
-| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — verified at `b95f032e`.** #460's plan is at `development/plan-460-signal-annotation.md` (**no review record — that branch merged without a round**); #444's at `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`; #390's at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. ⚠⚠ **#460 PUT ONE THERE AGAIN — the PR merged with `PLAN.md` still in the root and it was archived afterwards in `fdb367cc`. THAT IS THREE OF THE LAST FIVE BRANCHES** (PR #478, PR #480, PR #487); only #444 archived in the branch before opening the PR, which is the rule. ✅ **#486 BROKE THE STREAK: PR #489 archived both into `development/` IN THE BRANCH, BEFORE the PR opened** (`development/plan-486-textarea-signal-binding.md`, `development/review-486-textarea-signal-binding.md`), so that merge will leave the root clean with no follow-up commit |
-| released | `0.3.2`. **`## [Unreleased]` carries #444, #456, #458, #459, #460, #461, #465, #472 and #476 on `main`**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ⚠ **#486's bullet is on its BRANCH (PR #489), not on `main`** — it arrives with that merge, and it carries an upgrade warning of its own (a subscriber on a signal bound to a `TextArea` starts firing on user edits). ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade |
-| next release | **`0.4.0 — Signal binding on fields`** — #390, #444, #458, #459, #460, #461, #465, #472 and #476 done; **#486 (done, PR #489 open, two rounds reviewed) and #467 (not started) are the only two left.** ⚠ **#486 ARRIVED 2026-08-28**, filed out of #460's measurement pass and milestoned by maintainer decision the same day. ⚠ **#444 ARRIVED 2026-08-27 from the patch line**, in the same pass that closed `0.3.x — Patch line` and cut `0.4.x`. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all`: 11 issues, 9 CLOSED, 2 OPEN (#467 #486).** That command is the authority for *issues*; the milestone API endpoint counts PRs too |
+| `main` | tip is this `docs(claude):` commit, whose parent chain runs through the **PR #494 merge (`20106128`, the capabilities collapse, 2026-08-29)**, the **PR #493 merge (`5201de45`, colorutils)**, the **PR #492 merge (`983cfa45`, publisher)**, the **PR #489 merge (`313f44fc`, #486, 2026-08-29)**, **`b95f032e`** (the stray `memory/` files dropped), **`fdb367cc`** (#460's plan archived after the fact), the **PR #487 merge (`6d03a2a9`, #460, 2026-08-28)**, the **PR #485 merge (`baced70b`, #444, 2026-08-28)**, the **PR #480 merge (`e6f67961`, #390, 2026-08-27)**, the **PR #478 merge (`5cf398f8`, #476)**, the **PR #475 merge (`c8ebfb7c`, #461+#459)**, the **PR #473 merge (`935cf2c1`, #472)** and the **PR #471 merge (`62728770`, #465)**. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main` rather than trusting any SHA written here** |
+| branches | **NONE in flight. Verified with `git branch -a` 2026-08-29.** ⚠⚠ **THREE STALE REFS NEED CLEANING, and two of them are the "non-ancestor ≠ unmerged" trap in both directions:** the REMOTE **`origin/fix/textarea-signal-binding-486` (`9f45baf5`) still exists** though PR #489 merged — delete it on GitHub; local **`fix/datatable-context-menus-456` (`5176eebb`) IS an ancestor of `origin/main`** and is safe to delete; local **`feat/widget-capture-427` (`1654c60e`) is NOT an ancestor** — **check its PR state before touching it, do not assume either way.** Deleted on merge: `chore/collapse-capabilities-veneer` (**`d60044d7`**), `fix/textarea-signal-binding-486` local (**`9f45baf5`**), `fix/signal-annotation-460` (head **`dd15815c`**), `fix/modal-window-grab-444` (**`85c77bde`**), `fix/signal-nullable-390` (head **`cfa29a75`**), `fix/selectbutton-double-change-476` (**`5e72f9b4`**), `fix/unknown-kwarg-strictness-383` (**`bb8ef8ff`**), `fix/selectbutton-signal-value-461` (**`e3593cd1`**), `fix/select-validation-surface-465` (**`ff718b4d`**), `fix/scene-reset-event-queue-449` (**`ed174211`**), `audit/wrapper-parameter-delta` (**`41828ba2`**), `fix/select-signal-value-458` (**`51d09f6e`**). ⚠ **NON-ANCESTOR ≠ UNMERGED** — check recorded head SHAs against `origin/main`, not branch names |
+| root of `main` | **NO `PLAN.md` and NO `REVIEW.md` — verified at `b95f032e`.** #460's plan is at `development/plan-460-signal-annotation.md` (**no review record — that branch merged without a round**); #444's at `development/plan-444-modal-window-grab.md` and `development/review-444-modal-window-grab.md`; #390's at `development/plan-390-signal-empty.md` and `development/review-390-signal-empty.md`. ⚠⚠ **#460 PUT ONE THERE AGAIN — the PR merged with `PLAN.md` still in the root and it was archived afterwards in `fdb367cc`. THAT IS THREE OF THE LAST FIVE BRANCHES** (PR #478, PR #480, PR #487); only #444 archived in the branch before opening the PR, which is the rule. ✅ **#486 BROKE THE STREAK AND IT HELD: PR #489 archived both into `development/` IN THE BRANCH, BEFORE the PR opened** (`development/plan-486-textarea-signal-binding.md`, `development/review-486-textarea-signal-binding.md`), and the merge left the root clean with no follow-up commit — **verified at `20106128`**. ⚠ **The three chore PRs (#492/#493/#494) ran NO review round and wrote no `REVIEW.md`** — gate 1 was triggered by all three (each has a non-empty `git diff -- src/`), so **that is a departure from the protocol, not an exemption.** `development/plan-capabilities-collapse.md` is #494's plan, written up front and archived in the branch; #492 and #493 have no artifact at all |
+| released | `0.3.2`. **`## [Unreleased]` carries #444, #456, #458, #459, #460, #461, #465, #472, #476 and #486 on `main`**, under **`### Added`** and **`### Changed`** as well as `### Fixed`, and is what `0.4.0` will promote. ✅ **#486's bullet landed with the PR #489 merge and is on `main` now** — it carries an upgrade warning of its own (a subscriber on a signal bound to a `TextArea` starts firing on user edits). ⚠ The `Changed` section is #472 **and #461**: both RAISE where the framework used to accept, so an app can fail to start after the upgrade. ⚠ **PRs #492/#493/#494 deliberately added NOTHING here** — all three are private-layer removals with no reachable surface, which is the convention working, not an omission |
+| next release | **`0.4.0 — Signal binding on fields`** — #390, #444, #458, #459, #460, #461, #465, #472, #476 and #486 done; **#467 is the ONLY one left** (*a `custom` validation rule's exception escapes into the event loop on an automatic trigger*, not started). **Verified with `gh` 2026-08-29: 11 issues, 10 CLOSED, 1 OPEN (#467).** ⚠ **#486 ARRIVED 2026-08-28**, filed out of #460's measurement pass and milestoned by maintainer decision the same day. ⚠ **#444 ARRIVED 2026-08-27 from the patch line**, in the same pass that closed `0.3.x — Patch line` and cut `0.4.x`. **Verified 2026-08-28 with `gh issue list --milestone <title> --state all`: 11 issues, 9 CLOSED, 2 OPEN (#467 #486).** That command is the authority for *issues*; the milestone API endpoint counts PRs too |
 | CI | `ci.yml` green on `main`, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **1661 passed / 22 skipped, 33 legs, exit 0** — RE-MEASURED 2026-08-28 on `main` at `f38482e1`, so the figure is a measurement and not the earlier subtraction, Windows box, `py -3.12`, **`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT.** Reconciles as `1638 + 23` from two directions: `git diff baced70b..HEAD --stat -- tests/` returns only `test_signal_property_contract.py`, and that file collects exactly 23. ⚠ **#486's branch measures `1687 / 22`, exit 0, 33 legs** — `1661 + 26`, its one new test file, bounded with `git diff main...HEAD --stat -- tests/` returning exactly that file and `--collect-only` saying 26. **Re-measured independently in round 2**, so it is a branch figure taken on the reviewed code — do not record it as `main`'s |
+| suite, `main` | ⚠⚠ **TWO PLATFORM FIGURES NOW, AND THEY ARE NOT COMPARABLE — SAY WHICH BOX YOU MEAN.** **macOS: `1676 passed / 33 skipped`, 33 legs, exit 0** — measured 2026-08-29 on `main` at `20106128`, `.venv/bin/python` 3.14.0, **`matplotlib` 3.11.0 PRESENT, `pandas` ABSENT**. **Windows: `1661 / 22`** at `f38482e1` (2026-08-28, `py -3.12`, both deps present) — that box has not been re-measured since, so **the Windows number is now THREE merges stale.** ⚠ **The four merges since moved the count by ZERO on macOS** (`1676` measured identically on the branch and on `main`): #486 added a test file, and #492/#493/#494 are pure removals that touched no test. ⚠⚠ **`test_capture.py` FAILED 11 OF ITS 23 ON THE FIRST macOS RUN AND PASSED 23/23 STANDALONE MINUTES LATER** — `PIL.UnidentifiedImageError`, i.e. the screenshot came back unreadable because macOS screen capture needs an **active, unlocked display**. **That is the environment, not a defect — do not chase it, and do not record a `1665` total from a locked screen** |
 | open milestones | **11** — verified against `gh` 2026-08-28, unchanged by the PR #485 merge. ⚠⚠ **THE COUNT IS UNCHANGED BUT THE COMPOSITION IS NOT: `0.3.x — Patch line` is CLOSED and `0.4.x — Patch line` was cut in its place** (2026-08-27), which is the rolling line's own rule — a line that turns over gets a NEW milestone, never a rename. **Do not read the unchanged 11 as an unchanged list** |
 
 ⚠ **A HANDOFF COMMIT THAT IS NOT PUSHED DOES NOT EXIST.** Found 2026-08-26: the two `docs(claude):` commits describing #461's flight had **never left the local box**, so `main` and `origin/main` had silently diverged and `git pull --ff-only` refused. They rebased cleanly (CLAUDE.md-only, and #475's branch had an empty CLAUDE.md diff), but **the next session would have read a `main` that knew nothing about the branch in hand.** ⏭ **`git push` after every `docs(claude):` commit, and check `git rev-parse main origin/main` agree before trusting this file.**
@@ -534,9 +564,36 @@ sat here as open work after being closed.
 SEVEN times, in both directions.** **Prefer a number you just measured over one
 written here, and fix this section when they disagree.**
 
-**AUTHORITATIVE — measured 2026-08-28 on `main` at `f38482e1`, after the PR #487
-merge**, Windows box, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
-**`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT**:
+⚠⚠ **THERE ARE NOW TWO AUTHORITATIVE FIGURES, ONE PER BOX, AND MIXING THEM IS THE
+EIGHTH WAY TO GET THIS WRONG.** Platform gating differs; **neither number is the
+other's baseline.**
+
+**macOS — measured 2026-08-29 on `main` at `20106128`**, after the PR #494 merge,
+`.venv/bin/python` (3.14.0) `tests/run_gui.py`, **exit 0, 33 legs**,
+**`matplotlib` 3.11.0 PRESENT, `pandas` ABSENT**:
+
+| | measured |
+|---|---|
+| summed, 33 legs | **1676 passed / 33 skipped** |
+
+⚠ **Bounded, not guessed: the four merges since the Windows figure moved macOS by
+ZERO.** `1676` was measured on `fix/textarea-signal-binding-486`'s successor tree and again on
+`main` after all four merges. `git diff 313f44fc..20106128 --stat -- tests/` returns **nothing** —
+#492/#493/#494 are pure removals that touch no test file, so the count *cannot* have moved, and
+the measurement agrees.
+
+⚠ **`pandas` is ABSENT on the macOS box**, so its data leg runs the two tests that exist only when
+pandas is missing. `.venv/bin/python -c "import pandas"` before comparing anything.
+
+⚠ **`tests/signals/test_signal.py` IS NOT IN `testpaths` AND `run_gui.py` DOES NOT ADD IT** — it is
+**22 tests that no suite run collects**, in a directory the existing `tests/widgets/*.py` warning
+does not name. It had to be run directly (`22 passed`) to verify PR #494's import edit. **Add it to
+the #380 family rather than assuming a green suite covered it.**
+
+**Windows — measured 2026-08-28 on `main` at `f38482e1`**, after the PR #487
+merge, `py -3.12 tests/run_gui.py`, **exit 0, 33 legs**,
+**`matplotlib` 3.11.0 and `pandas` 3.0.3 BOTH PRESENT**. ⚠ **THREE MERGES STALE —
+re-measure before trusting it:**
 
 | | measured |
 |---|---|
@@ -738,8 +795,13 @@ must clear validation state.
 
 ### API/cleanup backlog (memory-tracked)
 
-- `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
-  public layer abstracts Tk; still imported by data/i18n/mixins.
+- ~~`project_capabilities_relevance`~~ — **SETTLED AND SHIPPED 2026-08-29 (PR #494).
+  The memory file is stale; update or delete it.** It was right: the package was
+  redundant. **Measured before acting — 66 of 91 methods were pure pass-throughs**
+  and ~12 more only re-derived a default `tkinter` already had. `_core/capabilities/`
+  no longer exists; `signals.py` and `localization.py` moved up to `_core/` (the
+  first renamed `signal_binding.py`), and 13 survivors folded into
+  `_core/mixins/widget.py`. **See the ★ section.**
 - `project_event_naming_revisit` — past-tense event names pending rename:
   `SideNav.on_pane_toggled`/`on_display_mode_changed`,
   `ListView.on_selection_changed`, `Calendar.on_date_selected`.
@@ -1277,9 +1339,12 @@ whole-file flip still shows the true small diffstat.
   fires before.
 - ⚠ **Canvas/imperatively-painted widgets — NEVER bind ttk `<<ThemeChanged>>` on the
   root/toplevel.** It re-fires **~1400× per rebuild** (once per style reconfigure);
-  root-bound × instances = thousands of redraws. Re-resolve via the **STD
-  `Publisher`** (fires once, after rebuild) and **gate the redraw on visibility**.
-  `Frame` subclasses: `self._enable_theme_repaint(self._redraw)`.
+  root-bound × instances = thousands of redraws. **Define `_bs_apply_theme(self)`**
+  and `Style.apply_theme_walk` calls it once, resolving visibility at apply time.
+  ⚠⚠ **THE STD `Publisher` AND `_enable_theme_repaint` ARE BOTH GONE** — the
+  publisher was deleted 2026-08-28 (PR #492) and `_enable_theme_repaint` well
+  before it. **`docs/_dev/theme-repaint-architecture.md` is the live account; read
+  it rather than this bullet if you are touching a painter.**
 - **`bs.DataTable`** (renamed from `bs.Table`) works with any `DataSourceProtocol`
   source; identity reads route through
   `_record_id`/`_public_record`/`_internal_fields`. No built-in border; `density=`
@@ -1497,7 +1562,7 @@ filters with no rejection at all. Filed as **#445**.
 
 ```
 src/bootstack/
-├── _core/       infrastructure (capabilities, colorutils, mixins, publisher, images)
+├── _core/       infrastructure (signal_binding, localization, mixins, images, capture)
 ├── _runtime/    Tk patches (app, toplevel, menu, shortcuts, events)
 ├── assets/      locales, icons
 ├── data/        DataSource (Base, Memory, Sqlite, File)
