@@ -1,9 +1,15 @@
 import re
+import sys
 from typing import Callable
 
 from bootstack._runtime.utility import debug_log_exception
 from bootstack.validation.types import RuleTriggerType, RuleType
 from bootstack.validation.validation_result import ValidationResult
+
+
+# Shown when a `'custom'` rule's func raised instead of returning a verdict, and
+# the rule carries no message of its own. See `_uncheckable_message`.
+UNCHECKABLE_MESSAGE = "Could not check this value."
 
 
 # Rules that operate on a text value; meaningless on a typed (number/date/time)
@@ -94,6 +100,8 @@ class ValidationRule:
         self.message = message
         self.trigger = kwargs.pop('trigger', self._default_trigger())
         self.params = kwargs
+        # One-shot latch for `_report_func_error`; see its docstring.
+        self._func_error_reported = False
 
     def validate(self, value: str) -> ValidationResult:
         """Apply this rule to a value and return the result.
@@ -104,6 +112,14 @@ class ValidationRule:
         Returns:
             A ValidationResult with `is_valid=True` on success or `is_valid=False`
             with an error message on failure.
+
+            A `'custom'` rule whose `func` raises is reported invalid rather than
+            allowed to propagate, so a predicate that cannot judge a value does
+            not leave the field's validity stale. Its message is
+            "Could not check this value (expected: …)", carrying the rule's own
+            `message` as an expectation rather than as a verdict — the check never
+            ran, so what a valid value looks like has not been established about
+            this one. A rule with no `message` reports `UNCHECKABLE_MESSAGE`.
         """
         msg = self.message or self._default_message()
 
@@ -158,7 +174,7 @@ class ValidationRule:
             if func:
                 try:
                     passed = func(value)
-                except Exception:
+                except Exception as exc:
                     # A func that cannot judge this value has not produced a
                     # verdict, so report invalid -- the same answer the `range`
                     # branch above gives an incomparable pair. Letting it
@@ -169,14 +185,73 @@ class ValidationRule:
                     # compares, but a user func can raise anything. Narrowing
                     # this re-opens the defect for every other exception type.
                     # BaseException is deliberately not caught.
-                    debug_log_exception(
-                        f"custom validation rule raised for value {value!r}"
-                    )
-                    return ValidationResult(False, msg)
+                    self._report_func_error(exc, value)
+                    return ValidationResult(False, self._uncheckable_message())
                 if not passed:
                     return ValidationResult(False, msg)
 
         return ValidationResult(True)
+
+    def _uncheckable_message(self) -> str:
+        """Return what to show the end user when the func raised.
+
+        The rule's own `message` states a CONDITION -- "must be over 5" -- so
+        returning it as the verdict asserts something about a value the predicate
+        never managed to judge, and it can be plainly false: a field reading
+        "must be over 5" while holding 6. But throwing it away leaves the user
+        with nothing to act on, so it is demoted rather than discarded, from a
+        judgment to an expectation.
+
+        ⚠ Only an AUTHOR-SUPPLIED message is composed in. `self.message` is empty
+        when the caller passed none, and `_default_message()` would then supply
+        "Invalid value." -- composing that gives "Could not check this value
+        (expected: Invalid value.)", which is nonsense. Read `self.message`, not
+        the resolved `msg`.
+
+        Returns:
+            The end-user message for a predicate that raised.
+        """
+        if not self.message:
+            return UNCHECKABLE_MESSAGE
+        return f"Could not check this value (expected: {self.message.rstrip('.')})."
+
+    def _report_func_error(self, exc: BaseException, value: object) -> None:
+        """Report a `'custom'` func that raised, without ever raising itself.
+
+        Absorbing the exception is what keeps the field's validity from going
+        stale, but absorbing it silently would leave the author worse off than
+        before the guard existed: on the automatic trigger Tk printed the
+        traceback through `report_callback_exception`, and on the manual trigger
+        the exception reached the caller. A func that raises is always a defect
+        in the author's own code -- unlike `range`, whose silence is about the
+        DATA -- so the framework must not be the thing that hides it.
+
+        The first raise per rule writes one line naming the exception; the full
+        traceback stays behind `BOOTSTACK_DEBUG`. Once per rule is required, not
+        cosmetic: a rule with `trigger='always'` runs on every keystroke, and an
+        unconditional print would flood the console as the user types.
+
+        Args:
+            exc: The exception the func raised.
+            value: The value the func was given.
+        """
+        try:
+            if not self._func_error_reported:
+                self._func_error_reported = True
+                print(
+                    f"bootstack: a 'custom' validation rule's func raised "
+                    f"{type(exc).__name__}: {exc} -- the value is reported "
+                    f"invalid. Set BOOTSTACK_DEBUG=1 for the traceback.",
+                    file=sys.stderr,
+                )
+            debug_log_exception(
+                f"custom validation rule raised for value {value!r}"
+            )
+        except Exception:
+            # A diagnostic must never become the failure it is reporting. The
+            # value's own __repr__, or the exception's __str__, is user code and
+            # can raise -- which would escape this guard and re-open #467.
+            pass
 
     @staticmethod
     def _read_other(other: object) -> object:
