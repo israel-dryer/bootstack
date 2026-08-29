@@ -219,8 +219,7 @@ class ListView(Frame):
         """Cancel the data-source subscription when the widget is destroyed."""
         if event is not None and getattr(event, 'widget', None) is not self:
             return
-        # The theme subscription is released by the Frame base hook's own
-        # <Destroy> handler (publisher unsubscribe).
+
         sub = self._change_sub
         self._change_sub = None
         if sub is not None:

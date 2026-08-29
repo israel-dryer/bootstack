@@ -15,8 +15,7 @@ goal of this design is **one rule**, no per-widget visibility/`<Map>` bookkeepin
   DWM window chrome, and the app-level `on_theme_change` callback. (CodeEditor's
   highlighting extensions also live here for now.)
 
-That's it. There is no `_enable_theme_repaint`, no STD publisher subscription, no
-per-widget `<Map>` deferral, and no widget registry.
+That's it. There is no `_enable_theme_repaint` no per-widget `<Map>` deferral, and no widget registry.
 
 ## The walk
 

@@ -62,7 +62,6 @@ def test_chart_recolors_figure_to_theme(shown_app):
     # The figure face is themed on construction.
     assert to_hex(chart.figure.get_facecolor()).lower() == get_theme_color("background").lower()
 
-    # Toggling the theme recolors it (publisher repaint runs while visible).
     bs.toggle_theme()
     shown_app._tk_root.update_idletasks()
     assert to_hex(chart.figure.get_facecolor()).lower() == get_theme_color("background").lower()
