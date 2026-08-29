@@ -151,3 +151,58 @@ manual-path change too** (decision 2) — that is the half an upgrader could be 
   different question.
 - ⚠ **Making `debug_log_exception` louder.** Real, but it is a framework-wide diagnostics decision,
   not this issue's.
+
+---
+
+## FOR THE REVIEWER — round 1
+
+⚠ **`REVIEW-PROTOCOL.md` says not to read the implementer's rationale for why the approach was
+sound.** Much of this file is exactly that. **Read the sections above for REQUIREMENTS and for the
+DECISIONS that must not be re-litigated; do not read them as an argument that the code is right.**
+The list below is what to attack.
+
+**Scope:** round 1 reviews the branch — `git diff main...HEAD`. Two commits: the plan, and
+`cc7c6e4c` (the fix, tests, CHANGELOG, docs).
+
+**Round cap 2, spent 0.**
+
+### The five places this is most likely to be wrong
+
+1. **Decision 2 — the manual path now absorbs.** `field.validate()` returns `False` where it used
+   to raise. The issue argued the manual path was fine as-is. **Is a rule that behaves the same on
+   both triggers worth breaking a caller's traceback for?** If not, the guard belongs at
+   `validation_mixin.py:119` instead. **This is the decision most worth overturning.**
+2. **The empty-field consequence.** An optional field whose func raises on `None` now reports
+   INVALID where it previously stayed stale-valid — so a user can be blocked from submitting a form
+   with a blank optional field. **`docs/reference/validation.rst` argues elsewhere that a non-`required`
+   rule must not block a blank field.** Is reporting invalid the wrong answer here? The alternative
+   is reporting *valid* on a raise, which lets an unjudged value through.
+3. **`except Exception` breadth.** Too wide? It swallows programming errors in the func —
+   `NameError`, a typo'd attribute — and reports them to the end user as "invalid".
+4. **`debug_log_exception` is gated on `BOOTSTACK_DEBUG`, so by default NOTHING is printed.** The
+   issue's second option was *"propagate, but not silently."* **This ships the absorb half and a
+   surface half that is off by default. Is that actually a fix, or is it the silent-swallow the
+   issue warned about wearing a log call?**
+5. **Gate 2 on the tests — vacuity and false alarm only.** Specifically:
+   `test_the_blur_trigger_leaves_a_defined_validity` calls `_entry.validate(value, "blur")`
+   **directly rather than synthesizing a real blur**, so it does not prove the `<FocusOut>` binding
+   and the debounced `after()` still reach the rule. ⚠ **It is one layer short of the real path and
+   the author knows it** — is that vacuous, or adequately covered by its two controls?
+
+### What was measured, so it need not be re-derived
+
+- **The issue's own reproduction does not fire.** `custom` defaults to `trigger="manual"`
+  (`validation_rules.py:221-222`), documented at `docs/reference/validation.rst:190-192`.
+  `validate('6','blur')` returns `True` with the rule skipped.
+- **Pre-fix control: the new tests fail 9 of 14** against stashed `src/`, each on a propagating
+  exception rather than a missing attribute.
+- **Suite 1690 / 33, exit 0, 33 legs** on macOS at the branch tip — `1676 + 14`, bounded by
+  `git diff --cached --stat -- tests/` returning one file and `--collect-only` saying 14.
+- **Docs clean-build passes `-W`.**
+- **No import cycle** from the new `_runtime.utility` import; `validation` still imports and
+  validates standalone with no Tk root.
+
+### Known not done
+
+- **No test drives a REAL `<FocusOut>`** end to end (see item 5).
+- **`range`'s own silence is untouched** and out of scope.
