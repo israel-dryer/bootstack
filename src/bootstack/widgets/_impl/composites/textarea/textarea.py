@@ -182,6 +182,14 @@ class TextArea(GridFrame):
             self._show_message_area()
 
         # ── signal binding ────────────────────────────────────────────────
+        # Installed before the bind, so neither half can run without it: a bound
+        # signal must carry what `value` reports, which is "" while the
+        # placeholder is on screen rather than the placeholder string, and a
+        # value arriving from the signal must go through the setter that clears
+        # the placeholder first. The two seams have to agree about what the
+        # widget's text is, or a write from the model gets reverted by the push.
+        self._core._signal_text_source = lambda: self.value
+        self._core._signal_text_sink = lambda text: setattr(self, "value", text)
         if textsignal is not None:
             self._core.bind_signal(textsignal)
 
@@ -406,6 +414,11 @@ class TextArea(GridFrame):
     def core(self) -> _MultilineCore:
         """The internal `_MultilineCore` — for advanced filter/decoration use."""
         return self._core
+
+    @property
+    def signal(self):
+        """The bound Signal, or None if nothing is bound."""
+        return self._core.signal
 
     # ── event subscriptions ───────────────────────────────────────────────
 

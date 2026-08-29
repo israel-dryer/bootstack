@@ -54,6 +54,9 @@ class _MultilineCore(tk.Frame):
         self._read_only = read_only
         self._signal = None
         self._signal_trace_id = None
+        self._signal_change_bind_id = None
+        self._signal_text_source = None
+        self._signal_text_sink = None
 
         # Detect windowing system for mousewheel handling
         self.winsys: str = self.tk.call("tk", "windowingsystem")
@@ -277,16 +280,29 @@ class _MultilineCore(tk.Frame):
         if was_disabled:
             self.text.configure(state=tk.DISABLED)
 
+    @property
+    def signal(self):
+        """The bound Signal, or None if nothing is bound."""
+        return self._signal
+
     def bind_signal(self, signal) -> None:
-        """Bind a Signal[str] — updates the text when the signal changes."""
+        """Bind a Signal[str] — two-way, so edits travel back to the signal."""
+        # Refuse before touching anything: the binding writes text back, so a
+        # signal that cannot hold text would fail on the first edit, inside a
+        # Tk callback where the caller cannot see it. Same message shape the
+        # entry-backed fields already raise, since there the type clash surfaces
+        # through the signal's own variable.
+        if signal.type is not str:
+            raise TypeError(f"Expected {signal.type.__name__}, got str")
         if self._signal is not None:
             self._unbind_signal()
         self._signal = signal
         self._signal_trace_id = signal.subscribe(self._on_signal_change)
+        self._signal_change_bind_id = self.on_change(self._push_to_signal)
         # Set initial value from signal
         v = signal()
         if v is not None:
-            self.value = str(v)
+            self._apply_signal_text(str(v))
 
     def _unbind_signal(self) -> None:
         if self._signal is not None and self._signal_trace_id is not None:
@@ -294,12 +310,52 @@ class _MultilineCore(tk.Frame):
                 self._signal_trace_id.cancel()
             except Exception:
                 pass
+        if self._signal_change_bind_id is not None:
+            try:
+                self.off_change(self._signal_change_bind_id)
+            except Exception:
+                pass
         self._signal = None
         self._signal_trace_id = None
+        self._signal_change_bind_id = None
+
+    def _push_to_signal(self, _event=None) -> None:
+        # Dedupe on value, never on a suspend flag: <<Change>> is emitted with
+        # when="tail", so a flag set around the write is already cleared by the
+        # time this runs and would miss the echo every time.
+        if self._signal is None:
+            return
+        text = self._signal_text()
+        if self._signal() != text:
+            self._signal.set(text)
+
+    def _signal_text(self) -> str:
+        # The core holds the raw document, and the raw document is not always
+        # the user's content: the composite above inserts a placeholder into it
+        # as chrome. Only that layer can tell the two apart, so it installs a
+        # reader -- its own public value -- and the signal then carries exactly
+        # what the widget reports through every other observable.
+        if self._signal_text_source is not None:
+            return self._signal_text_source()
+        return self.value
+
+    def _apply_signal_text(self, text: str) -> None:
+        # The write half of the `_signal_text` seam, and it has to be symmetric
+        # with it: the composite's own setter clears the placeholder before
+        # writing, so a value arriving from the model lands as content. Writing
+        # the raw document instead leaves the placeholder flag standing, the
+        # reader then answers "" for a document that is not empty, and the push
+        # sends that "" straight back over the caller's write.
+        if self._signal_text_sink is not None:
+            self._signal_text_sink(text)
+        else:
+            self.value = text
 
     def _on_signal_change(self, new_value) -> None:
         if new_value is not None:
-            self.value = str(new_value)
+            text = str(new_value)
+            if self._signal_text() != text:
+                self._apply_signal_text(text)
 
     # ── dirty tracking ────────────────────────────────────────────────────
 
@@ -481,9 +537,14 @@ class _MultilineCore(tk.Frame):
     # ── cleanup ───────────────────────────────────────────────────────────
 
     def _on_destroy(self, event: tk.Event) -> None:
+        # Released for any Destroy in this subtree, not just our own: the event
+        # this handler receives names the inner Text, never the core, so gating
+        # the release on `is self` releases nothing and the subscription outlives
+        # the widget. The rest of the block stays behind the guard -- it has
+        # never run, and starting it here is not this change's business.
+        self._unbind_signal()
         if event.widget is not self:
             return
-        self._unbind_signal()
         self._chain.destroy()
         try:
             for seq in wheel.wheel_sequences(self):
