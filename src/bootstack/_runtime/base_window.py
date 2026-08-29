@@ -5,9 +5,6 @@ window management functionality used by both the main App and Toplevel classes.
 This eliminates code duplication and ensures consistent behavior across all
 window types.
 
-Standard widget APIs (events, scheduling, clipboard, geometry managers, winfo) are documented under capabilities and are
- available through normal Tk/Ttk inheritance.”
-
 The BaseWindow mixin provides:
 - Window manager (wm) pass-throughs with modern docstrings
 - Window configuration (size, position, constraints)

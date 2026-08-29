@@ -393,10 +393,6 @@ class GridFrame(Frame):
                 return i
         return -1
 
-    # -------------------------------------------------------------------------
-    # Hook methods called by GridMixin
-    # -------------------------------------------------------------------------
-
     def _on_child_grid(self, widget: tk.Widget, **options: Any) -> None:
         """Hook called when a child widget calls grid().
 

@@ -16,10 +16,6 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
     This class wraps `tkinter.Toplevel` and adds bootstack window conveniences
     (title/geometry helpers, centering, alpha/topmost/toolwindow helpers, etc.).
 
-    The standard widget API (events, scheduling, clipboard, geometry managers,
-    winfo, etc.) is available through inheritance and is documented under
-    bootstack capabilities.
-
     For additional information on the underlying Tk/Tkinter behavior, see:
         - Tcl/Tk `toplevel` command documentation
         - Python `tkinter.Toplevel` documentation

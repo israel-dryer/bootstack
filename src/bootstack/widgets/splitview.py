@@ -376,9 +376,7 @@ class SplitView(PublicWidgetBase):
             key: The key assigned when the pane was added.
         """
         pane = self._panes.pop(key)
-        # `WidgetCapabilitiesMixin.forget()` shadows `ttk.Panedwindow.forget(pane)`
-        # with a zero-arg method, so invoke the underlying Tk command directly.
-        self._internal.tk.call(str(self._internal), "forget", pane._frame)
+        self._internal.forget(pane._frame)
         pane._frame.destroy()
 
     # ----- Sash control -----
