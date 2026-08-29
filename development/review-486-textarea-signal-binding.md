@@ -475,7 +475,11 @@ file, collection checked, CRLF verified.
 
 ---
 
-## ⏭ OPEN, DEFERRED BY THE MAINTAINER — the CHANGELOG says nothing about the released-line change
+## ✅ RESOLVED — the CHANGELOG said nothing about the released-line change
+
+⚠⚠ **THIS SECTION IS SUPERSEDED. The line is IN, and the wording proposed below
+is NOT the wording that shipped — it was too weak. See the addendum at the end of
+this file.** Kept for the reasoning that got it raised.
 
 The forced scope expansion (the writer seam) changes behavior on the **released**
 line, not only on unreleased work. On `0.3.2`, writing a bound signal while the
@@ -740,11 +744,9 @@ into `development/` **in the branch, before the PR opens** — that is the one t
 #444 got right that the two branches before it did not. **`git add` the moved file
 after the `git mv`, and a 100% rename similarity means the content edit was lost.**
 
-⚠ **The deferred CHANGELOG sentence is STILL OPEN and this round did not touch
-it.** The released-line behavior change — a signal write while the placeholder
-shows now updates `value` — has no CHANGELOG line; that was raised and
-deliberately deferred by the maintainer on 2026-08-28. **Silence is not a decision,
-and `0.4.0` is the release that promotes it.**
+✅ **The deferred CHANGELOG sentence is RESOLVED and IN** — taken after round 2,
+in wording the measurement forced rather than the wording either round proposed.
+**See the addendum at the end of this file.**
 
 **Round 2 of 3 spent. Nothing blocking. One test-only fix, which triggers no
 further round under gate 1, and one issue to file. Recommend closing the branch
@@ -794,3 +796,57 @@ verified clean.
 **Round 2 closed. One round remains under the cap and there is nothing for it to
 review.** What is left is the `clear()` issue to file and the two process items
 above.
+
+---
+
+## ✅ THE DEFERRED CHANGELOG LINE IS RESOLVED — TAKEN, AND THE PROPOSED WORDING WAS TOO WEAK
+
+The sentence deferred by the maintainer on 2026-08-28 is now in the `## [Unreleased]`
+#486 bullet. ⚠ **It is NOT the wording this record proposed above** — that version
+named only `value`, which reads as a typing nit, and the measurement says the
+defect is much larger. **The paragraph above proposing the old sentence is
+superseded by this section.**
+
+### Checked against the OLD code, which the project's own rule requires
+
+⚠ **`git diff v0.3.2..main -- src/bootstack/widgets/_impl/composites/textarea/`
+is EMPTY**, so the released line and `main` behave identically on this path and a
+worktree at the tag is a legitimate arm. Measured there, not inferred from the
+fix — `development/probe_486_changelog_reach.py`.
+
+### The behavior on `0.3.2`, and it is not a lagging `value`
+
+With a `TextArea` built `placeholder=` + `textsignal=` and the placeholder on
+screen, `sig.set("written by code")` puts the text on screen **and leaves
+`_showing_placeholder` standing.** `_on_core_change` and `_on_focus_out` both
+open with `if not self._showing_placeholder:`, so the widget goes **deaf** as
+well as lying:
+
+```
+v0.3.2   placeholder=True   value=''                  on_input=0  on_change=0   *** EVENTS SUPPRESSED ***
+branch   placeholder=False  value='written by code!'  on_input=1  on_change=1   OK
+```
+
+**The user types afterwards and the application hears nothing, permanently.**
+That is what earns the entry under this project's reachability test, and it is
+what the deferred wording did not say.
+
+### ⚠ THE FIX CLOSES ONE OF THREE DOORS, AND THE OTHER TWO ARE UNCHANGED
+
+Same probe, all four public ways of writing while the placeholder shows:
+
+| door | `v0.3.2` screen / `value` | branch |
+|---|---|---|
+| `sig.set(...)` | `'written by code'` / **`''`** | `'written by code'` / `'written by code'` — **fixed** |
+| `ta.insert(...)` | `'Type something herewritten by code'` / `''` | **identical — still broken** |
+| `ta.append(...)` | `'Type something herewritten by code'` / `''` | **identical — still broken** |
+| `ta.value = ...` | clean | clean |
+
+`TextArea.insert` and `TextArea.append` reach `self._internal._core.insert(...)`
+**directly**, bypassing the composite's `value` setter and so never clearing the
+placeholder flag — which is why the placeholder text and the inserted text end
+up concatenated on screen. **Pre-existing, `TextArea` only, and out of scope
+here.** ⚠ **The CHANGELOG line deliberately says nothing about them** — it is
+scoped to *"writing to a bound signal"*, because advertising an unfixed defect is
+not what a CHANGELOG is for. **A second candidate to file, alongside the
+`clear()` gap.**
