@@ -234,3 +234,32 @@ def test_the_expectation_is_not_double_punctuated():
 
     assert rule.validate("6").message == _uncheckable("Enter a valid email address")
     assert ".)." not in rule.validate("6").message
+
+
+def test_a_message_that_is_not_a_string_does_not_escape_the_guard():
+    # Round 2 finding R1. The composer calls str methods on `message`, which is
+    # author-supplied and validated nowhere, and it runs INSIDE the except block
+    # that absorbs the func's exception -- so `message=42` raised an
+    # AttributeError straight back out of the guard, re-opening #467 on a path
+    # the branch had already closed. The falsy cases hid it: None and "" short
+    # circuit before any string method runs.
+    class StrRaises:
+        def __str__(self):
+            raise RuntimeError("str exploded")
+
+    for message in (42, b"nope", ["a"], StrRaises()):
+        result = ValidationRule(
+            "custom", func=lambda v: v > 5, message=message
+        ).validate("6")
+
+        assert result.is_valid is False, message
+
+    # A non-str message still reaches the user, coerced -- that is what the
+    # pre-composer code did with it. Only a message that cannot be rendered at
+    # all falls back to the bare sentence.
+    assert ValidationRule(
+        "custom", func=lambda v: v > 5, message=42
+    ).validate("6").message == _uncheckable("42")
+    assert ValidationRule(
+        "custom", func=lambda v: v > 5, message=StrRaises()
+    ).validate("6").message == UNCHECKABLE_MESSAGE
