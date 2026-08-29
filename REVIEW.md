@@ -631,34 +631,88 @@ into a `TclError` rather than a result).
 
 ---
 
-## Out of scope, pre-existing, and worth FILING — a `clear()` never reaches these widgets
+## Out of scope, pre-existing, and worth FILING — a `clear()` never reaches these two widgets
 
-`bs.Signal("hello", allow_empty=True)` bound to a `TextArea`, then `sig.clear()`:
+⚠⚠ **THIS SECTION ORIGINALLY SAID THE DIVERGENCE WAS FAMILY-WIDE AND THEREFORE
+"the empty-value plumbing rather than the multiline binding". THAT WAS WRONG,
+AND IT WAS WRONG BECAUSE OF THE READER, NOT THE ARM.** The `TextField` comparison
+fell back to `.value`, which lags a programmatic signal write until the next
+commit (#482), so a widget that had cleared correctly reported `hello`. Read
+from the toolkit widget instead, **`TextField` clears.** The census below is the
+corrected measurement and it points the opposite way: **`TextArea` and
+`CodeEditor` are the only two field widgets that ignore a signal clear.**
+
+`bs.Signal("hello", allow_empty=True)` bound to each field widget that takes
+one, then `sig.clear()`, reading **what is on screen** —
+`development/probe_486_clear_divergence.py census`:
+
+| widget | signal realized | shown before | shown after | signal after | |
+|---|---|---|---|---|---|
+| `TextField` | yes | `'hello'` | `''` | `''` | OK |
+| `PasswordField` | yes | `'hello'` | `''` | `''` | OK |
+| `PathField` | yes | `'hello'` | `''` | `''` | OK |
+| `SpinnerField` | yes | `'hello'` | `''` | `''` | OK |
+| **`TextArea`** | **no** | `'hello'` | **`'hello'`** | `None` | ***IGNORED*** |
+| **`CodeEditor`** | **no** | `'hello'` | **`'hello'`** | `None` | ***IGNORED*** |
+| `NumberField` | no | `'7'` | `''` | `None` | OK |
+| `DateField` | no | `'January 15, 2026'` | `''` | `None` | OK |
+| `TimeField` | no | `'9:30 AM'` | `''` | `None` | OK |
+
+**7 of 9 honor it. The two that do not are this branch's pair.** Note the
+value-space three clear correctly *while also* receiving `None`, so receiving
+`None` is not what makes it impossible — those widgets simply act on it.
+
+### Cause, and it is not a design choice — measured
+
+**`_on_signal_change` opens with `if new_value is not None`, and for these two
+widgets `None` is exactly what an empty arrives as.** #390's rule is that the
+empty is decided by the **binding**: `''` where the signal *is* the widget's own
+Tk variable, `None` otherwise. `TextArea` and `CodeEditor` have no variable — the
+`realized` column above is the tell — so their signal's empty is `None`, which
+their own guard drops. The entry-backed four never hit it because their empty is
+a `str`.
+
+**The sharp control, arm `realized`: the same `TextArea` code both honors and
+ignores the clear, depending on nothing it can see.** One signal bound to a
+`TextArea` alone, and one bound to a `TextArea` *and* a `TextField`:
 
 ```
-before clear : value='hello' sig='hello'
-after  clear : value='hello' sig=None   *** WIDGET IGNORED THE CLEAR ***
-on screen    : 'hello'
+TextArea alone         realized=False empty=None    shown 'hello' -> 'hello'  *** IGNORED ***
+TextArea + TextField   realized=True  empty=''      shown 'hello' -> ''       OK
 ```
 
-The model reads empty and the widget still shows `hello` — measured on screen, not
-only through `.value`. **`_on_signal_change` opens with `if new_value is not
-None`, so an empty arriving from the signal is dropped.**
+**A second, unrelated widget elsewhere in the application decides whether this
+one honors a clear**, because it is what realizes the signal's variable and so
+what fixes which empty `clear()` produces. **That is the argument that this is a
+defect and not an intentional refusal**: an intentional refusal would not depend
+on who else is bound.
 
-⚠ **NOT this branch.** Byte-identical on `main` in the same arm. And **not
-specific to these two widgets** — the `TextField` exemplar in the same run keeps
-showing `hello` while its own signal reads `''`, so this is the empty-value
-plumbing rather than the multiline binding.
+### The other direction is fine
 
-⚠ **The branch does change the CONSEQUENCE, which is why it is worth writing down
-rather than ignoring.** Before, the signal stayed empty forever. Now the next edit
-pushes the widget's text back and silently un-empties it. That is strictly better
-than a permanent divergence and strictly worse than honoring the clear.
+Arm `widget_side`: `widget.clear()` pushes `''` on both `TextArea` and
+`TextField`, which is falsy, and falsiness is the check #390's CHANGELOG tells
+callers to use. ⚠ For `TextArea` that `''` is an ordinary `str` rather than the
+signal's declared empty — the signal never actually enters its empty state from
+the widget side — but nothing observable turns on the difference today.
 
-**Recommendation: file it, do not fix it here.** It is adjacent to #484 and #390's
-family but is neither — #484 is a framework-created signal refusing `clear()`;
-this is a caller-created signal accepting it and the widget ignoring the result.
-**Filing is a maintainer call; this record does not open it.**
+### Disposition
+
+⚠ **NOT this branch.** `if new_value is not None` is byte-identical on `main`
+(`git show main:src/bootstack/.../core.py`), and the whole census reproduces
+there. **The branch only changes the consequence:** before, the signal stayed
+empty forever while the widget showed text; now the next edit pushes the stale
+text back and silently un-empties the signal. Strictly better than a permanent
+divergence, strictly worse than honoring the clear.
+
+**It is a gap in #390's coverage, not a new bug and not #484.** #484 is a
+*framework-created* signal refusing `clear()`; this is a *caller-created* signal
+accepting it while two widgets ignore the result. The fix is small and local —
+these two need to treat an incoming empty as "clear the document" rather than
+"nothing to do" — but it changes what a widget does with a value it currently
+drops, so it is a scope call and does not belong in a branch about binding
+direction.
+
+**Recommendation: file it. This record does not open it.**
 
 ---
 
