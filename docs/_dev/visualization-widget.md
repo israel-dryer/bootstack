@@ -121,8 +121,6 @@ Everything needed already exists in the framework — no core changes:
   expand=True)` drops straight into the internal `Frame`.
 - **Theme bridge** — `get_theme_color(token)`, `get_theme_provider().mode` /
   `.typography`, and the canvas theme-repaint hook
-  (`Frame._enable_theme_repaint(self._redraw)`, fires on Publisher `Channel.STD`
-  after a rebuild, gated on `winfo_viewable()`).
 - **Reactivity** — `Signal.subscribe(cb) -> Handle` (cancel on `<Destroy>`),
   `.map()` for derived; `DataSource.observe(cond, *order) -> Stream[list[Record]]`
   and `.on_change()`, exactly as `ListView` / `DataTable` consume them today.
@@ -182,7 +180,7 @@ An internal helper translates the active theme into a matplotlib rcParams dict
 (figure/axes facecolors, text/tick/spine colors, grid, an accent `prop_cycle`, and
 fonts from `get_theme_provider().typography`). The managed render runs inside
 `with matplotlib.rc_context(rc):` so plotting calls inherit themed defaults *and* a
-semantic color cycle. On `<<BsThemeChanged>>` / Publisher `Channel.STD`, the widget
+semantic color cycle. On `<<BsThemeChanged>>` the widget
 re-renders under the new rc and redraws.
 
 **Honest tradeoff:** rc_context only governs the managed (`render=`) path. For the

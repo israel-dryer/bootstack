@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from . import colorutils, publisher, capabilities
+from . import colorutils, capabilities
 from bootstack._core.exceptions import (
     ThemeError,
     NavigationError,
@@ -12,7 +12,6 @@ from bootstack._core.exceptions import (
 
 __all__ = [
     "colorutils",
-    "publisher",
     "capabilities",
     "ThemeError",
     "NavigationError",

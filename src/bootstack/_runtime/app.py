@@ -19,7 +19,6 @@ from typing_extensions import Unpack
 from bootstack.constants import *
 from bootstack.i18n.intl_format import detect_locale
 from bootstack.i18n.msgcat import MessageCatalog
-from bootstack._core.publisher import Publisher
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow
 from bootstack._runtime.utility import enable_high_dpi_awareness
@@ -156,7 +155,6 @@ def apply_class_bindings(window: tkinter.Widget | App) -> None:
 def apply_all_bindings(window: tkinter.Widget | App) -> None:
     """Add bindings to all widgets in the application"""
     window.bind_all('<Map>', on_map_child, '+')
-    window.bind_all('<Destroy>', lambda e: Publisher.unsubscribe(e.widget))
 
 
 def on_disabled_readonly_state(event: tkinter.Event) -> None:
