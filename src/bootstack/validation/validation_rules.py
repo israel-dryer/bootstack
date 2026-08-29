@@ -113,13 +113,11 @@ class ValidationRule:
             A ValidationResult with `is_valid=True` on success or `is_valid=False`
             with an error message on failure.
 
-            A `'custom'` rule whose `func` raises is reported invalid rather than
-            allowed to propagate, so a predicate that cannot judge a value does
-            not leave the field's validity stale. Its message is
-            "Could not check this value (expected: …)", carrying the rule's own
-            `message` as an expectation rather than as a verdict — the check never
-            ran, so what a valid value looks like has not been established about
-            this one. A rule with no `message` reports `UNCHECKABLE_MESSAGE`.
+            A `'custom'` rule whose `func` raises is reported invalid rather
+            than allowed to propagate. Its message is "Could not check this
+            value (expected: …)", carrying the rule's own `message` as an
+            expectation rather than as a verdict; a rule with no `message`
+            reports `UNCHECKABLE_MESSAGE`.
         """
         msg = self.message or self._default_message()
 
@@ -175,16 +173,9 @@ class ValidationRule:
                 try:
                     passed = func(value)
                 except Exception as exc:
-                    # A func that cannot judge this value has not produced a
-                    # verdict, so report invalid -- the same answer the `range`
-                    # branch above gives an incomparable pair. Letting it
-                    # propagate leaves the field's validity stale instead: on an
-                    # automatic trigger there is no caller to catch it, so the
-                    # end user sees a field that quietly stopped validating.
-                    # NOTE(#467): `Exception`, not `TypeError` -- `range` only
-                    # compares, but a user func can raise anything. Narrowing
-                    # this re-opens the defect for every other exception type.
-                    # BaseException is deliberately not caught.
+                    # NOTE(#467): `Exception`, not `TypeError` -- a user func
+                    # can raise anything, and narrowing this re-opens the defect
+                    # for every other type. BaseException is deliberately out.
                     self._report_func_error(exc, value)
                     return ValidationResult(False, self._uncheckable_message())
                 if not passed:
@@ -195,18 +186,9 @@ class ValidationRule:
     def _uncheckable_message(self) -> str:
         """Return what to show the end user when the func raised.
 
-        The rule's own `message` states a CONDITION -- "must be over 5" -- so
-        returning it as the verdict asserts something about a value the predicate
-        never managed to judge, and it can be plainly false: a field reading
-        "must be over 5" while holding 6. But throwing it away leaves the user
-        with nothing to act on, so it is demoted rather than discarded, from a
-        judgment to an expectation.
-
-        ⚠ Only an AUTHOR-SUPPLIED message is composed in. `self.message` is empty
-        when the caller passed none, and `_default_message()` would then supply
-        "Invalid value." -- composing that gives "Could not check this value
-        (expected: Invalid value.)", which is nonsense. Read `self.message`, not
-        the resolved `msg`.
+        Composes `self.message` and not the resolved `msg`: the default for
+        `'custom'` is "Invalid value.", which would give "Could not check this
+        value (expected: Invalid value.)".
 
         Returns:
             The end-user message for a predicate that raised.
@@ -224,18 +206,9 @@ class ValidationRule:
     def _report_func_error(self, exc: BaseException, value: object) -> None:
         """Report a `'custom'` func that raised, without ever raising itself.
 
-        Absorbing the exception is what keeps the field's validity from going
-        stale, but absorbing it silently would leave the author worse off than
-        before the guard existed: on the automatic trigger Tk printed the
-        traceback through `report_callback_exception`, and on the manual trigger
-        the exception reached the caller. A func that raises is always a defect
-        in the author's own code -- unlike `range`, whose silence is about the
-        DATA -- so the framework must not be the thing that hides it.
-
-        The first raise per rule writes one line naming the exception; the full
-        traceback stays behind `BOOTSTACK_DEBUG`. Once per rule is required, not
-        cosmetic: a rule with `trigger='always'` runs on every keystroke, and an
-        unconditional print would flood the console as the user types.
+        Once per rule, not per raise: a rule with `trigger='always'` runs on
+        every keystroke, so an unconditional print floods the console as the
+        user types.
 
         Args:
             exc: The exception the func raised.
@@ -254,9 +227,8 @@ class ValidationRule:
                 f"custom validation rule raised for value {value!r}"
             )
         except Exception:
-            # A diagnostic must never become the failure it is reporting. The
-            # value's own __repr__, or the exception's __str__, is user code and
-            # can raise -- which would escape this guard and re-open #467.
+            # `__repr__` and `__str__` here are user code: a diagnostic must
+            # never become the failure it reports (#467).
             pass
 
     @staticmethod
