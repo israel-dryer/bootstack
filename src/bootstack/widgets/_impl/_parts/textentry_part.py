@@ -187,13 +187,34 @@ class TextEntryPart(ValidationMixin, Entry):
         Keyboard focus is the discriminator. A programmatic write while this
         field HAS focus is indistinguishable from typing here and still lags --
         a stated residual, not an oversight.
+
+        The value only, never the display. This runs inside the variable's own
+        write trace, and Tcl suppresses every other trace on that variable while
+        one is executing -- the entry's included -- so normalizing here moves
+        the signal while the entry keeps its old text, and permanently: the
+        later blur then finds nothing left to normalize. Normalizing stays on
+        `commit()`, which runs outside any trace.
         """
+        if self._showing_placeholder:
+            return
         try:
             if self.focus_get() is self:
                 return
         except (TclError, KeyError):
             return
-        self.commit()
+        self._reparse()
+
+    def _reparse(self) -> bool:
+        """Re-derive `_value` from the display text; False if it will not parse."""
+        s = self.get().strip()
+        if s == '':
+            self._value = None if self._allow_blank else self._value
+            return True
+        try:
+            self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
+        except ValueError:
+            return False  # keep prior value on parse failure
+        return True
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""
@@ -345,17 +366,8 @@ class TextEntryPart(ValidationMixin, Entry):
         """Parse display text, update value, and normalize display (called on FocusOut/Return)."""
         if self._showing_placeholder:
             return
-        s = self.get().strip()
-
-        # parse once
-        if s == '':
-            self._value = None if self._allow_blank else self._value
-        else:
-            try:
-                self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
-            except ValueError:
-                # keep prior value on parse failure
-                return
+        if not self._reparse():
+            return
 
         # Format the value for display
         new_text = self._format_value(self._value)

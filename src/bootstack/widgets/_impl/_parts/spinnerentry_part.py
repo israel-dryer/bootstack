@@ -166,15 +166,28 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
 
         Duplicated from `TextEntryPart` because this class does not inherit it --
         as `_handle_change`, `commit` and `value` already are. #477 is the home
-        for collapsing that. See the original for why focus is the discriminator
-        and what residual it leaves (#482).
+        for collapsing that. See the original for why focus is the discriminator,
+        why only the value is re-derived and never the display, and what residual
+        it leaves (#482).
         """
         try:
             if self.focus_get() is self:
                 return
         except (TclError, KeyError):
             return
-        self.commit()
+        self._reparse()
+
+    def _reparse(self) -> bool:
+        """Re-derive `_value` from the display text; False if it will not parse."""
+        s = self.get().strip()
+        if s == '':
+            self._value = None if self._allow_blank else self._value
+            return True
+        try:
+            self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
+        except ValueError:
+            return False  # keep prior value on parse failure
+        return True
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""
@@ -371,17 +384,8 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
 
     def commit(self):
         """Parse display text, update value, and normalize display (called on FocusOut/Return)."""
-        s = self.get().strip()
-
-        # Parse once
-        if s == '':
-            self._value = None if self._allow_blank else self._value
-        else:
-            try:
-                self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
-            except ValueError:
-                # Keep prior value on parse failure
-                return
+        if not self._reparse():
+            return
 
         # Format the value for display
         new_text = self._format_value(self._value)

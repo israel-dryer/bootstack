@@ -1,4 +1,4 @@
-"""#482 -- a field's `value` must follow a programmatic signal write.
+﻿"""#482 -- a field's `value` must follow a programmatic signal write.
 
 The four TextEntryPart-backed fields reported the PREVIOUS value until something
 committed the field, while the entry showed the new text. `TextArea`/`CodeEditor`
@@ -97,3 +97,58 @@ def test_a_write_onto_a_placeholdered_field_is_committed(shown_app):
 
     assert field.value == "written by code"
     assert field._internal._entry.get() == "written by code"
+
+
+@pytest.mark.parametrize("name", ["TextField", "SpinnerField"])
+def test_a_formatted_write_leaves_the_display_and_the_signal_alone(shown_app, name):
+    # Round 1. Re-deriving the value must not normalize the display: this runs
+    # inside the variable's own write trace, where Tcl suppresses the entry's
+    # trace, so a write here moved the signal while the entry kept its old text
+    # -- and the later blur then found nothing left to normalize, making the
+    # divergence permanent. Normalizing belongs on commit, at blur/Return.
+    sig = bs.Signal("1")
+    widget = getattr(bs, name)(textsignal=sig, value_format="#,##0.00")
+    entry = widget._internal._entry
+    root = shown_app.tk.winfo_toplevel()
+    root.update()
+
+    sig.set("1234.5")
+    root.update()
+
+    assert widget.value == 1234.5
+    assert sig() == "1234.5"
+    assert entry.get() == "1234.5"
+
+    entry.focus_force()
+    root.update()
+    entry.event_generate("<FocusOut>")
+    root.update()
+
+    assert entry.get() == "1,234.50"
+    assert sig() == "1,234.50"
+
+
+def test_a_number_field_is_untouched_by_the_fix(shown_app):
+    # Round 1. `NumberEntryPart` subclasses `TextEntryPart`, so it inherits the
+    # helper even though `NumberField` already followed and is out of scope.
+    # Its bounds are applied by its `commit()` override at blur, not before --
+    # pinned so the helper cannot start reaching them and leave `value` clamped
+    # while the display shows the number the caller wrote.
+    field = bs.NumberField(value=5, min_value=0, max_value=10, value_format="#,##0.00")
+    entry = field._internal._entry
+    root = shown_app.tk.winfo_toplevel()
+    root.update()
+
+    field.value = 99
+    root.update()
+
+    assert field.value == 99.0
+    assert entry.get() == "99.00"
+
+    entry.focus_force()
+    root.update()
+    entry.event_generate("<FocusOut>")
+    root.update()
+
+    assert field.value == 10
+    assert entry.get() == "10.00"
