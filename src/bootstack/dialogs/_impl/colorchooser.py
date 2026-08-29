@@ -13,8 +13,8 @@ from typing import Any, Callable, List, NamedTuple, Optional, Tuple
 from PIL import ImageColor
 
 from bootstack.constants import *
-from bootstack._core import colorutils
-from bootstack._core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
+from bootstack.style import utility as colorutils
+from bootstack.style.utility import HUE, LUM, SAT
 from bootstack.events import Subscription
 from bootstack.dialogs._impl.dialog import (
     DIALOG_RESULT, Dialog, emit_dialog_result, result_target,
@@ -24,6 +24,10 @@ from bootstack._runtime import utility
 from bootstack.style.style import get_style, get_theme_color
 from bootstack.widgets._impl.composites.tabs.tabview import TabView
 from bootstack.widgets._impl.primitives import Button, Entry, Frame, Label, Spinbox
+
+HEX = 'hex'
+HSL = 'hsl'
+RGB = 'rgb'
 
 # Theme-color families shown on the "Themed" tab, in display order. Each is a
 # semantic color the active theme exposes as a full light-to-dark band; `gray`
@@ -322,8 +326,8 @@ class ColorChooser(ttk.Frame):
             fill = colorutils.update_hsl_value(
                 color=values.hex,
                 lum=lum,
-                inmodel='hex',
-                outmodel='hex'
+                in_model='hex',
+                out_model='hex'
             )
             bbox = [x * xf, 0, (x * xf) + xf, height]
             tag = f'color{x}'
@@ -402,8 +406,8 @@ class ColorChooser(ttk.Frame):
             fill = colorutils.update_hsl_value(
                 color=values.hex,
                 lum=lum,
-                inmodel='hex',
-                outmodel='hex'
+                in_model='hex',
+                out_model='hex'
             )
             tag = f'color{x}'
             self.luminance_scale.itemconfig(tag, fill=fill)
