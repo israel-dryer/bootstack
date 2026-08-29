@@ -793,8 +793,56 @@ assigned there.
 | [#498](https://github.com/israel-dryer/bootstack/issues/498) | a broken stderr silences the `BOOTSTACK_DEBUG` traceback | round 2, R3 |
 | [#499](https://github.com/israel-dryer/bootstack/issues/499) | a test asserts total stderr silence and fails under `BOOTSTACK_DEBUG=1` | round 2, R2 |
 
-⚠ **#498 and #499 were both introduced by round 1's fix step**, like R1 which was fixed. The full
-detail is above; the issue bodies carry the measurements so neither has to be re-derived.
+### ⚠ SUPERSEDED SAME DAY BY MAINTAINER TRIAGE (2026-08-29) — read this, not the table
+
+The maintainer asked the question the batch should have been filed against:
+***are these contrived cases of the framework being used incorrectly, or are we adding guards
+around improper use?*** It splits the five cleanly, and filing them as one batch had flattened the
+distinction:
+
+| | guarding misuse? | disposition |
+|---|---|---|
+| #496 non-callable `func` | **yes**, purely | **CLOSED**, folded into **#500** |
+| #495 `range` message | **no** — changes nothing about what is accepted | **CLOSED**, folded into **#500** |
+| #497 `'compare'` unguarded | **no** — a `Signal` as `other_field` is documented correct usage | **OPEN**, unmilestoned |
+| #498 shared `try` | no — diagnostic plumbing | **CLOSED, not planned** |
+| #499 test false alarm | no — a test that fails while the behavior is fine | **OPEN**, unmilestoned |
+
+⚠⚠ **#495 AND #496 WERE ONE DECISION, NOT TWO, AND FILING THEM SEPARATELY IMPLIED TWO FIXES.**
+Both are the same cause — `ValidationRule` stores whatever configuration it is handed and only
+discovers the problem at validation time, where it cannot report it to the person who caused it.
+**Refiled as [#500](https://github.com/israel-dryer/bootstack/issues/500) on
+`0.5.0 — Strictness and value types`**, because the fix raises where the framework currently
+accepts, which is that milestone's membership rule. Refusing the bad configuration at construction
+makes #495's message question *unreachable* for that producer rather than merely better-worded.
+
+⚠ **#500 does NOT subsume all of #495, and it says so in its own body.** A `Select` declares
+`_VALIDATION_KIND = None` by #465's decision, so a `'range'` rule over one receives whatever the
+chosen option carries — measured, bounds correct: `option value='n/a'` reports
+*"Enter a value between 1 and 10."* **A construction-time bound check cannot reach that**, because
+the value is data rather than author configuration. The residue is carried into #500 as a question
+to answer **with** it, not after it.
+
+⚠ **The realistic producer for #495 is NOT the `min="1"` typo the issue led with.** It is a date
+bound written the way dates usually get written — `min="2020-01-01"` where the docs show
+`min=datetime.date.today()`. Measured: every date fails, and **the broken rule's message is
+character-for-character identical to the working rule's**, because `_default_message()`
+interpolates the bound unquoted. There is no tell, and `range`'s `except TypeError` writes nothing
+to any channel.
+
+⚠ **#498 was closed as not worth the change**: the cost is a diagnostic that goes missing only when
+the stream it would have printed to is already broken, and the guard itself holds on every arm
+measured. **The measurement is kept here (R3) and in `probe_467_review_round2.py` arm 3** in case a
+real report ever lands on it.
+
+⚠ **#495's substance is not dismissed by this triage and the record should not be read that way.**
+It is F10's argument, which the maintainer accepted for `'custom'` two days earlier — and #467's own
+code comment now points at `range` as the precedent for behavior the two branches no longer share.
+**The inconsistency between them is worse than either answer**, which is why it travels with #500
+rather than being closed on its own.
+
+⚠ **#499 was both introduced by round 1's fix step**, like R1 which was fixed. The issue bodies
+carry the measurements so neither has to be re-derived.
 
 The original list, kept for what each says:
 
