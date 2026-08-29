@@ -17,7 +17,7 @@ from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
-from bootstack._core.capabilities.signals import (
+from bootstack._core.signal_binding import (
     normalize_signal,
     create_signal,
     infer_default_value_for_widget,
