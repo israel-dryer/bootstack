@@ -1,6 +1,7 @@
 import re
 from typing import Callable
 
+from bootstack._runtime.utility import debug_log_exception
 from bootstack.validation.types import RuleTriggerType, RuleType
 from bootstack.validation.validation_result import ValidationResult
 
@@ -154,8 +155,26 @@ class ValidationRule:
                 return ValidationResult(False, msg)
         elif self.type == "custom":
             func: Callable[[str], bool] = self.params.get("func")
-            if func and not func(value):
-                return ValidationResult(False, msg)
+            if func:
+                try:
+                    passed = func(value)
+                except Exception:
+                    # A func that cannot judge this value has not produced a
+                    # verdict, so report invalid -- the same answer the `range`
+                    # branch above gives an incomparable pair. Letting it
+                    # propagate leaves the field's validity stale instead: on an
+                    # automatic trigger there is no caller to catch it, so the
+                    # end user sees a field that quietly stopped validating.
+                    # NOTE(#467): `Exception`, not `TypeError` -- `range` only
+                    # compares, but a user func can raise anything. Narrowing
+                    # this re-opens the defect for every other exception type.
+                    # BaseException is deliberately not caught.
+                    debug_log_exception(
+                        f"custom validation rule raised for value {value!r}"
+                    )
+                    return ValidationResult(False, msg)
+                if not passed:
+                    return ValidationResult(False, msg)
 
         return ValidationResult(True)
 

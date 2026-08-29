@@ -44,15 +44,27 @@ worse than the bug is not a fix.**
 
 Identical comparison, two rule types, measured at unit level:
 
-| value | `custom` func `v > 5` | `range` `min=5` |
-|---|---|---|
-| `None` | **TypeError** | absorbed -> invalid |
-| `''` | **TypeError** | absorbed -> invalid |
-| `'6'` | **TypeError** | absorbed -> invalid |
+| value | `custom` func `v > 5` (before) | `range` `min=5` | why `range` differs |
+|---|---|---|---|
+| `None` | **TypeError** | valid | `_is_empty` short-circuit at `:140` |
+| `''` | **TypeError** | valid | same short-circuit |
+| `'6'` | **TypeError** | **invalid** | its `except TypeError` at `:149-151` |
 
 `range` catches `TypeError` at `:149-151`; `custom` calls `func(value)` bare at `:155-158`.
-**Nothing about `custom` justifies the difference** — and `custom` is in neither `TEXT_RULES` nor
-`ORDERED_RULES`, so `None` and `''` reach the func unguarded too.
+**Nothing about `custom` justifies the difference.**
+
+⚠⚠ **BE PRECISE ABOUT WHAT THIS MATCHES — AN EARLIER DRAFT OF THIS FILE OVERSTATED IT.** The fix
+matches **`range`'s `except TypeError` branch**, not `range`'s whole answer. `range` returns *valid*
+for `None`/`''` because of an empty short-circuit that `custom` does not have and **is not getting
+here** — `custom` is in neither `TEXT_RULES` nor `ORDERED_RULES` **by existing design**, so its func
+already sees empty values and decides for itself. **Adding a short-circuit would stop calling funcs
+that DO handle empty, which is a bigger change and out of scope.**
+
+⚠ **SO THERE IS A REAL BEHAVIOR CHANGE TO STATE: an optional empty field whose custom func raises on
+`None` now reports INVALID where it previously stayed stale-valid.** Chosen deliberately — an
+unjudged value passing into a form submit is worse than a blocked one, and it matches what `range`
+does the moment its comparison actually fails. ⚠ **But it is the half most likely to surprise, so it
+belongs in the CHANGELOG and in any review of this branch.**
 
 ---
 
@@ -103,7 +115,8 @@ warns about. **Never `warnings.warn` here.**
 New `tests/widgets/public/test_custom_rule_exception.py`:
 
 1. **The unit asymmetry closes.** A `custom` func raising `TypeError` on `None`/`''`/`'6'` reports
-   invalid with the rule's message — the same verdict `range` gives the same values.
+   invalid with the rule's message instead of propagating. ⚠ **Do NOT assert this equals `range`'s
+   answer for `None`/`''`** — it does not, and the reason is in the table above.
 2. **`except Exception` breadth.** A func raising `AttributeError` and one raising a custom
    exception class are both absorbed. ⚠ **This is the arm that fails if someone "tightens" the
    catch to `TypeError`.**

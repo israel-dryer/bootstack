@@ -139,6 +139,14 @@ Unlike the built-in rules, ``'custom'`` and ``'compare'`` also run on an empty
 field — only your predicate can say what an empty value means. On an optional
 field, accept it explicitly: ``func=lambda v: not v or v.isdigit()``.
 
+If your predicate raises, the value is reported **invalid** with the rule's
+message — the same answer a ``'range'`` rule gives a pair it cannot compare — and
+the traceback goes to the debug log. Set ``BOOTSTACK_DEBUG=1`` to see it. This
+matters most on an optional field: a predicate that assumes a value is present
+raises on the empty case, and the field then reads as invalid rather than
+passing. Handle the empty value explicitly, as above, rather than relying on the
+rule to absorb it.
+
 Confirming a second field
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
