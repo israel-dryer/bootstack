@@ -15,7 +15,7 @@ import pytest
 
 import bootstack as bs
 from bootstack.signals.signal import Signal
-from bootstack._core.capabilities.signals import is_signal
+from bootstack._core.signal_binding import is_signal
 
 
 @pytest.fixture(scope="module")

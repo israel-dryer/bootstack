@@ -154,7 +154,7 @@ class PublicWidgetBase:
         The supported path is `textsignal=` (two-way binding). Raise a clear
         `TypeError` rather than render the name.
         """
-        from bootstack._core.capabilities.signals import is_signal
+        from bootstack._core.signal_binding import is_signal
 
         if is_signal(text):
             raise TypeError(
@@ -484,8 +484,8 @@ class PublicWidgetBase:
             ParentResolutionError: If the widget was never placed in a layout.
         """
         from bootstack.widgets._core.container import (
-            PACK_KEYS, GRID_KEYS, PLACE_KEYS, FLEX_CHILD_KEYS,
-            normalize_fill, _expand_margin, _flex_child_opts, _reject_legacy_child_kwargs,
+            PACK_KEYS, GRID_KEYS, PLACE_KEYS, normalize_fill, _expand_margin, _flex_child_opts,
+            _reject_legacy_child_kwargs, resolve_pack_order
         )
 
         placement = getattr(self, "_placement", None)

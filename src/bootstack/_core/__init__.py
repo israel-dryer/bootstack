@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from . import capabilities
 from bootstack._core.exceptions import (
     ThemeError,
     NavigationError,
@@ -11,7 +10,6 @@ from bootstack._core.exceptions import (
 )
 
 __all__ = [
-    "capabilities",
     "ThemeError",
     "NavigationError",
     "StyleBuilderError",

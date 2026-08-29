@@ -170,10 +170,6 @@ class PackFrame(Frame):
                 return idx + 1
         return len(self._managed)
 
-    # -------------------------------------------------------------------------
-    # Hook methods called by PackMixin
-    # -------------------------------------------------------------------------
-
     def _on_child_pack(self, widget: tk.Widget, **options: Any) -> None:
         """Hook called when a child widget calls pack().
 

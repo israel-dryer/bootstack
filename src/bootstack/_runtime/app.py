@@ -380,10 +380,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
     """The primary application window and entry point.
 
     App adds theming, localization, and platform setup on top of `tkinter.Tk`.
-
-    The standard widget API (events, scheduling, clipboard, geometry managers,
-    winfo, etc.) is documented under bootstack capabilities and is available
-    on App via inheritance.
     """
 
     def __init__(

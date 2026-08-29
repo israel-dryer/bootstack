@@ -14,7 +14,7 @@ import tkinter
 from typing import Any, Dict
 from tkinter import StringVar, Misc
 
-from bootstack._core.capabilities.localization import (
+from bootstack._core.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,
