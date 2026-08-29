@@ -779,9 +779,24 @@ present, `pandas` ABSENT.
 
 ---
 
-### To file as issues
+### Filed as issues — all five, 2026-08-29, all UNMILESTONED
 
-Round 1's three survivors, unchanged, plus this round's two:
+Milestoning is a scope call and is left to the maintainer. #496 argues its own case for
+`0.5.0 — Strictness and value types` (its fix raises where the framework accepts) but was not
+assigned there.
+
+| # | what | origin |
+|---|---|---|
+| [#495](https://github.com/israel-dryer/bootstack/issues/495) | `range` reports its own message for a pair it could not compare | round 1, F10's residue |
+| [#496](https://github.com/israel-dryer/bootstack/issues/496) | a non-callable `func` is absorbed rather than refused | round 1, F3 |
+| [#497](https://github.com/israel-dryer/bootstack/issues/497) | `'compare'` invokes user code unguarded | round 1, F7 |
+| [#498](https://github.com/israel-dryer/bootstack/issues/498) | a broken stderr silences the `BOOTSTACK_DEBUG` traceback | round 2, R3 |
+| [#499](https://github.com/israel-dryer/bootstack/issues/499) | a test asserts total stderr silence and fails under `BOOTSTACK_DEBUG=1` | round 2, R2 |
+
+⚠ **#498 and #499 were both introduced by round 1's fix step**, like R1 which was fixed. The full
+detail is above; the issue bodies carry the measurements so neither has to be re-derived.
+
+The original list, kept for what each says:
 
 1. **`range` reports its own message for an incomparable pair** (round 1, F10's residue) — it can
    assert a condition of a value it never compared, the defect this branch fixed for `custom`. The
