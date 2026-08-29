@@ -1,4 +1,7 @@
-# REVIEW — #467 round 1
+# REVIEW — #467
+
+Two rounds, both recorded here. Round 1 reviewed the branch at `8b8e0964`; round 2 reviewed
+round 1's fix diff at `d010214f`. **Cap 2, spent 2.**
 
 Branch `fix/custom-rule-exception-467`, reviewed at `8b8e0964`. Scope: `git diff main...HEAD`.
 **Round cap 2, spent 1 after this round.**
@@ -463,20 +466,337 @@ that works. They are written into its docstring.
 
 ## Round 2
 
-**Cap 2, spent 1.** Round 2 is triggered — `git diff cc7c6e4c..HEAD -- src/` is non-empty — and its
-scope is **the fix diff only**, not the branch: `src/bootstack/validation/validation_rules.py`
-(the `_report_func_error` reporter), the five tests added to
-`tests/widgets/public/test_custom_rule_exception.py`, and the two documentation lines that now name
-the stderr report.
+Reviewed at `d010214f`. Scope: `git diff 8b8e0964..HEAD` — **the fix diff only**, per the protocol's
+"every later round reviews only the fix diff". Gate 1: `git diff 8b8e0964..HEAD -- src/` is
+non-empty (`validation_rules.py`, +85/-7), so the round is triggered.
+**Cap 2, spent 2. This is the last round — surviving findings are filed as issues, not fixed.**
 
-⚠ **Do not re-open the cleared list above.** Decision 1, decision 2, the empty-field consequence and
-the breadth of `except Exception` were each settled against a measurement this round, and the probes
-that produced them are committed at `development/probe_467_review_round1_real_blur.py` and
-`development/probe_467_review_round1_form_manual.py`. Re-run them rather than re-deriving.
+Environment: macOS box, `.venv/bin/python` 3.14.0, `matplotlib` 3.11.0 present, `pandas` ABSENT.
 
-**The one thing worth attacking in the new code:** printing to stderr from library code is a
-framework-wide first for the widget layer — `grep -rn "sys.stderr" src/bootstack/` returns only the
-CLI and the dev reloader. If the maintainer would rather the framework never wrote to a console,
-that is a decision to take here, and the alternative is not "back to `debug_log_exception` alone"
-(which is what round 1 rejected) but a real diagnostic channel, which is #477-sized work rather than
-this branch's.
+The control arm for this round is the branch's own pre-fix commit **`8b8e0964`**, not `main` —
+round 1's fix step is what is under review. Run from a `git worktree` with `PYTHONPATH` set and
+provenance printed; the branch was not touched while the review ran.
+
+**Instrument: `development/probe_467_review_round2.py`**, four arms, each with the control that
+makes it mean something. It prints its provenance and which arm it is on by reading
+`validation_rules.py`.
+
+**Round 1's four committed instruments were re-run rather than re-derived, and all four reproduce
+the record** — `probe_467_review_round1_real_blur.py` (arm 3 still valid, so arm 1's `False` is the
+rule deciding), `..._form_manual.py`, `..._formdialog_press.py`, and the demo through
+`probe_467_demo_driver.py` (panels 3 and 4 byte-identical, 3 console lines total). The demo was
+driven before the round was called clean, per round 1's own lesson.
+
+---
+
+### R1 — BLOCKING. A non-`str` `message` turns the guard's own return into a raise, re-opening #467 on a path this branch had already fixed.
+
+`src/bootstack/validation/validation_rules.py:214-216` (`_uncheckable_message`)
+
+`_uncheckable_message()` calls `self.message.rstrip('.')`. `message` is author-supplied and
+validated nowhere — `ValidationRule.__init__` stores whatever it is given — and the composer runs
+**inside the `except` block, outside the `try` that `_report_func_error` carries**. A truthy
+non-`str` message therefore raises *during handling of* the func's exception, straight out of the
+guard.
+
+**Measured, both arms, same probe (arm 1):**
+
+| `message=` | `8b8e0964` (pre-fix) | `d010214f` (post-fix) |
+|---|---|---|
+| `None`, `''` | `False`, `'Invalid value.'` | `False`, `'Could not check this value.'` |
+| `'must exceed 5'` | `False`, `'must exceed 5'` | `False`, `'Could not check this value (expected: must exceed 5).'` |
+| **`42`** | `False`, `42` | ***** ESCAPED THE GUARD *** `AttributeError: 'int' object has no attribute 'rstrip'`** |
+| **`b'nope'`** | `False`, `b'nope'` | ***** ESCAPED *** `TypeError: a bytes-like object is required, not 'str'`** |
+| **`['a']`** | `False`, `['a']` | ***** ESCAPED *** `AttributeError: 'list' object has no attribute 'rstrip'`** |
+
+⚠ **The control is what makes this the composer and not the result object.** The same three
+messages on a *genuine verdict* — the func returns `False` rather than raising — pass through
+untouched and **identically on both arms** (`message=42`, `message=b'nope'`). Only the raise path
+moved, and only in the direction of raising.
+
+**Root cause.** Round 1's F2 fix wrapped `_report_func_error` precisely so that no diagnostic could
+become the failure it reports. The message composer was added in the **same commit**, is called from
+**the same statement**, is equally made of user-supplied material — and was left unwrapped. The
+falsy cases are safe by accident: `not self.message` short-circuits `None`, `''`, `0`, `[]` and
+`False` to `UNCHECKABLE_MESSAGE` before any string method runs, so only a *truthy* non-`str`
+reaches it.
+
+⚠ **This is a regression against the branch's own pre-fix commit, not against `main`.** On `main`
+there is no guard at all, so `message=42` plus a raising func was already #467. At `8b8e0964` the
+branch had fixed it. `d010214f` un-fixed it. That is why it is blocking and not a note: the fix step
+put a hole back in the one contract the branch exists to establish — nothing escapes.
+
+**Suggested minimal change.** Make the composer total, with the guarantee `_report_func_error`
+already makes: wrap its body and fall back to `UNCHECKABLE_MESSAGE`. Coerce with `str()` rather than
+requiring one, so an author's `message=42` still reaches the user as *"(expected: 42)"* — that is
+what the pre-fix arm did with it. `str()` is itself user code for a custom object, and `__bool__`
+runs before it, so the guard must cover the whole body rather than the `rstrip` alone.
+
+### R2 — should-fix (gate 2: FALSE ALARM). One new test fails when the author does what the new message tells them to do.
+
+`tests/widgets/public/test_custom_rule_exception.py:150-162`
+(`test_the_report_does_not_repeat_for_the_same_rule`)
+
+The test asserts `capsys.readouterr().err == ""` after the second and third raise. But
+`debug_log_exception` runs on **every** occurrence, and `traceback.print_exc()` writes to **stderr**
+— so with `BOOTSTACK_DEBUG=1` set the channel is not empty and the test fails, while the one-shot
+latch it is named for is working perfectly.
+
+**Measured (arm 2), the whole file, both arms:**
+
+| | `8b8e0964` | `d010214f` |
+|---|---|---|
+| `BOOTSTACK_DEBUG` unset | 14 passed | 22 passed |
+| **`BOOTSTACK_DEBUG=1`** | **14 passed** | **1 failed, 21 passed** |
+
+This is a false alarm under gate 2 — the test fails while the behavior is fine — and the trigger is
+not exotic: **the stderr line this branch adds says "Set BOOTSTACK_DEBUG=1 for the traceback."** An
+author who follows that advice and then runs the suite gets a red test that has nothing to do with
+what they changed. CI does not set the variable, so it will not fail there; it will fail on the desk
+of the one person who was already debugging.
+
+**Suggested minimal change:** assert on the report itself rather than on total silence — count the
+`"bootstack: a 'custom' validation rule's func raised"` lines and require exactly one — so the test
+measures the latch and not the debug channel.
+
+### R3 — should-fix. One `try` covers both diagnostics, so a broken stderr silences the traceback that was explicitly asked for.
+
+`validation_rules.py:238-255` (`_report_func_error`)
+
+The one-line stderr report and `debug_log_exception` sit in the same `try`. The report goes first,
+so if `sys.stderr.write` raises, control leaves the block and **`debug_log_exception` never runs** —
+the opt-in full traceback is suppressed by the failure of the always-on one-liner. The latch is set
+*before* the print, so the rule is then permanently silent on both channels.
+
+**Measured (arm 3), `BOOTSTACK_DEBUG=1`, a `sys.stderr` whose `write()` raises** — a console
+redirected into a widget that has since been destroyed, which is an ordinary thing for a desktop app
+to do:
+
+| | `8b8e0964` | `d010214f` |
+|---|---|---|
+| debug context line on the **working** stream (stdout) | `"bootstack DEBUG: custom validation rule raised for value '6'"` | **`''`** |
+| control, same run with a working stderr | same line | same line |
+
+The guard itself holds on both arms — nothing escapes, which is F2's guarantee doing its job. What
+is lost is the diagnostic, on a stream that was never broken.
+
+**Suggested minimal change:** two `try` blocks rather than one, so each diagnostic fails alone.
+
+### R4 — nit (docs). `UNCHECKABLE_MESSAGE` is named in a public docstring and cannot be imported.
+
+`validation_rules.py:120` — `ValidationRule.validate()`'s `Returns:` block ends *"A rule with no
+`message` reports `UNCHECKABLE_MESSAGE`."* `ValidationRule` is autodoc'd
+(`docs/reference/validation.rst:340`), so that sentence is rendered API reference. Measured:
+
+```
+from bootstack.validation import UNCHECKABLE_MESSAGE
+ImportError: cannot import name 'UNCHECKABLE_MESSAGE' from 'bootstack.validation'
+__all__ = ['ValidationRule', 'ValidationResult', 'RuleType']
+```
+
+Either export it or quote the sentence it produces. **Not fixed** — adding a name to a public
+`__all__` is public surface, which is a maintainer call, and quoting the literal is a wording change
+to shipped prose.
+
+### R5 — nit. `rstrip('.')` strips a character SET, and a trailing space defeats it.
+
+`validation_rules.py:216`. Shapes the two punctuation tests do not cover, all measured:
+
+| `message=` | composed |
+|---|---|
+| `'must be over 5. '` (trailing space) | `'... (expected: must be over 5. ).'` — the stop it was meant to remove survives |
+| `'must be over 5...'` | `'... (expected: must be over 5).'` — all three stripped |
+| `'Enter at least 5 in.'` | `'... (expected: Enter at least 5 in).'` — an abbreviation loses its period |
+| `'...'` | `'... (expected: ).'` |
+| `'Value must be >= 5…'` (ellipsis char) | unchanged, correctly |
+
+Cosmetic in every case, and the common ones are right. Recorded, not fixed.
+
+### R6 — note. `sys.stderr` can be `None`, and `print(file=None)` falls back to stdout.
+
+Measured: with `sys.stderr = None` — `pythonw.exe`, a windowed `.app` bundle, a `--noconsole`
+PyInstaller build, all of which are how a **desktop UI framework** is shipped — `print(..., file=sys.stderr)`
+does not raise; Python resolves `file=None` to `sys.stdout` and the report lands **there** instead.
+With both streams `None` it goes nowhere, silently. The guard holds in every case.
+
+Not a defect: the author-facing report is aimed at development, where a terminal exists. Recorded
+because it bounds the claim — the new channel is not reliably present in the mode this framework's
+apps ship in.
+
+### R7 — note. The stderr decision is UPHELD, and the record's justification for it is wrong in a way worth correcting.
+
+REVIEW.md round 1 flags this as the decision most worth overturning, on the grounds that
+*"printing to stderr from library code is a framework-wide first for the widget layer —
+`grep -rn "sys.stderr" src/bootstack/` returns only the CLI and the dev reloader."*
+
+**Both halves of that are off.** Re-measured:
+
+- `grep -rn "sys\.stderr" src/bootstack/` returns **`dev/_reloader.py` only** (three hits) plus this
+  new line. The CLI does not use `sys.stderr` at all — it uses bare `print()`, i.e. **stdout**.
+- More to the point, **the framework already has a default-visible author channel and uses it in the
+  widget layer**: `warnings.warn`, at `style/fonts.py:59,66,105`, `_runtime/toplevel.py:158,178` and
+  `data/_observable.py:235`. So this is a first in *channel*, not in principle. The framework does
+  talk to the author by default; it has just been doing it through `warnings`.
+
+**And `warnings` cannot be used here — measured, arm 4.** Under `-W error` a `warnings.warn` becomes
+an exception. Unwrapped, it escapes the guard and re-opens #467 on the automatic trigger. Wrapped in
+the `try` the code already has, it is *swallowed* — silent for exactly the developer running strict
+warnings. This site runs inside a Tk dispatch (the debounced `after`), which is the case
+`_runtime/utility.py:353` and `_runtime/events.py:379` already document as the reason this project
+does not warn from those paths. The shipped `print` is unaffected by `-W error`.
+
+So the decision stands on evidence rather than on being the last option left, and the alternative
+remains what round 1 said it was: a real diagnostic channel, which is #477-sized work.
+**Do not re-open this.**
+
+### R8 — nit (docs). The CHANGELOG and the narrative page quote the message without its final period.
+
+Both write *"Could not check this value (expected: must be over 5)"*; the string is
+`Could not check this value (expected: must be over 5).` A reader searching for the exact text they
+saw on screen does not match it. Recorded, not fixed — shipped prose, one character.
+
+---
+
+### Cleared this round, with the measurement
+
+- **The composition reads `self.message` and not the resolved `msg`, and that is correct.** Verified
+  the divergence is exactly the falsy set: `msg` falls back to `_default_message()` → *"Invalid
+  value."* for `custom`, and composing that would give *"(expected: Invalid value.)"*. Every falsy
+  message — `None`, `''`, `0`, `[]`, `False` — takes the `UNCHECKABLE_MESSAGE` branch. Measured, not
+  reasoned.
+- **The new user-facing string is hardcoded English, and that is consistent, not a gap.**
+  `grep -rn "translate\|MessageCatalog" src/bootstack/validation/` returns nothing;
+  `_default_message()` hardcodes all nine of its messages. A localized composer here would be the
+  only translated string in the module.
+- **The F2 wrap does not swallow anything else it should not.** The exception's `__str__` and the
+  value's `__repr__` are the two pieces of user code inside it and both are meant to be absorbed;
+  `debug_log_exception` never raises by contract (`_runtime/utility.py:376-383`). **R3 is the one
+  thing it swallows wrongly, and that is about the two diagnostics sharing one block, not about the
+  wrap existing.**
+- **The one-shot latch is per rule instance and every rule instance is per `add_validation_rule`
+  call.** `grep -rn "ValidationRule(" src/` returns three construction sites
+  (`validation_mixin.py:88`, `textarea.py:310`, `codeeditor.py:496`), all appending to a `_rules`
+  list at attach time. Nothing rebuilds a rule per validation, so the latch cannot be defeated by
+  reconstruction and cannot be shared across widgets.
+- **The new tests are discriminating where round 1 claims they are.**
+  `test_a_raise_and_a_verdict_do_not_look_the_same` compares a raise against a real verdict
+  (`validate(4)` on `lambda v: v > 5` returns `False` without raising), and the two `Hostile` repr
+  tests fail by *raising*, not by asserting. Round 1's pre-fix control (3 failed / 16 passed) was not
+  re-run; its claim is not load-bearing for anything found here.
+- **Suite on the branch: `1698 passed / 33 skipped`, 33 legs, exit 0** — re-measured at `d010214f`,
+  matching round 1's figure exactly, which is what it should be for a round that changed nothing.
+
+---
+
+### Fix step — blockers only
+
+Re-ranked before touching code: **R1 blocking; R2, R3, R4 should-fix; R5, R8 nits; R6, R7 notes.**
+**Only R1 is fixed.** R2 and R3 are real and both were introduced by round 1's fix step, but the cap
+is spent and the rule for a closing round is that survivors are filed, not fixed — and neither
+reaches a user: R2 fails only a developer's own run with `BOOTSTACK_DEBUG=1`, R3 costs a diagnostic
+only when the stream it would print to is already broken.
+
+#### R1 — FIXED. `src/bootstack/validation/validation_rules.py`
+
+**Root cause, stated before editing:** `_uncheckable_message` composes an author-supplied,
+unvalidated `message` by calling `str` methods on it, and it is called from inside the `except`
+block that absorbs the func's exception. Anything the composition raises therefore escapes the
+guard. The falsy short-circuit made this invisible for the empty case, which is the case the tests
+cover.
+
+**Change:** the composer's whole body is wrapped, falling back to `UNCHECKABLE_MESSAGE` if any part
+of it raises, and `self.message` is coerced with `str()` rather than required to be one — so
+`message=42` reaches the user as *"(expected: 42)"*, which is what the pre-fix arm did with it. The
+wrap covers the truth test as well as the coercion, because `__bool__` is user code too and runs
+first.
+
+**Measured after the fix** (`probe_467_review_round2.py`, arm 1):
+
+```
+arm 1  a non-str `message`, on the RAISE path
+    None           -> is_valid=False message='Could not check this value.'
+    '' (empty)     -> is_valid=False message='Could not check this value.'
+    str            -> is_valid=False message='Could not check this value (expected: must exceed 5).'
+    int 42         -> is_valid=False message='Could not check this value (expected: 42).'
+    bytes          -> is_valid=False message="Could not check this value (expected: b'nope')."
+    list           -> is_valid=False message="Could not check this value (expected: ['a'])."
+```
+
+Nothing escapes, and the control — the same three messages on a genuine verdict — is byte-identical
+to what it was before the fix, so the change reached the composer and nothing else.
+
+**Regression test added**, `test_a_message_that_is_not_a_string_does_not_escape_the_guard`: the
+three non-`str` messages plus a `__str__` that raises, each asserting the guard holds, plus the
+two message shapes (`42` coerces and is shown; the unrenderable one falls back). 22 → 23 tests.
+
+⚠ **The first draft of that test also asserted a `message` whose `__bool__` raises, and it FAILED —
+against the fix. That is a different, pre-existing defect and it was cut from the test rather than
+fixed.** `validate()` opens with `msg = self.message or self._default_message()`
+(`validation_rules.py:124`), so `__bool__` runs before the func is ever called. Measured on both
+arms and on **every rule type, including one whose func does not raise at all**:
+
+```
+ARM: PRE-FIX 8b8e0964        ARM: POST-R1-FIX (branch)
+  custom-raising  -> RAISED    custom-raising  -> RAISED
+  custom-passing  -> RAISED    custom-passing  -> RAISED
+  email-plain     -> RAISED    email-plain     -> RAISED
+```
+
+Identical on both arms and unreachable from the composer, so it is **not** R1 and not this branch's.
+Contrived enough (an author whose `message` object refuses to be truth-tested) that it is recorded
+here rather than filed. ⚠ **It is worth the note for the method it demonstrates: the assertion that
+failed was the one testing a case the finding had not measured.**
+
+**Control against the pre-R1 source**, restored with `git show d010214f:src/.../validation_rules.py`
+into a copied tree with `PYTHONPATH` set and provenance printed: **1 failed, 22 passed** — only the
+new test fails, and it fails behaviorally, `AttributeError: 'int' object has no attribute 'rstrip'`
+raised *during handling of* the func's `TypeError`, which is R1 exactly.
+
+#### R2, R3, R4, R5, R6, R7, R8 — NOT FIXED
+
+Per "fix blockers only" and the closing-round rule. **Filed as issues** — see below.
+
+### Verification — round 2
+
+All on the macOS box, `.venv/bin/python` 3.14.0, at the post-fix working tree, `matplotlib` 3.11.0
+present, `pandas` ABSENT.
+
+- **`import bootstack` succeeds** — run before the suite, not after.
+- **Suite: `1699 passed / 33 skipped`, 33 legs, exit 0, no failures.** That is `1698 + 1`, the one
+  new test, bounded the usual way rather than by looking plausible: `git diff main --stat -- tests/`
+  names **one** file, and its `--collect-only` says **23** (was 22). The pre-fix run in this same
+  session measured `1698 / 33` at `d010214f`, which is round 1's figure unchanged — the round-2
+  review itself moved nothing.
+- **Pre-R1 control: `1 failed, 22 passed`**, against `d010214f`'s `validation_rules.py` restored
+  into a copied tree with `PYTHONPATH` set and provenance printed. Only the new test fails, and it
+  fails behaviorally.
+- **Docs clean-build: `build succeeded`, exit 0** with `-W --keep-going` after `rm -rf docs/_build`.
+- **`git diff main...HEAD -- CLAUDE.md` is empty.**
+- **All four of round 1's instruments re-run and reproduce the record**, plus the demo through its
+  driver — panels 3 and 4 byte-identical on both arms, 3 console lines for the whole run.
+- ⚠ **`test_capture.py` passed 23/23 in both full runs**, so the display was active and unlocked and
+  the documented macOS symptom did not apply this session.
+
+---
+
+### To file as issues
+
+Round 1's three survivors, unchanged, plus this round's two:
+
+1. **`range` reports its own message for an incomparable pair** (round 1, F10's residue) — it can
+   assert a condition of a value it never compared, the defect this branch fixed for `custom`. The
+   family's answer belongs in one place.
+2. **A non-callable `func` is absorbed rather than refused** (round 1, F3). A `callable()` check at
+   construction **raises where the framework currently accepts** — `0.5.0`'s membership rule.
+3. **`'compare'` invokes user code unguarded** (round 1, F7) — `_read_other` calls `other_field`
+   when it is a `Signal` or a callable, both documented public surface, and a raise there reproduces
+   #467 one rule over.
+4. **The `custom` guard's two diagnostics share one `try`** (R3) — a broken stderr suppresses the
+   `BOOTSTACK_DEBUG` traceback as well, and the latch is already set, so the rule goes permanently
+   silent on both channels.
+5. **`test_the_report_does_not_repeat_for_the_same_rule` fails under `BOOTSTACK_DEBUG=1`** (R2) —
+   it asserts total stderr silence where `debug_log_exception`'s traceback legitimately lands.
+
+**Maintainer calls, not issues:** F9 (the CHANGELOG frames the manual path as the author's own call
+site, which the `FormDialog` measurement shows is incomplete), R4 (export `UNCHECKABLE_MESSAGE` or
+re-quote the docstring), and R8.
