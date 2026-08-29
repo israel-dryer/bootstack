@@ -159,6 +159,22 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
 
         self._prev_change_text = text
         self.event_generate('<<Input>>', data=InputEvent(text=text))
+        self._commit_if_not_editing()
+
+    def _commit_if_not_editing(self):
+        """Re-derive the committed value for a change the user did not type.
+
+        Duplicated from `TextEntryPart` because this class does not inherit it --
+        as `_handle_change`, `commit` and `value` already are. #477 is the home
+        for collapsing that. See the original for why focus is the discriminator
+        and what residual it leaves (#482).
+        """
+        try:
+            if self.focus_get() is self:
+                return
+        except (TclError, KeyError):
+            return
+        self.commit()
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""

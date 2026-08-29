@@ -174,6 +174,26 @@ class TextEntryPart(ValidationMixin, Entry):
                 return
         self._prev_change_text = text
         self.event_generate('<<Input>>', data=InputEvent(text=text))
+        self._commit_if_not_editing()
+
+    def _commit_if_not_editing(self):
+        """Re-derive the committed value for a change the user did not type.
+
+        `_value` is otherwise only re-derived by `commit()` on FocusOut/Return,
+        which is right for typing and wrong for a write the application made:
+        there is no editing session to commit and no blur coming, so `value`
+        reported the previous value indefinitely (#482).
+
+        Keyboard focus is the discriminator. A programmatic write while this
+        field HAS focus is indistinguishable from typing here and still lags --
+        a stated residual, not an oversight.
+        """
+        try:
+            if self.focus_get() is self:
+                return
+        except (TclError, KeyError):
+            return
+        self.commit()
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""

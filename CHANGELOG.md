@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A field's `value` now follows a write to its bound `Signal`.** Writing to a signal bound to a `TextField`, `PasswordField`, `PathField` or `SpinnerField` moved what the field displayed but not what `value` reported — the two disagreed about the same state, silently, until the user focused and left the field. `value` now follows a write your code made, while still reporting the last committed value while the user is typing, which is unchanged. A programmatic write made while that field currently has keyboard focus is indistinguishable from typing and still waits for the commit. `TextArea`, `CodeEditor`, `NumberField`, `DateField`, `TimeField` and `Select` already behaved this way and are untouched, and no event changes: a programmatic write emits exactly what it did before. ([#482](https://github.com/israel-dryer/bootstack/issues/482))
+
 ## [0.4.0] — Signal binding on fields
 
 ### Added
