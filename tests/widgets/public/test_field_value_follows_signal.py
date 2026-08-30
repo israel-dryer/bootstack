@@ -152,3 +152,86 @@ def test_a_number_field_is_untouched_by_the_fix(shown_app):
 
     assert field.value == 10
     assert entry.get() == "10.00"
+
+
+def _focus_cycle(entry, root):
+    # Synthesized rather than driven through `focus_force()`: this exercises the
+    # same two bindings -- `_store_prev_value` on FocusIn, `_handle_focus_out` on
+    # FocusOut -- without depending on a window manager to grant focus, where a
+    # silent no-op would leave the snapshot at its construction value and fail
+    # these tests for a reason that is not the product.
+    entry.event_generate("<FocusIn>")
+    root.update()
+    entry.event_generate("<FocusOut>")
+    root.update()
+
+
+def test_the_deferred_change_on_a_later_focus_cycle_moves_with_value(shown_app):
+    # Round 2. `_prev_changed_value` is snapshotted from `_value` on FocusIn and
+    # compared on blur, so a `_value` that already followed the write changes what
+    # the NEXT cycle reports. On `main` that cycle carried the write's <<Change>>,
+    # late and attributed to a focus the user made rather than to the write. It no
+    # longer does. Pinned so the CHANGELOG's account of it cannot drift.
+    root = shown_app.tk.winfo_toplevel()
+    sig = bs.Signal("hello")
+    field = bs.TextField(textsignal=sig)
+    changes = []
+    field.on_change(lambda e: changes.append((e.prev_value, e.value)))
+    root.update()
+
+    sig.set("world")
+    root.update()
+    # Precondition: the write took the unfocused branch. Without this the cycle
+    # below proves nothing -- it would be silent for a field that never followed.
+    assert field.value == "world"
+    assert changes == []
+
+    _focus_cycle(field._internal._entry, root)
+
+    assert changes == []
+
+
+def test_typing_the_pre_write_text_back_is_now_a_change(shown_app):
+    # Round 2, the mirror of the above and the direction that GAINS an event:
+    # <<Change>> now compares against the value the field actually holds, so
+    # returning the field to what it showed before the write is a real change.
+    # `main` was silent here, having compared against the same stale value twice.
+    root = shown_app.tk.winfo_toplevel()
+    sig = bs.Signal("hello")
+    field = bs.TextField(textsignal=sig)
+    changes = []
+    field.on_change(lambda e: changes.append((e.prev_value, e.value)))
+    entry = field._internal._entry
+    root.update()
+
+    sig.set("world")
+    root.update()
+    assert field.value == "world"
+
+    entry.event_generate("<FocusIn>")
+    root.update()
+    entry.delete(0, "end")
+    entry.insert("end", "hello")
+    root.update()
+    entry.event_generate("<FocusOut>")
+    root.update()
+
+    assert changes == [("world", "hello")]
+
+
+def test_value_follows_a_clear_of_the_bound_signal(shown_app):
+    # Round 2. `clear()` reaches the field down the same path as `set()` --
+    # `Signal.clear` is `set(None)`, which a realized text signal takes as ''.
+    # The field must read as empty rather than holding the value it was told had
+    # been cleared, which is what 0.4.0 shipped `clear()` for.
+    root = shown_app.tk.winfo_toplevel()
+    sig = bs.Signal("hello", allow_empty=True)
+    field = bs.TextField(textsignal=sig)
+    root.update()
+
+    sig.clear()
+    root.update()
+
+    assert sig() == ""
+    assert field._internal._entry.get() == ""
+    assert field.value is None
