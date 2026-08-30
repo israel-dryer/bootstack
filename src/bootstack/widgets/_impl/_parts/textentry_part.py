@@ -7,9 +7,9 @@ from bootstack.widgets._impl.primitives.entry import Entry
 from bootstack.widgets._impl.mixins import ValidationMixin
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 
-#: Sentinel marking "no argument passed" for the combined get/set accessors below.
-#: `None` cannot serve as that sentinel — it is a real value meaning "empty", and
-#: using it to mean "get" made `value(None)` a silent no-op instead of clearing.
+# Sentinel marking "no argument passed" for the combined get/set accessors below.
+# `None` cannot serve as that sentinel — it is a real value meaning "empty", and
+# using it to mean "get" made `value(None)` a silent no-op instead of clearing.
 _UNSET: Any = object()
 
 
@@ -174,6 +174,30 @@ class TextEntryPart(ValidationMixin, Entry):
                 return
         self._prev_change_text = text
         self.event_generate('<<Input>>', data=InputEvent(text=text))
+        self._commit_if_not_editing()
+
+    def _commit_if_not_editing(self):
+        """Re-derive the committed value for a change the user did not type (#482)."""
+        if self._showing_placeholder:
+            return
+        try:
+            if self.focus_get() is self:
+                return
+        except (TclError, KeyError):
+            return
+        self._reparse()  # value only; this runs inside the variable's write trace
+
+    def _reparse(self) -> bool:
+        """Re-derive `_value` from the display text; False if it will not parse."""
+        s = self.get().strip()
+        if s == '':
+            self._value = None if self._allow_blank else self._value
+            return True
+        try:
+            self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
+        except ValueError:
+            return False  # keep prior value on parse failure
+        return True
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""
@@ -325,17 +349,8 @@ class TextEntryPart(ValidationMixin, Entry):
         """Parse display text, update value, and normalize display (called on FocusOut/Return)."""
         if self._showing_placeholder:
             return
-        s = self.get().strip()
-
-        # parse once
-        if s == '':
-            self._value = None if self._allow_blank else self._value
-        else:
-            try:
-                self._value = s if self._value_format is None else self._fmt.parse(s, self._value_format)
-            except ValueError:
-                # keep prior value on parse failure
-                return
+        if not self._reparse():
+            return
 
         # Format the value for display
         new_text = self._format_value(self._value)

@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A field's `value` now follows a write to its bound `Signal`.** Writing to a signal bound to a `TextField`, `PasswordField`, `PathField` or `SpinnerField` moved what the field displayed but not what `value` reported — the two disagreed about the same state, silently, until the user focused and left the field. `value` now follows a write your code made — including `clear()` on a signal declared `allow_empty=True`, after which the field reads as empty rather than holding the value you cleared — while still reporting the last committed value while the user is typing, which is unchanged. A programmatic write made while that field currently has keyboard focus is indistinguishable from typing and still waits for the commit. `TextArea`, `CodeEditor`, `NumberField`, `DateField`, `TimeField` and `Select` already behaved this way and are untouched. **Check this when you upgrade if you handle `on_change` on a field your code writes through a bound signal.** The write itself still emits exactly what it did before, but the change event that used to arrive *later* — the next time the user focused and left that field — moves with `value`: it no longer fires when the user changes nothing, and it now fires when the user types the field back to the text it held before your write. Writing a field through `field.value`, which is how `Form.set()` writes, is unaffected, and so is every change the user makes. ([#482](https://github.com/israel-dryer/bootstack/issues/482))
+
 ## [0.4.0] — Signal binding on fields
 
 ### Added
