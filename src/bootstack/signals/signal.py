@@ -108,6 +108,7 @@ class Signal(Generic[T]):
         self._name = name or f"SIG{next(self._cnt)}"
         self._master: tk.Misc | None = master
         self._allow_empty = allow_empty
+
         if dtype is not None:
             if not isinstance(dtype, type):
                 raise TypeError(
@@ -131,6 +132,11 @@ class Signal(Generic[T]):
             raise TypeError(
                 "A Signal that starts empty has no value to take its type from, so "
                 "it must declare one: bs.Signal(None, allow_empty=True, dtype=date)."
+            )
+        elif value is None and not allow_empty:
+            raise TypeError(
+                "A Signal that starts empty needs allow_empty=True and a dtype "
+                "or it can never hold any other value."
             )
         else:
             self._type = type(value)

@@ -144,26 +144,40 @@ def test_a_signal_that_starts_empty_gets_the_variable_its_type_calls_for(
     assert type(sig.var).__name__ == expected_var
 
 
-def test_a_none_typed_signal_still_no_ops_on_none(app):
-    """A signal whose type IS NoneType keeps taking `None`, as it did on 0.3.2.
+def test_a_bare_none_seed_raises_at_construction(app):
+    """#481: the seed decides the type, so `bs.Signal(None)` inferred `NoneType`.
 
-    `map()` produces one whenever the transform returns `None` for the value it
-    is first called with, so this shape reaches code with no empty-able signal
-    anywhere in it. The write is a no-op either way — but the guard raises out of
-    the *source's* `set()`, through the subscriber fan-out, which is a Tk trace
-    once the source is realized.
-
-    This pins the baseline rather than the fix: it passes against `main`'s
-    `signal.py` too.
+    Every later `set()` then raised `Expected NoneType, got str`, naming neither
+    the mistake nor the fix. The match is the tail of the message, not the
+    `allow_empty=True` it shares with the `dtype=` branch above.
     """
-    src = bs.Signal(0)
-    derived = src.map(lambda v: None)
-    assert derived.type is type(None)
+    with pytest.raises(TypeError, match="never hold any other value"):
+        bs.Signal(None)
 
-    src.set(1)
 
-    assert derived() is None
-    bs.Signal(None).set(None)  # the direct spelling, same rule
+def test_map_raises_when_the_transform_returns_none_for_the_current_value(app):
+    """The same dead signal, reached through the seed `map()` computes for itself.
+
+    Measured against `main`: the derived signal took `NoneType` and the failure
+    moved to the next real value — raising out of the *source's* `set()` before
+    any widget was bound to it, and not raising at all once one was, leaving the
+    derived signal on `None` for good.
+    """
+    src = bs.Signal("")
+
+    with pytest.raises(TypeError, match="never hold any other value"):
+        src.map(lambda s: s[0] if s else None)
+
+
+def test_map_is_unaffected_when_the_transform_returns_a_value(app):
+    """The control: without it, a guard that rejected every `map()` would pass too."""
+    src = bs.Signal("ada")
+    derived = src.map(str.upper)
+    assert derived() == "ADA"
+
+    src.set("bob")
+
+    assert derived() == "BOB"
 
 
 # --------------------------------------------------------------------------
