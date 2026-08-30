@@ -148,7 +148,79 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. NOTHING IN FLIGHT.**
+### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. TWO PATCH FIXES MERGED SINCE. NOTHING IN FLIGHT.**
+
+**`## [Unreleased]` now carries TWO fixes, #482 and #490 — a `0.4.1` is cuttable
+whenever you want one.** Both are `0.4.x — Patch line`, both merged 2026-08-29
+(PRs #503 and #502), both branches deleted. **Read the two subsections below
+before touching the field-signal seam again; between them they settle a question
+that has been re-opened three times.**
+
+#### ⭐ #482 — `value` FOLLOWS A PROGRAMMATIC SIGNAL WRITE, AND `<<Change>>` MOVED WITH IT
+
+**The fix:** `TextEntryPart._value` was re-derived only in `commit()`, at
+FocusOut/Return — right for typing, wrong for a write the application made, where
+there is no editing session to commit and no blur coming. It now re-derives when a
+text change arrives while the widget does **not** hold keyboard focus. **Population
+is FOUR widgets** (`TextField`, `PasswordField`, `PathField`, `SpinnerField`), not
+the six the issue named.
+
+⚠ **The path runs INSIDE the bound variable's own write trace, where Tcl suppresses
+every other trace on that variable.** So it calls `_reparse()` — the extracted parse
+half — and NOT `commit()`: a display-normalizing `textsignal.set()` there moves the
+signal while the entry never repaints, and it never heals. **Do not "simplify"
+`_reparse()` back into `commit()`.** That was round 1's blocker.
+
+⚠⚠ **`<<Change>>` CHANGED, IN BOTH DIRECTIONS, AND THE MAINTAINER DECIDED TO SHIP IT
+(2026-08-29). DO NOT RE-LITIGATE.** `_prev_changed_value` is snapshotted from
+`_value` on FocusIn and compared on blur, so a `_value` that now follows the write
+leaves nothing for the blur to find. Measured on all four widgets against `main`,
+with controls:
+
+| the user does, after a programmatic signal write | before | now |
+|---|---|---|
+| focuses and leaves, no edit | `<<Change>>` `('hello' → 'world')` | **nothing** |
+| types the pre-write text back, leaves | nothing | **`<<Change>>` `('world' → 'hello')`** |
+
+**One rule produces both rows: `<<Change>>` means the committed value differs from
+what it was at focus-in.** The event that vanished was the application's own write
+surfacing a cycle late, attributed to a user focus, and arriving only if the user
+happened to touch the field. **Blast radius is the signal-write path ONLY** —
+`field.value = x` and `Form.set()`, which writes through it, already set `_value`
+and are untouched, as is every user edit. Pinned by
+`test_the_deferred_change_on_a_later_focus_cycle_moves_with_value` and
+`test_typing_the_pre_write_text_back_is_now_a_change`.
+
+⚠ **The standing 2026-08-26 do-not-fix is UNCHANGED for the moment of the write** —
+a programmatic set still emits no `<<Change>>` at all. The clean way to observe one
+is to subscribe to the signal.
+
+**Residual, stated and accepted:** a programmatic write while the field HAS focus
+still lags. Indistinguishable from typing at this seam, identical on `main`, heals
+on the next blur.
+
+#### ⭐ #490 — `TextArea`/`CodeEditor` NOW HONOR `Signal.clear()`
+
+`_on_signal_change` opened with `if new_value is not None`, and **the empty for a
+signal no widget realizes as its own variable IS `None`** — so these two dropped
+exactly the value a clear produces, while the entry-backed four never reached it
+because their empty is a `str`. The tell that it was a defect and not a refusal:
+binding the same signal to a `TextArea` **and** a `TextField` made the clear work,
+because the second widget decided which empty the signal produced.
+
+⚠ **Two things the one-line fix left behind, both measured, neither filed:** the new
+`str(new_value or "")` blanks the widget for **any** falsy value, not just the empty
+one (unreachable today — the type gate makes `set(0)` raise and `Signal(123)` refuse
+to bind — so it is latent, not a bug); and **`_bind_signal` still carries the same
+`if v is not None` guard** for the INITIAL apply, so the setter and the constructor
+now disagree about what `None` means. Harmless today (an empty signal bound to a
+widget with `value=` seeds from the widget, identically before and after).
+
+⚠ **After a clear, the signal ends up `''` rather than `None`** — the widget writes
+its now-empty text back — **but only when the document actually changed**; clear a
+second time and it stays `None`. Both are falsy, which is the check #390's CHANGELOG
+tells callers to use. **Deliberately left out of the CHANGELOG entry as noise for a
+"was I affected?" reader.**
 
 **`0.4.0 — Signal binding on fields` released to PyPI, tag `v0.4.0`, 2026-08-29.**
 13 issues: #390, #444, #449, #456, #458, #459, #460, #461, #465, #467, #472, #476,
@@ -180,15 +252,14 @@ round clean.** Same lesson #486 paid for.
 exception, so anything it raises escapes the guard.** That is why its body is
 wrapped. Do not flatten it.
 
-**Open from those rounds, all unmilestoned except #500:** **#497** (`'compare'`
-invokes user code unguarded — same class as #467, documented public surface),
-**#499** (a test asserts total stderr silence and so fails under `BOOTSTACK_DEBUG=1`,
-the variable the new message tells the author to set), and **#500** on `0.5.0`
-(a rule's own configuration accepted unchecked — a non-callable `func`, or a `range`
-bound that cannot be ordered against the field's values). ⚠ **#500 does NOT subsume
-all of #495**, which it replaced: a `Select` declares `_VALIDATION_KIND = None` by
-#465's decision, so a `range` rule over one receives whatever the option carries,
-with bounds that were never wrong. That residue travels with #500.
+⚠⚠ **NOTHING IS OPEN FROM THOSE ROUNDS ANY MORE. ALL THREE SURVIVORS WERE CLOSED
+`not planned` — #497, #499 AND #500 — verified against `gh` 2026-08-29.** This file
+listed them as open work for days after they were not. **#500's closing reason is the
+one to carry forward**, verbatim: it guards against an author passing a non-callable
+`func` or a bound of the wrong type, *"their own broken code, which the framework
+cannot sensibly rescue."* **#467 itself was real — a field silently stopped validating
+and the user saw a dead form — this residue is not.** That also retires the #495
+residue #500 was carrying. **Do not re-file any of the three.**
 
 ⚠⚠ **#479 WAS CLOSED TWICE BY PROSE, THE SECOND TIME BY THE COMMIT DOCUMENTING THE
 FIRST.** `0e31f7ad`'s body quotes PR #489's phrase *"which closes #479's shape"* —
@@ -222,14 +293,14 @@ keyword and the number apart. Reopened 2026-08-29.
 
 | | |
 |---|---|
-| `main` | released at **`v0.4.0`** (`05ecf307`), plus this `docs(claude):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **NONE, local or remote. Verified `git branch -a` 2026-08-29.** The three stale refs this file used to list are all gone |
-| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #467 archived both in the branch before the PR opened, which is the rule; that is two branches in a row after #486 |
-| released | **`0.4.0`** on PyPI. `## [Unreleased]` is **empty — the next fix creates it** |
-| next release | **nothing scheduled.** `0.5.0 — Strictness and value types` is the largest open milestone at 8 |
+| `main` | **two patch fixes past `v0.4.0`** — #490 (PR #502), #482 (PR #503), then a `docs(changelog):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
+| branches | **NONE, local or remote. Verified `git branch -a` 2026-08-29**, after #482's and #490's were merged and deleted |
+| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #482 archived both in the branch before the PR opened, which is the rule; that is **four** branches in a row after #467, #486 and #444 |
+| released | **`0.4.0`** on PyPI. `## [Unreleased]` carries **TWO fixes, #482 and #490** |
+| next release | **nothing scheduled, but a `0.4.1` is cuttable** — two fixes are sitting in `## [Unreleased]`. `0.4.x — Patch line` is the largest open milestone at 9 |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **macOS `1699 / 33`, 33 legs, exit 0**, measured 2026-08-29 at the #467 merge, `.venv/bin/python` 3.14.0, matplotlib present, **pandas ABSENT**. ⚠ **Windows is `1661 / 22` at `f38482e1` and is now MANY merges stale — re-measure before trusting it.** The two are NOT comparable |
-| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29 |
+| suite, `main` | **Windows `1729 / 22`, 33 legs, exit 0**, measured 2026-08-29 at the #482 merge, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now four merges stale.** The two are NOT comparable |
+| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29, after #482/#490 closed |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
 **The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
@@ -272,7 +343,7 @@ and fix the table.**
 | Order | Milestone | Open |
 |---|---|---|
 | — | ~~`0.4.0 — Signal binding on fields`~~ — **SHIPPED 2026-08-29, milestone CLOSED.** 13 issues. Detail in the archive |  |
-| 1 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, #445, #479, #481, **#500**. ⚠ **#383 keeps only gaps 1 and 2 (bad *values*)**; gap 3 (unknown *names*) shipped as #472. ⚠ **#500 arrived 2026-08-29 from #467's rounds** and replaced #495/#496, which were closed as one decision rather than two. ⚠ **#479 does NOT meet this milestone's membership rule — that is deliberate, do not "correct" it**; placement is the maintainer's call, not the rule's | 8 |
+| 1 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, #445, #479. ⚠ **#481 left for `0.4.x` on 2026-08-29.** ⚠ **#383 keeps only gaps 1 and 2 (bad *values*)**; gap 3 (unknown *names*) shipped as #472. ⚠⚠ **#500 IS CLOSED, `not planned` (maintainer, 2026-08-29) — do NOT re-file it.** Its reason, verbatim: it guards against an author passing a non-callable `func` or a bound of the wrong type, *"their own broken code, which the framework cannot sensibly rescue."* **#467 itself was real — a field silently stopped validating — this residue is not.** That disposition also retires the #495 residue #500 was carrying. ⚠ **#479 does NOT meet this milestone's membership rule — that is deliberate, do not "correct" it**; placement is the maintainer's call, not the rule's | 6 |
 | 2 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415 | 3 |
 | 3 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
 | 4 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
@@ -281,7 +352,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 3 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #481, #484, #488, #491. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **#482 and #490 CLOSED on it 2026-08-29 and are the two entries in `## [Unreleased]`.** ⚠ **#468, #469, #484, #488 and #491 moved onto it from unmilestoned, and #481 from `0.5.0`, all on 2026-08-29** — this file listed several as unmilestoned for two days after they were not. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 9 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -323,7 +394,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FOURTEEN UNMILESTONED OPEN ISSUES — #431, #436, #452, #455, #468, #469, #474, #477, #482, #483, #484, #488, #490, #491.** ⚠ **#490 and #491 came out of #486's rounds, 2026-08-28, both pre-existing and both `TextArea`-only — see the ★ section.** ⚠ **#488 came out of #486's destroy test, 2026-08-28: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 releases only the signal hooks; do not read it as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. ⚠ **#479 came out of #476's review and went to `0.5.0`** — it is no longer on this list. ⚠ **#482, #483 and #484 came out of #390's work.** #482 is a field's `value` lagging a programmatic signal write. **#483 is DOCUMENTATION, not a code fix (maintainer, 2026-08-27) — see the ★ section; do not re-open it as a defect.** #484 is every framework-created signal being `allow_empty=False`, so `clear()` on one gives advice the caller cannot follow. Verified 2026-08-27. Verify rather than counting by hand:
+**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks; #490 released only the clear. Do not read either as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified against `gh` 2026-08-29. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -334,10 +405,6 @@ authority for *issues*; use the API figure only for the open/closed shape.
 - **#436** — adopt `versionadded` across the public API, because the docs site
   serves ONE version and a reader cannot tell which release an API needs. Carries
   one undecided question: retroactive to `0.2.x`, or forward-only?
-- **#455** — `Field.enable()/disable()/readonly()` write the ttk readonly state
-  without re-deriving, plus `Field.readonly(False)` disabling the field instead of
-  clearing read-only. **Latent: zero callers** anywhere. Unmilestoned because it
-  gates nothing.
 ⚠ **"DO NOT ASSIGN A MILESTONE UNASKED" IS NARROWER THAN IT READS.** It guards
 against making SCOPE calls for the maintainer. **It was never about a blocker,
 whose placement is a fact rather than a choice** — an issue that gates a release
