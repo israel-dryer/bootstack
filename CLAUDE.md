@@ -148,13 +148,13 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. TWO PATCH FIXES MERGED SINCE. NOTHING IN FLIGHT.**
+### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. THREE PATCH FIXES MERGED SINCE. #491 IS IN FLIGHT.**
 
-**`## [Unreleased]` now carries TWO fixes, #482 and #490 — a `0.4.1` is cuttable
-whenever you want one.** Both are `0.4.x — Patch line`, both merged 2026-08-29
-(PRs #503 and #502), both branches deleted. **Read the two subsections below
-before touching the field-signal seam again; between them they settle a question
-that has been re-opened three times.**
+**`## [Unreleased]` carries THREE fixes — #482, #490 and #481 — and #491 is on a
+branch. A `0.4.1` is cuttable whenever you want one.** All four are `0.4.x — Patch
+line`; #482, #490 and #481 merged 2026-08-29 (PRs #503, #502 and #504). **Read the
+#482 and #490 subsections below before touching the field-signal seam again;
+between them they settle a question that has been re-opened three times.**
 
 #### ⭐ #482 — `value` FOLLOWS A PROGRAMMATIC SIGNAL WRITE, AND `<<Change>>` MOVED WITH IT
 
@@ -221,6 +221,27 @@ its now-empty text back — **but only when the document actually changed**; cle
 second time and it stays `None`. Both are falsy, which is the check #390's CHANGELOG
 tells callers to use. **Deliberately left out of the CHANGELOG entry as noise for a
 "was I affected?" reader.**
+
+#### ⭐ #491 — `TextArea.insert()`/`append()` WROTE ALONGSIDE THE PLACEHOLDER. **IN FLIGHT on `fix/textarea-insert-placeholder-491`.**
+
+Both reached `_internal._core.insert(...)` directly, so `_showing_placeholder` stayed
+`True`: text landed on top of the placeholder, `value` kept returning `''`, and
+`<<Input>>`/`<<Changed>>` stayed gated **for the field's whole life**, not one cycle.
+
+⚠⚠ **`_hide_placeholder()` DELETES THE WHOLE DOCUMENT** — `_core.text.delete("1.0",
+END)`. It is written for the one state where a placeholder IS showing, and **every
+pre-existing caller guards it** (`_on_focus_in_placeholder`, the `value` setter).
+Calling it unguarded turns `append()` into *replace everything*: measured,
+`append("line2")` onto `"line1"` gave `'line2'` on all three non-placeholder arms.
+**The fix is `if self._internal._showing_placeholder:`, not the call.**
+
+⚠ **`CodeEditor` is genuinely unaffected** — a separate `PublicWidgetBase` subclass
+with its own `insert`/`append`, and neither it nor its composite mentions
+`placeholder`. Verified, not assumed.
+
+**Pinned by `tests/widgets/public/test_textarea_insert_placeholder.py`, and no single
+wrong implementation passes it:** against `main` the first four fail, against the
+unguarded fix the last three do.
 
 **`0.4.0 — Signal binding on fields` released to PyPI, tag `v0.4.0`, 2026-08-29.**
 13 issues: #390, #444, #449, #456, #458, #459, #460, #461, #465, #467, #472, #476,
@@ -293,14 +314,14 @@ keyword and the number apart. Reopened 2026-08-29.
 
 | | |
 |---|---|
-| `main` | **two patch fixes past `v0.4.0`** — #490 (PR #502), #482 (PR #503), then a `docs(changelog):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **NONE, local or remote. Verified `git branch -a` 2026-08-29**, after #482's and #490's were merged and deleted |
-| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #482 archived both in the branch before the PR opened, which is the rule; that is **four** branches in a row after #467, #486 and #444 |
-| released | **`0.4.0`** on PyPI. `## [Unreleased]` carries **TWO fixes, #482 and #490** |
-| next release | **nothing scheduled, but a `0.4.1` is cuttable** — two fixes are sitting in `## [Unreleased]`. `0.4.x — Patch line` is the largest open milestone at 9 |
+| `main` | **three patch fixes past `v0.4.0`** — #490 (PR #502), #482 (PR #503), #481 (PR #504), plus a `docs(claude):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
+| branches | **`fix/textarea-insert-placeholder-491`, local only, unpushed — #491, IN FLIGHT.** ⚠ **`fix/signal-none-seed-481` is MERGED (PR #504) and safe to delete**; verify with `git merge-base --is-ancestor` before you do |
+| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #482 archived both in the branch before the PR opened, which is the rule; that is **four** branches in a row after #467, #486 and #444. ⚠ **#481 and #491 have NEITHER — the maintainer waived the plan for both as three-line fixes, and reviewed #481 personally.** Do not read their absence as the rule slipping |
+| released | **`0.4.0`** on PyPI. `## [Unreleased]` carries **THREE fixes — #482, #490 and #481** — with #491 waiting on its branch |
+| next release | **nothing scheduled, but a `0.4.1` is cuttable** — three fixes are sitting in `## [Unreleased]`. `0.4.x — Patch line` is the largest open milestone at 8 |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **Windows `1729 / 22`, 33 legs, exit 0**, measured 2026-08-29 at the #482 merge, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now four merges stale.** The two are NOT comparable |
-| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29, after #482/#490 closed |
+| suite, `main` | **Windows `1731 / 22`, 33 legs, exit 0**, measured 2026-08-29 at the #481 merge, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now five merges stale.** The two are NOT comparable |
+| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29, after #482/#490/#481 closed |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
 **The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
@@ -352,7 +373,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #481, #484, #488, #491. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **#482 and #490 CLOSED on it 2026-08-29 and are the two entries in `## [Unreleased]`.** ⚠ **#468, #469, #484, #488 and #491 moved onto it from unmilestoned, and #481 from `0.5.0`, all on 2026-08-29** — this file listed several as unmilestoned for two days after they were not. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 9 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #484, #488, #491. Verified against `gh` 2026-08-29. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **#482, #490 and #481 CLOSED on it 2026-08-29 and are the three entries in `## [Unreleased]`; #491 is IN FLIGHT and still open.** ⚠ **#468, #469, #484, #488 and #491 moved onto it from unmilestoned, and #481 from `0.5.0`, all on 2026-08-29** — this file listed several as unmilestoned for two days after they were not. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 8 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -394,7 +415,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks; #490 released only the clear. Do not read either as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified against `gh` 2026-08-29. Verify rather than counting by hand:
+**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified against `gh` 2026-08-29. Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
