@@ -352,10 +352,9 @@ class _MultilineCore(tk.Frame):
             self.value = text
 
     def _on_signal_change(self, new_value) -> None:
-        if new_value is not None:
-            text = str(new_value)
-            if self._signal_text() != text:
-                self._apply_signal_text(text)
+        text = str(new_value or "")
+        if self._signal_text() != text:
+            self._apply_signal_text(text)
 
     # ── dirty tracking ────────────────────────────────────────────────────
 
