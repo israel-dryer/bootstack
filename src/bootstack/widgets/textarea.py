@@ -227,6 +227,8 @@ class TextArea(PublicWidgetBase):
         Args:
             text: Text to insert at the current cursor position.
         """
+        if self._internal._showing_placeholder:
+            self._internal._hide_placeholder()
         self._internal._core.insert("insert", text)
 
     def append(self, text: str) -> None:
@@ -238,6 +240,8 @@ class TextArea(PublicWidgetBase):
         Args:
             text: Text to add at the end of the content.
         """
+        if self._internal._showing_placeholder:
+            self._internal._hide_placeholder()
         self._internal._core.insert("end-1c", text)
 
     def select_all(self) -> None:
