@@ -360,12 +360,12 @@ class Signal(Generic[T]):
         """
         Set the signal to a new value and notify subscribers.
 
+        In general, the value must match the signals types, however,
+        an `int` may be set on a `float`-typed signal (it is widened), and
+        `None` is accepted on a signal declared `allow_empty=True`.
+
         Args:
-            value: The new value. Must match the signal's type, except that an
-                `int` may be set on a `float`-typed signal (it is widened), and
-                that `None` is accepted on a signal declared `allow_empty=True`,
-                where it becomes that signal's empty value — `''` when the value
-                lives in a widget's variable, `None` otherwise.
+            value: The new value. Must match the signal's type.
 
         Raises:
             TypeError: If the value type does not match the signal's type (and is
@@ -373,12 +373,11 @@ class Signal(Generic[T]):
                 signal that was not declared able to be empty.
         """
         if value is None:
-            # A signal whose type IS NoneType has always taken None (map() makes
-            # one whenever the transform returns None for the first value seen).
             if not self._allow_empty and self._type is not type(None):
                 raise TypeError(
-                    f"Expected {self._type.__name__}, got NoneType. Pass "
-                    f"allow_empty=True to Signal() if this value can be empty."
+                    f"Expected {self._type.__name__}, got NoneType. If you created "
+                    f"this signal, then add `allow_empty=True`, otherwise set the "
+                    f"value directly instead of clearing it."
                 )
             value = self._empty_value()
         else:
@@ -426,10 +425,6 @@ class Signal(Generic[T]):
         Raises:
             TypeError: If the signal was not declared able to be empty.
         """
-        # Through set(None), not set(_empty_value()): the empty of a realized
-        # str signal is '', which is a valid str, so passing it here walked
-        # straight past the allow_empty check and let any realized text signal
-        # be cleared without the declaration (#390 round 2, finding 3).
         self.set(None)
 
     def map(self, transform: Callable[[T], U]) -> 'Signal[U]':
