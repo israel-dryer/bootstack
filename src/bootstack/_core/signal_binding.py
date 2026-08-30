@@ -157,7 +157,8 @@ def create_signal(default_value: Any) -> SignalBinding:
         0.0
     """
     from bootstack.signals import Signal
-    signal = Signal(default_value)
+    # (str, set) mirrors Signal._empty_value()'s own rule
+    signal = Signal(default_value, allow_empty=isinstance(default_value, (str, set)))
     return SignalBinding(
         signal=signal,
         variable=signal.var,
