@@ -7,9 +7,9 @@ from bootstack.widgets._impl.primitives.entry import Entry
 from bootstack.widgets._impl.mixins import ValidationMixin
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 
-#: Sentinel marking "no argument passed" for the combined get/set accessors below.
-#: `None` cannot serve as that sentinel — it is a real value meaning "empty", and
-#: using it to mean "get" made `value(None)` a silent no-op instead of clearing.
+# Sentinel marking "no argument passed" for the combined get/set accessors below.
+# `None` cannot serve as that sentinel — it is a real value meaning "empty", and
+# using it to mean "get" made `value(None)` a silent no-op instead of clearing.
 _UNSET: Any = object()
 
 
@@ -177,24 +177,7 @@ class TextEntryPart(ValidationMixin, Entry):
         self._commit_if_not_editing()
 
     def _commit_if_not_editing(self):
-        """Re-derive the committed value for a change the user did not type.
-
-        `_value` is otherwise only re-derived by `commit()` on FocusOut/Return,
-        which is right for typing and wrong for a write the application made:
-        there is no editing session to commit and no blur coming, so `value`
-        reported the previous value indefinitely (#482).
-
-        Keyboard focus is the discriminator. A programmatic write while this
-        field HAS focus is indistinguishable from typing here and still lags --
-        a stated residual, not an oversight.
-
-        The value only, never the display. This runs inside the variable's own
-        write trace, and Tcl suppresses every other trace on that variable while
-        one is executing -- the entry's included -- so normalizing here moves
-        the signal while the entry keeps its old text, and permanently: the
-        later blur then finds nothing left to normalize. Normalizing stays on
-        `commit()`, which runs outside any trace.
-        """
+        """Re-derive the committed value for a change the user did not type (#482)."""
         if self._showing_placeholder:
             return
         try:
@@ -202,7 +185,7 @@ class TextEntryPart(ValidationMixin, Entry):
                 return
         except (TclError, KeyError):
             return
-        self._reparse()
+        self._reparse()  # value only; this runs inside the variable's write trace
 
     def _reparse(self) -> bool:
         """Re-derive `_value` from the display text; False if it will not parse."""

@@ -162,14 +162,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
         self._commit_if_not_editing()
 
     def _commit_if_not_editing(self):
-        """Re-derive the committed value for a change the user did not type.
-
-        Duplicated from `TextEntryPart` because this class does not inherit it --
-        as `_handle_change`, `commit` and `value` already are. #477 is the home
-        for collapsing that. See the original for why focus is the discriminator,
-        why only the value is re-derived and never the display, and what residual
-        it leaves (#482).
-        """
+        """Re-derive the committed value for a change the user did not type (#482)."""
         try:
             if self.focus_get() is self:
                 return
