@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **An undecorated `AppShell` now gets a Windows taskbar button.** An `AppShell` or `Workbench` built with `undecorated=True` opened with no button in the taskbar, so once another window covered it there was nothing to click to bring it back. A shell with its title bar left on, and an `App` built with `undecorated=True`, were never affected. ([#507](https://github.com/israel-dryer/bootstack/issues/507))
+
 ## [0.4.1] — Signal writes and clearing
 
 ### Changed
