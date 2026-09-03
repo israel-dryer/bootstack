@@ -129,7 +129,14 @@ echo "EXIT=$?"
 
 The script checks, independently and without trusting any summary endpoint: a real `pip download` from PyPI, the per-version PyPI endpoint, the fix inside the published wheel, `NOTICE` at `dist-info/licenses/`, `import bootstack` with `idlelib` blocked (with a control asserting the block works), provenance (that the test imported the wheel and not the editable tree), both assets on the GitHub Release, the chained `docs.yml` run, and the live site.
 
-⚠⚠ **THE "fix is inside the published wheel" CHECK IS HARDCODED TO A PAST RELEASE.** It asserts `_uncheckable_message` appears in `bootstack/validation/validation_rules.py` — that was #467, in `0.4.0`. It will keep passing forever while proving nothing about the release you just cut. **Edit `check_wheel_contents` in `development/verify_release.py` to look for this release's fix before you trust that line**, or read it as a no-op.
+⚠ **ADD A `WHEEL_FIX_MARKERS` ROW FOR THIS RELEASE BEFORE RUNNING IT**, at the top of `development/verify_release.py`:
+
+```python
+"X.Y.Z": ("bootstack/widgets/appshell.py", "deiconify", False, "#507"),
+#          path in the wheel               marker       present?  issue
+```
+
+Name something only this release's change makes true — a symbol it added, or one it removed. A version with **no** row reports `SKIP` and says so; that is deliberate. This check was hardcoded to #467 for three releases and reported `PASS` each time while proving nothing about the release being verified, which is worse than having no check at all.
 
 ⚠ **Do NOT re-prove the `idlelib` check with grep** — it gives a false positive. Seven `idlelib` mentions survive in the wheel and all are docstring attributions.
 

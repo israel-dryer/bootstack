@@ -71,6 +71,16 @@ def http_status(url):
     return int(out.stdout.strip() or 0), ""
 
 
+# (path in the wheel, marker, must the marker be PRESENT?, issue) per release.
+# One row per release, naming the change that release shipped -- so the check
+# proves THIS release reached the artifact rather than an old one. A version with
+# no row is SKIPped loudly instead of passing.
+WHEEL_FIX_MARKERS = {
+    "0.4.0": ("bootstack/validation/validation_rules.py", "_uncheckable_message", True, "#467"),
+    "0.4.2": ("bootstack/widgets/appshell.py", "deiconify", False, "#507"),
+}
+
+
 def check_pypi_download(tmp):
     """A real download, not /pypi/bootstack/json -- that summary is CDN-cached
     and has lagged behind a successful upload, which reads as a failed one."""
@@ -100,19 +110,36 @@ def check_version_endpoint():
 
 def check_wheel_contents(wheel):
     """The fix inside the PUBLISHED artifact, not the source tree -- that is what
-    proves a packaging-shaped bug is fixed."""
+    proves a packaging-shaped bug is fixed.
+
+    WHEEL_FIX_MARKERS is keyed by version ON PURPOSE. This check was hardcoded to
+    #467 for three releases and kept reporting PASS while proving nothing about the
+    release being verified -- a hollow pass is worse than no check. A version with
+    no row now reports SKIP and says what to add, so it can never silently pass
+    again. ADD A ROW WHEN YOU CUT A RELEASE (see RELEASE.md step 7)."""
     if not wheel:
         record("the fix is inside the published wheel", None, "no wheel to open")
         record("NOTICE ships at dist-info/licenses/", None, "no wheel to open")
         return
+
     with zipfile.ZipFile(wheel) as z:
         names = z.namelist()
-        try:
-            src = z.read("bootstack/validation/validation_rules.py").decode("utf-8")
-        except KeyError:
-            src = ""
-    record("the fix is inside the published wheel", "_uncheckable_message" in src,
-           "validation_rules.py carries _uncheckable_message (#467)")
+        marker = WHEEL_FIX_MARKERS.get(VERSION)
+        if marker is None:
+            record("the fix is inside the published wheel", None,
+                   f"no marker for {VERSION} -- add a WHEEL_FIX_MARKERS row naming "
+                   f"this release's fix, or this check proves nothing")
+        else:
+            path, needle, want_present, issue = marker
+            try:
+                src = z.read(path).decode("utf-8")
+                found = needle in src
+                detail = f"{path.split('/')[-1]} {'carries' if found else 'lacks'} {needle!r} ({issue})"
+                record("the fix is inside the published wheel", found is want_present, detail)
+            except KeyError:
+                record("the fix is inside the published wheel", False,
+                       f"{path} is not in the wheel")
+
     notice = [n for n in names if n.endswith("NOTICE") and ".dist-info/licenses/" in n]
     record("NOTICE ships at dist-info/licenses/", bool(notice),
            notice[0] if notice else "not found under dist-info/licenses/")
