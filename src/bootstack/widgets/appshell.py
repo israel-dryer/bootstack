@@ -704,7 +704,6 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
             from bootstack.dev._reloader import install_reloader
 
             install_reloader(self)
-        self._internal.deiconify()
         self._internal.mainloop()
 
     # ----- Region accessors -----
