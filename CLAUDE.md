@@ -24,8 +24,7 @@ has a home:
 | `docs/_dev/handoff-archive.md` | **Every shipped initiative** with its root causes, decisions and gotchas. Indexed by issue/PR number — **read the entry before you touch an area it covers**, don't re-derive it |
 | `docs/_dev/docs-authoring-patterns.md` | Docs IA, the API Reference & Guide page recipes, autosummary templates, the widget documentation pattern, screenshot patterns |
 | `docs/_dev/widget-review-and-docs-standards.md` | The widget review + docs checklist |
-| `REVIEW-PROTOCOL.md` (repo root) | **The standing workflow for iterative development.** Read it before any implementation or review work |
-| `PLAN.md` / `REVIEW.md` (repo root) | Live working files **for the branch in hand only** |
+| `RELEASE.md` (repo root) | **The complete release runbook** — cutting, publishing, verifying, and the manual fallback. Follow it rather than reconstructing the steps here |
 
 ⚠ **THIS FILE HAS BEEN SPLIT TWICE — 2026-07-30 and 2026-08-20 — AND THE SECOND
 SPLIT WAS FORCED.** It had reached **~60,000 tokens**, over budget, because every
@@ -37,44 +36,17 @@ than a few lines about work that is finished, you are writing in the wrong file.
 untracked and nearly vanished; #379's `leakfix.patch` was saved to a per-session
 temp `scratchpad/` and is genuinely gone.
 
-### The review protocol, in one paragraph
+### Reviewing changes
 
-**A session that has written code never reviews code** — start a fresh session
-before every review, because written artifacts transfer intent while session
-memory transfers self-justification. **If you are implementing, write `PLAN.md`
-UP FRONT, before you write code**; a plan reconstructed afterwards is a
-justification, which is what the session boundary exists to keep out. **Close
-each round with its `docs(review):` record** — writing the record is the last
-step of a fix step, not an optional one. **Hand `REVIEW.md` to the next
-reviewer**, or the round re-litigates settled decisions. **On merge, archive
-`PLAN.md`/`REVIEW.md` into `development/` and create `PLAN.md` fresh** — finding a
-stale one describing shipped work is worse than finding none.
+⚠ **The `PLAN.md`/`REVIEW.md` session-boundary sequence is RETIRED (maintainer, 2026-08-30), and `REVIEW-PROTOCOL.md` was DELETED with it (2026-09-02).** A plan is written for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. Do not ask where `PLAN.md` is. What survives is below.
 
-**Stopping rules** (`REVIEW-PROTOCOL.md`, four mechanical gates — a rule needing
-judgment gets reasoned around exactly when it should bind):
+**A round is triggered by a non-empty `git diff <range> -- src/`, and nothing else.** Test-, probe- and docs-only commits are self-checked. ⚠ **Known GAP: `.github/` is none of those three**, so a CI workflow reads as no-round. Unresolved — raise it rather than deciding silently.
 
-1. **A round is triggered by a non-empty `git diff <range> -- src/`, and nothing
-   else.** Test-, probe- and docs-only commits are self-checked. ⚠ **Gate 1 has a
-   known GAP: `.github/` is none of those three**, so a CI workflow reads as
-   no-round. Unresolved — raise it rather than deciding silently.
-2. **Test code is reviewed on ONE axis — what defect can it let through.** Only
-   **vacuity** (passes while the behavior is broken) and **false alarm** (fails
-   while it is fine) are actionable. Diagnostics, wording, symmetry and probe
-   ergonomics are **notes in the record, never fixes**.
-3. **The round cap goes in `PLAN.md` up front** — 2 for a patch, 3 for a minor —
-   and survivors are filed as issues.
-4. **Probes are instruments, not reviewed code.** A flake gets **one** fix attempt
-   with a mechanism-reproducing control, then quarantine. Exception: a probe whose
-   *conclusion* is cited as settled must be shown capable of finding something.
+**Test code is reviewed on ONE axis — what defect can it let through.** Only **vacuity** (passes while the behavior is broken) and **false alarm** (fails while it is fine) are actionable. Diagnostics, wording, symmetry and probe ergonomics are **notes, never fixes**.
 
-**And know when to stop.** `0.3.1` ran four rounds yielding 6/5/4/5 findings but
-only 3/5/1/2 real ones — round 2 existed only because round 1's fix was
-incomplete, and round 4 reviewed a **test-only** diff. **When a round returns
-mostly re-reports and out-of-scope pre-existing bugs, the branch is done and the
-rest are issues.** ⚠ **But a re-report is not automatically noise** — ask *what
-changed: the evidence, or the cost of acting?* `0.3.1` round 3 re-raised a finding
-whose evidence was unchanged but whose price had dropped to one argument, and it
-was rightly taken.
+**Probes are instruments, not reviewed code.** A flake gets **one** fix attempt with a mechanism-reproducing control, then quarantine. Exception: a probe whose *conclusion* is cited as settled must be shown capable of finding something.
+
+**And know when to stop.** `0.3.1` ran four rounds yielding 6/5/4/5 findings but only 3/5/1/2 real ones — round 2 existed only because round 1's fix was incomplete, and round 4 reviewed a **test-only** diff. **When a round returns mostly re-reports and out-of-scope pre-existing bugs, the branch is done and the rest are issues.** ⚠ **But a re-report is not automatically noise** — ask *what changed: the evidence, or the cost of acting?* `0.3.1` round 3 re-raised a finding whose evidence was unchanged but whose price had dropped to one argument, and it was rightly taken.
 
 ---
 
@@ -138,23 +110,29 @@ leaves `$LASTEXITCODE` from the *pipeline*. Redirect to a file, capture
 
 ## Current state
 
-**Released: `0.3.2` on PyPI, tag `v0.3.2` (2026-08-13)** — *Read-only select
-fields*, one fix (#453). Prior: `0.3.1` (2026-08-12), `0.3.0` (2026-08-11),
-`0.2.3`, `0.2.2`, `0.2.1`, `0.2.0`. **Full detail for every one of these is in
+**Released: `0.4.1` on PyPI, tag `v0.4.1` (2026-08-30)** — *Signal writes and
+clearing*, five entries (#481, #482, #484, #490, #491). Prior: `0.4.0`
+(2026-08-29), `0.3.2` (2026-08-13), `0.3.1`, `0.3.0`, `0.2.3`, `0.2.2`, `0.2.1`,
+`0.2.0`. **Full detail for every one of these is in
 `docs/_dev/handoff-archive.md`** — do not re-derive it here.
+
+✅ **`0.4.1` verified 11/11 by `development/verify_release.py 0.4.1`** — PyPI by
+real download, the fix inside the wheel, the `idlelib`-blocked import with its
+control, provenance, `NOTICE` placement, both release assets, and the chained
+`docs.yml` run. ⚠ **Read its exit code without a pipe.**
 
 ⚠ **`v0.3.2` and `main` DIFFER BY DESIGN**, as `v0.3.1` did: the CHANGELOG was
 reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-29) — **`0.4.0` SHIPPED. THREE PATCH FIXES MERGED SINCE. #491 IS IN FLIGHT.**
+### ★ START HERE (2026-08-30) — **`0.4.1` SHIPPED. `## [Unreleased]` IS EMPTY. NOTHING IN FLIGHT.**
 
-**`## [Unreleased]` carries THREE fixes — #482, #490 and #481 — and #491 is on a
-branch. A `0.4.1` is cuttable whenever you want one.** All four are `0.4.x — Patch
-line`; #482, #490 and #481 merged 2026-08-29 (PRs #503, #502 and #504). **Read the
-#482 and #490 subsections below before touching the field-signal seam again;
-between them they settle a question that has been re-opened three times.**
+**`0.4.1 — Signal writes and clearing` released to PyPI, tag `v0.4.1`, 2026-08-30.**
+Five entries, all on `0.4.x — Patch line`: #481, #482, #484, #490, #491. **The
+milestone stays OPEN** — a rolling line does not close when a patch ships. **Read
+the #482, #490 and #484 subsections below before touching the field-signal seam
+again; between them they settle a question that has been re-opened three times.**
 
 #### ⭐ #482 — `value` FOLLOWS A PROGRAMMATIC SIGNAL WRITE, AND `<<Change>>` MOVED WITH IT
 
@@ -222,7 +200,7 @@ second time and it stays `None`. Both are falsy, which is the check #390's CHANG
 tells callers to use. **Deliberately left out of the CHANGELOG entry as noise for a
 "was I affected?" reader.**
 
-#### ⭐ #491 — `TextArea.insert()`/`append()` WROTE ALONGSIDE THE PLACEHOLDER. **IN FLIGHT on `fix/textarea-insert-placeholder-491`.**
+#### ⭐ #491 — `TextArea.insert()`/`append()` WROTE ALONGSIDE THE PLACEHOLDER. **SHIPPED in `0.4.1` (PR #505).**
 
 Both reached `_internal._core.insert(...)` directly, so `_showing_placeholder` stayed
 `True`: text landed on top of the placeholder, `value` kept returning `''`, and
@@ -242,6 +220,40 @@ with its own `insert`/`append`, and neither it nor its composite mentions
 **Pinned by `tests/widgets/public/test_textarea_insert_placeholder.py`, and no single
 wrong implementation passes it:** against `main` the first four fail, against the
 unguarded fix the last three do.
+
+#### ⭐ #484 — A WIDGET-MADE SIGNAL CAN BE CLEARED. **SHIPPED in `0.4.1` (PR #506).**
+
+`create_signal()` built every signal the framework makes for a widget with
+`allow_empty=False`, so `.signal.clear()` raised and named a `Signal()` call the
+caller never wrote. It now declares empty where the type has an empty member —
+`isinstance(default_value, (str, set))`, mirroring `Signal._empty_value()`'s own
+rule. **That is the whole fix**, and it reaches the four entry-backed text fields.
+
+⚠⚠ **DO NOT "simplify" it to an unconditional `allow_empty=True`.** #390's floor
+refuses to bind an empty-capable signal to a `Slider` or `Checkbox`, so a blanket
+default makes **every slider and checkbox fail on construction**. Pinned by
+`test_both_refusing_widgets_still_construct_and_expose_a_readable_signal`.
+
+⚠ **THE PLAN'S MECHANISM SECTION WAS WRONG AND THE ARCHIVED COPY STILL SAYS SO:**
+it claims both lazy paths funnel through `create_signal()`, so gating it "reaches
+all six widgets." It reaches **five**. `Slider` is a canvas `tk.Frame` composite,
+not a `SignalMixin`/ttk widget — it builds its own `Signal` eagerly at
+`slider/slider.py:127,134`, and `RangeSlider` at `rangeslider.py:129,135,141,147`.
+Change 1 hid this because a bare `Signal(0.0)` and the gated one are identical for
+a float.
+
+⚠ **An ownership flag was built, measured, and DELIBERATELY DROPPED.** A private
+`Signal._widget_owned` set in `create_signal()`, branched on in `set()`'s `None`
+guard, gave `Slider`/`Checkbox` their own sentence — but it taught `Signal` a
+notion of provenance it otherwise has no use for, and it needed six slider call
+sites to reach. **The shipped message is ONE sentence for both owners**, carrying
+both ways out. Pinned by `test_one_sentence_serves_both_owners`, which fails if a
+branch is reintroduced. **Do not re-propose the flag.**
+
+⚠ **`field.value` reads `None` after a clear while the signal reads `''` — this is
+PRE-EXISTING, not #484's doing.** Measured against `main`: the shipped
+`TextField.clear()` already produced exactly that state. #484's correcting comment
+calls it "already filed" but names no issue, and none was found.
 
 **`0.4.0 — Signal binding on fields` released to PyPI, tag `v0.4.0`, 2026-08-29.**
 13 issues: #390, #444, #449, #456, #458, #459, #460, #461, #465, #467, #472, #476,
@@ -314,14 +326,14 @@ keyword and the number apart. Reopened 2026-08-29.
 
 | | |
 |---|---|
-| `main` | **three patch fixes past `v0.4.0`** — #490 (PR #502), #482 (PR #503), #481 (PR #504), plus a `docs(claude):` commit. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **`fix/textarea-insert-placeholder-491`, local only, unpushed — #491, IN FLIGHT.** ⚠ **`fix/signal-none-seed-481` is MERGED (PR #504) and safe to delete**; verify with `git merge-base --is-ancestor` before you do |
-| root of `main` | **no `PLAN.md`, no `REVIEW.md`.** #482 archived both in the branch before the PR opened, which is the rule; that is **four** branches in a row after #467, #486 and #444. ⚠ **#481 and #491 have NEITHER — the maintainer waived the plan for both as three-line fixes, and reviewed #481 personally.** Do not read their absence as the rule slipping |
-| released | **`0.4.0`** on PyPI. `## [Unreleased]` carries **THREE fixes — #482, #490 and #481** — with #491 waiting on its branch |
-| next release | **nothing scheduled, but a `0.4.1` is cuttable** — three fixes are sitting in `## [Unreleased]`. `0.4.x — Patch line` is the largest open milestone at 8 |
+| `main` | **at the `v0.4.1` tag** — the `Release 0.4.1` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
+| branches | **NONE, local or remote, beyond `main`** — #484's merged as PR #506 and #491's as PR #505. Verify with `git branch -a` before trusting this |
+| root of `main` | **no `PLAN.md`, no `REVIEW.md`, and the sequence that produced them is RETIRED** (maintainer, 2026-08-30). A plan I write is for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. **`REVIEW-PROTOCOL.md` was DELETED and "Reviewing changes" rewritten to match, 2026-09-02** — the contradiction is gone. Do not ask where `PLAN.md` is, and do not read its absence as the rule slipping |
+| released | **`0.4.1`** on PyPI, tag `v0.4.1`. **`## [Unreleased]` is EMPTY** — the next fix opens it |
+| next release | **nothing scheduled and nothing queued.** `0.4.x — Patch line` is the largest open milestone at 6, and stays open |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **Windows `1731 / 22`, 33 legs, exit 0**, measured 2026-08-29 at the #481 merge, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now five merges stale.** The two are NOT comparable |
-| open milestones | **10** — `0.4.0` closed on release. Verified against `gh` 2026-08-29, after #482/#490/#481 closed |
+| suite, `main` | **Windows `1756 / 22`, 33 legs, exit 0**, measured 2026-08-30 at `02593bd2`, the commit `v0.4.1` was cut from, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now SEVEN merges stale.** The two are NOT comparable |
+| open milestones | **10** — `0.4.0` closed on release; `0.4.x` did NOT. Verified against `gh` 2026-08-30 |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
 **The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
@@ -364,7 +376,7 @@ and fix the table.**
 | Order | Milestone | Open |
 |---|---|---|
 | — | ~~`0.4.0 — Signal binding on fields`~~ — **SHIPPED 2026-08-29, milestone CLOSED.** 13 issues. Detail in the archive |  |
-| 1 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, #445, #479. ⚠ **#481 left for `0.4.x` on 2026-08-29.** ⚠ **#383 keeps only gaps 1 and 2 (bad *values*)**; gap 3 (unknown *names*) shipped as #472. ⚠⚠ **#500 IS CLOSED, `not planned` (maintainer, 2026-08-29) — do NOT re-file it.** Its reason, verbatim: it guards against an author passing a non-callable `func` or a bound of the wrong type, *"their own broken code, which the framework cannot sensibly rescue."* **#467 itself was real — a field silently stopped validating — this residue is not.** That disposition also retires the #495 residue #500 was carrying. ⚠ **#479 does NOT meet this milestone's membership rule — that is deliberate, do not "correct" it**; placement is the maintainer's call, not the rule's | 6 |
+| 1 | **`0.5.0 — Strictness and value types`** — #383, #369, #408, #416, #445, #479. ⚠ **#481 left for `0.4.x` on 2026-08-29 AND SHIPPED IN `0.4.1` — that is an exception to this milestone's rule, not a breach of it.** It raises where the framework accepted, which is the membership rule (and is why **#445** sits here), but **its break is unreachable by working code**: every call site it now rejects had built a signal that could never hold a value, so every later `set()` already raised. The batching rationale — one migration instead of four — buys a user nothing when there is no migration. **Do not read this as the rule slipping, and do not move #445 on the strength of it.** ⚠ **#383 keeps only gaps 1 and 2 (bad *values*)**; gap 3 (unknown *names*) shipped as #472. ⚠⚠ **#500 IS CLOSED, `not planned` (maintainer, 2026-08-29) — do NOT re-file it.** Its reason, verbatim: it guards against an author passing a non-callable `func` or a bound of the wrong type, *"their own broken code, which the framework cannot sensibly rescue."* **#467 itself was real — a field silently stopped validating — this residue is not.** That disposition also retires the #495 residue #500 was carrying. ⚠ **#479 does NOT meet this milestone's membership rule — that is deliberate, do not "correct" it**; placement is the maintainer's call, not the rule's | 6 |
 | 2 | **`0.6.0 — Form, signals, and composite authoring`** — #389, #412, #415 | 3 |
 | 3 | **`0.7.0 — Guided flows`** — #311, #312 | 2 |
 | 4 | **`0.8.0 — Power-user interactions`** — #315, #316 | 2 |
@@ -373,7 +385,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #484, #488, #491. Verified against `gh` 2026-08-29. Cut 2026-08-27; does **NOT** close when a patch ships. ⚠ **#482, #490 and #481 CLOSED on it 2026-08-29 and are the three entries in `## [Unreleased]`; #491 is IN FLIGHT and still open.** ⚠ **#468, #469, #484, #488 and #491 moved onto it from unmilestoned, and #481 from `0.5.0`, all on 2026-08-29** — this file listed several as unmilestoned for two days after they were not. ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 8 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #488. Verified against `gh` 2026-08-30. Cut 2026-08-27; **it did NOT close when `0.4.1` shipped, and must not** — renaming a turned-over line would relabel shipped work. ⚠ **Its five closed issues — #481, #482, #484, #490, #491 — ARE `0.4.1`.** ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 6 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -415,7 +427,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. Verified against `gh` 2026-08-29. Verify rather than counting by hand:
+**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. **Still exactly these five, re-verified against `gh` 2026-08-30 after `0.4.1`.** Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -449,7 +461,7 @@ other's baseline** — platform gating differs. Say which box you mean.
 | box | measured | when |
 |---|---|---|
 | **macOS** | **`1699 passed / 33 skipped`**, 33 legs, exit 0 | 2026-08-29 at the #467 merge, `.venv/bin/python` 3.14.0, matplotlib present, **pandas ABSENT** |
-| **Windows** | `1661 / 22`, 33 legs, exit 0 | 2026-08-28 at `f38482e1`, `py -3.12`, both deps present. ⚠ **MANY merges stale — re-measure before trusting it** |
+| **Windows** | **`1756 / 22`**, 33 legs, exit 0 | 2026-08-30 at `02593bd2`, the commit `v0.4.1` was cut from, `py -3.12`, both deps present |
 
 ⚠ **`pandas` is ABSENT on the macOS box**, so its data leg runs the two tests that
 exist only when pandas is missing (`125 / 4` absent vs `123 / 6` present — a
@@ -635,123 +647,15 @@ must clear validation state.
 
 ## Release flow
 
-`py -3.12 -m bumpversion bump patch` (**`bump minor` for a minor — the verb decides the version, and `bump patch` on a minor release silently ships the wrong number to a tag you cannot move**) → push `main` + the `v*` tag → `release.yml`
-(PyPI + GitHub Release) → `docs.yml` deploys. `release.yml` fires on `v*` tags
-only. There is **no `development` branch**.
+⏭ **THE FULL PROCEDURE LIVES IN `RELEASE.md` (repo root) — follow it, do not reconstruct it here.** It carries the eight steps, the automation's actual behavior, the manual-publish fallback for an Actions outage, and every trap this project has paid for. **Do not copy any of it back into this file**; two copies drift and the wrong one gets followed.
 
-⚠ **Use `py -3.12 -m bumpversion`, NOT the `.venv` shim** (stale, dies with
-"Access is denied"). ⚠ **The import name is `bumpversion`, not
-`bump_my_version`** — probing the wrong one reports "no module" on an interpreter
-that has it. ⚠ **IT DISAPPEARS — check before every release.** Recorded installed
-twice and gone twice.
+**What you need at the moment you write a FIX**, rather than at release time:
 
-**Order of operations, and the trap:** ⚠ `bump-my-version bump patch
---allow-dirty` commits **ONLY `pyproject.toml`** — it will NOT sweep the CHANGELOG
-rename in, which ships a release whose notes still say `## [Unreleased]` and
-breaks `release.yml`'s section extraction. **Promote `## [Unreleased]` to the
-version in its OWN commit BEFORE running `bump-my-version`.**
-
-⚠ **`docs.yml` is CHAINED to `release.yml` SUCCEEDING**, not to the tag or the
-push — it triggers on `workflow_run` of "Release" `completed` and is gated on
-`conclusion == 'success'`. **Any release that does not go through a green
-`release.yml` run leaves the docs site stale, silently** (the run shows as
-`completed/skipped`, which reads like a no-op). Kick it with
-**`gh workflow run docs.yml --ref main`**.
-
-⚠ **POST-RELEASE: `gh issue close --comment "..."` SILENTLY DROPS THE COMMENT when
-the issue is already closed** — and a PR body containing `Closes #N` closes it at
-merge, which is the normal case. `gh` warns only about the close. Post with
-**`gh issue comment N --body ...`** and **verify it landed** with
-`gh issue view N --json comments`.
-
-### Post-release verification — every step VERIFIED, never assumed
-
-- **PyPI** — prove with a real `pip download --no-deps bootstack==X.Y.Z`. ⚠ **The
-  `/pypi/bootstack/json` summary endpoint is CDN-cached and has lagged behind a
-  successful upload** — use `/pypi/bootstack/<version>/json` or a real download,
-  and never read a stale summary as a failed upload and re-upload.
-- **The fix, INSIDE the published wheel** — checking the artifact, not the source
-  tree, is what proves a packaging-shaped bug is fixed.
-- ⚠ **`import bootstack` with `idlelib` BLOCKED, every release.** That is #430's
-  defect. Block the module with a `meta_path` finder, **assert the block works as a
-  control**, then import. ⚠ **Grep is NOT enough and gives a FALSE POSITIVE** —
-  seven `idlelib` mentions survive in the wheel and all are docstring
-  attributions. **Do not re-prove #430 with grep, in either direction.**
-- **Provenance asserted**, so the test cannot silently import the editable tree.
-- **`NOTICE` at `dist-info/licenses/`** — it reaches users via setuptools'
-  automatic license-file globbing, **NOT `MANIFEST.in`** (which names only
-  `LICENSE`).
-- **GitHub Release live with both assets; `bootstack.org` returning 200.**
-
-### CHANGELOG convention
-
-A fix commit writes `## [Unreleased]`; the promotion commit renames it AND adds
-the `[X]:` link definition.
-
-⚠ **An entry earns its place by being REACHABLE.** A CHANGELOG is read by someone
-asking "was I affected?", so an entry for an unreachable defect is a false
-positive. `0.2.1` deliberately omitted #397/#401 and `0.2.0` omitted #387 on those
-grounds; #380, #407, #433 and #434 shipped with no entry because CI and test
-harness are not reachable by any user. **Do not "fix" those absences.** Check
-`__all__` and the public event registry before writing the bullet — **and say so in
-the commit message, since that is where the omitted work stays documented.**
-
-⚠ **A CHANGELOG claim about PRIOR behavior must be checked against the OLD code,
-not against the fix.** The #456 bullet said a misspelled value *"previously turned
-both menus off silently"*; it did the **opposite**. The sentence was written from
-the fix's point of view and read as authoritative. `git show main:<file>` settles
-it in one command.
-
-⚠ **Read the entry as its AUDIENCE reads it before promoting the section.**
-Verifying the *extraction* is not reviewing the *notes*. **This project has
-reworded two CHANGELOGs AFTER tagging** (`0.3.1`, `0.3.2`), each forcing a
-`gh release edit` on a published body.
-
-⚠ **Read the whole `## [Unreleased]` section before promoting it.** `0.2.0`'s had
-accreted across five fixes and nobody had read it end to end: **three entries were
-filed under `Changed` but were plain bug fixes**, handing a reader scanning for
-upgrade risk three false positives before the one that mattered.
-
-⚠ **Verify the extraction against the REAL file before tagging, not a
-simulation.** The **title** comes from the descriptive suffix after
-`## [X.Y.Z] —`, so a section promoted without one ships a release titled bare
-`X.Y.Z`. Confirm the body starts at `### Fixed` and no bottom link definitions
-leaked in:
-`py -3.12 -c "import sys; sys.path.insert(0,'.github/scripts'); from release_notes import extract; print(extract('X.Y.Z', open('CHANGELOG.md',encoding='utf-8').read())[0])"`
-
-⚠ **Write CHANGELOG entries ONE PARAGRAPH PER LINE — do not hard-wrap.**
-`release_notes.py` lifts the section verbatim into the **GitHub Release body**,
-which renders a soft line break as a visible one. Unwrapped renders identically in
-the repo file view and in Sphinx. **Older sections are left wrapped — do not
-reformat shipped history.** Same rule for PR bodies, issue bodies, and review
-comments.
-
-### ⚠ FALLBACK: publishing BY HAND when Actions is down
-
-Used for `0.2.2` during a major Actions outage; it worked cleanly and will be
-needed again. ⚠ **Under an outage the run state itself is unreliable** (`gh run
-cancel` said "already completed" while `gh run view` said `queued`) — **check
-PyPI, not the run**, to decide whether anything was published.
-
-1. `git worktree add <scratchpad>/rel-X.Y.Z vX.Y.Z` — build from a **pristine
-   checkout of the tag**, never the working tree (this repo has ~60 untracked
-   files in `development/`).
-2. `py -3.12 -m pip install --upgrade build twine`
-3. `py -3.12 -m build`, then **`py -3.12 -m twine check dist/*`**
-4. `py -3.12 -m twine upload --config-file D:/Development/bootstack/.pypirc --non-interactive dist/*`
-5. `gh release create vX.Y.Z dist/* --title "<from release_notes.py>" --notes-file RELEASE_NOTES.md --generate-notes`
-6. `gh workflow run docs.yml --ref main` — **a manual publish SKIPS THE DOCS
-   DEPLOY**, silently.
-7. `git worktree remove <path> --force`
-
-⚠ **`twine.exe` is NOT on PATH** — always `py -3.12 -m twine`. ⚠ **The token lives
-at `D:\Development\bootstack\.pypirc`** (repo root, **not** `~/.pypirc`, which does
-not exist), gitignored and untracked. Because it is not in the home directory,
-**twine needs `--config-file` explicitly.** ⚠ **`release.yml` publishes via OIDC
-trusted publishing, so there is NO token in CI** — the local `.pypirc` is the only
-credential path for a manual publish, and CI's path cannot be reproduced locally.
-
----
+- A fix commit writes under `## [Unreleased]`; the promotion commit renames the heading and adds the `[X.Y.Z]:` link definition.
+- ⚠ **An entry earns its place by being REACHABLE from public API.** A CHANGELOG is read by someone asking "was I affected?", so an entry for an unreachable defect is a false positive. `0.2.1` deliberately omitted #397/#401 and `0.2.0` omitted #387 on those grounds; #380, #407, #433 and #434 shipped with no entry because CI and test harness are not reachable by any user. **Do not "fix" those absences.** Check `__all__` and the public event registry before writing the bullet — **and say so in the commit message, since that is where the omitted work stays documented.**
+- ⚠ **A CHANGELOG claim about PRIOR behavior must be checked against the OLD code, not against the fix.** The #456 bullet said a misspelled value *"previously turned both menus off silently"*; it did the **opposite**. `git show main:<file>` settles it in one command.
+- ⚠ **Write entries ONE PARAGRAPH PER LINE — do not hard-wrap.** The section is lifted verbatim into the GitHub Release body, which renders a soft line break as a visible one. **Older sections are left wrapped — do not reformat shipped history.** Same rule for PR bodies, issue bodies, and review comments.
+- ⚠ **Adding public surface is a MINOR even when nothing breaks** — the project committed to SemVer at `0.1.0`, so someone upgrading `0.2.1 → 0.2.2` should be able to assume no new API arrived. **BUT THE RULE IS ONE-DIRECTIONAL:** an addition *requires* a minor; a minor does *not* require additions and is free to carry as many plain fixes as it likes (`0.3.0` carried two additions and **six fixes**). **So when a minor is being cut anyway, ask what else is ready rather than parking fixes out of habit** — and for a fix, ask whether it needs a minor at all.
 
 ## Working agreements
 
@@ -1479,6 +1383,7 @@ escape-hatch property docstrings, `signals/integration.py` (the Tk bridge).
 
 | Release | Contents |
 |---|---|
+| **0.4.1** (2026-08-30) | *Signal writes and clearing*. **Five entries, all patch-line** — #481 (`bs.Signal(None)` now raises at construction, `map()` included — the one `### Changed` entry) · #482 (a field's `value` follows a programmatic signal write) · #484 (the signal a text field makes for you can be cleared) · #490 (`TextArea`/`CodeEditor` honor `Signal.clear()`) · #491 (`insert()`/`append()` drop the placeholder first). ⚠ **No `### Added` section — that is the test that let it be a patch.** Verified 11/11 |
 | **0.4.0** (2026-08-29) | *Signal binding on fields*. **13 issues** — #390 (`Signal(…, allow_empty=True)`) · #444 (a modal `Window` never handed the grab back) · #456 · #458 / #461 (a `Select`/`SelectButton` signal bound the LABEL, not the value) · #459 · #460 · #465 (a rule on a `Select` had nowhere to report) · #467 (a `custom` rule's raise escaped into the event loop) · #472 (an unknown keyword now RAISES) · #476 · #486 (`TextArea`/`CodeEditor` bound `textsignal=` one way only). ⚠ **Two entries break running code: #472 and #461** — but only #461 breaks code that WORKED; #472 only turns a silent no-op into a message |
 | **0.3.2** (2026-08-13) | *Read-only select fields*. **#453** — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty and is **derived, never storage** now; `TimeField` fixed with it |
 | **0.3.1** (2026-08-12) | *Dialog keyboard and modality*. Four fixes, no new public surface. **#441** Enter in a multi-line field inserted its newline and the dialog closed on top of it · **#440** a nested modal released the grab entirely instead of handing it back · **#439** the default button's `focus_set()` ran while the window was hidden, where Tk silently ignores it · **#426** the layout migration error recommended kwargs renamed before release |
