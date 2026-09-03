@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.2] — Undecorated shell taskbar button
 
 ### Fixed
 
@@ -446,6 +446,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.2
 [0.4.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.1
 [0.4.0]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.0
 [0.3.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.3.2
