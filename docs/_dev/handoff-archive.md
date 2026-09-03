@@ -3648,3 +3648,152 @@ Read the `development/` file before re-deriving anything.
 
 ⚠ **The fix ADDS PUBLIC SURFACE, so it needs a MINOR**, which is why it landed on `0.4.0` rather than the patch line: that milestone is a minor already (forced by #461), and this file's own rule is **to ask what else is ready when a minor is being cut anyway rather than parking a fix out of habit.** The milestone was **asked for and given**, not assigned unasked.
 
+---
+
+## `0.4.1 — Signal writes and clearing` — RELEASED 2026-08-30, split out of `CLAUDE.md` 2026-09-03
+
+Five entries, all on `0.4.x — Patch line`: #481, #482, #484, #490, #491. Verified 11/11 by `development/verify_release.py 0.4.1`. **Read the #482, #490 and #484 subsections before touching the field-signal seam again** — between them they settle a question that was re-opened three times.
+
+#### ⭐ #482 — `value` FOLLOWS A PROGRAMMATIC SIGNAL WRITE, AND `<<Change>>` MOVED WITH IT
+
+**The fix:** `TextEntryPart._value` was re-derived only in `commit()`, at
+FocusOut/Return — right for typing, wrong for a write the application made, where
+there is no editing session to commit and no blur coming. It now re-derives when a
+text change arrives while the widget does **not** hold keyboard focus. **Population
+is FOUR widgets** (`TextField`, `PasswordField`, `PathField`, `SpinnerField`), not
+the six the issue named.
+
+⚠ **The path runs INSIDE the bound variable's own write trace, where Tcl suppresses
+every other trace on that variable.** So it calls `_reparse()` — the extracted parse
+half — and NOT `commit()`: a display-normalizing `textsignal.set()` there moves the
+signal while the entry never repaints, and it never heals. **Do not "simplify"
+`_reparse()` back into `commit()`.** That was round 1's blocker.
+
+⚠⚠ **`<<Change>>` CHANGED, IN BOTH DIRECTIONS, AND THE MAINTAINER DECIDED TO SHIP IT
+(2026-08-29). DO NOT RE-LITIGATE.** `_prev_changed_value` is snapshotted from
+`_value` on FocusIn and compared on blur, so a `_value` that now follows the write
+leaves nothing for the blur to find. Measured on all four widgets against `main`,
+with controls:
+
+| the user does, after a programmatic signal write | before | now |
+|---|---|---|
+| focuses and leaves, no edit | `<<Change>>` `('hello' → 'world')` | **nothing** |
+| types the pre-write text back, leaves | nothing | **`<<Change>>` `('world' → 'hello')`** |
+
+**One rule produces both rows: `<<Change>>` means the committed value differs from
+what it was at focus-in.** The event that vanished was the application's own write
+surfacing a cycle late, attributed to a user focus, and arriving only if the user
+happened to touch the field. **Blast radius is the signal-write path ONLY** —
+`field.value = x` and `Form.set()`, which writes through it, already set `_value`
+and are untouched, as is every user edit. Pinned by
+`test_the_deferred_change_on_a_later_focus_cycle_moves_with_value` and
+`test_typing_the_pre_write_text_back_is_now_a_change`.
+
+⚠ **The standing 2026-08-26 do-not-fix is UNCHANGED for the moment of the write** —
+a programmatic set still emits no `<<Change>>` at all. The clean way to observe one
+is to subscribe to the signal.
+
+**Residual, stated and accepted:** a programmatic write while the field HAS focus
+still lags. Indistinguishable from typing at this seam, identical on `main`, heals
+on the next blur.
+
+#### ⭐ #490 — `TextArea`/`CodeEditor` NOW HONOR `Signal.clear()`
+
+`_on_signal_change` opened with `if new_value is not None`, and **the empty for a
+signal no widget realizes as its own variable IS `None`** — so these two dropped
+exactly the value a clear produces, while the entry-backed four never reached it
+because their empty is a `str`. The tell that it was a defect and not a refusal:
+binding the same signal to a `TextArea` **and** a `TextField` made the clear work,
+because the second widget decided which empty the signal produced.
+
+⚠ **Two things the one-line fix left behind, both measured, neither filed:** the new
+`str(new_value or "")` blanks the widget for **any** falsy value, not just the empty
+one (unreachable today — the type gate makes `set(0)` raise and `Signal(123)` refuse
+to bind — so it is latent, not a bug); and **`_bind_signal` still carries the same
+`if v is not None` guard** for the INITIAL apply, so the setter and the constructor
+now disagree about what `None` means. Harmless today (an empty signal bound to a
+widget with `value=` seeds from the widget, identically before and after).
+
+⚠ **After a clear, the signal ends up `''` rather than `None`** — the widget writes
+its now-empty text back — **but only when the document actually changed**; clear a
+second time and it stays `None`. Both are falsy, which is the check #390's CHANGELOG
+tells callers to use. **Deliberately left out of the CHANGELOG entry as noise for a
+"was I affected?" reader.**
+
+#### ⭐ #491 — `TextArea.insert()`/`append()` WROTE ALONGSIDE THE PLACEHOLDER. **SHIPPED in `0.4.1` (PR #505).**
+
+Both reached `_internal._core.insert(...)` directly, so `_showing_placeholder` stayed
+`True`: text landed on top of the placeholder, `value` kept returning `''`, and
+`<<Input>>`/`<<Changed>>` stayed gated **for the field's whole life**, not one cycle.
+
+⚠⚠ **`_hide_placeholder()` DELETES THE WHOLE DOCUMENT** — `_core.text.delete("1.0",
+END)`. It is written for the one state where a placeholder IS showing, and **every
+pre-existing caller guards it** (`_on_focus_in_placeholder`, the `value` setter).
+Calling it unguarded turns `append()` into *replace everything*: measured,
+`append("line2")` onto `"line1"` gave `'line2'` on all three non-placeholder arms.
+**The fix is `if self._internal._showing_placeholder:`, not the call.**
+
+⚠ **`CodeEditor` is genuinely unaffected** — a separate `PublicWidgetBase` subclass
+with its own `insert`/`append`, and neither it nor its composite mentions
+`placeholder`. Verified, not assumed.
+
+**Pinned by `tests/widgets/public/test_textarea_insert_placeholder.py`, and no single
+wrong implementation passes it:** against `main` the first four fail, against the
+unguarded fix the last three do.
+
+#### ⭐ #484 — A WIDGET-MADE SIGNAL CAN BE CLEARED. **SHIPPED in `0.4.1` (PR #506).**
+
+`create_signal()` built every signal the framework makes for a widget with
+`allow_empty=False`, so `.signal.clear()` raised and named a `Signal()` call the
+caller never wrote. It now declares empty where the type has an empty member —
+`isinstance(default_value, (str, set))`, mirroring `Signal._empty_value()`'s own
+rule. **That is the whole fix**, and it reaches the four entry-backed text fields.
+
+⚠⚠ **DO NOT "simplify" it to an unconditional `allow_empty=True`.** #390's floor
+refuses to bind an empty-capable signal to a `Slider` or `Checkbox`, so a blanket
+default makes **every slider and checkbox fail on construction**. Pinned by
+`test_both_refusing_widgets_still_construct_and_expose_a_readable_signal`.
+
+⚠ **THE PLAN'S MECHANISM SECTION WAS WRONG AND THE ARCHIVED COPY STILL SAYS SO:**
+it claims both lazy paths funnel through `create_signal()`, so gating it "reaches
+all six widgets." It reaches **five**. `Slider` is a canvas `tk.Frame` composite,
+not a `SignalMixin`/ttk widget — it builds its own `Signal` eagerly at
+`slider/slider.py:127,134`, and `RangeSlider` at `rangeslider.py:129,135,141,147`.
+Change 1 hid this because a bare `Signal(0.0)` and the gated one are identical for
+a float.
+
+⚠ **An ownership flag was built, measured, and DELIBERATELY DROPPED.** A private
+`Signal._widget_owned` set in `create_signal()`, branched on in `set()`'s `None`
+guard, gave `Slider`/`Checkbox` their own sentence — but it taught `Signal` a
+notion of provenance it otherwise has no use for, and it needed six slider call
+sites to reach. **The shipped message is ONE sentence for both owners**, carrying
+both ways out. Pinned by `test_one_sentence_serves_both_owners`, which fails if a
+branch is reintroduced. **Do not re-propose the flag.**
+
+⚠ **`field.value` reads `None` after a clear while the signal reads `''` — this is
+PRE-EXISTING, not #484's doing.** Measured against `main`: the shipped
+`TextField.clear()` already produced exactly that state. #484's correcting comment
+calls it "already filed" but names no issue, and none was found.
+
+---
+
+## `0.4.2 — Undecorated shell taskbar button` — RELEASED 2026-09-03
+
+One entry, on `0.4.x — Patch line`: **#507**, reported by a user against `0.4.1`. PR #508. Verified 11/11 by `development/verify_release.py 0.4.2`, plus a by-hand check of the published wheel (see the last paragraph). The suite was `1756 / 22`, 33 legs, exit 0 at the fix commit `640a9efc` — unmoved, because the change is on no test path.
+
+#### ⭐ #507 — AN UNDECORATED `AppShell` GOT NO WINDOWS TASKBAR BUTTON
+
+**The fix is deleting ONE line**: `_ShellBase.run()` called `self._internal.deiconify()` before `mainloop()`. Tk gives an override-redirect window `WS_EX_TOOLWINDOW` on Windows, and **Windows decides taskbar membership at the instant a window first becomes visible** — so the shell mapped as a toolwindow and never got a button. `App.run()` has never done this and carries a comment saying why (`app.py:275-278`: deiconifying first maps the window uncentered, then jumps). Reaches **`AppShell` AND `Workbench`** — `run()` is on `_ShellBase`.
+
+⚠⚠ **THE DIFFERENCE IS INVISIBLE TO ANY MEASUREMENT TAKEN AFTER STARTUP.** The style *is* corrected ~350ms later and both arms then read byte-identical `0x00080000`. The first probe sampled at 900ms and reported all four arms identical, which reads as *does not reproduce*. **Only the value at the first map discriminates.**
+
+⚠ **The correction is INCIDENTAL and nothing asks for it** — `show()`'s `attributes('-alpha', 0.0)` (`base_window.py:448`) rewrites the extended style and the flag goes with it, guarded by `if prev_alpha is not None`. So the working `App` path works by accident. **Not fixed; making it deliberate is unfiled follow-up work.** It was deliberately NOT folded into the patch: clearing the bit before the first map makes both orderings pass, which destroys the control.
+
+⚠ **A PROBE BUILT ON `run()` STOPS DISCRIMINATING THE MOMENT THE FIX LANDS** — after the deletion it reported no defect on five consecutive runs, which reads as *cannot reproduce* rather than *fixed*. `development/probe_507_undecorated_taskbar.py` therefore **stages both orderings by hand** and never reads the source: `shell-shipped` keeps the defect available, `shell` is the verification.
+
+**Dev-mode hot reload was checked and does not depend on the deleted line** — `install_reloader(self)` runs directly above it. Nothing in `bootstack/dev/` maps or unmaps a window, and a real **in-process** reload was driven end to end against the fixed source. ⚠ **The body has to announce itself**: the reloader logs `reloaded` whether or not the new code ran.
+
+**No test was written — a deliberate call under release pressure.** What it would need: the shared-root harness cannot host it (the measurement needs a *first* map and the harness root is already mapped, so `@pytest.mark.isolated`), and a *"the shell still shows"* assertion is **vacuous — it passes on both orderings**.
+
+⚠ **`verify_release.py`'s wheel check had been hardcoded to #467 since `0.4.0` and reported `PASS` for three releases while proving nothing about the release being verified.** Fixed 2026-09-03: `WHEEL_FIX_MARKERS` is keyed by version and a version with no row now reports `SKIP`. **Add a row when you cut a release** — `RELEASE.md` step 7.
+

@@ -110,13 +110,13 @@ leaves `$LASTEXITCODE` from the *pipeline*. Redirect to a file, capture
 
 ## Current state
 
-**Released: `0.4.1` on PyPI, tag `v0.4.1` (2026-08-30)** — *Signal writes and
-clearing*, five entries (#481, #482, #484, #490, #491). Prior: `0.4.0`
+**Released: `0.4.2` on PyPI, tag `v0.4.2` (2026-09-03)** — *Undecorated shell
+taskbar button*, one entry (#507). Prior: `0.4.1` (2026-08-30), `0.4.0`
 (2026-08-29), `0.3.2` (2026-08-13), `0.3.1`, `0.3.0`, `0.2.3`, `0.2.2`, `0.2.1`,
 `0.2.0`. **Full detail for every one of these is in
 `docs/_dev/handoff-archive.md`** — do not re-derive it here.
 
-✅ **`0.4.1` verified 11/11 by `development/verify_release.py 0.4.1`** — PyPI by
+✅ **`0.4.2` verified 11/11 by `development/verify_release.py 0.4.2`** — PyPI by
 real download, the fix inside the wheel, the `idlelib`-blocked import with its
 control, provenance, `NOTICE` placement, both release assets, and the chained
 `docs.yml` run. ⚠ **Read its exit code without a pipe.**
@@ -126,134 +126,15 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-08-30) — **`0.4.1` SHIPPED. `## [Unreleased]` IS EMPTY. NOTHING IN FLIGHT.**
+### ★ START HERE (2026-09-03) — **`0.4.2` SHIPPED. `## [Unreleased]` IS EMPTY. NOTHING IN FLIGHT.**
 
-**`0.4.1 — Signal writes and clearing` released to PyPI, tag `v0.4.1`, 2026-08-30.**
-Five entries, all on `0.4.x — Patch line`: #481, #482, #484, #490, #491. **The
-milestone stays OPEN** — a rolling line does not close when a patch ships. **Read
-the #482, #490 and #484 subsections below before touching the field-signal seam
-again; between them they settle a question that has been re-opened three times.**
+**`0.4.2 — Undecorated shell taskbar button` released to PyPI, tag `v0.4.2`, 2026-09-03.** One entry, on `0.4.x — Patch line`: **#507**, a user-reported defect against `0.4.1` — an `AppShell`/`Workbench` built with `undecorated=True` got no Windows taskbar button, because `_ShellBase.run()` mapped the window one step before its borderless styling settled and **Windows decides taskbar membership at the first map**. The fix is deleting one line. ✅ **Verified 11/11 by `development/verify_release.py 0.4.2`**, plus a by-hand check of `run()` inside the published wheel.
 
-#### ⭐ #482 — `value` FOLLOWS A PROGRAMMATIC SIGNAL WRITE, AND `<<Change>>` MOVED WITH IT
+⚠ **Two things #507 left behind, both in the archive entry, neither filed:** the `WS_EX_TOOLWINDOW` clear is **incidental** — `show()`'s `attributes('-alpha', 0.0)` does it and nothing asks for it — and **no test was written**, a deliberate call under release pressure. **`development/probe_507_undecorated_taskbar.py` stages both orderings by hand** and is the only executable guard; a probe built on `run()` stops discriminating the moment the fix lands.
 
-**The fix:** `TextEntryPart._value` was re-derived only in `commit()`, at
-FocusOut/Return — right for typing, wrong for a write the application made, where
-there is no editing session to commit and no blur coming. It now re-derives when a
-text change arrives while the widget does **not** hold keyboard focus. **Population
-is FOUR widgets** (`TextField`, `PasswordField`, `PathField`, `SpinnerField`), not
-the six the issue named.
+⚠ **`verify_release.py`'s wheel check WAS HOLLOW FOR THREE RELEASES** — hardcoded to #467, reporting `PASS` while proving nothing about the release being verified. Fixed 2026-09-03: `WHEEL_FIX_MARKERS` is keyed by version, and a version with no row reports `SKIP`. **Add a row when you cut a release** (`RELEASE.md` step 7).
 
-⚠ **The path runs INSIDE the bound variable's own write trace, where Tcl suppresses
-every other trace on that variable.** So it calls `_reparse()` — the extracted parse
-half — and NOT `commit()`: a display-normalizing `textsignal.set()` there moves the
-signal while the entry never repaints, and it never heals. **Do not "simplify"
-`_reparse()` back into `commit()`.** That was round 1's blocker.
-
-⚠⚠ **`<<Change>>` CHANGED, IN BOTH DIRECTIONS, AND THE MAINTAINER DECIDED TO SHIP IT
-(2026-08-29). DO NOT RE-LITIGATE.** `_prev_changed_value` is snapshotted from
-`_value` on FocusIn and compared on blur, so a `_value` that now follows the write
-leaves nothing for the blur to find. Measured on all four widgets against `main`,
-with controls:
-
-| the user does, after a programmatic signal write | before | now |
-|---|---|---|
-| focuses and leaves, no edit | `<<Change>>` `('hello' → 'world')` | **nothing** |
-| types the pre-write text back, leaves | nothing | **`<<Change>>` `('world' → 'hello')`** |
-
-**One rule produces both rows: `<<Change>>` means the committed value differs from
-what it was at focus-in.** The event that vanished was the application's own write
-surfacing a cycle late, attributed to a user focus, and arriving only if the user
-happened to touch the field. **Blast radius is the signal-write path ONLY** —
-`field.value = x` and `Form.set()`, which writes through it, already set `_value`
-and are untouched, as is every user edit. Pinned by
-`test_the_deferred_change_on_a_later_focus_cycle_moves_with_value` and
-`test_typing_the_pre_write_text_back_is_now_a_change`.
-
-⚠ **The standing 2026-08-26 do-not-fix is UNCHANGED for the moment of the write** —
-a programmatic set still emits no `<<Change>>` at all. The clean way to observe one
-is to subscribe to the signal.
-
-**Residual, stated and accepted:** a programmatic write while the field HAS focus
-still lags. Indistinguishable from typing at this seam, identical on `main`, heals
-on the next blur.
-
-#### ⭐ #490 — `TextArea`/`CodeEditor` NOW HONOR `Signal.clear()`
-
-`_on_signal_change` opened with `if new_value is not None`, and **the empty for a
-signal no widget realizes as its own variable IS `None`** — so these two dropped
-exactly the value a clear produces, while the entry-backed four never reached it
-because their empty is a `str`. The tell that it was a defect and not a refusal:
-binding the same signal to a `TextArea` **and** a `TextField` made the clear work,
-because the second widget decided which empty the signal produced.
-
-⚠ **Two things the one-line fix left behind, both measured, neither filed:** the new
-`str(new_value or "")` blanks the widget for **any** falsy value, not just the empty
-one (unreachable today — the type gate makes `set(0)` raise and `Signal(123)` refuse
-to bind — so it is latent, not a bug); and **`_bind_signal` still carries the same
-`if v is not None` guard** for the INITIAL apply, so the setter and the constructor
-now disagree about what `None` means. Harmless today (an empty signal bound to a
-widget with `value=` seeds from the widget, identically before and after).
-
-⚠ **After a clear, the signal ends up `''` rather than `None`** — the widget writes
-its now-empty text back — **but only when the document actually changed**; clear a
-second time and it stays `None`. Both are falsy, which is the check #390's CHANGELOG
-tells callers to use. **Deliberately left out of the CHANGELOG entry as noise for a
-"was I affected?" reader.**
-
-#### ⭐ #491 — `TextArea.insert()`/`append()` WROTE ALONGSIDE THE PLACEHOLDER. **SHIPPED in `0.4.1` (PR #505).**
-
-Both reached `_internal._core.insert(...)` directly, so `_showing_placeholder` stayed
-`True`: text landed on top of the placeholder, `value` kept returning `''`, and
-`<<Input>>`/`<<Changed>>` stayed gated **for the field's whole life**, not one cycle.
-
-⚠⚠ **`_hide_placeholder()` DELETES THE WHOLE DOCUMENT** — `_core.text.delete("1.0",
-END)`. It is written for the one state where a placeholder IS showing, and **every
-pre-existing caller guards it** (`_on_focus_in_placeholder`, the `value` setter).
-Calling it unguarded turns `append()` into *replace everything*: measured,
-`append("line2")` onto `"line1"` gave `'line2'` on all three non-placeholder arms.
-**The fix is `if self._internal._showing_placeholder:`, not the call.**
-
-⚠ **`CodeEditor` is genuinely unaffected** — a separate `PublicWidgetBase` subclass
-with its own `insert`/`append`, and neither it nor its composite mentions
-`placeholder`. Verified, not assumed.
-
-**Pinned by `tests/widgets/public/test_textarea_insert_placeholder.py`, and no single
-wrong implementation passes it:** against `main` the first four fail, against the
-unguarded fix the last three do.
-
-#### ⭐ #484 — A WIDGET-MADE SIGNAL CAN BE CLEARED. **SHIPPED in `0.4.1` (PR #506).**
-
-`create_signal()` built every signal the framework makes for a widget with
-`allow_empty=False`, so `.signal.clear()` raised and named a `Signal()` call the
-caller never wrote. It now declares empty where the type has an empty member —
-`isinstance(default_value, (str, set))`, mirroring `Signal._empty_value()`'s own
-rule. **That is the whole fix**, and it reaches the four entry-backed text fields.
-
-⚠⚠ **DO NOT "simplify" it to an unconditional `allow_empty=True`.** #390's floor
-refuses to bind an empty-capable signal to a `Slider` or `Checkbox`, so a blanket
-default makes **every slider and checkbox fail on construction**. Pinned by
-`test_both_refusing_widgets_still_construct_and_expose_a_readable_signal`.
-
-⚠ **THE PLAN'S MECHANISM SECTION WAS WRONG AND THE ARCHIVED COPY STILL SAYS SO:**
-it claims both lazy paths funnel through `create_signal()`, so gating it "reaches
-all six widgets." It reaches **five**. `Slider` is a canvas `tk.Frame` composite,
-not a `SignalMixin`/ttk widget — it builds its own `Signal` eagerly at
-`slider/slider.py:127,134`, and `RangeSlider` at `rangeslider.py:129,135,141,147`.
-Change 1 hid this because a bare `Signal(0.0)` and the gated one are identical for
-a float.
-
-⚠ **An ownership flag was built, measured, and DELIBERATELY DROPPED.** A private
-`Signal._widget_owned` set in `create_signal()`, branched on in `set()`'s `None`
-guard, gave `Slider`/`Checkbox` their own sentence — but it taught `Signal` a
-notion of provenance it otherwise has no use for, and it needed six slider call
-sites to reach. **The shipped message is ONE sentence for both owners**, carrying
-both ways out. Pinned by `test_one_sentence_serves_both_owners`, which fails if a
-branch is reintroduced. **Do not re-propose the flag.**
-
-⚠ **`field.value` reads `None` after a clear while the signal reads `''` — this is
-PRE-EXISTING, not #484's doing.** Measured against `main`: the shipped
-`TextField.clear()` already produced exactly that state. #484's correcting comment
-calls it "already filed" but names no issue, and none was found.
+**`0.4.1 — Signal writes and clearing` released 2026-08-30** — five entries (#481, #482, #484, #490, #491), all on the patch line. **Its detail is in `docs/_dev/handoff-archive.md`, archived 2026-09-03.** ⚠ **Read the #482, #490 and #484 entries there before touching the field-signal seam again** — between them they settle a question that has been re-opened three times.
 
 **`0.4.0 — Signal binding on fields` released to PyPI, tag `v0.4.0`, 2026-08-29.**
 13 issues: #390, #444, #449, #456, #458, #459, #460, #461, #465, #467, #472, #476,
@@ -326,14 +207,14 @@ keyword and the number apart. Reopened 2026-08-29.
 
 | | |
 |---|---|
-| `main` | **at the `v0.4.1` tag** — the `Release 0.4.1` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **NONE, local or remote, beyond `main`** — #484's merged as PR #506 and #491's as PR #505. Verify with `git branch -a` before trusting this |
+| `main` | **at the `v0.4.2` tag** — the `Release 0.4.2` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
+| branches | **NONE on the REMOTE beyond `main`.** ⚠ **FOUR stale LOCAL branches** — `fix/appshell-undecorated-taskbar-507` (PR #508), `fix/signal-none-seed-481`, `fix/textarea-insert-placeholder-491`, `fix/widget-owned-signal-clear-484`. **All four are ancestors of `origin/main`, so all merged and safe to delete.** Verified 2026-09-03 |
 | root of `main` | **no `PLAN.md`, no `REVIEW.md`, and the sequence that produced them is RETIRED** (maintainer, 2026-08-30). A plan I write is for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. **`REVIEW-PROTOCOL.md` was DELETED and "Reviewing changes" rewritten to match, 2026-09-02** — the contradiction is gone. Do not ask where `PLAN.md` is, and do not read its absence as the rule slipping |
-| released | **`0.4.1`** on PyPI, tag `v0.4.1`. **`## [Unreleased]` is EMPTY** — the next fix opens it |
-| next release | **nothing scheduled and nothing queued.** `0.4.x — Patch line` is the largest open milestone at 6, and stays open |
+| released | **`0.4.2`** on PyPI, tag `v0.4.2`. **`## [Unreleased]` is EMPTY** — the next fix opens it |
+| next release | **nothing scheduled and nothing queued.** `0.4.x — Patch line` is the largest open milestone at 6, and stays open. **Follow `RELEASE.md`** |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **Windows `1756 / 22`, 33 legs, exit 0**, measured 2026-08-30 at `02593bd2`, the commit `v0.4.1` was cut from, `py -3.12`, both deps present. ⚠ **macOS is `1699 / 33` at the #467 merge and is now SEVEN merges stale.** The two are NOT comparable |
-| open milestones | **10** — `0.4.0` closed on release; `0.4.x` did NOT. Verified against `gh` 2026-08-30 |
+| suite, `main` | **Windows `1756 / 22`, 33 legs, exit 0**, measured 2026-09-02 at `640a9efc` (#507's fix commit), `py -3.12`, both deps present. **Unmoved from `0.4.1` — #507 added no test and its change is on no test path.** ⚠ **macOS is `1699 / 33` at the #467 merge and is now NINE merges stale.** The two are NOT comparable |
+| open milestones | **10** — `0.4.0` closed on release; `0.4.x` did NOT and must not. Verified against `gh` 2026-09-03 |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
 **The job:** CI covers ubuntu and windows and **not macOS**, because the leg ran **90 minutes for a 90-second suite** and was removed rather than left hanging. aqua is a platform this project publishes for and is now the only one with zero automated coverage, so the value of #380 is capped until this closes.
@@ -385,7 +266,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #488. Verified against `gh` 2026-08-30. Cut 2026-08-27; **it did NOT close when `0.4.1` shipped, and must not** — renaming a turned-over line would relabel shipped work. ⚠ **Its five closed issues — #481, #482, #484, #490, #491 — ARE `0.4.1`.** ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 6 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #488. Verified against `gh` 2026-08-30. Cut 2026-08-27; **it did NOT close when `0.4.1` shipped, and must not** — renaming a turned-over line would relabel shipped work. ⚠ **Its closed issues are the shipped patches: #481, #482, #484, #490, #491 ARE `0.4.1`, and #507 IS `0.4.2`.** ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 6 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -1383,6 +1264,7 @@ escape-hatch property docstrings, `signals/integration.py` (the Tk bridge).
 
 | Release | Contents |
 |---|---|
+| **0.4.2** (2026-09-03) | *Undecorated shell taskbar button*. **One entry** — #507 (an `AppShell`/`Workbench` built with `undecorated=True` got no Windows taskbar button; `_ShellBase.run()` mapped the window before its borderless styling settled, and Windows decides taskbar membership at the first map). **A one-line deletion.** ⚠ **No test — deliberate; `development/probe_507_undecorated_taskbar.py` is the only guard.** Verified 11/11 |
 | **0.4.1** (2026-08-30) | *Signal writes and clearing*. **Five entries, all patch-line** — #481 (`bs.Signal(None)` now raises at construction, `map()` included — the one `### Changed` entry) · #482 (a field's `value` follows a programmatic signal write) · #484 (the signal a text field makes for you can be cleared) · #490 (`TextArea`/`CodeEditor` honor `Signal.clear()`) · #491 (`insert()`/`append()` drop the placeholder first). ⚠ **No `### Added` section — that is the test that let it be a patch.** Verified 11/11 |
 | **0.4.0** (2026-08-29) | *Signal binding on fields*. **13 issues** — #390 (`Signal(…, allow_empty=True)`) · #444 (a modal `Window` never handed the grab back) · #456 · #458 / #461 (a `Select`/`SelectButton` signal bound the LABEL, not the value) · #459 · #460 · #465 (a rule on a `Select` had nowhere to report) · #467 (a `custom` rule's raise escaped into the event loop) · #472 (an unknown keyword now RAISES) · #476 · #486 (`TextArea`/`CodeEditor` bound `textsignal=` one way only). ⚠ **Two entries break running code: #472 and #461** — but only #461 breaks code that WORKED; #472 only turns a silent no-op into a message |
 | **0.3.2** (2026-08-13) | *Read-only select fields*. **#453** — `read_only=True` on a `Select` was accepted and ignored: the arrow dimmed so the field *looked* locked while a click in its text area still opened the option list, and `select.read_only` answered `True` for every `Select` ever built. The ttk `readonly` state was doing double duty and is **derived, never storage** now; `TimeField` fixed with it |
