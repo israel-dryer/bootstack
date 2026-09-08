@@ -3797,3 +3797,26 @@ One entry, on `0.4.x — Patch line`: **#507**, reported by a user against `0.4.
 
 ⚠ **`verify_release.py`'s wheel check had been hardcoded to #467 since `0.4.0` and reported `PASS` for three releases while proving nothing about the release being verified.** Fixed 2026-09-03: `WHEEL_FIX_MARKERS` is keyed by version and a version with no row now reports `SKIP`. **Add a row when you cut a release** — `RELEASE.md` step 7.
 
+## `0.4.3 — Change and input events` — RELEASED 2026-09-08
+
+One issue, on `0.4.x — Patch line`: **#509**, *Inconsistent widget ChangeEvent behavior*, merged as PR #510 off `fix/change-event-consistency-509`. Four `### Fixed` entries, no `### Added`, which is what kept it a patch. ✅ **Verified 11/11 by `development/verify_release.py 0.4.3`**, exit read without a pipe. Suite at the merge `f6d59d19`: **Windows `1786 / 22`, 33 legs, exit 0** — `+30` over `1756 / 22`, matching the three new test files (21 defs, parametrized).
+
+| commit | what |
+|---|---|
+| `eb87533b` | the `ChangeEvent` contract on `TextArea`, `SelectButton`, `CodeEditor` — snapshot on `<FocusIn>`, emit only on a difference, fill `prev_value`. `SelectButton` also filled `text` with the option's label, which it had left empty |
+| `b4f78fbc` | a `PathField` dialog pick reached no listener: it emitted on the outer frame while `on_change` routes to the inner entry. Re-enters `self._entry._check_if_changed()` instead of hand-building the event |
+| `b6d457e4` | `Slider`/`RangeSlider` emitted on every var write, not on every value taken — one measured drag produced 574 events for 11 distinct values |
+| `c67fd8cd` | `TextArea`/`CodeEditor` announced `on_input` at construction |
+
+**`development/probe_509_change_events.py` is the surviving instrument** — the before/after measurement for all four commits. The plan and the by-hand demo were deleted once the work landed (maintainer, 2026-09-08).
+
+**Three measurements that outlive the branch:**
+
+- **A slider in a container that centers its children has a ONE-PIXEL track**, so every sweep assertion passes vacuously. 1px vs 420px measured; `_wide()` in `test_slider_change_is_a_change.py` wraps sliders in `Column(width=…, horizontal_items="stretch")`. A geometry precondition is what caught it.
+- **`textsignal=` is a SEPARATE seeding route from `value=`.** A guard seeded off the `value` parameter covers half the cases — got wrong twice on this branch. `TextArea` seeds after `bind_signal`; `CodeEditor` reads `self._internal.value` after construction and is right for free.
+- **`SelectButton` options whose text equals their value hide both of its payload bugs.** The probe used `["Small","Medium","Large"]` and saw nothing; the tests use decoupled pairs plus a falsy value `0`.
+
+⚠ **The `CodeEditor` half of the second entry BREAKS WORKING CODE and shipped under `### Fixed` anyway** — `on_change` fired per keystroke and now fires on blur, so a handler reacting as the user types must move to `on_input`. It carries a "Check this when you upgrade" note, which is this project's precedent for that shape (#486, #467, #458 all shipped the same way); `### Changed` has been reserved for entries that *raise*. **Recorded so the next release does not re-litigate the heading.**
+
+⚠ **The suite was NOT run on the branch — CI covered it, and the local `1786 / 22` above was measured on `main` AFTER the merge**, at the commit the release was cut from. That is the right place to measure it, but it means no local before/after bracket exists for the branch itself.
+
