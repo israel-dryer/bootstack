@@ -126,7 +126,30 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-09-03) — **`0.4.2` SHIPPED. `## [Unreleased]` IS EMPTY. NOTHING IN FLIGHT.**
+### ★ START HERE (2026-09-08) — **#509 IS ON A BRANCH, FOUR COMMITS, READY TO MERGE. CUT `0.4.3` NEXT.**
+
+**`fix/change-event-consistency-509`, four commits, off `main`.** `## [Unreleased]` carries four `### Fixed` entries and no `### Added`, which is what keeps it a patch.
+
+| commit | what |
+|---|---|
+| `eb87533b` | the `ChangeEvent` contract on `TextArea`, `SelectButton`, `CodeEditor` — snapshot on `<FocusIn>`, emit only on a difference, fill `prev_value` |
+| `b4f78fbc` | a `PathField` dialog pick reached no listener: it emitted on the outer frame while `on_change` routes to the inner entry. Re-enters `self._entry._check_if_changed()` instead of hand-building the event |
+| `b6d457e4` | `Slider`/`RangeSlider` emitted per pixel crossed, not per value taken |
+| `c67fd8cd` | `TextArea`/`CodeEditor` announced `on_input` at construction |
+
+**Before cutting:** put **#509 on `0.4.x — Patch line`** (it is unmilestoned), and add the `0.4.3` row to `WHEEL_FIX_MARKERS` (`development/verify_release.py:78`, `RELEASE.md` step 7) — `("bootstack/widgets/_impl/composites/pathentry.py", "_check_if_changed", True, "#509")`.
+
+**`development/probe_509_change_events.py` is the surviving instrument** — the before/after measurement for all four commits. The plan and the by-hand demo were deleted once the work landed (maintainer, 2026-09-08).
+
+⚠ **The full suite was NOT run locally on this branch — CI covers it (maintainer, 2026-09-08).** The Windows `1756 / 22` below predates the branch and its 31 new tests.
+
+**Three measurements that outlive the branch:**
+
+- **A slider in a container that centers its children has a ONE-PIXEL track**, so every sweep assertion passes vacuously. 1px vs 420px measured; `_wide()` in `test_slider_change_is_a_change.py` and the demo both wrap sliders in `Column(width=…, horizontal_items="stretch")`. A geometry precondition is what caught it.
+- **`textsignal=` is a SEPARATE seeding route from `value=`.** A guard seeded off the `value` parameter covers half the cases — got wrong twice on this branch. `TextArea` seeds after `bind_signal`; `CodeEditor` reads `self._internal.value` after construction and is right for free.
+- **`SelectButton` options whose text equals their value hide both of its payload bugs.** The probe used `["Small","Medium","Large"]` and saw nothing; the tests use decoupled pairs plus a falsy value `0`.
+
+### `0.4.2` (2026-09-03) — shipped
 
 **`0.4.2 — Undecorated shell taskbar button` released to PyPI, tag `v0.4.2`, 2026-09-03.** One entry, on `0.4.x — Patch line`: **#507**, a user-reported defect against `0.4.1` — an `AppShell`/`Workbench` built with `undecorated=True` got no Windows taskbar button, because `_ShellBase.run()` mapped the window one step before its borderless styling settled and **Windows decides taskbar membership at the first map**. The fix is deleting one line. ✅ **Verified 11/11 by `development/verify_release.py 0.4.2`**, plus a by-hand check of `run()` inside the published wheel.
 
@@ -208,12 +231,12 @@ keyword and the number apart. Reopened 2026-08-29.
 | | |
 |---|---|
 | `main` | **at the `v0.4.2` tag** — the `Release 0.4.2` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **NONE on the REMOTE beyond `main`.** ⚠ **FOUR stale LOCAL branches** — `fix/appshell-undecorated-taskbar-507` (PR #508), `fix/signal-none-seed-481`, `fix/textarea-insert-placeholder-491`, `fix/widget-owned-signal-clear-484`. **All four are ancestors of `origin/main`, so all merged and safe to delete.** Verified 2026-09-03 |
+| branches | **`fix/change-event-consistency-509` is LIVE and unmerged** (4 commits, see ★). Nothing else on the REMOTE beyond `main`. ⚠ **FOUR stale LOCAL branches** — `fix/appshell-undecorated-taskbar-507` (PR #508), `fix/signal-none-seed-481`, `fix/textarea-insert-placeholder-491`, `fix/widget-owned-signal-clear-484`. **All four are ancestors of `origin/main`, so all merged and safe to delete.** Verified 2026-09-03 |
 | root of `main` | **no `PLAN.md`, no `REVIEW.md`, and the sequence that produced them is RETIRED** (maintainer, 2026-08-30). A plan I write is for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. **`REVIEW-PROTOCOL.md` was DELETED and "Reviewing changes" rewritten to match, 2026-09-02** — the contradiction is gone. Do not ask where `PLAN.md` is, and do not read its absence as the rule slipping |
-| released | **`0.4.2`** on PyPI, tag `v0.4.2`. **`## [Unreleased]` is EMPTY** — the next fix opens it |
-| next release | **nothing scheduled and nothing queued.** `0.4.x — Patch line` is the largest open milestone at 6, and stays open. **Follow `RELEASE.md`** |
+| released | **`0.4.2`** on PyPI, tag `v0.4.2`. **`## [Unreleased]` carries #509's four `### Fixed` entries** on the branch |
+| next release | **`0.4.3`, next session** — merge #509's branch, then follow `RELEASE.md`. `0.4.x — Patch line` stays open |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
-| suite, `main` | **Windows `1756 / 22`, 33 legs, exit 0**, measured 2026-09-02 at `640a9efc` (#507's fix commit), `py -3.12`, both deps present. **Unmoved from `0.4.1` — #507 added no test and its change is on no test path.** ⚠ **macOS is `1699 / 33` at the #467 merge and is now NINE merges stale.** The two are NOT comparable |
+| suite, `main` | **Windows `1756 / 22`, 33 legs, exit 0**, measured 2026-09-02 at `640a9efc` (#507's fix commit), `py -3.12`, both deps present. ⚠ **PREDATES #509's branch, which adds 31 tests across three files and was verified by CI rather than locally.** ⚠ **macOS is `1699 / 33` at the #467 merge and is now NINE merges stale.** The two are NOT comparable |
 | open milestones | **10** — `0.4.0` closed on release; `0.4.x` did NOT and must not. Verified against `gh` 2026-09-03 |
 #### ⏭ BRIEF FOR THE macOS BOX — #452, the runner hang
 
@@ -308,7 +331,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. **Still exactly these five, re-verified against `gh` 2026-08-30 after `0.4.1`.** Verify rather than counting by hand:
+**SIX UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477, #509.** ⚠ **#509 is unmilestoned only because nobody has put it on `0.4.x` yet — it is the whole content of `0.4.3`, so do that before cutting.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. **Still exactly these five, re-verified against `gh` 2026-08-30 after `0.4.1`.** Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
