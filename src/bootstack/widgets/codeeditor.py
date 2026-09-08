@@ -141,6 +141,7 @@ class CodeEditor(PublicWidgetBase):
 
         self._internal = _InternalCodeEditor(tk_master, **internal_kwargs)
         self._prev_value = self._internal.value
+        self._prev_input_text = self._internal.value
 
         # Generate <<CursorMove>> so on_cursor_move() subscribers always work.
         t = self._internal.core.text
@@ -149,6 +150,9 @@ class CodeEditor(PublicWidgetBase):
 
         def _emit_typed_change(_e: Any = None) -> None:
             text = self._internal.value
+            if text == self._prev_input_text:
+                return
+            self._prev_input_text = text
             self._internal.event_generate("<<BsInput>>", data=InputEvent(text=text))
         t.bind("<<Change>>", _emit_typed_change, add="+")
 

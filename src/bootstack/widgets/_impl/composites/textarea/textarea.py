@@ -113,7 +113,9 @@ class TextArea(GridFrame):
         self._message_showing = False
         self._valid_signal: Signal = Signal(True)
         self._error_signal: Signal = Signal("")
-        self._prev_changed_value = value  # prev value seed before blur
+
+        self._prev_changed_value = value
+        self._prev_input_text = value
 
         # ── label (row 0) ─────────────────────────────────────────────────
         if label:
@@ -193,6 +195,7 @@ class TextArea(GridFrame):
         self._core._signal_text_sink = lambda text: setattr(self, "value", text)
         if textsignal is not None:
             self._core.bind_signal(textsignal)
+        self._prev_input_text = self.value
 
         # ── placeholder ───────────────────────────────────────────────────
         self._default_fg = self._core.text.cget("foreground")
@@ -350,9 +353,13 @@ class TextArea(GridFrame):
 
     def _on_core_change(self, _event: tk.Event) -> None:
         if not self._showing_placeholder:
+            text = self.value
+            if text == self._prev_input_text:
+                return
+            self._prev_input_text = text
             self.event_generate(
                 "<<Input>>",
-                data=InputEvent(text=self.value),
+                data=InputEvent(text=text),
                 when="tail",
             )
 

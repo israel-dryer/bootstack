@@ -29,6 +29,8 @@ fails for reasons unrelated to the contract. `insert` rides the same
 """
 from __future__ import annotations
 
+import pytest
+
 import bootstack as bs
 
 
@@ -218,18 +220,12 @@ def test_codeeditor_edits_are_input_and_only_the_blur_is_a_change(app):
     test passes just as well for a build that stopped emitting anything at all,
     which is precisely the shape the fix could have taken by accident.
     """
-    # Subscribed AFTER the construction pump on purpose. Seeding `value=` raises
-    # the core's `<<Change>>`, which still re-emits `<<BsInput>>` — pre-existing,
-    # unchanged by #509, and out of scope here (the input leg was already
-    # correct per edit). The change leg's construction-time fire is the half
-    # that was a defect, and `test_codeeditor_seeded_value_announces_no_change`
-    # subscribes immediately to pin it.
     ce = bs.CodeEditor(language="python", value="x = 1")
-    _pump(app)
     changes: list = []
     inputs: list = []
     ce.on_change(changes.append)
     ce.on_input(inputs.append)
+    _pump(app)
     before = ce.value
 
     _focus_in(app, ce)
@@ -262,3 +258,73 @@ def test_codeeditor_focus_round_trip_with_no_edit_is_silent(app):
         _blur(app, ce)
 
     assert seen == [], "a no-edit focus round trip announced %d change(s)" % len(seen)
+
+# ---------------------------------------------------------------------------
+# on_input at construction — both widgets, both ways of seeding
+# ---------------------------------------------------------------------------
+#
+# Seeding text is an edit as far as the core is concerned, and it raises
+# `<<Change>>` with `when="tail"` (`textarea/change.py:41-43`). The event is
+# therefore still queued when the constructor returns, so a handler registered
+# on the next line receives it — which is why binding after construction does
+# not help and the guard has to be a value comparison. Never a suspend flag:
+# with `when="tail"` a flag set around the write is already cleared by the time
+# the handler runs (`textarea/core.py:322-325`).
+
+SEEDED = "x = 1"
+
+BOTH_SEEDS = [
+    ("TextArea/value",         lambda: bs.TextArea(value=SEEDED)),
+    ("TextArea/textsignal",    lambda: bs.TextArea(textsignal=bs.Signal(SEEDED))),
+    ("CodeEditor/value",       lambda: bs.CodeEditor(language="python", value=SEEDED)),
+    ("CodeEditor/textsignal",  lambda: bs.CodeEditor(language="python",
+                                                     textsignal=bs.Signal(SEEDED))),
+]
+SEED_IDS = [c[0] for c in BOTH_SEEDS]
+
+
+@pytest.mark.parametrize("name,factory", BOTH_SEEDS, ids=SEED_IDS)
+def test_seeding_text_announces_no_input(app, name, factory):
+    """Construction is not an edit, whichever way the text arrives.
+
+    `textsignal=` is its own case, not a variation: a signal-seeded widget gets
+    its content from `bind_signal`, not from `value=`, so a guard seeded off the
+    `value` parameter passes the first arm and fails this one.
+    """
+    widget = factory()
+    seen: list = []
+    widget.on_input(seen.append)
+    _pump(app)
+
+    assert seen == [], "construction announced %d input event(s)" % len(seen)
+    assert widget.value.startswith(SEEDED), "the seed never reached the widget"
+
+
+@pytest.mark.parametrize("name,factory", BOTH_SEEDS, ids=SEED_IDS)
+def test_a_real_edit_still_announces_input(app, name, factory):
+    """THE CONTROL. A guard that suppressed every input satisfies the test above."""
+    widget = factory()
+    seen: list = []
+    widget.on_input(seen.append)
+    _pump(app)
+
+    for ch in "abc":
+        _core_text(widget).insert("end", ch)
+        _pump(app)
+
+    assert len(seen) == 3, "expected one input per edit, got %d" % len(seen)
+    assert seen[-1].text == widget.value
+
+
+@pytest.mark.parametrize("name,factory", BOTH_SEEDS, ids=SEED_IDS)
+def test_rewriting_the_same_text_announces_no_input(app, name, factory):
+    """The guard is a value comparison, so a write that changes nothing is silent."""
+    widget = factory()
+    seen: list = []
+    widget.on_input(seen.append)
+    _pump(app)
+
+    widget.value = widget.value
+    _pump(app)
+
+    assert seen == [], "rewriting the same text announced %d input event(s)" % len(seen)
