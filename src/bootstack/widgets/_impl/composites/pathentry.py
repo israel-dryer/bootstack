@@ -5,7 +5,6 @@ from typing import Any, Literal
 
 from typing_extensions import Unpack
 
-from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -62,7 +61,6 @@ class PathEntry(Field):
         self._default_extension = default_extension
         self._default_filename = default_filename
         self._dialog_result = None
-        self._prev_value: str | None = value
 
         super().__init__(master=master, label=label, message=message, value=value, **kwargs)
 
@@ -154,15 +152,5 @@ class PathEntry(Field):
             display_text = result
 
         if result:
-            prev_value = self._prev_value
-            self._prev_value = display_text
             self.value = display_text
-            self.event_generate(
-                '<<Change>>',
-                data=ChangeEvent(
-                    value=display_text,
-                    prev_value=prev_value,
-                    text=display_text,
-                ),
-                when="tail"
-            )
+            self._entry._check_if_changed()
