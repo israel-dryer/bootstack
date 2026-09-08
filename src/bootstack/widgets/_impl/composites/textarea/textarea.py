@@ -114,6 +114,9 @@ class TextArea(GridFrame):
         self._valid_signal: Signal = Signal(True)
         self._error_signal: Signal = Signal("")
 
+        self._prev_changed_value = value
+        self._prev_input_text = value
+
         # ── label (row 0) ─────────────────────────────────────────────────
         if label:
             _lbl_text = f"{label} *" if required else label
@@ -192,6 +195,7 @@ class TextArea(GridFrame):
         self._core._signal_text_sink = lambda text: setattr(self, "value", text)
         if textsignal is not None:
             self._core.bind_signal(textsignal)
+        self._prev_input_text = self.value
 
         # ── placeholder ───────────────────────────────────────────────────
         self._default_fg = self._core.text.cget("foreground")
@@ -223,6 +227,7 @@ class TextArea(GridFrame):
         # Fire <<Input>> on every edit, <<Changed>> + validation on blur.
         self._core.text.bind("<<Change>>", self._on_core_change, add="+")
         self._core.text.bind("<FocusOut>", self._on_focus_out, add="+")
+        self._core.text.bind("<FocusIn>", self._on_focus_in, add="+")
 
         # ── constructor callbacks ─────────────────────────────────────────
         if on_input is not None:
@@ -348,23 +353,34 @@ class TextArea(GridFrame):
 
     def _on_core_change(self, _event: tk.Event) -> None:
         if not self._showing_placeholder:
+            text = self.value
+            if text == self._prev_input_text:
+                return
+            self._prev_input_text = text
             self.event_generate(
                 "<<Input>>",
-                data=InputEvent(text=self.value),
+                data=InputEvent(text=text),
                 when="tail",
             )
 
     def _on_focus_out(self, _event: tk.Event) -> None:
         if self._placeholder_text and not self._core.value:
             self._show_placeholder()
-        if not self._showing_placeholder:
+        if not self._showing_placeholder and self.value != self._prev_changed_value:
             self.event_generate(
                 "<<Changed>>",
-                data=ChangeEvent(value=self.value, text=self.value),
+                data=ChangeEvent(
+                    value=self.value,
+                    text=self.value,
+                    prev_value=self._prev_changed_value),
                 when="tail",
             )
+            self._prev_changed_value = self.value
         if self._rules:
             self._run_validation(trigger="blur")
+
+    def _on_focus_in(self, _event: tk.Event) -> None:
+        self._prev_changed_value = self.value
 
     # ── public value API ──────────────────────────────────────────────────
 

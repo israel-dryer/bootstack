@@ -78,6 +78,7 @@ def http_status(url):
 WHEEL_FIX_MARKERS = {
     "0.4.0": ("bootstack/validation/validation_rules.py", "_uncheckable_message", True, "#467"),
     "0.4.2": ("bootstack/widgets/appshell.py", "deiconify", False, "#507"),
+    "0.4.3": ("bootstack/widgets/_impl/composites/pathentry.py", "_check_if_changed", True, "#509"),
 }
 
 

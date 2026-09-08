@@ -140,20 +140,33 @@ class CodeEditor(PublicWidgetBase):
             internal_kwargs["extensions"] = extensions
 
         self._internal = _InternalCodeEditor(tk_master, **internal_kwargs)
+        self._prev_value = self._internal.value
+        self._prev_input_text = self._internal.value
 
         # Generate <<CursorMove>> so on_cursor_move() subscribers always work.
         t = self._internal.core.text
         t.bind("<KeyRelease>",      lambda e: t.event_generate("<<CursorMove>>"), add="+")
         t.bind("<ButtonRelease-1>", lambda e: t.event_generate("<<CursorMove>>"), add="+")
 
-        # Re-emit the core's raw <<Change>> (which carries a low-level
-        # {"op", "index"} dict) as typed payloads on the public widget, so
-        # on_change()/on_input() deliver the editor text — like TextArea.
         def _emit_typed_change(_e: Any = None) -> None:
             text = self._internal.value
-            self._internal.event_generate("<<BsChange>>", data=ChangeEvent(value=text, text=text))
+            if text == self._prev_input_text:
+                return
+            self._prev_input_text = text
             self._internal.event_generate("<<BsInput>>", data=InputEvent(text=text))
         t.bind("<<Change>>", _emit_typed_change, add="+")
+
+        def _emit_typed_blur(_e: Any = None) -> None:
+            text = self._internal.value
+            if text != self._prev_value:
+                self._internal.event_generate("<<BsChange>>",
+                                              data=ChangeEvent(value=text, text=text, prev_value=self._prev_value))
+            self._prev_value = text
+        t.bind("<FocusOut>", _emit_typed_blur, add="+")
+
+        def _on_focus_in(_e: Any = None) -> None:
+            self._prev_value = self._internal.value
+        t.bind("<FocusIn>", _on_focus_in, add="+")
 
         self._attach_to_parent(layout_kw)
 

@@ -8,6 +8,15 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A path chosen from a `PathField`'s browse dialog now fires `on_change`.** Picking a file or folder set the value and announced nothing, while typing the same path announced it normally — the event was sent to the field's outer frame rather than to the entry your handler is bound to. It now fires once, carrying the picked path and the previous one. Cancelling the dialog, or re-picking the path the field already holds, still announces nothing. ([#509](https://github.com/israel-dryer/bootstack/issues/509))
+- **`TextArea`, `SelectButton` and `CodeEditor` now report a change the way the rest of the field family does.** `TextArea` announced one every time focus left it, with nothing typed; `CodeEditor` announced one while it was still being built and then one per keystroke; all three reported `prev_value` as `None`, and `SelectButton` reported `text` as empty rather than the option's label. A change is now announced only when the committed value differs from what it was at focus-in, and the payload carries both values. **Check this when you upgrade if you use `CodeEditor.on_change` to react as the user types:** it now fires once when they leave the editor. Use `on_input`, which fires per edit. `on_blur` still fires on every focus-out, changed or not. ([#509](https://github.com/israel-dryer/bootstack/issues/509))
+- **A `Slider` or `RangeSlider` no longer reports a move to the value it already had.** With `step=` set, dragging announced a change for every pixel the pointer crossed rather than every value the slider took — one measured drag produced 574 events for 11 distinct values. It now fires when the value crosses onto the next step. A slider with no `step=` is live by design and still announces every distinct value mid-drag, and `on_commit` is unchanged. ([#509](https://github.com/israel-dryer/bootstack/issues/509))
+- **`TextArea` and `CodeEditor` no longer fire `on_input` while being built.** Seeding either with `value=` or a bound `textsignal=` counted as an edit, so a handler registered after the constructor received one input event for text the user never typed. Both now announce an edit only when the text actually differs from what they last reported, so a write that changes nothing is silent too. ([#509](https://github.com/israel-dryer/bootstack/issues/509))
+
 ## [0.4.2] — Undecorated shell taskbar button
 
 ### Fixed

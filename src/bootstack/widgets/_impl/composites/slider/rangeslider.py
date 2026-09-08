@@ -716,27 +716,29 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self._sync()
         lo = self._lo_var.get()
         hi = self._hi_var.get()
-        self.event_generate("<<Change>>", data=RangeSliderEvent(
-            low_value=lo,
-            high_value=hi,
-            prev_low_value=self._prev_lovalue,
-            prev_high_value=self._prev_hivalue,
-        ))
-        self._prev_lovalue = lo
-        self._prev_hivalue = hi
+        if hi != self._prev_hivalue or lo != self._prev_lovalue:
+            self.event_generate("<<Change>>", data=RangeSliderEvent(
+                low_value=lo,
+                high_value=hi,
+                prev_low_value=self._prev_lovalue,
+                prev_high_value=self._prev_hivalue,
+            ))
+            self._prev_lovalue = lo
+            self._prev_hivalue = hi
 
     def _on_hi_write(self, *_: Any) -> None:
         self._sync()
         lo = self._lo_var.get()
         hi = self._hi_var.get()
-        self.event_generate("<<Change>>", data=RangeSliderEvent(
-            low_value=lo,
-            high_value=hi,
-            prev_low_value=self._prev_lovalue,
-            prev_high_value=self._prev_hivalue,
-        ))
-        self._prev_lovalue = lo
-        self._prev_hivalue = hi
+        if lo != self._prev_lovalue or hi != self._prev_hivalue:
+            self.event_generate("<<Change>>", data=RangeSliderEvent(
+                low_value=lo,
+                high_value=hi,
+                prev_low_value=self._prev_lovalue,
+                prev_high_value=self._prev_hivalue,
+            ))
+            self._prev_lovalue = lo
+            self._prev_hivalue = hi
 
     def _on_map(self) -> None:
         if getattr(self, '_theme_update_pending', False):

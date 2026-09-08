@@ -102,9 +102,11 @@ class OptionMenu(MenuButton):
         # Store the textvariable if provided, or create a new one. This variable
         # holds the raw VALUE-KEY text (untranslated): it drives the radio
         # highlight, the public value/selection, and <<Change>> in value-space.
+        _initial_text = self._resolve_initial_text(value)
+        self._prev_value = self._value_by_text.get(_initial_text, _initial_text) if _initial_text else None
         self._textvariable = kwargs.pop('textvariable', None)
         if self._textvariable is None:
-            self._textvariable = StringVar(value=self._resolve_initial_text(value))
+            self._textvariable = StringVar(value=_initial_text)
 
         # A separate variable backs the visible button face, holding the
         # (optionally translated) DISPLAY text — decoupled from the value key so
@@ -208,14 +210,17 @@ class OptionMenu(MenuButton):
 
         def _on_change(text: str) -> None:
             self._sync_display()
+            value = self._value_by_text.get(text, text) if text else None
             self.event_generate(
                 '<<Change>>',
-                data=ChangeEvent(value=self._value_by_text.get(text, text) if text else None),
+                data=ChangeEvent(
+                    value=value,
+                    prev_value=self._prev_value,
+                    text=self._display_text(text)
+                )
             )
+            self._prev_value = value
 
-        # Store it here, not at the call site (#476). A caller that discards the
-        # return leaves an untracked subscription the guard above can never
-        # cancel, and every one of them emits its own <<Change>>.
         self._bind_id = self.textsignal.subscribe(_on_change)
         return self._bind_id
 
