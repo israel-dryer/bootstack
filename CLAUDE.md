@@ -218,7 +218,7 @@ keyword and the number apart. Reopened 2026-08-29.
 | | |
 |---|---|
 | `main` | **at the `v0.4.3` tag** — the `Release 0.4.3` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **Nothing on the REMOTE beyond `main`, and nothing unmerged anywhere.** ⚠ **FIVE stale LOCAL branches** — `fix/change-event-consistency-509` (PR #510), `fix/appshell-undecorated-taskbar-507` (PR #508), `fix/signal-none-seed-481`, `fix/textarea-insert-placeholder-491`, `fix/widget-owned-signal-clear-484`. **All five verified ancestors of `origin/main` 2026-09-08, so all merged and safe to delete** |
+| branches | **`main` ONLY, local and remote.** The five stale `fix/*` locals were verified ancestors of `origin/main` and deleted 2026-09-08 (`d9911896`, `d6fdd089`, `1b6100c2`, `b7caae25`, `36002c0d` — recorded per the hygiene rule). Nothing is unmerged anywhere |
 | root of `main` | **no `PLAN.md`, no `REVIEW.md`, and the sequence that produced them is RETIRED** (maintainer, 2026-08-30). A plan I write is for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. **`REVIEW-PROTOCOL.md` was DELETED and "Reviewing changes" rewritten to match, 2026-09-02** — the contradiction is gone. Do not ask where `PLAN.md` is, and do not read its absence as the rule slipping |
 | released | **`0.4.3`** on PyPI, tag `v0.4.3`, verified 11/11. **`## [Unreleased]` does not exist right now** — the next fix commit recreates it |
 | next release | **None scheduled.** `0.4.x — Patch line` stays open and holds six issues; #511 is a fresh unmilestoned user report (see ★). Follow `RELEASE.md` when one is cut |
@@ -577,9 +577,9 @@ a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
 
 ### ⚠ Branch and worktree hygiene
 
-⚠ **Verified 2026-09-08: nothing on the REMOTE beyond `main`, and the FIVE local
-`fix/*` refs are all ancestors of `origin/main` — merged, safe to delete.** They
-are listed in STATE OF THE WORLD; do not read one as live work.
+⚠ **Verified 2026-09-08: `main` is the ONLY branch, local or remote.** The five
+stale `fix/*` locals were checked as ancestors of `origin/main` and deleted the
+same day; their head SHAs are in STATE OF THE WORLD. Do not re-add them.
 
 - **DO NOT TOUCH A BRANCH WHILE A REVIEW RUNS.** The review reads files on disk,
   not only `git diff`, so it reviews a moving target. If follow-up cannot wait, use
