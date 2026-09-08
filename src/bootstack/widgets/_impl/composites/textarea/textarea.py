@@ -113,6 +113,7 @@ class TextArea(GridFrame):
         self._message_showing = False
         self._valid_signal: Signal = Signal(True)
         self._error_signal: Signal = Signal("")
+        self._prev_changed_value = value  # prev value seed before blur
 
         # ── label (row 0) ─────────────────────────────────────────────────
         if label:
@@ -223,6 +224,7 @@ class TextArea(GridFrame):
         # Fire <<Input>> on every edit, <<Changed>> + validation on blur.
         self._core.text.bind("<<Change>>", self._on_core_change, add="+")
         self._core.text.bind("<FocusOut>", self._on_focus_out, add="+")
+        self._core.text.bind("<FocusIn>", self._on_focus_in, add="+")
 
         # ── constructor callbacks ─────────────────────────────────────────
         if on_input is not None:
@@ -357,14 +359,21 @@ class TextArea(GridFrame):
     def _on_focus_out(self, _event: tk.Event) -> None:
         if self._placeholder_text and not self._core.value:
             self._show_placeholder()
-        if not self._showing_placeholder:
+        if not self._showing_placeholder and self.value != self._prev_changed_value:
             self.event_generate(
                 "<<Changed>>",
-                data=ChangeEvent(value=self.value, text=self.value),
+                data=ChangeEvent(
+                    value=self.value,
+                    text=self.value,
+                    prev_value=self._prev_changed_value),
                 when="tail",
             )
+            self._prev_changed_value = self.value
         if self._rules:
             self._run_validation(trigger="blur")
+
+    def _on_focus_in(self, _event: tk.Event) -> None:
+        self._prev_changed_value = self.value
 
     # ── public value API ──────────────────────────────────────────────────
 
