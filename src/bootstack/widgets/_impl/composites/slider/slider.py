@@ -579,8 +579,9 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
     def _on_var_write(self, *_: Any) -> None:
         self._sync()
         val = self._var.get()
-        self.event_generate("<<Change>>", data=SliderEvent(value=val, prev_value=self._prev_value))
-        self._prev_value = val
+        if val != self._prev_value:
+            self.event_generate("<<Change>>", data=SliderEvent(value=val, prev_value=self._prev_value))
+            self._prev_value = val
 
     def _mouse_focus_set(self, _event: tk.Event) -> None:
         self._mouse_pressed = True
