@@ -68,8 +68,7 @@ def _outer(app, body):
     Same hazard and same remedy as `_drive` in `test_dialog_press_contract.py`;
     this helper was the one that had not adopted it.
 
-    Reproduced deterministically in `development/probe_446_fixed_delay_lands_mid_show.py`
-    by forcing the build to outlast the delay: **10/10 with the fixed delay,
+    Reproduced deterministically by forcing the build to outlast the delay: **10/10 with the fixed delay,
     0/10 with this barrier**, against 0/10 for the fixed delay in a quiet
     process — which is exactly why a green suite run did not show it.
     """

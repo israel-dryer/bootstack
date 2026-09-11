@@ -14,8 +14,6 @@ The model encodes two design invariants:
 - The rail (workspace switcher) renders only when there is more than one
   workspace, so a single-tier app is the degenerate one-workspace case with no
   branching in the consumer.
-
-See `development/appshell-navigation-spec.md` for the full design.
 """
 
 from __future__ import annotations

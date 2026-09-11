@@ -20,8 +20,7 @@ Rate over the shared-root leg, three arms interleaved, five rounds each:
     update()                   0 / 5
 
 WARNING: both pumps silence the flake and only ONE of them is a fix.
-`update_idletasks()` does not service queued window events at all -- measured in
-`development/probe_449_queued_event_after_destroy.py` -- so it silences the flake
+`update_idletasks()` does not service queued window events at all, so it silences the flake
 by shifting timing, which is exactly how instrumenting the leg also silenced it.
 A rate is therefore NOT sufficient evidence here. This test asserts the invariant
 instead: the reset has to actually DELIVER what was queued.

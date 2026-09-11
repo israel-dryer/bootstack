@@ -5,7 +5,7 @@
 **Run:** 2026-08-20, Windows box, `py -3.12`
 **Ships no production code.** `git diff main...HEAD -- src/` is empty and stays empty.
 
-**The instrument:** `development/probe_wrapper_parameter_delta.py`, four arms. Raw output is committed beside it as `wrapper-parameter-delta-{scan,control,leftovers,roundtrip}.txt`.
+**The instrument:** `development/probe_wrapper_parameter_delta.py`, four arms. Re-run the arms below to regenerate the raw output.
 
 ```
 py -3.12 development/probe_wrapper_parameter_delta.py --arm scan -v

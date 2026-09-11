@@ -2,11 +2,8 @@
 
 A capture reads pixels from the display, so what these can assert is limited on
 purpose. Whether the saved image shows *this* application depends on what else
-the machine has on screen, which no assertion can control — that question is
-settled by `development/verify_427_capture.py`, which toggles the theme between
-two captures and proves the pixels track this window. An earlier version of that
-probe passed every geometry check while capturing a browser, which is exactly
-why nothing here pretends to verify content.
+the machine has on screen, which no assertion can control, so nothing here
+pretends to verify content.
 
 What is asserted instead are the invariants that hold regardless of what is on
 screen: the rectangle captured, the format chosen, the errors raised, and the
@@ -358,17 +355,14 @@ def test_settling_holds_the_window_busy_while_it_dispatches(
     the handler. Confirmed by hand on Tk 8.6.17/aqua, and reproduced in plain
     tkinter, so it is the toolkit rather than anything above it.
 
-    Whether a given platform honors the hold is arm 0 of
-    `development/probe_429_busy_during_settle.py` — it checks the busy window
-    is mapped and that Tk's hit test at a button resolves to it. That is
-    deliberately not asserted here, because it is platform-dependent and would
-    make this test fail on macOS for something it is not testing.
+    Whether a given platform honors the hold is deliberately not asserted
+    here, because it is platform-dependent and would make this test fail on
+    macOS for something it is not testing.
 
     ⚠ A synthesized click cannot stand in for the manual check either:
     `event_generate` aimed at a widget delivers straight to its bindings and
     never consults the busy window, so it re-enters whether the hold is real
-    or not. The swallowing half is
-    `development/demo_429_busy_during_settle.py`, by hand.
+    or not. The swallowing half can only be checked by hand.
     """
     label = bs.Label("settling")
     shown_app.tk.update()

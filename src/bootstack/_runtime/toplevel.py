@@ -262,8 +262,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         later `destroy()` is an ordinary path, and pairing on the blocking one
         alone would leave it unfixed. Measured before choosing it: the restore
         wins its race with Tk's own grab release, so `grab_current()` reads the
-        opener again once the dust settles
-        (`development/probe_444_grab_restore_ordering.py`).
+        opener again once the dust settles.
         """
         if self._grab_restore_bound:
             return

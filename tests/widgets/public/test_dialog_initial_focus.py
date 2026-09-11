@@ -74,7 +74,7 @@ def _drive(dialog, app, action, show=None):
         the toplevel and the test fails on focus for a reason that is really
         about mapping.
 
-        Measured in `development/probe_446_barrier_scope.py`: with the footer
+        Measured: with the footer
         barrier alone the entry was still unmapped in **4 of 12** dialogs and
         focus missed in exactly those same 4; waiting for this as well took it
         to **0 of 12**, the two columns tracking one-for-one.

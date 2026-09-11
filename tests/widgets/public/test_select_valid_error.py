@@ -190,7 +190,6 @@ def test_select_validation_comes_from_the_shared_mixin(app):
 # decoupled option list hands the rule the option's real Python object. A
 # `range` rule over numeric or date option values works — it worked before #465
 # and it has to keep working, or the fix breaks running apps at construction.
-# Measured on both sides in development/probe_465_select_range_kind.py.
 
 def test_select_range_rule_works_on_numeric_option_values(app):
     sel = bs.Select([("One", 1), ("Seven", 7), ("Twelve", 12)], value=7)

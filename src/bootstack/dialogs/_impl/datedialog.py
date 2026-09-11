@@ -351,8 +351,7 @@ class DateDialog:
 
         Unlike `_confirm`, this releases no grab of its own. It does not need
         to: `Dialog` destroys the toplevel, and Tk releases a grab held by a
-        window when that window is destroyed (measured — see
-        `development/probe_437_review2_fixes.py`). `_confirm` keeps its
+        window when that window is destroyed (measured). `_confirm` keeps its
         `grab_release()` because it destroys the window itself, where the call
         is at least self-documenting.
         """

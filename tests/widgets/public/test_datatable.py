@@ -797,8 +797,7 @@ def test_group_chevron_tracks_double_click(shown_app):
 # layout option, and was discarded without error -- so every table kept the
 # default `'all'` and `context_menus='none'` still showed both menus.
 #
-# The internal was never at fault (control in
-# `development/probe_456_context_menus.py`), so these assert the wrapper
+# The internal was never at fault, so these assert the wrapper
 # forwards the value, through the two predicates the click path consults rather
 # than the raw attribute.
 

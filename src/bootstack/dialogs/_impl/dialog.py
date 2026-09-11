@@ -211,9 +211,8 @@ def _key_was_consumed(widget: Any, keysym: str) -> bool:
 
     In both cases a DISABLED widget is the exception: its class binding runs
     but does nothing — `invoke` is a no-op on a disabled button, and
-    `tk::TextInsert` returns early on a disabled text (both measured,
-    `development/probe_441_key_already_handled.py`). Nothing answered the key,
-    so the default button should still get it. Standing down there would leave
+    `tk::TextInsert` returns early on a disabled text (both measured). Nothing
+    answered the key, so the default button should still get it. Standing down there would leave
     the keyboard dead for the whole dialog.
 
     ⚠ THE KEY MATTERS, NOT ONLY THE WIDGET — which is why `keysym` is required
@@ -712,7 +711,7 @@ class Dialog:
             # button from an input field -- but only where the window system
             # reports it separately, which is NOT everywhere. Measured with a
             # real keypress, alternating against the main Enter key as a
-            # control (`development/probe_441_kp_enter_platform.py`):
+            # control:
             #
             # * Windows FOLDS it into `Return` -- keysym `Return`, keycode 13,
             #   char `\r`, byte-identical to the main Enter key -- so this
@@ -752,8 +751,7 @@ class Dialog:
         documented as focusing its default button (issue #439).
 
         Waiting for the widget's own `<Map>` states that precondition instead
-        of guessing a delay. Measured on Windows
-        (`development/probe_439_focus_timing.py`): the button is still
+        of guessing a delay. Measured on Windows: the button is still
         unmapped once `deiconify()` AND `update_idletasks()` have both
         returned, so neither is a usable barrier. Asking after the toplevel is
         deiconified happens to work — Tk defers a request made against a

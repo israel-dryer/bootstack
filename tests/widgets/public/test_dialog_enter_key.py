@@ -18,8 +18,7 @@ answers nothing. In every "nothing answered" case the default button still gets
 the key, rather than it dying in the widget.
 
 ⚠ Interrogating the BINDINGS rather than the class was tried and is wrong; the
-docstring on `_key_was_consumed` records why, and
-`development/probe_441_key_already_handled.py` measures it. The short version:
+docstring on `_key_was_consumed` records why. The short version:
 bootstack's own `TextField` binds `<Return>` to emit its `submit` event, so
 "has a real binding for the key" is true for the widget that must keep
 submitting.
@@ -117,7 +116,7 @@ def test_an_editable_text_did_not_consume_the_keypad_key(app):
     ⚠ NOT REACHABLE ON WINDOWS by either route — the platform folds the keypad
     key into `Return` (so `keysym` is never `KP_Enter`) and `event_generate`
     cannot synthesize it (keysym `??`, keycode 0, matching no binding). Both
-    measured in `development/probe_441_kp_enter_platform.py`. This test drives
+    measured. This test drives
     the rule directly for exactly that reason; an end-to-end arm would pass
     vacuously here and could only ever run on X11.
     """

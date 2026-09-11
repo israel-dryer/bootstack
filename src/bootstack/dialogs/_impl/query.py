@@ -169,8 +169,8 @@ class QueryDialog:
         # "ensure focus after dialog buttons set their own focus". Both ran
         # while the toplevel was still withdrawn, where `focus_set()` is a
         # silent no-op, so neither ever took and the entry was never actually
-        # focused — measured in `development/probe_439_default_button_focus.py`
-        # against pre-fix code, where focus sat on the toplevel. Handing the
+        # focused — measured against pre-fix code, where focus sat on the
+        # toplevel. Handing the
         # target to `Dialog` replaces the race with an ordering (issue #439).
         self._dialog._focus_target = getattr(entry, "entry_widget", entry)
 
