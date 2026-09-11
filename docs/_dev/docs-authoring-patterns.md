@@ -6,8 +6,7 @@ handoff state — every rule below was live and unchanged at the split.
 
 **Read this before** homing a widget into the API Reference, writing or editing a
 widget page, taking screenshots, or touching the docs IA. The companion checklist
-is `docs/_dev/widget-review-and-docs-standards.md`; the API Reference re-cut brief
-is `docs/_dev/api-reference-restructure.md`.
+is `docs/_dev/widget-review-and-docs-standards.md`.
 
 ---
 
@@ -45,8 +44,7 @@ the open backlog are kept here.
     kept as its own pillar (large *visual* catalog). The 10 old category landing pages
     are RETIRED. `docs/api/` + `docs/deeper/` are GONE.
   - **API Reference** (`docs/api-reference/index.rst`) = the by-concept lookup layer
-    (semantic groups, full-path stub titles, pandas-style card landing — see the IA
-    re-cut in `docs/_dev/api-reference-restructure.md`).
+    (semantic groups, full-path stub titles, pandas-style card landing).
   - `show_nav_level: 1` (collapsed by default). Do NOT promote sub-groups to top-level
     (pydata navbar overflows ~6+). The old "Reference page pattern" is SUPERSEDED by the
     API Reference & Guide pattern below.
@@ -122,8 +120,7 @@ The docs are a **Diátaxis-style split** (PR #107): a narrative layer (**Widgets
 lives in the API Reference.** Narrative pages cross-link in (`:class:` / `:func:` /
 `:meth:`) and may carry a *table-only* `autosummary` summary; they never re-document.
 A second autodoc home reintroduces the "duplicate object description" warnings PR #106
-removed. Full brief + all staged-sweep decisions: `docs/_dev/api-reference-restructure.md`.
-Memory `project_api_reference_restructure`.
+removed.
 
 ### The autosummary templates (locked, PR #107 + Stage 2)
 

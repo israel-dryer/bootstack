@@ -54,6 +54,6 @@ behavior. This is the native feel we want for Tooltip/Toast/HUD-like popups.
 
 ## Related
 
-- Menu redesign: `docs/_dev/menu-redesign.md` (where this was surfaced).
+- Surfaced by the menu redesign (shipped).
 - Window API hardening backlog (`bs.Window` escape-hatch `window_style`/`alpha`/
   `toolwindow`) — adjacent; this initiative is specifically the *native-chrome* angle.

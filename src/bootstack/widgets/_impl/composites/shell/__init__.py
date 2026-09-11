@@ -1,6 +1,6 @@
 """Internal composites for the clean-slate application shell.
 
-Layered per `docs/_dev/appshell-navigation-spec.md`:
+Layered as:
 
 - `layout.ShellLayout` — Layer 1, the dumb region/slot band layout.
 - `nav_panel.NavPanel` — the static single-select nav list (sidebar).

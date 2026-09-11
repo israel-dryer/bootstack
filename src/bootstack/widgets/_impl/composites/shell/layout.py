@@ -23,9 +23,8 @@ only the body row knows whether the rail/sidebar/dock exist. That invariant lets
 "sidebar + chrome", "chrome only", and "sidebar only" be the same layout with
 slots toggled rather than separate code paths.
 
-Note: the resizable sidebar/content sash (a `PanedWindow`) is deferred to the
-collapse step — for now the body uses fixed-width pack slots. See the build order
-in `docs/_dev/appshell-navigation-spec.md`.
+Note: the body uses fixed-width pack slots; a resizable sidebar/content sash
+(a `PanedWindow`) is not built.
 """
 
 from __future__ import annotations

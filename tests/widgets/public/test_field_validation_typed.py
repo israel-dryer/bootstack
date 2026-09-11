@@ -1,7 +1,6 @@
 """Field validation runs against the field's typed value.
 
-Phase 1 of the validation-system redesign (docs/_dev/field-validation-system.md):
-validation resolves the current input to its typed value — a number for a
+Validation resolves the current input to its typed value — a number for a
 numeric field, a date for a date field, the string itself for a text field —
 and all seven field wrappers route their `validate()` through the same resolver.
 
