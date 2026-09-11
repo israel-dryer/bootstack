@@ -101,6 +101,12 @@ class: `tests/test_public_surface.py` (166 tests, green, never run by
 `run_gui.py`). Both folded into #380 — **and CI now runs them**, which is where
 the branch's `+166`/`+25` deltas come from.
 
+⚠ **A new `@pytest.mark.isolated` module runs NOWHERE until it is added to
+`ISOLATED` in `tests/run_gui.py`** — the shared leg deselects it with
+`-m "not isolated"`, and CI runs the same runner. The suite stays green and the
+count does not move. Nothing guards this; #511's test was caught only because
+the total matched the old baseline exactly.
+
 ⚠ **Never pipe a build/test command to `tail`** — you capture `tail`'s exit 0 and
 miss real failures. **This bites in PowerShell too**: `pytest ... | Select-String`
 leaves `$LASTEXITCODE` from the *pipeline*. Redirect to a file, capture
@@ -126,13 +132,13 @@ reworded *after* the tag and the GitHub Release body edited to match with
 `gh release edit --notes-file`. **THE TAG WAS NOT MOVED** — never move a tag a
 release has already run on.
 
-### ★ START HERE (2026-09-08) — **`0.4.3` IS SHIPPED AND VERIFIED. NOTHING IS IN FLIGHT.**
+### ★ START HERE (2026-09-11) — **`0.4.3` IS SHIPPED AND VERIFIED. #511's FIX IS ON A BRANCH.**
 
-`main` is at `v0.4.3`, the tree is clean, the suite is green locally, and every branch that ever carried work is merged. **There is no half-finished thing to pick up** — the next session chooses.
+`main` is at `v0.4.3`. **The one thing in flight is `fix/shell-slot-theme-refresh-511`** — fix, test, dev docs and CHANGELOG entry done, hand-tested by the maintainer 2026-09-11, awaiting merge. Branch suite: `1787 / 22`, 34 legs, exit 0.
 
-⚠ **A NEW USER REPORT LANDED THE SAME DAY: #511, *"Visual bug"*, filed 2026-09-08 against `0.4.2`, UNMILESTONED.** A `Workbench` with `undecorated=True` + `show_window_controls=True` and two workspaces, one `pin_to_footer=True`. **Not triaged, not reproduced, and NOT put on a milestone — that placement is the maintainer's call.** It is the obvious `0.4.4` candidate if it reproduces; read the issue before assuming what the visual defect is.
+⏭ **#511 IS FIXED ON `fix/shell-slot-theme-refresh-511`, NOT YET MERGED — on `0.4.x — Patch line` (maintainer, 2026-09-11).** A shell sidebar collapsed across a theme change came back in the old palette: the theme walk skips unviewable widgets by design and `ShellLayout`'s relayouts were the one hide/show container with no container-show trigger. Fix is `_recolor_show_slots()` in `shell/layout.py`; plan at `development/plan-511-shell-slot-theme-refresh.md`, instrument `development/probe_511_hidden_sidebar_theme.py`. `AppShell` and `Workbench` both measured stale pre-fix. ⚠ **The dock slot is not walked** — unreachable publicly (no writer of `dock_visible` in `src/`), recorded in `docs/_dev/theme-repaint-architecture.md`.
 
-**Otherwise the open patch line is `#488`, `#469`, `#468`, `#447`, `#422`, `#207`** — of these, **#488 is the one with the widest blast radius**: `_MultilineCore._on_destroy` rejects every `<Destroy>` it receives, so the entire `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. See the unmilestoned/milestone notes below.
+**The rest of the open patch line is `#488`, `#469`, `#468`, `#447`, `#422`, `#207`** — of these, **#488 is the one with the widest blast radius**: `_MultilineCore._on_destroy` rejects every `<Destroy>` it receives, so the entire `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. See the unmilestoned/milestone notes below.
 
 **#509's detail is archived** — `docs/_dev/handoff-archive.md`, the `0.4.3` entry: the four commits, the three measurements that outlive the branch (the one-pixel slider track, `textsignal=` as a separate seeding route from `value=`, and `SelectButton` options whose text equals their value hiding both payload bugs), and why the `CodeEditor` behavior change shipped under `### Fixed`. **`development/probe_509_change_events.py` is the surviving instrument.** Do not re-derive any of it here.
 
@@ -218,10 +224,10 @@ keyword and the number apart. Reopened 2026-08-29.
 | | |
 |---|---|
 | `main` | **at the `v0.4.3` tag** — the `Release 0.4.3` bump commit, on top of the `docs(changelog):` promotion. ⚠ **A row cannot name its own SHA — verify with `git rev-parse origin/main`** |
-| branches | **`main` ONLY, local and remote.** The five stale `fix/*` locals were verified ancestors of `origin/main` and deleted 2026-09-08 (`d9911896`, `d6fdd089`, `1b6100c2`, `b7caae25`, `36002c0d` — recorded per the hygiene rule). Nothing is unmerged anywhere |
+| branches | **`main`, plus `fix/shell-slot-theme-refresh-511` (#511, unmerged, local).** The five stale `fix/*` locals were verified ancestors of `origin/main` and deleted 2026-09-08 (`d9911896`, `d6fdd089`, `1b6100c2`, `b7caae25`, `36002c0d` — recorded per the hygiene rule) |
 | root of `main` | **no `PLAN.md`, no `REVIEW.md`, and the sequence that produced them is RETIRED** (maintainer, 2026-08-30). A plan I write is for the **maintainer** to implement; a review runs in the **same session** as the work, since what is reviewed is their diff, not mine. **`REVIEW-PROTOCOL.md` was DELETED and "Reviewing changes" rewritten to match, 2026-09-02** — the contradiction is gone. Do not ask where `PLAN.md` is, and do not read its absence as the rule slipping |
-| released | **`0.4.3`** on PyPI, tag `v0.4.3`, verified 11/11. **`## [Unreleased]` does not exist right now** — the next fix commit recreates it |
-| next release | **None scheduled.** `0.4.x — Patch line` stays open and holds six issues; #511 is a fresh unmilestoned user report (see ★). Follow `RELEASE.md` when one is cut |
+| released | **`0.4.3`** on PyPI, tag `v0.4.3`, verified 11/11. **`## [Unreleased]` is recreated on the #511 branch** and holds its one `### Fixed` entry |
+| next release | **None scheduled.** `0.4.x — Patch line` stays open and holds seven issues, #511 among them with its fix on a branch (see ★). Follow `RELEASE.md` when one is cut |
 | CI | `ci.yml` green, 5 jobs. **No macOS leg** (#452) |
 | suite, `main` | **Windows `1786 / 22`, 33 legs, exit 0**, measured 2026-09-08 at `f6d59d19` (the #509 merge, one commit below the `v0.4.3` tag), `py -3.12`, both deps present. `+30` over `1756 / 22`, matching the three test files #509 added. ⚠ **macOS is `1699 / 33` at the #467 merge and is now ELEVEN merges stale.** The two are NOT comparable |
 | open milestones | **10** — `0.4.0` closed on release; `0.4.x` did NOT and must not. Verified against `gh` 2026-09-08 |
@@ -276,7 +282,7 @@ and fix the table.**
 | — | **`Hot reload (provisional)`** (unnumbered, outside the freeze) — #322, #328 | 2 |
 | — | **`Additions awaiting a minor`** (unnumbered, rides any minor) — #208, #317, #352 | 3 |
 | — | **`Wrapper and internal parity`** (unnumbered — findings will span compatibility categories, so no release can be promised until they exist) — **#466**, the durable parameter-level guard. ⚠ **#466 needs THREE amendments, all recorded on the issue**: it is parameter-level so it cannot see a missing method or property; the 84 unanalysed params are a hole, not coverage; and it needs an AST check that every `bs.<Widget>(kw=…)` in `docs/**/*.py` names a real parameter. ⚠ **#477 is adjacent but NOT on this milestone, deliberately** — this holds parity *defects*; #477 asks whether the internal should exist. Do not fold them | 1 |
-| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #488. Verified against `gh` 2026-08-30. Cut 2026-08-27; **it did NOT close when `0.4.1` shipped, and must not** — renaming a turned-over line would relabel shipped work. ⚠ **Its closed issues are the shipped patches: #481, #482, #484, #490, #491 ARE `0.4.1`, and #507 IS `0.4.2`.** ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 6 |
+| — | **`0.4.x — Patch line`** (rolling, **FIXES ONLY**) — #207, #422, #447, #468, #469, #488, #511. #511 added 2026-09-11. Cut 2026-08-27; **it did NOT close when `0.4.1` shipped, and must not** — renaming a turned-over line would relabel shipped work. ⚠ **Its closed issues are the shipped patches: #481, #482, #484, #490, #491 ARE `0.4.1`, and #507 IS `0.4.2`.** ⚠ **Sweep a turning-over line with `--state all`** — the 2026-08-27 turnover missed #449 and #456 because both were already closed, and neither could ever have shipped as a patch | 7 |
 
 **Ordering reasons, so they are not re-litigated:** **breaks batched, not
 dribbled** (#383/#369/#408/#416 in ONE minor = one migration for users instead of
@@ -318,7 +324,7 @@ count, not an issue count**, and a session comparing the two would conclude an
 issue had gone missing. `gh issue list --milestone <title> --state all` is the
 authority for *issues*; use the API figure only for the open/closed shape.
 
-**SIX UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477, #511.** ⚠ **#511 is the NEW one — a user report filed 2026-09-08 against `0.4.2`, untriaged; see the ★ section. #509 left this list by shipping as `0.4.3`.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. **Re-verified against `gh` 2026-09-08 after `0.4.3`.** Verify rather than counting by hand:
+**FIVE UNMILESTONED OPEN ISSUES — #431, #436, #452, #474, #477.** ⚠ **#511 left this list 2026-09-11 for `0.4.x — Patch line`; #509 by shipping as `0.4.3`.** ⚠⚠ **THIS LIST SAID FOURTEEN UNTIL 2026-08-29 AND NINE OF THOSE WERE WRONG — run the command below, do not edit the count.** #482, #490, #483 and #455 all CLOSED, and **#468, #469, #484, #488 and #491 were all moved onto `0.4.x — Patch line`** without this file being swept. ⚠ **The list moved TWICE during the 2026-08-29 sweep itself** — #468/#469 were unmilestoned when the sweep started and milestoned by the time it finished, so a number in this paragraph is a snapshot, not a fact. ⚠ **#483 CLOSED `not planned` 2026-08-29** — it was already recorded here as documentation rather than a defect, and the toolkit measurement behind that is below; **do not re-open it in either direction.** ⚠ **#488 is the one to read before touching `TextArea` teardown: `_MultilineCore._on_destroy` guards on `event.widget is not self` and the only `<Destroy>` it receives names the inner `Text`, so the ENTIRE teardown block has never run** — including the wheel `unbind_class` sweep, so every `TextArea` and `CodeEditor` ever built leaves bindings on a shared bindtag. **#486 released only the signal hooks, #490 only the clear, and #491 only the placeholder on `insert`/`append`. Do not read any of the three as the fix.** ⚠ **#477 is the `_impl` collapse pass, filed 2026-08-26 — see the ★ section; it is a PRE-1.0 goal, not a backlog nicety.** ⚠ **#468 and #469 both came out of #465's review**; #469 is the `when="tail"` hazard. **Re-verified against `gh` 2026-09-08 after `0.4.3`.** Verify rather than counting by hand:
 `gh issue list --state open --json number,milestone --jq '[.[]|select(.milestone==null)]'`
 
 - **#431 is OPEN ON PURPOSE AND WAITING ON A DECISION, not on work.** Its fix
@@ -577,7 +583,7 @@ a branch AFTER its PR merged is **stranded** — verify it landed in `main`.
 
 ### ⚠ Branch and worktree hygiene
 
-⚠ **Verified 2026-09-08: `main` is the ONLY branch, local or remote.** The five
+⚠ **Verified 2026-09-08: `main` was the ONLY branch, local or remote** (#511's branch came after). The five
 stale `fix/*` locals were checked as ancestors of `origin/main` and deleted the
 same day; their head SHAs are in STATE OF THE WORLD. Do not re-add them.
 
@@ -1189,11 +1195,9 @@ with bs.App(title="My App", size=(800,600), padding=16, gap=8) as app:
 app.run()
 
 with bs.AppShell(title="My App", theme="bootstrap-light") as shell:
-    shell.commandbar.add_button(icon="sun", command=bs.toggle_theme)
-    with shell.menubar.add_menu("File") as file:
-        file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-    with shell.add_page("home", text="Home", icon="house"):
-        bs.Label("Welcome!")
+    with shell.page_nav() as nav:          # no shell.add_page / commandbar / menubar
+        with nav.add_page("home", text="Home", icon="house"):
+            bs.Label("Welcome!")
     shell.navigate("home")
 shell.run()
 
