@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A shell sidebar collapsed across a theme change now comes back in the new theme.** Collapsing the sidebar of an `AppShell` or `Workbench`, switching theme, and expanding it again brought the pane back in the previous theme's colors — a white navigation pane in an otherwise dark window, with the correctly themed navigation items drawn on it. A sidebar that is showing when the theme changes was never affected, and on a `Workbench`, switching to another workspace and back already corrected it. ([#511](https://github.com/israel-dryer/bootstack/issues/511))
+
 ## [0.4.3] — Change and input events
 
 ### Fixed

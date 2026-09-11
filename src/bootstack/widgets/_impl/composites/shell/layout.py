@@ -31,6 +31,7 @@ in `docs/_dev/appshell-navigation-spec.md`.
 from __future__ import annotations
 
 import sys
+from tkinter import TclError
 from typing import Any
 
 from bootstack._runtime.app import App
@@ -128,6 +129,7 @@ class ShellLayout(App):
         self._show_rail = False
         self._show_sidebar = True
         self._show_dock = False
+        self._recolor_pending = False
 
         self._build_regions()
         self._relayout_window()
@@ -206,6 +208,7 @@ class ShellLayout(App):
             self._status_sep.pack(side="bottom", fill="x")
         # Body fills whatever the bands leave; packed last so it claims the middle.
         self._body.pack(side="top", fill="both", expand=True)
+        self._recolor_show_slots()
 
     def _relayout_body(self) -> None:
         """Re-pack the rail / sidebar / content / dock slots left-to-right."""
@@ -221,6 +224,35 @@ class ShellLayout(App):
         self._content.pack(side="left", fill="both", expand=True)
         if self._show_dock:
             self._dock.pack(side="right", fill="y")
+        self._recolor_show_slots()
+
+    def _recolor_show_slots(self):
+        """Repaint slots that just became visible after a theme change"""
+        if self._recolor_pending:
+            return
+        self._recolor_pending = True
+
+        def _recolor():
+            self._recolor_pending = False
+            from bootstack.style.style import get_style
+            style = get_style()
+            shown = [self._content]
+            if self._show_rail:
+                shown.append(self._rail)
+            if self._show_sidebar:
+                shown.append(self._sidebar)
+            if self._show_statusbar:
+                shown.append(self._statusbar)
+            for slot in shown:
+                try:
+                    style.apply_theme_walk(slot, only_stale=True)
+                except TclError:
+                    pass # destroyed between relayout and the idle callback
+
+        try:
+            self.after_idle(_recolor)
+        except (TclError, AttributeError):
+            pass
 
     # ----- Region sizing -----
 

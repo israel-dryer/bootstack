@@ -48,10 +48,17 @@ show. Current call sites:
 - `PageStack._navigate` → covers AppShell/Workbench pages **and** `Tabs` (Tabs
   routes its content through a `PageStack` — see `tabs/tabview.py`).
 - `Expander.expand` → covers `Accordion` sections.
+- `ShellLayout._relayout_body` / `_relayout_window` → covers the AppShell/Workbench
+  rail, sidebar and status bar (#511). Both call `_recolor_show_slots()`, which
+  walks every slot whose show flag is set, once per idle behind a pending flag.
+- `PublicWidgetBase._recolor_on_attach` → covers a widget re-attached after
+  `detach()`.
 
 If you add another hide/show container, call
 `get_style().apply_theme_walk(shown_subtree, only_stale=True)` after you pack the
-content (deferred to `after_idle` so it is mapped first).
+content (deferred to `after_idle` so it is mapped first). Walk only what is now
+shown — walking a parent that also holds hidden children repaints them early and
+defeats the laziness.
 
 ## Surfaces — the frozen-hex gotcha
 
@@ -73,10 +80,13 @@ paths.)
 
 ## Known limitations
 
-- A widget hidden by `detach()` or sitting in a **withdrawn** Toplevel during a
-  theme change won't recolor until it is re-shown through one of the container
-  triggers (or the theme changes again while it is visible). These are rare; add
-  a trigger if a real case appears.
+- A widget sitting in a **withdrawn** Toplevel during a theme change won't
+  recolor until it is re-shown through one of the container triggers (or the
+  theme changes again while it is visible). Rare; add a trigger if a real case
+  appears.
+- The shell's **dock** slot is not walked by `_recolor_show_slots()`. Nothing in
+  the public API shows the dock today, so it is unreachable; add it to the walk
+  when a public path to it lands.
 
 ## History
 
