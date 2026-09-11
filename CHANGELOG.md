@@ -8,11 +8,11 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.4] — Shell sidebar theme refresh
 
 ### Fixed
 
-- **A shell sidebar collapsed across a theme change now comes back in the new theme.** Collapsing the sidebar of an `AppShell` or `Workbench`, switching theme, and expanding it again brought the pane back in the previous theme's colors — a white navigation pane in an otherwise dark window, with the correctly themed navigation items drawn on it. A sidebar that is showing when the theme changes was never affected, and on a `Workbench`, switching to another workspace and back already corrected it. ([#511](https://github.com/israel-dryer/bootstack/issues/511))
+- **A collapsed shell sidebar now follows a theme change when it is expanded again.** Collapsing the sidebar of an `AppShell` or `Workbench`, switching theme, and expanding it brought the sidebar back in the previous theme's colors — for example, a light sidebar in an otherwise dark window. A sidebar that was showing when the theme changed was not affected. ([#511](https://github.com/israel-dryer/bootstack/issues/511))
 
 ## [0.4.3] — Change and input events
 
@@ -461,6 +461,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.4]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.4
 [0.4.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.3
 [0.4.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.2
 [0.4.1]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.1
