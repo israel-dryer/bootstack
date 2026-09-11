@@ -9,9 +9,9 @@ bit along the way — the things git history does not record.
 by issue and PR number, so `grep` for `#392` / `PR #385` / a widget name.
 `CLAUDE.md` keeps only what is still OPEN plus the standing rules.
 
-Implemented plan documents (`development/plan-*.md` and the shipped design briefs
-in `docs/_dev/`) were removed 2026-09-11. A path cited below that no longer exists
-is in git history: `git show 83ff1f95:<path>`.
+Plans, probes, demos and review records for shipped work (`development/`) and the
+shipped design briefs in `docs/_dev/` were removed 2026-09-11. A path cited below
+that no longer exists is in git history: `git show 83ff1f95:<path>`.
 
 ---
 
@@ -3824,3 +3824,18 @@ One issue, on `0.4.x — Patch line`: **#509**, *Inconsistent widget ChangeEvent
 
 ⚠ **The suite was NOT run on the branch — CI covered it, and the local `1786 / 22` above was measured on `main` AFTER the merge**, at the commit the release was cut from. That is the right place to measure it, but it means no local before/after bracket exists for the branch itself.
 
+## `0.4.4 — Shell sidebar theme refresh` — RELEASED 2026-09-11
+
+One issue, on `0.4.x — Patch line`: **#511**, a user report against `0.4.2` — collapsing an `AppShell`/`Workbench` sidebar, switching theme, and expanding it brought the sidebar back in the old palette. Merged as PR #512 (merge commit). One `### Fixed` entry. ✅ **Verified 11/11 by `development/verify_release.py 0.4.4`**; suite at `e88d38eb` **Windows `1787 / 22`, 34 legs, exit 0**.
+
+**Cause:** `Style.apply_theme_walk(only_stale=False)` skips unviewable widgets by design, leaving them for a container-show trigger. `ShellLayout._relayout_body`/`_relayout_window` un/re-pack the slots but had no trigger. Only the nav panel's scroll canvas showed it — ttk widgets follow the global style and cannot go stale.
+
+**Fix:** `ShellLayout._recolor_show_slots()` — an `after_idle` stale-only walk over the slots whose show flag is set, collapsed behind `_recolor_pending`. The dock is not walked; nothing public shows it (recorded in `theme-repaint-architecture.md`).
+
+**Measurements that outlive it:**
+
+- **`only_stale=False` does NOT fix it** — at idle the canvas is not yet viewable, so that walk skips it. The stale-only walk is required, not merely cheaper.
+- **An `isolated` test module runs nowhere until listed in `run_gui.py`'s `ISOLATED`** — the new test was dead coverage on the first full run, caught only because the total matched the old baseline exactly.
+- **A pre-fix probe that never maps its window agrees with itself for the wrong reason** — the walk skips an unmapped tree. Assert viewability first.
+
+**The generated release notes listed the chore PR #513** — `release.yml` sets `generate_release_notes: true`. The line was removed from the published body by hand; the tag was not touched.
