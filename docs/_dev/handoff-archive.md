@@ -9,6 +9,10 @@ bit along the way — the things git history does not record.
 by issue and PR number, so `grep` for `#392` / `PR #385` / a widget name.
 `CLAUDE.md` keeps only what is still OPEN plus the standing rules.
 
+Implemented plan documents (`development/plan-*.md` and the shipped design briefs
+in `docs/_dev/`) were removed 2026-09-11. A path cited below that no longer exists
+is in git history: `git show 83ff1f95:<path>`.
+
 ---
 
 ## Recently completed (all merged to `main`)
