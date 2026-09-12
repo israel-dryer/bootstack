@@ -84,7 +84,6 @@ class MessageCatalog:
 
         MessageCatalog._domain = domain
         MessageCatalog._locales_dir = Path(locales_dir) if locales_dir else MessageCatalog._discover_locales_dir()
-        MessageCatalog._strip_amp = strip_ampersands
         MessageCatalog._emit_event = bool(emit_virtual_event)
         MessageCatalog._event_name = str(virtual_event_name or "<<LocaleChanged>>")
         MessageCatalog._install_gettext(default_locale)
