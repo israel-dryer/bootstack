@@ -97,6 +97,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
+- **#515 — in progress** on `fix/amperstand-brace-not-showing-on-widgets-515` (not yet milestoned). Widget text lost `&` and was spliced into Tcl scripts by `MessageCatalog` — a `}` truncated it and `[...]` in it **ran as Tcl**. Plan: `development/plan-515-literal-text-through-msgcat.md`. Tests: `tests/widgets/public/test_text_special_characters.py` (all 5 fail on `main`). Open: the disclosure and release decisions in the plan.
 - **#488 — widest blast radius.** `_MultilineCore._on_destroy` (`textarea/core.py`) guards on `event.widget is not self`, and the only `<Destroy>` it receives names the inner `Text` — so the whole `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. #486, #490 and #491 each released one piece; none is the fix.
 - **#469** — an event sent with `when="tail"` is queued against the emitting **window** and can outlive its widget, arriving at a different one. ~20 composites emit this way. The route is unproven (Tk path names are never reused; a 300-round probe never forced handle reuse) — remove the precondition rather than hunt the route. The test harness half is fixed (`_reset_scene` pumps `update()` first).
 - **#468** — `Select(allow_custom_values=True)` hands validation rules the raw typed text. Plan: `development/plan-468-select-custom-value-typing.md`.
@@ -249,6 +250,7 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - ⚠ **Defer widget cleanup on the ROOT, never the widget** — `widget.after_idle(cb)` is owned by the widget and orphans on destroy. Guard `TclError` and `AttributeError`.
 - ⚠ **Tkinter binding names are recycled** (~498/499 cycles reuse the name) — never let a deferred `deletecommand` hold one. When a symptom is allocator- or timing-dependent, assert the invariant (e.g. 50 cycles → 50 distinct ids).
 - ⚠ Check any `_impl` code that subscribes to a signal it does not own for a matching cancel on destroy (#479).
+- ⚠ **Never build a Tcl script from text** (`tk.eval(f"… {{{text}}}")`) — braces break it and `[…]` executes. Use `tk.call(cmd, *args)`; each argument is one word, never parsed (#515).
 - ⚠ **`instate(['!disabled'])` returns True when ENABLED** — write `not instate(['disabled'])`.
 - A test that schedules a hang guard must cancel it in `finally`; a leaked `after` fires in a later test.
 - Spying on an instance attribute is useless once the bound method was captured — patch the CLASS before constructing.
@@ -295,7 +297,7 @@ Files are **CRLF** (`core.autocrlf=true`, `.gitattributes` `eol=crlf`). **`git d
 - MenuButton item types are `'command'`/`'check'`/`'radio'`/`'separator'`, translated to ContextMenu's names via `_ITEM_TYPE_MAP`. Check disabled state with `instate(("disabled",))`.
 - `Expander` is internal — use `bs.Accordion`. `select.py`/`calendar.py` would shadow stdlib — the files are `selectfield.py`/`calendarwidget.py`.
 - `bootstack.shortcuts` exposes `Shortcuts`, `Shortcut`, `get_shortcuts()`; `format_shortcut` is internal.
-- Headings are already bold (`font="heading-md"`). `&` in label text is stripped — write "and". American English everywhere.
+- Headings are already bold (`font="heading-md"`). American English everywhere.
 
 ### Dialogs
 

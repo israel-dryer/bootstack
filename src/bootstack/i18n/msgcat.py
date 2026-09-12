@@ -21,7 +21,7 @@ Public API (unchanged signatures):
 - MessageCatalog.set_many(locale, *args) -> int
 - MessageCatalog.max(*src) -> int
 - MessageCatalog.init(root=None, locales_dir=None, domain='messages',
-  default_locale='en', strip_ampersands=True) -> None
+  default_locale='en') -> None
 """
 
 from __future__ import annotations
@@ -47,7 +47,6 @@ class MessageCatalog:
     _domain: str = "messages"
     _locale: str = "en"
     _gt: gettext.NullTranslations | None = None
-    _strip_amp: bool = True
     _emit_event: bool = True
     _event_name: str = "<<LocaleChanged>>"
 
@@ -62,7 +61,6 @@ class MessageCatalog:
             locales_dir: Union[str, Path, None] = None,
             domain: str = "messages",
             default_locale: str = "en",
-            strip_ampersands: bool = True,
             emit_virtual_event: bool = True,
             virtual_event_name: str = "<<LocaleChanged>>",
     ) -> None:
@@ -75,7 +73,6 @@ class MessageCatalog:
                 directory is auto-discovered.
             domain: Gettext domain name.
             default_locale: Locale to activate after initialization.
-            strip_ampersands: If true, remove mnemonic `&` markers.
             emit_virtual_event: If true, generate a Tk virtual event after
                 locale changes so widgets can refresh themselves.
             virtual_event_name: The virtual event name to emit when the
@@ -87,7 +84,6 @@ class MessageCatalog:
 
         MessageCatalog._domain = domain
         MessageCatalog._locales_dir = Path(locales_dir) if locales_dir else MessageCatalog._discover_locales_dir()
-        MessageCatalog._strip_amp = strip_ampersands
         MessageCatalog._emit_event = bool(emit_virtual_event)
         MessageCatalog._event_name = str(virtual_event_name or "<<LocaleChanged>>")
         MessageCatalog._install_gettext(default_locale)
@@ -201,54 +197,6 @@ class MessageCatalog:
         parts = code.replace("-", "_").split("_")
         return parts[0].lower() if len(parts) == 1 else f"{parts[0].lower()}_{parts[1].lower()}"
 
-    @staticmethod
-    def __join(*args: Any) -> str:
-        """Join format args for Tcl msgcat formatting.
-
-        Args:
-            *args: Positional values to forward to Tcl 'format'.
-
-        Returns:
-            String of brace-wrapped arguments joined by spaces.
-        """
-        new_args = []
-        for arg in args:
-            if isinstance(arg, str):
-                stripped = str(arg).strip('"')
-                new_args.append("{%s}" % stripped)
-            else:
-                new_args.append(str(arg))
-        return " ".join(new_args)
-
-    @staticmethod
-    def _strip_ampersands(s: str) -> str:
-        """Remove mnemonic ampersands from text.
-
-        Converts single '&' markers to nothing and turns '&&' into a
-        literal '&'. Useful for rendering toolkit-agnostic text.
-
-        Args:
-            s: Input string.
-
-        Returns:
-            Cleaned string with mnemonic indicators removed.
-        """
-        if not s or "&" not in s:
-            return s
-        out = []
-        i = 0
-        while i < len(s):
-            if s[i] == "&":
-                if i + 1 < len(s) and s[i + 1] == "&":
-                    out.append("&")
-                    i += 2
-                else:
-                    i += 1  # skip mnemonic marker
-            else:
-                out.append(s[i])
-                i += 1
-        return "".join(out)
-
     # -------------- public API (unchanged signatures) ---------------------
 
     @staticmethod
@@ -279,16 +227,12 @@ class MessageCatalog:
         # work as in legacy behavior.
         cur = MessageCatalog._locale
         if fmtargs and cur in MessageCatalog._overrides and src in MessageCatalog._overrides[cur]:
-            command = f"::msgcat::mc {{{src}}} {MessageCatalog.__join(*fmtargs)}"
-            out = root.tk.eval(command)
-            return MessageCatalog._strip_ampersands(out) if MessageCatalog._strip_amp else out
+            return str(root.tk.call('::msgcat::mc', src, *fmtargs))
 
         # 1) overrides for current locale win first
         cur = MessageCatalog._locale
         if cur in MessageCatalog._overrides and src in MessageCatalog._overrides[cur]:
             s = MessageCatalog._overrides[cur][src]
-            if MessageCatalog._strip_amp:
-                s = MessageCatalog._strip_ampersands(s)
             # try Python formatting if args were passed; ignore on failure
             if fmtargs:
                 try:
@@ -306,8 +250,6 @@ class MessageCatalog:
                 # If gettext returns src unchanged, and we have no fmtargs,
                 # we'll consider falling back to msgcat for consistency.
                 if s != src:
-                    if MessageCatalog._strip_amp:
-                        s = MessageCatalog._strip_ampersands(s)
                     if fmtargs:
                         try:
                             return s % fmtargs
@@ -320,12 +262,8 @@ class MessageCatalog:
                 # ignore and fall back to msgcat
                 pass
 
-        # 3) Tcl msgcat fallback (preserves your current behavior exactly)
-        command = f"::msgcat::mc {{{src}}}"
-        if fmtargs:
-            command = f"{command} {MessageCatalog.__join(*fmtargs)}"
-        out = root.tk.eval(command)
-        return MessageCatalog._strip_ampersands(out) if MessageCatalog._strip_amp else out
+        # 3) Tcl msgcat fallback
+        return str(root.tk.call("::msgcat::mc", src, *fmtargs))
 
     @staticmethod
     def locale(new_locale: Optional[str] = None) -> str:
@@ -375,7 +313,7 @@ class MessageCatalog:
         msgs = Path(dirname).as_posix()
         from bootstack._runtime.app import get_default_root
         root = get_default_root()
-        return int(root.tk.eval(f"::msgcat::mcload [list {msgs}]"))
+        return int(root.tk.call('::msgcat::mcload', msgs))
 
     @staticmethod
     def set(locale: str, src: str, translated: Optional[str] = None) -> None:
@@ -390,7 +328,7 @@ class MessageCatalog:
         MessageCatalog._overrides.setdefault(loc, {})[src] = translated or ""
         from bootstack._runtime.app import get_default_root
         root = get_default_root()
-        root.tk.eval("::msgcat::mcset %s {%s} {%s}" % (MessageCatalog._to_msgcat_locale(locale), src, translated or ""))
+        root.tk.call('::msgcat::mcset', MessageCatalog._to_msgcat_locale(locale), src, translated or "")
 
     @staticmethod
     def set_many(locale: str, *args: str) -> int:
@@ -414,12 +352,10 @@ class MessageCatalog:
         # update Tcl msgcat
         from bootstack._runtime.app import get_default_root
         root = get_default_root()
-        messages = " ".join(["{%s}" % x for x in args])
-        out = f"::msgcat::mcmset {MessageCatalog._to_msgcat_locale(locale)} {{{messages}}}"
-        return int(root.tk.eval(out))
+        return int(root.tk.call("::msgcat::mcmset", MessageCatalog._to_msgcat_locale(locale), tuple(args)))
 
     @staticmethod
     def max(*src: str) -> int:
         from bootstack._runtime.app import get_default_root
         root = get_default_root()
-        return int(root.tk.eval(f"::msgcat::mcmax {' '.join(src)}"))
+        return int(root.tk.call("::msgcat::mcmax", *src))

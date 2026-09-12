@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **Text containing `&`, `{`, `}` or `\` now displays exactly as written.** A `&` was dropped and text was cut off at a `}`; a window title or registered translation with an unbalanced brace raised an error. **If you wrote `&&` to show a literal `&`, write `&` instead.** ([#515](https://github.com/israel-dryer/bootstack/issues/515))
+
 ## [0.4.4] — Shell sidebar theme refresh
 
 ### Fixed
