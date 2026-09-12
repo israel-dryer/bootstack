@@ -52,7 +52,6 @@ Import path
 Contribution notes
 - Prefer base locales (`de`, `fr`, `nl`) unless region-specific differences are
   required (for example `pt_BR`).
-- Avoid embedding mnemonics `&` in messages; MessageCatalog strips them when rendering.
 - Keep message ids consistent (case and punctuation) to avoid duplicates.
 
 Minimum keys to translate for a new language (baseline UI):
