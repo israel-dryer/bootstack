@@ -6,8 +6,7 @@ from bootstack.signals import Signal
 
 BOGUS = "bogus_xyz_383"
 
-# A sample, not the population -- `development/probe_383_unknown_kwarg_policy.py`
-# classifies all 50 by construction.
+# A sample, not the population.
 STRICT = ["TextField", "Label", "Button", "Select", "DataTable", "Row", "Grid",
           "Slider", "Tabs", "Form", "Calendar", "Tree"]
 

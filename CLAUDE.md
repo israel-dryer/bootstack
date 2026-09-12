@@ -21,7 +21,8 @@ This file holds **only what is OPEN plus the standing rules.**
 | `RELEASE.md` | **The complete release runbook.** Follow it; never reconstruct it here |
 
 - **Archive an entry THE DAY ITS RELEASE SHIPS.** More than a few lines about finished work means you are writing in the wrong file. This file was force-split twice for ignoring that.
-- **Delete a plan document once it is implemented** (maintainer, 2026-09-11). Plans live at `development/plan-<issue>-<slug>.md` while open; git history keeps the rest.
+- **`development/` holds only what serves OPEN work** (maintainer, 2026-09-11) — plans (`plan-<issue>-<slug>.md`), probes, demos and handoff notes. Delete them when the work ships; git history keeps the rest. `verify_release.py` is the permanent exception.
+- ⚠ **`src/` and `tests/` never cite `development/` files** — no "measured in `development/probe_…`". State the finding itself, or nothing.
 - **A handoff artifact survives only if it is IN THE REPO** — never in a session scratchpad.
 
 ### Reviewing changes
@@ -62,19 +63,28 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Current state
 
-**Released: `0.4.3` (2026-09-08)**, verified 11/11 by `development/verify_release.py 0.4.3`. History of every release is in the archive.
+### ★ START HERE — next: the #474 comment and docstring scrub (maintainer: later the week of 2026-09-14)
 
-**Unreleased on `main`: #511** (PR #512, merged 2026-09-11) — a shell sidebar collapsed across a theme change came back in the old palette; `ShellLayout` now repaints shown slots via `_recolor_show_slots()`. One `### Fixed` entry under `## [Unreleased]`. ⚠ **When `0.4.4` is cut, add its `WHEEL_FIX_MARKERS` row** (`_recolor_show_slots` in `shell/layout.py`), or the wheel check reports `SKIP`. Archive this paragraph the day it ships.
+Trim comments AND docstrings in `src/` that narrate history instead of describing behavior. **Read #474 first** — it carries the keep/cut rule, the measurement and the order. In short:
+
+1. **Measure:** `py -3.12 development/probe_474_docstring_census.py` (public view + internal by area); `--list <area>` prints each flagged docstring. Record the before/after flagged count in each PR.
+2. **Order, one area per PR, comments and docstrings together:** (a) the public docstrings — ~5 real Tk leaks (`Signal.name`, `Signal.clear`, `App.on`, `ContextMenu`, `Shortcuts.bind_to`) and `guide_layout` naming `_internal`; leave the `.tk`/`.var` escape hatches; (b) `_runtime` + `_core` + `widgets/_core`; (c) `widgets/_impl` in two or three PRs by package.
+3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
+4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
+
+**Released: `0.4.4` (2026-09-11)** — *Shell sidebar theme refresh* (#511), verified 11/11 by `development/verify_release.py 0.4.4`. History of every release is in the archive. `## [Unreleased]` does not exist; the next fix commit recreates it.
+
+⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** `0.4.4`'s chore line was removed by hand with `gh release edit --notes-file`. Unresolved: turn generation off, or exclude chores — ask the maintainer before the next release.
 
 ⚠ **`v0.3.1`/`v0.3.2` and `main` differ by design** — the CHANGELOG was reworded after tagging and the Release bodies edited to match. **Never move a tag a release has already run on.**
 
 | | |
 |---|---|
-| `main` | `83ff1f95` (the #512 merge) + this handoff sweep. Verify with `git rev-parse origin/main` |
-| branches | `main` only locally. `origin/fix/shell-slot-theme-refresh-511` still exists (merged; head `a5870e34`) |
-| next release | None scheduled. `0.4.x — Patch line` holds six open issues plus unreleased #511 |
+| `main` | at the `v0.4.4` tag (`fe602b10`, `Release 0.4.4`). Verify with `git rev-parse origin/main` |
+| branches | `main` only, local and remote |
+| next release | None scheduled. `0.4.x — Patch line` stays open with six issues |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `docs`. **No macOS leg** (#452) |
-| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `a5870e34`, tree-identical to `83ff1f95`; `py -3.12`, pandas + matplotlib present |
+| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`, the commit `v0.4.4` was cut from; `py -3.12`, pandas + matplotlib present |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
 
 **Counting a suite.** Prefer a number you just measured; record the date and commit beside it. `passed + skipped` cannot exceed the selected count except by module-level skips (read the collection line). A self-consistent total can still have selected the wrong population — bound the movement with `git diff --stat <baseline>..HEAD -- tests/`. On macOS, pandas absent flips two data tests (`125 / 4` vs `123 / 6`); `test_chart.py` is 44 tests behind a matplotlib `importorskip`.
@@ -132,7 +142,7 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - **#452 — the GUI suite hangs on GitHub macOS runners** (90 min for a 90 s suite), so aqua has no automated coverage. Setup and the Tk report succeed; "Run the suite" never returns. **Step 1 decides everything: does a bare `tkinter.Tk()` → `update()` → `destroy()` complete on the runner?** A hang means the runner lacks a window-server session; a pass means the hang is ours — bisect the legs. Debug-by-push: make each push answer one question and name the step after it. ⚠ The local macOS box is not a substitute (it has a window server and a session). Every job has `timeout-minutes`; a cancelled leg whose log stops inside `apt-get` is a runner outage — re-run it.
 - **#431** — open on purpose, waiting on a scope decision: its fix skips on aqua (no NumLock modifier for `Mod1`) and is **unverified on a real Aqua build** — fold into the #452 trip.
 - **#436** — adopt `versionadded` across the public API (the docs serve one version). Undecided: retroactive to `0.2.x`, or forward-only.
-- **#474** — trim comments that narrate the code back to what is hard to recover.
+- **#474** — trim comments and docstrings that narrate the code back to what is hard to recover. **Next up** — see ★ START HERE.
 
 ⚠ **"Do not assign a milestone unasked" guards SCOPE calls, not blockers.** Would shipping the milestone without this issue be a decision, or a defect? A defect means it belongs on the milestone; a decision means ask.
 

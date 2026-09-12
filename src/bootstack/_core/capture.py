@@ -223,9 +223,7 @@ def settle(tk_widget, seconds: float) -> None:
     real click re-enters the handler there — confirmed by hand, since a
     synthesized click cannot test this. Measured on Tk 8.6.17 in plain
     tkinter, so it is the toolkit rather than anything above it. X11 and Win32
-    map the window and are expected to honor it;
-    `development/probe_429_busy_during_settle.py` reports which a given box
-    does.
+    map the window and are expected to honor it.
 
     The wait dispatches either way. A correct picture is worth more than a
     stray click: without dispatching, the capture reads pixels that are simply

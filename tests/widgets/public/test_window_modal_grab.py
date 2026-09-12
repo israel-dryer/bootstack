@@ -78,7 +78,7 @@ def test_a_modal_window_shown_without_blocking_also_hands_it_back(app):
     ordinary sequence. The restore is bound on destroy rather than paired around
     the blocking call precisely so this path is covered too — chosen only after
     measuring that a destroy-time restore wins its race with Tk's own grab
-    release (`development/probe_444_grab_restore_ordering.py`).
+    release.
     """
     root = app.tk
     outer = _opener(root)
@@ -286,9 +286,8 @@ class _UnnameableHolder:
 
     tkinter resolves the holder's path name through `_nametowidget`, which
     raises `KeyError` — not `TclError` — for a window the toolkit created on its
-    own. A posted `ttk::combobox` popdown is a real one:
-    `development/probe_444_review_round1.py --arm keyerror` shows
-    `.!combobox.popdown` holding the grab and the lookup raising.
+    own. A posted `ttk::combobox` popdown is a real one: `.!combobox.popdown`
+    holds the grab and the lookup raises.
     """
 
     def grab_current(self):

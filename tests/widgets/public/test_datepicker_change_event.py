@@ -11,7 +11,7 @@ single-selection mode was affected.
 
 These drive `_apply_picked`, the seam both picker call sites in
 `_show_date_picker` funnel through, since the dialog itself needs a user
-gesture. `development/verify_388_datepicker.py` covers the real click-through.
+gesture.
 
 Filed from discussion #386.
 """

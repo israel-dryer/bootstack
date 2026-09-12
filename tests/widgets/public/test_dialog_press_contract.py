@@ -50,8 +50,6 @@ def _drive(dialog, app, action):
     `focus_lastfor()` still naming the toplevel. It reproduced in 1 of 5 full
     legs and never once in 60 dialogs in a quiet process, which is why the
     barrier is the fix rather than a retry in each test.
-    `development/probe_437_focus_flake.py` carries the mechanism and its
-    control.
     """
     root = app._tk_root
     pending: list[str] = []
@@ -141,9 +139,7 @@ def test_query_dialog_submit_records_the_value_and_closes(app):
     `_on_submit` writes `dialog.result` BEFORE it returns, so a regression that
     refused every press would leave the value standing, the window open, and
     `_drive`'s ten-second `force_close` would tear it down — and the result
-    assertion alone would still pass. Measured: it did. Same vacuity as #417's
-    chevron test, caught here by the control in
-    `development/probe_437_review2_controls.py`.
+    assertion alone would still pass. Measured: it did.
     """
     from bootstack.dialogs._impl.query import QueryDialog
 

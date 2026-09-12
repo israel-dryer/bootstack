@@ -92,8 +92,7 @@ class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     # a decoupled option list hands the rule that option's real object -- and a
     # `range` rule over numeric or date option values works. Declaring the
     # mixin's `'text'` default here would reject it at attach time and break
-    # code that runs today; measured both ways in
-    # `development/probe_465_select_range_kind.py`.
+    # code that runs today; measured both ways.
     _VALIDATION_KIND: str | None = None
 
     def __init__(
