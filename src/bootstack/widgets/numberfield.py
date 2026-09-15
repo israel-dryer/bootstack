@@ -14,6 +14,8 @@ from bootstack.widgets.types import AccentToken, Event, Justify, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
+    from bootstack.widgets._impl.composites.numericentry import NumericEntry
+
 
 def _as_number(raw: Any) -> int | float | None:
     """Coerce a field's stored value to a number, regardless of representation.
@@ -48,8 +50,8 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     """A numeric input field with optional stepper buttons.
 
     Accepts integer or float values. Up/Down arrow keys and the mouse wheel
-    step the value by `step`. The field validates that the typed value is
-    numeric and within `min_value`/`max_value` bounds.
+    step the value by `step` while the field has focus. The field validates
+    that the typed value is numeric and within `min_value`/`max_value` bounds.
 
     The initial value is the first positional argument. All options are
     keyword-only.
@@ -131,7 +133,7 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
-        internal_kwargs: dict[str, Any] = {
+        internal_kwargs: Any = {
             "value": value,
             "increment": step,
             "show_spin_buttons": show_steppers,
@@ -165,7 +167,7 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         if density is not None:
             internal_kwargs["density"] = density
 
-        self._internal = _InternalNumericEntry(tk_master, **internal_kwargs)
+        self._internal: "NumericEntry" = _InternalNumericEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
         if signal is not None:
