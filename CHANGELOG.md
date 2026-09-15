@@ -8,12 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.5] — Special characters and popup focus
 
 ### Fixed
 
-- **Text containing `&`, `{`, `}` or `\` now displays exactly as written.** A `&` was dropped and text was cut off at a `}`; a window title or registered translation with an unbalanced brace raised an error. **If you wrote `&&` to show a literal `&`, write `&` instead.** ([#515](https://github.com/israel-dryer/bootstack/issues/515))
-- **An open menu or dropdown now closes when you switch to another application.** A `MenuButton` or `ContextMenu` menu, or the list of a searchable `Select`, stayed on top of other windows after switching away. As with a click outside it, a searchable `Select` closed this way after typing a filter selects the top match. ([#516](https://github.com/israel-dryer/bootstack/issues/516))
+- **Text containing `&`, `{` or `}` now displays as written.** A `&` was dropped, text was cut off at a `}`, and an unbalanced brace in a window title or translation raised an error. **If you wrote `&&` to show `&`, write `&` instead.** ([#515](https://github.com/israel-dryer/bootstack/issues/515))
+- **Open menus now close when you switch to another application.** `MenuButton` and `ContextMenu` menus and searchable `Select` lists stayed on top of other windows. As with a click outside, a `Select` closed after typing a filter selects the top match. ([#516](https://github.com/israel-dryer/bootstack/issues/516))
 
 ## [0.4.4] — Shell sidebar theme refresh
 
@@ -468,6 +468,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.5]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.5
 [0.4.4]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.4
 [0.4.3]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.3
 [0.4.2]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.2
