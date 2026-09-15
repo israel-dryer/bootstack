@@ -74,7 +74,7 @@ Not a simulation — the file you are about to tag:
 py -3.12 -c "import sys; sys.path.insert(0,'.github/scripts'); from release_notes import extract; t,b = extract('X.Y.Z', open('CHANGELOG.md',encoding='utf-8').read())[:2]; print('TITLE:', t); print(b)"
 ```
 
-Confirm: the title is `X.Y.Z — Descriptive title`, the body starts at `### Fixed` (or `### Added`), and **no bottom link definitions leaked in**.
+Confirm: the title is `X.Y.Z — Descriptive title`, the body starts at `## Fixed` (or `## Added`), and **no bottom link definitions leaked in**.
 
 (The em dash prints as `?` or `�` on the Windows console's cp1252 — that is the terminal, not the title. What matters is that the suffix is there.)
 
@@ -149,9 +149,10 @@ Name something only this release's change makes true — a symbol it added, or o
 2. **Check every shipped issue carries the right milestone**, closed ones included:
    `gh issue list --milestone "<title>" --state all`
    ⚠ Sweep a turning-over line with `--state all` — a 2026-08-27 turnover missed two issues because both were already closed.
-3. **Comment on the shipped issues** if you want to.
+3. **Remove chore lines from the Release body.** `generate_release_notes` lists every merged PR under `## What's Changed`, chores included. Edit them out with `gh release edit vX.Y.Z --notes-file <file>`; the tag is untouched.
+4. **Comment on the shipped issues** if you want to.
    ⚠ **`gh issue close --comment "..."` SILENTLY DROPS THE COMMENT when the issue is already closed** — and a PR body containing `Closes #N` closes it at merge, which is the normal case. Use `gh issue comment N --body ...` and verify it landed with `gh issue view N --json comments`.
-4. **Sweep `CLAUDE.md` the same day** — the released version, the START HERE section, the milestone table and the suite counts. Archive the shipped initiative into `docs/_dev/handoff-archive.md` **the day the release ships**; CLAUDE.md has been force-split twice because releases accreted there instead.
+5. **Sweep `CLAUDE.md` the same day** — the released version, the START HERE section, the milestone table and the suite counts. Archive the shipped initiative into `docs/_dev/handoff-archive.md` **the day the release ships**; CLAUDE.md has been force-split twice because releases accreted there instead.
 
 ---
 
@@ -201,7 +202,7 @@ git worktree remove <path> --force
 - **publish** — downloads `dist/`, publishes with `pypa/gh-action-pypi-publish` using OIDC (`id-token: write`). No stored token.
 - **release** — runs `.github/scripts/release_notes.py <version> RELEASE_NOTES.md $GITHUB_OUTPUT`, then `softprops/action-gh-release` with the extracted title, that body, `generate_release_notes: true` (GitHub's "What's Changed" is appended below the curated notes) and `files: dist/*`. A tag containing `a`, `b` or `rc` is marked a prerelease automatically.
 
-**`.github/scripts/release_notes.py`** — takes the title from the descriptive suffix after `## [X.Y.Z] —` and the body from the section **without** its heading, so the title is not repeated and `[X.Y.Z]` does not render as a self-link. A version with no CHANGELOG section falls back to a `vX.Y.Z` title and an empty body.
+**`.github/scripts/release_notes.py`** — takes the title from the descriptive suffix after `## [X.Y.Z] —` and the body from the section **without** its heading, so the title is not repeated and `[X.Y.Z]` does not render as a self-link. The body's headings move up one level (`### Fixed` → `## Fixed`) so they sit beside GitHub's `## What's Changed`. A version with no CHANGELOG section falls back to a `vX.Y.Z` title and an empty body.
 
 **`.github/workflows/docs.yml`** — `workflow_run` on "Release" `completed`, gated on `conclusion == 'success'`; also `workflow_dispatch`. The `workflow_run` trigger is deliberate rather than a `release`/tag trigger: it runs in the `main` context, so `deploy-pages` passes the `github-pages` environment's branch protection, which rejects a tag-ref deployment.
 
