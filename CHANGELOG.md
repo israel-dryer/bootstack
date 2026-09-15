@@ -13,6 +13,7 @@ and from 0.1.0 onward the project adheres to
 ### Fixed
 
 - **Text containing `&`, `{`, `}` or `\` now displays exactly as written.** A `&` was dropped and text was cut off at a `}`; a window title or registered translation with an unbalanced brace raised an error. **If you wrote `&&` to show a literal `&`, write `&` instead.** ([#515](https://github.com/israel-dryer/bootstack/issues/515))
+- **An open menu or dropdown now closes when you switch to another application.** A `MenuButton` or `ContextMenu` menu, or the list of a searchable `Select`, stayed on top of other windows after switching away. As with a click outside it, a searchable `Select` closed this way after typing a filter selects the top match. ([#516](https://github.com/israel-dryer/bootstack/issues/516))
 
 ## [0.4.4] — Shell sidebar theme refresh
 

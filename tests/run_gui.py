@@ -42,6 +42,8 @@ ISOLATED = [
     # pushed them — measured at y~2810 on a 956px-tall screen — and every grab
     # asks for a region no monitor covers. A fresh root keeps them on screen.
     "tests/widgets/public/test_capture.py",
+    # Needs a mapped root that holds the foreground, so another process can take it away.
+    "tests/widgets/public/test_popup_app_focus_loss.py",
     # ⚠ Everything below sits DIRECTLY under tests/widgets/, which `testpaths`
     # does not list — so until #380 these 12 files (25 tests) were collected by
     # NOTHING. Not by `pytest`, not by this runner, not by CI, which did not
