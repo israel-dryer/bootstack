@@ -46,6 +46,12 @@ def has_touchpad_scroll() -> bool:
     """Whether the running Tk generates `<TouchpadScroll>` events."""
     return tk.TkVersion >= _TOUCHPAD_TK
 
+def has_focus(widget: tk.Misc) -> bool:
+    """Whether `widget` holds keyboard focus in its application"""
+    try:
+        return widget.focus_get() is widget
+    except (tk.TclError, KeyError):
+        return False
 
 def uses_x11_buttons(widget: tk.Misc) -> bool:
     """Whether wheel input arrives as `<Button-4>`/`<Button-5>` here.
