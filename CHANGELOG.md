@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- The mouse wheel now steps a `NumberField` or `SpinnerField` only while it has keyboard focus, as documented. Previously, scrolling past a field changed its value, stopped a surrounding ScrollView from scrolling, and the wheel over a `SpinnerField` stepped whichever field had focus. ([#525](https://github.com/israel-dryer/bootstack/issues/525))
+
 ## [0.4.5] — Special characters and popup focus
 
 ### Fixed

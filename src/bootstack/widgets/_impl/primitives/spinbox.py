@@ -72,9 +72,7 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             kwargs['font'] = 'caption'
         kwargs.update(style_options=self._capture_style_options(['density'], kwargs))
         super().__init__(master, **kwargs)
-        # Handle mousewheel explicitly so we can return "break" and stop the
-        # event from leaking to parent scroll containers. Instance bindings run
-        # before class bindings in Tk's chain, so we must do the spin ourselves.
+
         for seq in wheel.wheel_sequences(self):
             self.bind(seq, self._on_mousewheel)
         if wheel.has_touchpad_scroll():
@@ -82,6 +80,8 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             self.bind(wheel.TOUCHPAD_SCROLL, self._on_touchpad_scroll)
 
     def _on_mousewheel(self, event):
+        if not wheel.has_focus(self):
+            return None
         notches = wheel.wheel_notches(self, event)
         if notches:
             self.event_generate("<Up>" if notches > 0 else "<Down>")
@@ -93,6 +93,8 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
         A trackpad reports around sixty events a second; stepping on each
         one would run the value away from the user.
         """
+        if not wheel.has_focus(self):
+            return None
         _dx, dy = wheel.precise_deltas(event)
         _sx, steps = self._touchpad.add(0, dy, 1, _TOUCHPAD_STEP_PX)
         for _ in range(abs(steps)):

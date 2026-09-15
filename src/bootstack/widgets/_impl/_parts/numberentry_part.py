@@ -29,7 +29,7 @@ class NumberEntryPart(TextEntryPart):
             master=None,
             *,
             value: int | float | str = 0,
-            value_format: str = None,
+            value_format: str | None = None,
             minvalue: int | float | None = None,
             maxvalue: int | float | None = None,
             increment: int | float = 1,
@@ -142,9 +142,9 @@ class NumberEntryPart(TextEntryPart):
         return 'break'  # Prevent default behavior
 
     def _handle_mouse_wheel(self, event):
-        """Handle a wheel notch by stepping the value once."""
-        if not self._is_interactive():
-            return 'break'
+        """Step once per wheel notch while the field has focus"""
+        if not wheel.has_focus(self) or not self._is_interactive():
+            return None
         notches = wheel.wheel_notches(self, event)
         if notches:
             name = '<<Increment>>' if notches > 0 else '<<Decrement>>'
@@ -157,8 +157,8 @@ class NumberEntryPart(TextEntryPart):
         A trackpad reports around sixty events a second; stepping on each
         one would run the value away from the user.
         """
-        if not self._is_interactive():
-            return 'break'
+        if not wheel.has_focus(self) or not self._is_interactive():
+            return None
         _dx, dy = wheel.precise_deltas(event)
         _sx, steps = self._touchpad.add(0, dy, 1, _TOUCHPAD_STEP_PX)
         name = '<<Increment>>' if steps > 0 else '<<Decrement>>'

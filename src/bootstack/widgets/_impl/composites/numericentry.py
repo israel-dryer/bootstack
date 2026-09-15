@@ -4,15 +4,18 @@ Provides a specialized entry field for numeric input with increment/decrement
 buttons and keyboard/mouse wheel support.
 """
 
-from typing import Any, Callable
+from typing import Any, Callable, cast, TYPE_CHECKING
 from tkinter import TclError
 from typing_extensions import Unpack
 
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
+
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets.types import Master
 
+if TYPE_CHECKING:
+    from bootstack.widgets._impl._parts import NumberEntryPart
 
 class NumericEntry(Field):
     """A numeric entry field widget with increment/decrement spin buttons.
@@ -21,12 +24,14 @@ class NumericEntry(Field):
     keyboard stepping (Up/Down arrows), mouse wheel support, and optional wrapping.
     """
 
+    entry_widget: "NumberEntryPart"
+
     def __init__(
             self,
             master: Master = None,
             value: int | float = 0,
-            label: str = None,
-            message: str = None,
+            label: str | None = None,
+            message: str | None = None,
             show_spin_buttons: bool = True,
             minvalue: int | float | None = None,
             maxvalue: int | float | None = None,
@@ -80,8 +85,8 @@ class NumericEntry(Field):
         self._show_spin_buttons = show_spin_buttons
 
         # pack info
-        self._increment_pack_info = {}
-        self._decrement_pack_info = {}
+        self._increment_pack_info: Any = {}
+        self._decrement_pack_info: Any = {}
 
         # buttons
         self.insert_addon(
@@ -96,12 +101,12 @@ class NumericEntry(Field):
     @property
     def increment_widget(self) -> Button:
         """Get the increment spin button widget."""
-        return self.addons['increment']
+        return cast(Button, self.addons['increment'])
 
     @property
     def decrement_widget(self) -> Button:
         """Get the decrement spin button widget."""
-        return self.addons['decrement']
+        return cast(Button, self.addons['decrement'])
 
     def increment(self) -> None:
         """Increment the numeric value by one step."""
@@ -182,7 +187,7 @@ class NumericEntry(Field):
                 pass
 
     @configure_delegate('show_spin_buttons')
-    def _delegate_show_spin_buttons(self, value: bool = None):
+    def _delegate_show_spin_buttons(self, value: bool | None = None):
         """Get or set the visibility of spin buttons."""
         if value is None:
             return self._show_spin_buttons

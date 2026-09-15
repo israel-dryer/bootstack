@@ -135,6 +135,10 @@ def apply_class_bindings(window: tkinter.Widget | App) -> None:
                 sequence=sequence,
                 func=on_select_all)
 
+    for sequence in window.bind_class("TSpinbox"):
+        if any(s in sequence for s in ("Wheel", "Button-4", "Button-5", "Touchpad")):
+            window.unbind_class("TSpinbox", sequence)
+
     window.unbind_class("TButton", "<Key-space>")
 
     def button_default_binding(event: tkinter.Event) -> None:
