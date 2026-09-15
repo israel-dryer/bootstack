@@ -72,19 +72,19 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
 4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
 
-**Released: `0.4.4` (2026-09-11)** — *Shell sidebar theme refresh* (#511), verified 11/11 by `development/verify_release.py 0.4.4`. History of every release is in the archive. `## [Unreleased]` holds #515 and #516 (on its branch).
+**Released: `0.4.5` (2026-09-15)** — *Special characters and popup focus* (#515, #516), verified 11/11 by `development/verify_release.py 0.4.5`. History of every release is in the archive. `## [Unreleased]` does not exist; the next fix commit recreates it.
 
-⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** `0.4.4`'s chore line was removed by hand with `gh release edit --notes-file`. Unresolved: turn generation off, or exclude chores — ask the maintainer before the next release.
+⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
 ⚠ **`v0.3.1`/`v0.3.2` and `main` differ by design** — the CHANGELOG was reworded after tagging and the Release bodies edited to match. **Never move a tag a release has already run on.**
 
 | | |
 |---|---|
-| `main` | `62621a0b` (#517, the #515 fix), two commits past `v0.4.4`. Verify with `git rev-parse origin/main` |
-| branches | `main`; `fix/popups-dismiss-on-app-switch-516` (#516, in progress); `fix/amperstand-brace-not-showing-on-widgets-515` is merged (head `3e466251`) and can be deleted, local and remote |
-| next release | None scheduled. `0.4.x — Patch line` has #515 merged and six issues open |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `docs`. **No macOS leg** (#452) |
-| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`, the commit `v0.4.4` was cut from; `py -3.12`, pandas + matplotlib present |
+| `main` | `4af85ee2` (#519, release-note heading levels), one commit past `v0.4.5`. Verify with `git rev-parse origin/main` |
+| branches | `main` only, local and remote |
+| next release | None scheduled. `0.4.x — Patch line` has six issues open |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `docs`. **No macOS leg** (#452). Green at `4af85ee2` |
+| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`; `py -3.12`, pandas + matplotlib present. **Not re-measured at `v0.4.5`:** +5 (#515) and +2 in a 35th, Windows-only isolated leg (#516), so expect `1794 / 22`, 35 legs |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
 
 **Counting a suite.** Prefer a number you just measured; record the date and commit beside it. `passed + skipped` cannot exceed the selected count except by module-level skips (read the collection line). A self-consistent total can still have selected the wrong population — bound the movement with `git diff --stat <baseline>..HEAD -- tests/`. On macOS, pandas absent flips two data tests (`125 / 4` vs `123 / 6`); `test_chart.py` is 44 tests behind a matplotlib `importorskip`.
@@ -97,8 +97,6 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-- **#515 — merged (#517), awaiting release.** Widget text lost `&` and was spliced into Tcl scripts by `MessageCatalog`; a `}` truncated it and `[...]` in it ran as Tcl. Open: disclosure (a private advisory before describing the injection?) and release (a standalone `0.4.5`, or ride the next patch?).
-- **#516 — in progress** on `fix/popups-dismiss-on-app-switch-516` (not yet milestoned). An open `ContextMenu`-backed menu or searchable `Select` list stayed on top of other apps after Alt+Tab; both now close on focus-out when `focus_get()` is `None`. Decided: a searchable `Select` closed this way after typing selects the top match, as an outside click does. Tests: `test_popup_app_focus_loss.py` (isolated, win32 only; both fail on `main`). Open: the hand check (`development/demo_516_popups_on_app_switch.py`), the skip count on the first CI Windows run, Linux and macOS unmeasured.
 - **#488 — widest blast radius.** `_MultilineCore._on_destroy` (`textarea/core.py`) guards on `event.widget is not self`, and the only `<Destroy>` it receives names the inner `Text` — so the whole `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. #486, #490 and #491 each released one piece; none is the fix.
 - **#469** — an event sent with `when="tail"` is queued against the emitting **window** and can outlive its widget, arriving at a different one. ~20 composites emit this way. The route is unproven (Tk path names are never reused; a 300-round probe never forced handle reuse) — remove the precondition rather than hunt the route. The test harness half is fixed (`_reset_scene` pumps `update()` first).
 - **#468** — `Select(allow_custom_values=True)` hands validation rules the raw typed text. Plan: `development/plan-468-select-custom-value-typing.md`.

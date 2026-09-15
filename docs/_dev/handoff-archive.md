@@ -3839,3 +3839,32 @@ One issue, on `0.4.x — Patch line`: **#511**, a user report against `0.4.2` �
 - **A pre-fix probe that never maps its window agrees with itself for the wrong reason** — the walk skips an unmapped tree. Assert viewability first.
 
 **The generated release notes listed the chore PR #513** — `release.yml` sets `generate_release_notes: true`. The line was removed from the published body by hand; the tag was not touched.
+
+## `0.4.5 — Special characters and popup focus` — RELEASED 2026-09-15
+
+Two issues, on `0.4.x — Patch line`: **#515** (PR #517) and **#516** (PR #518, squash). Two `### Fixed` entries. ✅ **Verified 11/11 by `development/verify_release.py 0.4.5`** (wheel marker: `_hide_if_app_lost_focus`). CI green on every leg at `163c754b`; the full suite was not re-measured locally. Every prior-behavior claim in the CHANGELOG was reproduced on `v0.4.4` before promoting.
+
+#### #515 — widget text lost `&`, `}` and more
+
+**Cause:** `MessageCatalog` built Tcl scripts from text (`tk.eval(f"::msgcat::mc {{{src}}}")`) and stripped mnemonic `&` markers. A `}` truncated the text, an unbalanced brace in a window title or registered translation raised `TclError`, a backslash before a line break collapsed to a space, and `[...]` in text ran as Tcl. **Fix:** every msgcat call is `tk.call(cmd, *args)`; `strip_ampersands` is gone (internal — `MessageCatalog` is not in `bootstack.i18n.__all__`). Tests: `test_text_special_characters.py`.
+
+**Decided (maintainer, 2026-09-15):** the CHANGELOG states only the user-visible fix; **the script execution is not disclosed**. The entry leaves out the backslash case — rare, and the fix still covers it. `&&` → `&` shipped under `### Fixed` with a bold upgrade note.
+
+#### #516 — an open menu floated over other apps after Alt+Tab
+
+**Cause:** the `ContextMenu` Toplevel backend (MenuButton, ContextMenu, toolbar and DataTable menus on Windows/Linux) dismissed only on an outside click or its window moving. A searchable `Select` keeps focus in its entry, so its popup's own `<FocusOut>` close never fired. **Fix:** on `<FocusOut>` (the menu's toplevel; the searchable entry, added to `popup_state['key_bindings']`), check at idle on the root whether `focus_get()` is `None`, and close. An in-app focus move does not close.
+
+**Decided:** a searchable `Select` closed this way after typing a filter selects the top match, as an outside click does.
+
+**Measurements that outlive it:**
+
+- **Windows refuses `focus_force()` a foreground from a process that did not receive the last input** — both new tests skipped silently, on a half-fixed build too. `_bring_to_foreground` (`AttachThreadInput`) fixes it; the rule is in `CLAUDE.md`'s measurement traps.
+- Controls: both tests fail on `main`; with only the menu half applied, only the `Select` test fails. On CI's Windows leg both ran and passed (no skips).
+- `unbind(seq, funcid)` removes only that binding on 3.12.10 and 3.13.11; not checked on 3.12.0.
+- **Unmeasured:** Linux (does X11 deliver `<FocusOut>` to the override-redirect popup?) and macOS (the native menu dismisses itself; whether the searchable `Select` floats there is unknown).
+
+#### #519 — release-note headings sat below GitHub's `What's Changed`
+
+`release_notes.py` drops the `## [X.Y.Z]` heading, leaving `### Fixed` a level under the appended `## What's Changed`. It now raises body headings one level (not inside code fences). **All 22 published Release bodies were corrected by hand the same day** (body only; titles, tags, assets, dates and "Latest" verified unchanged). Extraction matches 21 of 22 published bodies with whitespace collapsed; `v0.1.0`, the bottom section, still picks up the link definitions — pre-existing, and a new release cannot hit it.
+
+**The generated notes listed the chore PR #514; removed by hand.** Decided (maintainer): keep `generate_release_notes` and remove chore lines after each release — now `RELEASE.md` step 8.
