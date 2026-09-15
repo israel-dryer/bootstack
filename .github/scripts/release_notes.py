@@ -5,7 +5,9 @@ GitHub Release should show ``<version> — <descriptive title>`` as its *title*
 (no ``v`` prefix — GitHub already shows the ``v<version>`` tag alongside it, and
 this matches the CHANGELOG's ``[<version>]`` format), and the section content
 *without* that heading in its *body* (so the title isn't repeated and the
-``[<version>]`` heading doesn't render as a self-link).
+``[<version>]`` heading doesn't render as a self-link). With the version heading
+gone, the body's headings move up one level, so ``### Fixed`` renders as
+``## Fixed`` beside the ``## What's Changed`` list GitHub appends.
 
 Usage::
 
@@ -41,9 +43,14 @@ def extract(version: str, changelog: str) -> tuple[str, str]:
     title = f"{version} — {suffix}" if suffix else version
 
     body_lines: list[str] = []
+    in_fence = False
     for line in lines[start + 1:]:
         if line.startswith("## ["):
             break
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+        elif not in_fence and re.match(r"#{3,6} ", line):
+            line = line[1:]
         body_lines.append(line)
     while body_lines and not body_lines[0].strip():
         body_lines.pop(0)
