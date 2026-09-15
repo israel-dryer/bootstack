@@ -210,6 +210,20 @@ class _ToplevelContextMenu(CustomConfigMixin):
         # Setup keyboard bindings
         self._setup_keyboard_bindings()
 
+        # hide the menu when the app loses focus
+        self._toplevel.bind("<FocusOut>", self._on_focus_out, add="+")
+
+    def _on_focus_out(self, _):
+        root = self._toplevel._root()
+        root.after_idle(self._hide_if_app_lost_focus)
+
+    def _hide_if_app_lost_focus(self):
+        try:
+            if self._toplevel.winfo_viewable() and self._toplevel.focus_get() is None:
+                self.hide()
+        except (TclError, KeyError):  # destroyed; focus_get() raises KeyError for Tcl-created window
+            pass
+
     def _generate_key(self) -> str:
         """Generate an auto key for an item."""
         key = f"item_{self._counter}"

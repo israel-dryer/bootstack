@@ -948,6 +948,18 @@ class SelectBox(Field):
         tab_binding = self.entry_widget.bind('<Tab>', on_tab)
         popup_state['key_bindings'].append(('<Tab>', tab_binding))
 
+        def _hide_if_app_lost_focus():
+            if popup_state['popup_closed']:
+                return
+            try:
+                if toplevel.winfo_viewable() and self.focus_get() is None:
+                    close_popup()
+            except (TclError, KeyError):  # destroyed; focus_get() raises KeyError for a Tcl-created window
+                pass
+
+        focusout_binding = self.entry_widget.bind('<FocusOut>', lambda e: self._root().after_idle(_hide_if_app_lost_focus), add="+")
+        popup_state['key_bindings'].append(('<FocusOut>', focusout_binding))
+
         # Setup click-outside detection
         def on_root_click(event):
             x, y = event.x_root, event.y_root

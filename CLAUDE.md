@@ -72,7 +72,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
 4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
 
-**Released: `0.4.4` (2026-09-11)** — *Shell sidebar theme refresh* (#511), verified 11/11 by `development/verify_release.py 0.4.4`. History of every release is in the archive. `## [Unreleased]` does not exist; the next fix commit recreates it.
+**Released: `0.4.4` (2026-09-11)** — *Shell sidebar theme refresh* (#511), verified 11/11 by `development/verify_release.py 0.4.4`. History of every release is in the archive. `## [Unreleased]` holds #515 and #516 (on its branch).
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** `0.4.4`'s chore line was removed by hand with `gh release edit --notes-file`. Unresolved: turn generation off, or exclude chores — ask the maintainer before the next release.
 
@@ -80,9 +80,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | at the `v0.4.4` tag (`fe602b10`, `Release 0.4.4`). Verify with `git rev-parse origin/main` |
-| branches | `main` only, local and remote |
-| next release | None scheduled. `0.4.x — Patch line` stays open with six issues |
+| `main` | `62621a0b` (#517, the #515 fix), two commits past `v0.4.4`. Verify with `git rev-parse origin/main` |
+| branches | `main`; `fix/popups-dismiss-on-app-switch-516` (#516, in progress); `fix/amperstand-brace-not-showing-on-widgets-515` is merged (head `3e466251`) and can be deleted, local and remote |
+| next release | None scheduled. `0.4.x — Patch line` has #515 merged and six issues open |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `docs`. **No macOS leg** (#452) |
 | suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`, the commit `v0.4.4` was cut from; `py -3.12`, pandas + matplotlib present |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
@@ -97,7 +97,8 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-- **#515 — in progress** on `fix/amperstand-brace-not-showing-on-widgets-515` (not yet milestoned). Widget text lost `&` and was spliced into Tcl scripts by `MessageCatalog` — a `}` truncated it and `[...]` in it **ran as Tcl**. Plan: `development/plan-515-literal-text-through-msgcat.md`. Tests: `tests/widgets/public/test_text_special_characters.py` (all 5 fail on `main`). Open: the disclosure and release decisions in the plan.
+- **#515 — merged (#517), awaiting release.** Widget text lost `&` and was spliced into Tcl scripts by `MessageCatalog`; a `}` truncated it and `[...]` in it ran as Tcl. Open: disclosure (a private advisory before describing the injection?) and release (a standalone `0.4.5`, or ride the next patch?).
+- **#516 — in progress** on `fix/popups-dismiss-on-app-switch-516` (not yet milestoned). An open `ContextMenu`-backed menu or searchable `Select` list stayed on top of other apps after Alt+Tab; both now close on focus-out when `focus_get()` is `None`. Decided: a searchable `Select` closed this way after typing selects the top match, as an outside click does. Tests: `test_popup_app_focus_loss.py` (isolated, win32 only; both fail on `main`). Open: the hand check (`development/demo_516_popups_on_app_switch.py`), the skip count on the first CI Windows run, Linux and macOS unmeasured.
 - **#488 — widest blast radius.** `_MultilineCore._on_destroy` (`textarea/core.py`) guards on `event.widget is not self`, and the only `<Destroy>` it receives names the inner `Text` — so the whole `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. #486, #490 and #491 each released one piece; none is the fix.
 - **#469** — an event sent with `when="tail"` is queued against the emitting **window** and can outlive its widget, arriving at a different one. ~20 composites emit this way. The route is unproven (Tk path names are never reused; a 300-round probe never forced handle reuse) — remove the precondition rather than hunt the route. The test harness half is fixed (`_reset_scene` pumps `update()` first).
 - **#468** — `Select(allow_custom_values=True)` hands validation rules the raw typed text. Plan: `development/plan-468-select-custom-value-typing.md`.
@@ -235,6 +236,7 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - ⚠ **A synthesized click cannot test a pointer-routed guard** (`tk busy` intercepts by window position). Some questions need a human; say so.
 - **A rate is not evidence for a timing-dependent flake** — a fix and a timing shim both reached 0/5. Assert the invariant (`test_harness_event_queue.py` is the pattern).
 - Probe output must be ASCII — the Windows console is cp1252.
+- ⚠ **Windows refuses `focus_force()` to take the foreground from a process that did not receive the last input** — a foreground-dependent test then skips silently. `AttachThreadInput` to the foreground thread first (`test_popup_app_focus_loss.py::_bring_to_foreground`).
 
 ### Tk and tkinter traps
 
