@@ -14,6 +14,7 @@ and from 0.1.0 onward the project adheres to
 
 - **The mouse wheel now steps a `NumberField` or `SpinnerField` only while it has keyboard focus, as documented.** Previously, scrolling past a field changed its value, stopped a surrounding ScrollView from scrolling, and the wheel over a `SpinnerField` stepped whichever field had focus. ([#525](https://github.com/israel-dryer/bootstack/issues/525))
 - **`TextArea` and `CodeEditor` now build on Tk versions that do not recognize the X11 reverse-tab key.** Previously, creating on some builds of Python for Windows, including `uv` installs, raised a `bad event type` or `keysym "ISO_Left_Tab"`. Now Shift + Tab works the same as before on every platform. ([#520](https://github.com/israel-dryer/bootstack/issues/520)) 
+- **A tab now resizes to fit a new label.** Previously, renaming a tab whose first label was short left it at its original width, cutting off the new text; renaming a long to short one allowed it to shrink below the minimum tab width. ([#521](https://github.com/israel-dryer/bootstack/issues/521))
 
 ## [0.4.5] — Special characters and popup focus
 
