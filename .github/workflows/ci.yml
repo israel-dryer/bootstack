@@ -187,6 +187,50 @@ jobs:
         if: runner.os != 'Linux'
         run: python tests/run_gui.py -q
 
+  # The matrix above takes its interpreter from `actions/setup-python`, which on
+  # Windows carries Tk 8.6.15. uv installs python-build-standalone instead, and
+  # that carries Tk 8.6.12 — a Tk that REJECTS `<ISO_Left_Tab>`. #520 was a
+  # constructor binding that keysym unconditionally: `TextArea` and `CodeEditor`
+  # raised at construction for every `uv run` user, and nothing here could see
+  # it, because no leg ran that Tk.
+  #
+  # The leg is the Tk build, not the Python version. Measured 2026-09-16 against
+  # the fix: uv-managed CPython 3.13.15 reports Tk 8.6.12 on win32, and the full
+  # suite is green on it — 1758 passed, 24 skipped, 34 legs. That total sits
+  # below the matrix leg only because pandas and matplotlib are absent here,
+  # exactly as they are there.
+  tests-uv:
+    name: tests (uv-managed python, windows)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # uv comes from PyPI, not from a third-party action, so this job widens no
+      # trust boundary the `pip install pytest` above has not already crossed.
+      - name: Install uv
+        run: python -m pip install --upgrade pip uv
+
+      # ⚠ `--python-preference only-managed` IS this job. Without it uv is free
+      # to resolve the interpreter `setup-python` just installed, and the leg
+      # silently re-tests the Tk the matrix already covers — green, and measuring
+      # nothing. With it, uv fetches its own build or fails outright.
+      #
+      # `TkVersion` reports 8.6 for both builds, which is the distinction this
+      # leg exists to make, so report the patchlevel instead.
+      - name: Report the Tk build
+        run: uv run --no-project --python 3.13 --python-preference only-managed python -c "import sys, tkinter; print(sys.platform, sys.version.split()[0], tkinter.Tcl().eval('info patchlevel'))"
+
+      # The same install the matrix legs use — the editable checkout plus pytest,
+      # no extras — so a result that differs from `tests (windows-latest)` is a
+      # difference in Tk and nothing else.
+      - name: Run the suite
+        run: uv run --no-project --python 3.13 --python-preference only-managed --with-editable . --with pytest tests/run_gui.py -q
+
   # `docs.yml` only deploys AFTER a successful release, so a broken
   # cross-reference currently sits on `main` unnoticed until release day.
   #
