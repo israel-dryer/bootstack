@@ -81,6 +81,7 @@ WHEEL_FIX_MARKERS = {
     "0.4.3": ("bootstack/widgets/_impl/composites/pathentry.py", "_check_if_changed", True, "#509"),
     "0.4.4": ("bootstack/widgets/_impl/composites/shell/layout.py", "_recolor_show_slots", True, "#511"),
     "0.4.5": ("bootstack/widgets/_impl/composites/contextmenu.py", "_hide_if_app_lost_focus", True, "#516"),
+    "0.4.6": ("bootstack/_runtime/wheel.py", "def has_focus", True, "#525"),
 }
 
 
