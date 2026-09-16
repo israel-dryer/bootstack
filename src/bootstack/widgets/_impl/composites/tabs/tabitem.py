@@ -113,9 +113,7 @@ class TabItem(CompositeFrame):
         self._close_button: Button | None = None
 
         self._build_widget(accent, surface)
-
-        if self._min_width:
-            self.after_idle(self._apply_min_width)
+        self._schedule_min_width()
 
         # Set up signal/variable after widget is built
         if signal is not None:
@@ -136,6 +134,14 @@ class TabItem(CompositeFrame):
         if self.winfo_reqwidth() < self._min_width:
             self.pack_propagate(False)
             self.configure(width=self._min_width, height=self.winfo_reqheight())
+
+    def _schedule_min_width(self):
+        """Re-measure the minimum width once the current content has laid out"""
+        if not self._min_width:
+            return
+        self.pack_propagate(True)
+        self.configure(width=0, height=0)
+        self.after_idle(self._apply_min_width)
 
     def _on_destroy(self, event=None):
         """Clean up variable trace when widget is destroyed."""
@@ -310,6 +316,7 @@ class TabItem(CompositeFrame):
         self._text = value
         if self._label is not None:
             self._label.configure(text=value)
+            self._schedule_min_width()
         return None
 
     @configure_delegate('icon')
@@ -320,6 +327,7 @@ class TabItem(CompositeFrame):
         self._icon = value
         if self._label is not None:
             self._label.configure(icon=value)
+            self._schedule_min_width()
         return None
 
     @configure_delegate('compound')
@@ -330,6 +338,7 @@ class TabItem(CompositeFrame):
         self._compound = value
         if self._label is not None:
             self._label.configure(compound=value)
+            self._schedule_min_width()
         return None
 
     @configure_delegate('value')
@@ -370,6 +379,7 @@ class TabItem(CompositeFrame):
                 self._close_button.place_forget()
                 self._close_button.destroy()
                 self._close_button = None
+            self._schedule_min_width()
         return None
 
     @configure_delegate('signal')
