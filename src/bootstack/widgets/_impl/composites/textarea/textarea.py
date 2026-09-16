@@ -173,7 +173,10 @@ class TextArea(GridFrame):
         # it is a separate composite and is unaffected.)
         self._core.text.bind("<Tab>", self._focus_next, add="+")
         self._core.text.bind("<Shift-Tab>", self._focus_prev, add="+")
-        self._core.text.bind("<ISO_Left_Tab>", self._focus_prev, add="+")
+
+        # X11 reports Shift+Tab as ISO_Left_Tab; other Tk builds may reject the keysym
+        if self._core.winsys == "x11":
+            self._core.text.bind("<ISO_Left_Tab>", self._focus_prev, add="+")
 
         # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",

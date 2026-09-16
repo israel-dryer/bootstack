@@ -45,7 +45,10 @@ class SmartIndent(EditFilter):
         core.text.bind("<Return>", self._on_return, add="+")
         core.text.bind("<Tab>", self._on_tab, add="+")
         core.text.bind("<Shift-Tab>", self._on_shift_tab, add="+")
-        core.text.bind("<ISO_Left_Tab>", self._on_shift_tab, add="+")  # Linux/X11
+
+        # X11 reports Shift+Tab as ISO_Left_Tab; other Tk builds may reject the keysym
+        if core.winsys == "x11":
+            core.text.bind("<ISO_Left_Tab>", self._on_shift_tab, add="+")
 
     def detach(self, core: _MultilineCore) -> None:
         self._core = None
