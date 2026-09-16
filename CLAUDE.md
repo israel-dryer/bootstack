@@ -40,6 +40,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 ## Environment — three machines; check which one you are on
 
 **Windows** (`D:\Development\bootstack`, primary). The checked-in `.venv` is **stale** ("Access is denied"). **Use `py -3.12` for tests and docs** — pytest is installed only there. ⚠ `py -3.13 tests/run_gui.py` fails every leg with "No module named pytest" while printing a plausible harness summary; 3.13 is for demo scripts only. `bootstack.__version__` reports a stale `0.1.0a9` — ignore it.
+- ⚠ **A second Tk is reachable here, and it is not the one `py -3.12` runs.** `uv run --no-project --python 3.13 --python-preference only-managed --with-editable . --with pytest tests/run_gui.py -q` runs on python-build-standalone: **Tk 8.6.12**, against python.org's **8.6.15**. That is the build #520 crashed on. Green there 2026-09-16 at the #520 fix — `1758 / 24`, 34 legs — below the `py -3.12` count only because pandas and matplotlib are absent. `uv` is not installed; `pip install uv` into a throwaway venv.
 
 **WSL** (`/home/iddryer/bootstack`, Ubuntu 22.04) — **the only box that runs the Linux leg.**
 - Use **`/home/iddryer/.virtualenvs/bootstack/bin/python`** (3.13, Tk 8.6.12, editable). `python3` is 3.10, below the floor. Confirm it prints `/home/iddryer/bootstack/src/bootstack`.
@@ -72,7 +73,12 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
 4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
 
-**Released: `0.4.5` (2026-09-15)** — *Special characters and popup focus* (#515, #516), verified 11/11 by `development/verify_release.py 0.4.5`. History of every release is in the archive. `## [Unreleased]` does not exist; the next fix commit recreates it.
+**Released: `0.4.5` (2026-09-15)** — *Special characters and popup focus* (#515, #516), verified 11/11 by `development/verify_release.py 0.4.5`. History of every release is in the archive.
+
+**`## [Unreleased]` holds two fixes.** Archive each the day it ships.
+
+- **#525** (PR #526, merged) — `NumberField`/`SpinnerField` step on the wheel only while focused. The guard is `wheel.has_focus()` (same check as `_commit_if_not_editing`), and `apply_class_bindings` strips the `TSpinbox` class wheel binding; the value/text split is pinned by `test_field_wheel_focus.py`.
+- **#520** (branch `fix/iso-left-tab-x11-only-520`) — `<ISO_Left_Tab>` is bound only when `winsys == "x11"`, at both sites (`textarea.py`, `extensions/smart_indent.py`). **The trigger is the Tk build, not Windows:** uv-managed CPython carries Tk 8.6.12, which rejects the keysym; python.org carries 8.6.15, which accepts it. `test_textarea_reverse_tab_keysym.py` pins both halves — construction survives a Tk that rejects it, and the binding is installed iff x11, so deleting it outright fails too. Plan: `development/plan-520-iso-left-tab-x11-only.md`.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -80,11 +86,12 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `4af85ee2` (#519, release-note heading levels), one commit past `v0.4.5`. Verify with `git rev-parse origin/main` |
+| `main` | `8c1a0ff0` (merge of #526, the #525 fix). Verify with `git rev-parse origin/main` |
 | branches | `main` only, local and remote |
-| next release | None scheduled. `0.4.x — Patch line` has six issues open |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `docs`. **No macOS leg** (#452). Green at `4af85ee2` |
-| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`; `py -3.12`, pandas + matplotlib present. **Not re-measured at `v0.4.5`:** +5 (#515) and +2 in a 35th, Windows-only isolated leg (#516), so expect `1794 / 22`, 35 legs |
+| next release | None scheduled; `[Unreleased]` carries #525 and #520, a `0.4.6` candidate. `0.4.x — Patch line` has six issues open |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). Green on PR #526 (shared leg `1357 / 15` on both OSes, +5 over `079c72c3` with skips unchanged, so the new wheel tests ran rather than skipped); the `8c1a0ff0` run was still in progress when recorded |
+| `tests-uv` | Added on the #520 branch, never yet run by GitHub. Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
+| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`; `py -3.12`, pandas + matplotlib present. **Not re-measured since:** +5 (#515), +2 in a 35th, Windows-only isolated leg (#516) and +5 (#525), so expect `1799 / 22`, 35 legs |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
 
 **Counting a suite.** Prefer a number you just measured; record the date and commit beside it. `passed + skipped` cannot exceed the selected count except by module-level skips (read the collection line). A self-consistent total can still have selected the wrong population — bound the movement with `git diff --stat <baseline>..HEAD -- tests/`. On macOS, pandas absent flips two data tests (`125 / 4` vs `123 / 6`); `test_chart.py` is 44 tests behind a matplotlib `importorskip`.
@@ -243,6 +250,9 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - ⚠ **`dlg.show()`'s modal loop is not broken by an `after`-scheduled close** — invoke a real footer button, and poll for the grab rather than a fixed delay. The grab is set before the footer's children map at idle, so scope the barrier to the subtree you need.
 - ⚠⚠ **Tk drops a grab when its holder is destroyed but never restores the one it displaced.** `_runtime/grab.py` (`capture_grab`/`restore_grab`) is the ONE home for the pairing. Capture BEFORE grabbing; restore holder AND kind (global vs local). `grab_current()` raises `KeyError` for a Tcl-created window (a posted combobox popdown).
 - **Do not synthesize keys in the shared-root suite** — drive the bound routine (`ttk::treeview::ToggleFocus`).
+- ⚠ **`event_generate("<Up>")` on a widget delivers to the FOCUS window, not that widget** — a `SpinnerField` wheel once stepped whichever field held focus (#525). Generate a virtual event, or guard on focus.
+- ⚠ **An instance handler returning `None` still runs the native class binding** — `TSpinbox`/`TCombobox` bind the wheel themselves; strip the class binding when the instance handler owns the behavior (`apply_class_bindings`).
+- ⚠ **Which keysyms exist is a property of the Tk BUILD, not the platform** — `<ISO_Left_Tab>` is rejected by Tk 8.6.12 and accepted by 8.6.15, both on win32, so an unguarded bind raises at construction for some users and not others (#520). Bind an X11-only keysym behind `winsys == "x11"`; Tk wraps its own `<<PrevWindow>>` add in `catch` for the same reason.
 - `event_generate("<Double-1>")` is rejected — send two presses with explicit `time=` (synthesized events default to `time=0`).
 - `winfo_ismapped()` on a destroyed widget RAISES `TclError`.
 - ⚠ **`update_idletasks()` does not service queued window events — only `update()` does.** It can silence a flake while fixing nothing.
