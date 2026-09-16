@@ -73,12 +73,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
 4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
 
-**Released: `0.4.5` (2026-09-15)** — *Special characters and popup focus* (#515, #516), verified 11/11 by `development/verify_release.py 0.4.5`. History of every release is in the archive.
+**Released: `0.4.6` (2026-09-16)** — *Field scrolling, tab width and editor startup* (#520, #525, #521), verified 11/11 by `development/verify_release.py 0.4.6`. History of every release is in the archive.
 
-**`## [Unreleased]` holds two fixes.** Archive each the day it ships.
-
-- **#525** (PR #526, merged) — `NumberField`/`SpinnerField` step on the wheel only while focused. The guard is `wheel.has_focus()` (same check as `_commit_if_not_editing`), and `apply_class_bindings` strips the `TSpinbox` class wheel binding; the value/text split is pinned by `test_field_wheel_focus.py`.
-- **#520** (branch `fix/iso-left-tab-x11-only-520`) — `<ISO_Left_Tab>` is bound only when `winsys == "x11"`, at both sites (`textarea.py`, `extensions/smart_indent.py`). **The trigger is the Tk build, not Windows:** uv-managed CPython carries Tk 8.6.12, which rejects the keysym; python.org carries 8.6.15, which accepts it. `test_textarea_reverse_tab_keysym.py` pins both halves — construction survives a Tk that rejects it, and the binding is installed iff x11, so deleting it outright fails too. Plan: `development/plan-520-iso-left-tab-x11-only.md`.
+**`## [Unreleased]` is empty.** Archive each fix the day it ships.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -86,12 +83,12 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `8c1a0ff0` (merge of #526, the #525 fix). Verify with `git rev-parse origin/main` |
+| `main` | `2e3ab42a` (`Release 0.4.6`). Verify with `git rev-parse origin/main` |
 | branches | `main` only, local and remote |
-| next release | None scheduled; `[Unreleased]` carries #525 and #520, a `0.4.6` candidate. `0.4.x — Patch line` has six issues open |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). Green on PR #526 (shared leg `1357 / 15` on both OSes, +5 over `079c72c3` with skips unchanged, so the new wheel tests ran rather than skipped); the `8c1a0ff0` run was still in progress when recorded |
-| `tests-uv` | Added on the #520 branch, never yet run by GitHub. Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
-| suite, Windows | **`1787 passed / 22 skipped`, 34 legs, exit 0** — 2026-09-11 at `e88d38eb`; `py -3.12`, pandas + matplotlib present. **Not re-measured since:** +5 (#515), +2 in a 35th, Windows-only isolated leg (#516) and +5 (#525), so expect `1799 / 22`, 35 legs |
+| next release | None scheduled; `[Unreleased]` is empty. `0.4.x — Patch line` has six issues open (#488, #469, #468, #447, #422, #207) |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `65523dbb`, the commit 0.4.6 was cut from |
+| `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
+| suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
 
 **Counting a suite.** Prefer a number you just measured; record the date and commit beside it. `passed + skipped` cannot exceed the selected count except by module-level skips (read the collection line). A self-consistent total can still have selected the wrong population — bound the movement with `git diff --stat <baseline>..HEAD -- tests/`. On macOS, pandas absent flips two data tests (`125 / 4` vs `123 / 6`); `test_chart.py` is 44 tests behind a matplotlib `importorskip`.
@@ -286,6 +283,7 @@ Files are **CRLF** (`core.autocrlf=true`, `.gitattributes` `eol=crlf`). **`git d
 - **`bs.Row` and `bs.Column`** are the stacks (no `HStack`/`VStack`). Container defaults: `horizontal_items=`, `vertical_items=`, `grow_items=`, `weights=`; `Grid` adds `columns`/`rows`/`auto_flow` (`columns=3` ≡ `[1,1,1]`, `0` ≡ `'auto'`).
 - **`fill=`/`expand=`/`anchor=`/`sticky=`/`side=` on a layout child RAISE**, with advice that depends on how the child is placed: a **flex child** (`Row`, `Column`, and `Card`/`GroupBox`/`Accordion` in column mode) is told `grow=` + `horizontal=`/`vertical=`; a **grid cell** is told `horizontal=`/`vertical=` and to weight the row/column — never `grow=`, which a grid cell silently filters. 11 `_reject_legacy_child_kwargs` call sites; its `kind` argument is required so a caller cannot get the wrong message. `attach()`'s grid branch is the exception (#445).
 - `height=`/`width=` on a stack collapses the other axis — add `fill=` + `expand=True`. `show_border=True` needs padding. Use `bs.Card` for a card look.
+- ⚠ **A size pinned with `pack_propagate(False)` + `configure(width=)` is permanent, and a one-shot measurement at construction never re-measures** — the widget then cannot grow for longer content, and never shrank below the minimum in the first place if the pin never ran (#521). Re-enable propagation, reset `width`/`height` to 0 and re-measure at idle on every content change (`TabItem._schedule_min_width`).
 
 ### Widgets and API
 
