@@ -12,7 +12,8 @@ and from 0.1.0 onward the project adheres to
 
 ### Fixed
 
-- The mouse wheel now steps a `NumberField` or `SpinnerField` only while it has keyboard focus, as documented. Previously, scrolling past a field changed its value, stopped a surrounding ScrollView from scrolling, and the wheel over a `SpinnerField` stepped whichever field had focus. ([#525](https://github.com/israel-dryer/bootstack/issues/525))
+- **The mouse wheel now steps a `NumberField` or `SpinnerField` only while it has keyboard focus, as documented.** Previously, scrolling past a field changed its value, stopped a surrounding ScrollView from scrolling, and the wheel over a `SpinnerField` stepped whichever field had focus. ([#525](https://github.com/israel-dryer/bootstack/issues/525))
+- **`TextArea` and `CodeEditor` now build on Tk versions that do not recognize the X11 reverse-tab key.** Previously, creating on some builds of Python for Windows, including `uv` installs, raised a `bad event type` or `keysym "ISO_Left_Tab"`. Now Shift + Tab works the same as before on every platform. ([#520](https://github.com/israel-dryer/bootstack/issues/520)) 
 
 ## [0.4.5] — Special characters and popup focus
 
