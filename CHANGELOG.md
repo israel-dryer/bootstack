@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **`A destroyed `TextArea` or `CodeEditor` now releases everything it registered when destroyed.** Previously its mouse-wheel handling and text editing hooks stayed alive for the life of the process and accumulated while the editor was in use. ([#488](https://github.com/israel-dryer/bootstack/issues/488))
+
 ## [0.4.6] — Field scrolling, tab width and editor startup
 
 ### Fixed

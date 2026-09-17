@@ -524,26 +524,15 @@ class _MultilineCore(tk.Frame):
 
     # ── convenience: forward common Text API to self ──────────────────────
 
-    def bind(self, sequence=None, func=None, add=None):
-        return self.text.bind(sequence, func, add)
-
-    def unbind(self, sequence, funcid=None):
-        return self.text.unbind(sequence, funcid)
-
     def focus_set(self):
         self.text.focus_set()
 
     # ── cleanup ───────────────────────────────────────────────────────────
 
     def _on_destroy(self, event: tk.Event) -> None:
-        # Released for any Destroy in this subtree, not just our own: the event
-        # this handler receives names the inner Text, never the core, so gating
-        # the release on `is self` releases nothing and the subscription outlives
-        # the widget. The rest of the block stays behind the guard -- it has
-        # never run, and starting it here is not this change's business.
-        self._unbind_signal()
         if event.widget is not self:
             return
+        self._unbind_signal()
         self._chain.destroy()
         try:
             for seq in wheel.wheel_sequences(self):
