@@ -391,7 +391,48 @@ class SelectBox(Field):
         text = self.entry_widget.get()
         if text in self._value_by_text and self._value_by_text[text] != text:
             return self._value_by_text[text]
-        return self._entry_live_validation_value()
+        return self._decode_custom_text(text, self._entry_live_validation_value)
+
+    def _numeric_option_kind(self):
+        """`int` or `float` when every option value shares that type, else None."""
+        # type(), not isinstance: bool never reads as int here, so a bool option
+        # list falls out as "not numeric" without a special case.
+        kinds = {type(rec.value) for rec in self._records}
+        if len(kinds) != 1:
+            return None
+        kind = kinds.pop()
+        return kind if kind in (int, float) else None
+
+    def _decode_custom_text(self, text, fallback):
+        """Decode text that names no option: the options' own type when they share one.
+
+        A value typed by the user arrives as text with nothing to parse it,
+        while one assigned from code arrives already typed. When every option
+        value is an `int`, or every one a `float`, numeric text is parsed to
+        that type so both routes agree. Anything else — a mixed or empty
+        list, `str` or `bool` options, text that is not a number, an entry
+        that parses through its own `value_format` — is handed to `fallback`,
+        which is what the entry reported before.
+
+        A whole-number `float` narrows to `int` for `int` options; `'6.5'`
+        against `int` options stays `6.5` rather than being truncated.
+        """
+        if self.entry_widget._value_format is not None:
+            return fallback()
+        if getattr(self.entry_widget, "_showing_placeholder", False):
+            return fallback()
+        kind = self._numeric_option_kind()
+        if kind is None:
+            return fallback()
+        try:
+            parsed = self.entry_widget._fmt.parse(text, "decimal")
+        except ValueError:
+            return fallback()
+        if parsed is None:
+            return fallback()
+        if kind is int and not parsed.is_integer():
+            return parsed
+        return kind(parsed)
 
     def _register_retired_value(self, value: Any) -> None:
         """Make a value that is not in the option list decodable.
@@ -1185,16 +1226,17 @@ class SelectBox(Field):
         """The selected value, or None when the field is empty.
 
         For a decoupled option (its display text differs from its value) this
-        returns the option's value. Otherwise it returns the entry's own raw
-        value, so `value_format` parsing — e.g. TimeField's `datetime.time` —
-        is preserved.
+        returns the option's value. A custom value typed by the user takes the
+        type the options share when that is `int` or `float`. Otherwise it
+        returns the entry's own raw value, so `value_format` parsing — e.g.
+        TimeField's `datetime.time` — is preserved.
         """
         text = self.entry_widget.get()
         if text == "":
             return None
         if text in self._value_by_text and self._value_by_text[text] != text:
             return self._value_by_text[text]
-        return Field.value.fget(self)
+        return self._decode_custom_text(text, lambda: Field.value.fget(self))
 
     @value.setter
     def value(self, value):
