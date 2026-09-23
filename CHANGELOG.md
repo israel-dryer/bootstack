@@ -13,6 +13,7 @@ and from 0.1.0 onward the project adheres to
 ### Fixed
 
 - **`A destroyed `TextArea` or `CodeEditor` now releases everything it registered when destroyed.** Previously its mouse-wheel handling and text editing hooks stayed alive for the life of the process and accumulated while the editor was in use. ([#488](https://github.com/israel-dryer/bootstack/issues/488))
+- **A value typed into a `Select` with `allow_custom_values=True` now takes the type its options share.** When every option value is an `int`, or every one a `float`, numeric text is read as that type, so `value` compares equal to the options and a `range` rule judges the number. Previously the typed text stayed a string, so `value == 6` was `False` and every `range` rule reported it invalid. Text that is not a number, and a `Select` whose options are strings, mixed, or empty, are unchanged. ([#468](https://github.com/israel-dryer/bootstack/issues/468))
 
 ## [0.4.6] — Field scrolling, tab width and editor startup
 

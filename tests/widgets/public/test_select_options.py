@@ -829,3 +829,59 @@ def test_typing_into_a_custom_value_select_is_not_reported_as_empty(app):
     entry.insert(0, "gamma")
     app._tk_root.update_idletasks()
     assert entry._get_validation_value() == "gamma"
+
+
+# --- A typed custom value takes the type the options share (#468) ----------
+
+def _type_into(select, app, text):
+    entry = select._internal._entry
+    entry.delete(0, "end")
+    entry.insert(0, text)
+    app._tk_root.update_idletasks()
+    assert entry.get() == text     # the text is really in the entry
+    return entry
+
+
+def test_typed_custom_value_takes_the_options_int_type(app):
+    # An off-list value assigned from code already kept its type; one typed by
+    # the user stayed a str, so `value == 6` was False and a `range` rule was
+    # handed '6' and rejected it.
+    select = bs.Select(options=[("One", 1), ("Seven", 7), ("Twelve", 12)],
+                       allow_custom_values=True)
+    select.add_validation_rule("range", min=5, max=10)
+    app._tk_root.update_idletasks()
+    entry = _type_into(select, app, "6")
+    assert select.value == 6 and type(select.value) is int
+    assert entry._get_validation_value() == 6
+    assert select.validate() is True
+    _type_into(select, app, "99")
+    assert select.validate() is False
+
+
+@pytest.mark.parametrize("options, typed, expected", [
+    ([("Low", 0.5), ("High", 1.5)], "2.5", 2.5),           # float options
+    ([("One", 1), ("Two", 2)], "6.5", 6.5),                # never truncated to 6
+    ([("One", 1), ("Two", 2)], "banana", "banana"),        # unparseable keeps its text
+    (["alpha", "beta"], "gamma", "gamma"),                 # str options unchanged
+    ([("One", 1), ("Two", "two")], "6", "6"),              # mixed types: no answer
+    ([], "6", "6"),                                        # empty list: no answer
+    ([("Yes", True), ("No", False)], "1", "1"),            # bool is not int
+])
+def test_typed_custom_value_outside_the_rule_is_unchanged(app, options, typed, expected):
+    select = bs.Select(options=options, allow_custom_values=True)
+    app._tk_root.update_idletasks()
+    _type_into(select, app, typed)
+    assert select.value == expected and type(select.value) is type(expected)
+
+
+def test_timefield_custom_text_still_parses_through_its_own_format(app):
+    # TimeField is built on the same composite and already types what is typed
+    # through its own format; the option-typed decode must stay out of its way.
+    from datetime import time
+
+    field = bs.TimeField()
+    app._tk_root.update_idletasks()
+    _type_into(field, app, "2:30 PM")
+    assert field.value == time(14, 30)
+    _type_into(field, app, "banana")
+    assert field.value is None

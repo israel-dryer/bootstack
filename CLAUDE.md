@@ -75,7 +75,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 **Released: `0.4.6` (2026-09-16)** — *Field scrolling, tab width and editor startup* (#520, #525, #521), verified 11/11 by `development/verify_release.py 0.4.6`. History of every release is in the archive.
 
-**`## [Unreleased]` is empty.** Archive each fix the day it ships.
+**`## [Unreleased]` carries #488 and #468** — the `TextArea`/`CodeEditor` teardown, and the `Select` custom-value typing. Archive each fix the day it ships.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -83,9 +83,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `2e3ab42a` (`Release 0.4.6`). Verify with `git rev-parse origin/main` |
-| branches | `main` only, local and remote |
-| next release | None scheduled; `[Unreleased]` is empty. `0.4.x — Patch line` has six issues open (#488, #469, #468, #447, #422, #207) |
+| `main` | `dd795978` (PR #530, the #488 fix). Verify with `git rev-parse origin/main` |
+| branches | `main`, plus `origin/fix/textarea-core-teardown-488` at `09d39b0c` — merged, safe to delete |
+| next release | None scheduled; `[Unreleased]` carries #488 and #468. `0.4.x — Patch line` has four issues open once #468 closes (#469, #447, #422, #207) |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `65523dbb`, the commit 0.4.6 was cut from |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
@@ -101,9 +101,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-- **#488 — widest blast radius.** `_MultilineCore._on_destroy` (`textarea/core.py`) guards on `event.widget is not self`, and the only `<Destroy>` it receives names the inner `Text` — so the whole `TextArea`/`CodeEditor` teardown block has never run, including the wheel `unbind_class` sweep. #486, #490 and #491 each released one piece; none is the fix.
 - **#469** — an event sent with `when="tail"` is queued against the emitting **window** and can outlive its widget, arriving at a different one. ~20 composites emit this way. The route is unproven (Tk path names are never reused; a 300-round probe never forced handle reuse) — remove the precondition rather than hunt the route. The test harness half is fixed (`_reset_scene` pumps `update()` first).
-- **#468** — `Select(allow_custom_values=True)` hands validation rules the raw typed text. Plan: `development/plan-468-select-custom-value-typing.md`.
 - **#447** — dialog focus/Enter flake on Windows, ~4/50 (and 2/50 after #407, which is noise). The CI reproduction was a missing window manager; **the Windows flake is not explained by that.** A sibling, `test_enter_on_a_disabled_button_still_reaches_the_default`, is 1 in 37 and 0/40 in a quiet process. ⚠ **Fix `probe_446_disabled_button_enter.py` first** — it counts a barrier timeout (dialog never up, `calls == []`) as a reproduction.
 - **#422** — the `DataTable` group-header right-click guard is untested on macOS right-click sequences.
 - **#207** — ContextMenu outside-dismiss vs a `'break'` target. Deferred. Agreed fix if revisited: a module-level open-menu registry + dismiss-all from `DataTable._on_header_click`, **not** a grab.

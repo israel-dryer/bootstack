@@ -204,7 +204,7 @@ Set ``searchable=True`` to filter options as the user types.
 Custom values
 ~~~~~~~~~~~~~
 
-Set ``allow_custom_values=True`` to accept typed values not in the list.
+Set ``allow_custom_values=True`` to accept typed values not in the list. A typed value takes the type the option values share: when every option value is an ``int``, or every one a ``float``, a typed number is read as that type, and validation rules judge the number. Any other text, and any other option list, gives the text as typed.
 
 .. code-block:: python
 

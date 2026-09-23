@@ -50,7 +50,11 @@ class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         searchable: If `True`, typing in the field filters the option
             list. Defaults to `False`.
         allow_custom_values: If `True`, users may type values not in
-            `options`. Defaults to `False`.
+            `options`. A typed value takes the type the option values share:
+            when every option value is an `int`, or every one a `float`,
+            numeric text is read as that type; otherwise, and for text that
+            is not a number, the value is the text as typed. Defaults to
+            `False`.
         group_by: Name of an option field to cluster the popup rows under
             non-selectable group headers (e.g. `'category'`). The field is read
             from each option's flat record, so it may be any carried bag key (or
