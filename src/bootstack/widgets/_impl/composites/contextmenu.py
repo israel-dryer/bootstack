@@ -4,6 +4,7 @@ Provides a customizable context menu with support for commands, checkbuttons,
 radiobuttons, and separators.
 """
 
+import weakref
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
 from typing_extensions import Unpack
 from typing import Any, Callable, Literal
@@ -41,6 +42,23 @@ On Windows and Linux the result is the created widget. On macOS (native
 # "caller omitted target" (default to master) and "caller passed target=None
 # explicitly" (no target — no positioning, no auto-trigger).
 _TARGET_DEFAULT: Any = object()
+
+# Themed menus currently shown. Weak, so a new menu torn down with its parent
+# is not pinned here (it's destroy()) is never called.
+_OPEN_MENUS: "weakref.WeakSet[_ToplevelContextMenu]" = weakref.WeakSet()
+
+
+def hide_open_menus() -> None:
+    """Hide every open themed context menu.
+
+    Call this from a click handler that returns 'break': the break stops the
+    click before the window-level outside-click handler can close the menu.
+    """
+    for menu in list(_OPEN_MENUS):
+        try:
+            menu.hide()
+        except TclError:
+            _OPEN_MENUS.discard(menu)
 
 
 class _CommandItemFrame(CompositeFrame):
@@ -648,6 +666,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._toplevel.attributes('-topmost', True)
         self._toplevel.lift()
         self._toplevel.focus_force()
+        _OPEN_MENUS.add(self)
 
         # Start with no item highlighted (keyboard nav will highlight on first arrow key)
         self._highlighted_index = -1
@@ -737,6 +756,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
 
     def hide(self) -> None:
         """Hide the context menu."""
+        _OPEN_MENUS.discard(self)
         # Unbind click handler first
         self._cancel_click_outside_after()
         self._unbind_click_outside_handler()
@@ -756,6 +776,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
 
     def destroy(self) -> None:
         """Destroy the context menu and cleanup resources."""
+        _OPEN_MENUS.discard(self)
         # Unbind click handler
         self._cancel_click_outside_after()
         self._unbind_click_outside_handler()

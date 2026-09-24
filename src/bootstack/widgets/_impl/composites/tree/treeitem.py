@@ -14,6 +14,7 @@ from tkinter import TclError
 from typing import Any, Optional
 
 from bootstack.widgets._impl.composites.compositeframe import CompositeFrame
+from bootstack.widgets._impl.composites.contextmenu import hide_open_menus
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.label import Label
@@ -193,6 +194,9 @@ class TreeItem(CompositeFrame):
             self._emit("<<TreeItemSelect>>", self._node)
 
     def _on_ctrl_click(self, event=None) -> str:
+        # The 'break' below stops the click before an open menu's outside-click
+        # handler sees it, so close the open menus here
+        hide_open_menus()
         if self._node is not None:
             if self._focusable:
                 self.focus()
@@ -209,6 +213,9 @@ class TreeItem(CompositeFrame):
         return "break"
 
     def _on_right_click(self, event) -> str:
+        # The 'break' below stops the click before an open menu's outside-click
+        # handler sees it, so close open menus before this row opens its own
+        hide_open_menus()
         if self._node is not None:
             self._emit(
                 "<<TreeItemRightClick>>",
