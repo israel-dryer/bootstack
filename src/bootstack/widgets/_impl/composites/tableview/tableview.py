@@ -30,7 +30,7 @@ from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack._runtime.utility import bind_right_click, debug_log_exception
-from bootstack.widgets._impl.composites.contextmenu import ContextMenu
+from bootstack.widgets._impl.composites.contextmenu import ContextMenu, hide_open_menus
 from bootstack.widgets._impl.composites.tooltip import ToolTip
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
 from bootstack.widgets._impl.primitives.entry import Entry
@@ -1644,6 +1644,7 @@ class TableView(Frame):
     # ------------------------------------------------------------------ Row context menu
     def _dismiss_context_menus(self) -> None:
         """Hide any open built-in row/header context menu (idempotent)."""
+        hide_open_menus()
         for menu in (self._row_menu, self._header_menu):
             if menu is not None:
                 try:
