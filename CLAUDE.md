@@ -64,7 +64,23 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Current state
 
-### ★ START HERE — next: the #474 comment and docstring scrub (maintainer: later the week of 2026-09-14)
+### ★ START HERE — next: cut `0.4.7` (maintainer, 2026-09-24)
+
+Follow `RELEASE.md` start to finish. This section only records what is already settled and what Step 1 must fix.
+
+- **Scope, settled:** #488, #468, #207 — the three entries under `[Unreleased]`. `0.4.x — Patch line` has **no open issues** (#422, #447 closed not-planned 2026-09-23, #469 not-planned 2026-09-24). Nothing else is waiting.
+- **Verb: `bump patch`.** `bootstack/__init__.py` is unchanged since `v0.4.6`; the only new symbol, `hide_open_menus`, is internal. No `### Added`.
+- **Step 1 must fix, in the CHANGELOG:**
+  1. The #488 entry opens `` **`A destroyed `TextArea`… `` — a stray backtick before `A`. It renders as broken code.
+  2. The #468 entry has no upgrade sentence. An app comparing `select.value == '6'` breaks once the value is `6`. Add one bold sentence in the `0.4.3` `CodeEditor.on_change` shape: "**If you compared a typed value against its text, compare against the number.**"
+  3. Pick the descriptive suffix — the Release title. Suggested: *Editor teardown, typed custom values and menu dismiss*.
+- **Prior-behavior claims:** #207's "previously stayed open" is proven for `0.4.6` — the three files it touches are identical between `v0.4.6` and its parent `84df1750`, where it was measured. Check #488's and #468's against `git show v0.4.6:<file>` as Step 1 requires.
+- **Step 7 marker is already in** `development/verify_release.py`: `"0.4.7": (contextmenu.py, "def hide_open_menus", True, "#207")`.
+- ⚠ **Merged PR titles land verbatim in the Release's "What's Changed":** #531 is titled `Fix/select custom value typing 468` (the branch name) and #532 `title: fix(contextmenu): …` (a stray prefix). Retitle both with `gh pr edit` **before** tagging, or hand-edit the Release body in Step 8.
+- **Suite:** CI on `main` @ `9ea479b4` is **green, all six jobs** (2026-09-24), including both ubuntu legs, the first Linux run of the #207 tests. This handoff and `verify_release.py`'s `0.4.7` row sit **uncommitted on `main`** — commit them before `bumpversion`, which refuses a dirty tree.
+- **Step 8:** the patch line does not close. Archive #488, #468 and #207 into `docs/_dev/handoff-archive.md` the same day, and sweep this section back to the #474 scrub below.
+
+### Next after the release: the #474 comment and docstring scrub
 
 Trim comments AND docstrings in `src/` that narrate history instead of describing behavior. **Read #474 first** — it carries the keep/cut rule, the measurement and the order. In short:
 
@@ -75,7 +91,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 **Released: `0.4.6` (2026-09-16)** — *Field scrolling, tab width and editor startup* (#520, #525, #521), verified 11/11 by `development/verify_release.py 0.4.6`. History of every release is in the archive.
 
-**`## [Unreleased]` carries #488 and #468** — the `TextArea`/`CodeEditor` teardown, and the `Select` custom-value typing. Archive each fix the day it ships.
+**`## [Unreleased]` carries #488, #468 and #207** — the `TextArea`/`CodeEditor` teardown, the `Select` custom-value typing, and a `ContextMenu` that stayed open when a row consumed the click. Archive each fix the day it ships.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -83,10 +99,10 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `dd795978` (PR #530, the #488 fix). Verify with `git rev-parse origin/main` |
-| branches | `main`, plus `origin/fix/textarea-core-teardown-488` at `09d39b0c` — merged, safe to delete |
-| next release | None scheduled; `[Unreleased]` carries #488 and #468. `0.4.x — Patch line` has four issues open once #468 closes (#469, #447, #422, #207) |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `65523dbb`, the commit 0.4.6 was cut from |
+| `main` | `9ea479b4` (PR #532, the #207 fix). Verify with `git rev-parse origin/main` |
+| branches | `main`; merged and safe to delete: `origin/fix/select-custom-value-typing-468` (+ local) and local `fix/contextmenu-dismiss-on-break-207` at `4b14090d` |
+| next release | **`0.4.7`, patch** — #488, #468, #207. See ★ START HERE |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `9ea479b4` (2026-09-24, the #207 merge) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
@@ -101,10 +117,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-- **#469** — an event sent with `when="tail"` is queued against the emitting **window** and can outlive its widget, arriving at a different one. ~20 composites emit this way. The route is unproven (Tk path names are never reused; a 300-round probe never forced handle reuse) — remove the precondition rather than hunt the route. The test harness half is fixed (`_reset_scene` pumps `update()` first).
-- **#447** — dialog focus/Enter flake on Windows, ~4/50 (and 2/50 after #407, which is noise). The CI reproduction was a missing window manager; **the Windows flake is not explained by that.** A sibling, `test_enter_on_a_disabled_button_still_reaches_the_default`, is 1 in 37 and 0/40 in a quiet process. ⚠ **Fix `probe_446_disabled_button_enter.py` first** — it counts a barrier timeout (dialog never up, `calls == []`) as a reproduction.
-- **#422** — the `DataTable` group-header right-click guard is untested on macOS right-click sequences.
-- **#207** — ContextMenu outside-dismiss vs a `'break'` target. Deferred. Agreed fix if revisited: a module-level open-menu registry + dismiss-all from `DataTable._on_header_click`, **not** a grab.
+**None open** (2026-09-24). #207 is fixed and ships in `0.4.7`. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+
+- **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
 ### `0.5.0 — Strictness and value types` — breaks batched into ONE migration
 
@@ -144,7 +159,7 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - **#452 — the GUI suite hangs on GitHub macOS runners** (90 min for a 90 s suite), so aqua has no automated coverage. Setup and the Tk report succeed; "Run the suite" never returns. **Step 1 decides everything: does a bare `tkinter.Tk()` → `update()` → `destroy()` complete on the runner?** A hang means the runner lacks a window-server session; a pass means the hang is ours — bisect the legs. Debug-by-push: make each push answer one question and name the step after it. ⚠ The local macOS box is not a substitute (it has a window server and a session). Every job has `timeout-minutes`; a cancelled leg whose log stops inside `apt-get` is a runner outage — re-run it.
 - **#431** — open on purpose, waiting on a scope decision: its fix skips on aqua (no NumLock modifier for `Mod1`) and is **unverified on a real Aqua build** — fold into the #452 trip.
 - **#436** — adopt `versionadded` across the public API (the docs serve one version). Undecided: retroactive to `0.2.x`, or forward-only.
-- **#474** — trim comments and docstrings that narrate the code back to what is hard to recover. **Next up** — see ★ START HERE.
+- **#474** — trim comments and docstrings that narrate the code back to what is hard to recover. **Next after `0.4.7`** — see ★ START HERE. Fold in `bs.DataTable`'s docstring, which still lists `fill`/`expand`/`anchor`/`sticky` under `**kwargs` (`datatable.py:105-106`); they raise now.
 
 ⚠ **"Do not assign a milestone unasked" guards SCOPE calls, not blockers.** Would shipping the milestone without this issue be a decision, or a defect? A defect means it belongs on the milestone; a decision means ask.
 
