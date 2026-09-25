@@ -8,12 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.7] — Editor teardown, typed custom values and menu dismiss
 
 ### Fixed
 
-- **`A destroyed `TextArea` or `CodeEditor` now releases everything it registered when destroyed.** Previously its mouse-wheel handling and text editing hooks stayed alive for the life of the process and accumulated while the editor was in use. ([#488](https://github.com/israel-dryer/bootstack/issues/488))
-- **A value typed into a `Select` with `allow_custom_values=True` now takes the type its options share.** When every option value is an `int`, or every one a `float`, numeric text is read as that type, so `value` compares equal to the options and a `range` rule judges the number. Previously the typed text stayed a string, so `value == 6` was `False` and every `range` rule reported it invalid. Text that is not a number, and a `Select` whose options are strings, mixed, or empty, are unchanged. ([#468](https://github.com/israel-dryer/bootstack/issues/468))
+- **A destroyed `TextArea` or `CodeEditor` now releases everything it registered when destroyed.** Previously its mouse-wheel handling and text editing hooks stayed alive for the life of the process, accumulating with every editor created. ([#488](https://github.com/israel-dryer/bootstack/issues/488))
+- **A value typed into a `Select` with `allow_custom_values=True` now takes the type its options share.** When every option value is an `int`, or every one a `float`, numeric text is read as that type, so `value` compares equal to the options and a `range` rule judges the number. Previously the typed text stayed a string, so `value == 6` was `False` and every `range` rule reported it invalid. Text that is not a number, and a `Select` whose options are strings, mixed, or empty, are unchanged. **If you compared a typed value against its text, compare against the number.** ([#468](https://github.com/israel-dryer/bootstack/issues/468))
 - **An open `ContextMenu` now closes when you click a `DataTable` row that has selection checkboxes, or right-click a `Tree` row or tick its selection checkbox.** Previously the row consumed the click and the menu stayed open until you pressed Escape or clicked somewhere else. When the right-clicked `Tree` row opened its own menu, both menus stayed open. Windows and Linux only; macOS menus were not affected. ([#207](https://github.com/israel-dryer/bootstack/issues/207))
 
 ## [0.4.6] — Field scrolling, tab width and editor startup
@@ -484,6 +484,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.7
 [0.4.6]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.6
 [0.4.5]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.5
 [0.4.4]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.4
