@@ -3868,3 +3868,21 @@ Two issues, on `0.4.x — Patch line`: **#515** (PR #517) and **#516** (PR #518,
 `release_notes.py` drops the `## [X.Y.Z]` heading, leaving `### Fixed` a level under the appended `## What's Changed`. It now raises body headings one level (not inside code fences). **All 22 published Release bodies were corrected by hand the same day** (body only; titles, tags, assets, dates and "Latest" verified unchanged). Extraction matches 21 of 22 published bodies with whitespace collapsed; `v0.1.0`, the bottom section, still picks up the link definitions — pre-existing, and a new release cannot hit it.
 
 **The generated notes listed the chore PR #514; removed by hand.** Decided (maintainer): keep `generate_release_notes` and remove chore lines after each release — now `RELEASE.md` step 8.
+
+## `0.4.6 — Field scrolling, tab width and editor startup` — RELEASED 2026-09-16
+
+Archived late (2026-09-24, from `CLAUDE.md` history). Three issues on `0.4.x — Patch line`: **#520** (PR #527), **#525** (PR #526), **#521** (PR #528). ✅ Verified 11/11 by `development/verify_release.py 0.4.6`. Cut from `65523dbb`, all six CI jobs green.
+
+- **#520** — `<ISO_Left_Tab>` is bound only when `winsys == "x11"`, at both sites (`textarea.py`, `extensions/smart_indent.py`). **The trigger is the Tk build, not Windows:** uv-managed CPython carries Tk 8.6.12, which rejects the keysym; python.org carries 8.6.15. `test_textarea_reverse_tab_keysym.py` pins both halves (construction survives a rejecting Tk; the binding exists iff x11). Added the `tests-uv` CI leg — a different Tk from every other leg; `--python-preference only-managed` is load-bearing.
+- **#525** — `NumberField`/`SpinnerField` step on the wheel only while focused. Guard is `wheel.has_focus()` (same check as `_commit_if_not_editing`); `apply_class_bindings` strips the `TSpinbox` class wheel binding. `test_field_wheel_focus.py`. The `SpinnerField` stepped the *focused* field because `event_generate("<Up>")` delivers to the focus window.
+- **#521** — `TabItem._schedule_min_width` re-enables propagation, resets `width`/`height` to 0 and re-measures at idle on every content change; the old one-shot `pack_propagate(False)` pin never re-measured and never ran at all on some paths.
+
+## `0.4.7 — Editor teardown, typed custom values and menu dismiss` — RELEASED 2026-09-24
+
+Three issues on `0.4.x — Patch line`: **#488** (PR #530), **#468** (PR #531), **#207** (PR #532). ✅ Verified 11/11 by `development/verify_release.py 0.4.7` (marker `def hide_open_menus`). Cut from `9ea479b4` + handoff, all six CI jobs green. Prior-behavior claims checked on `v0.4.6` (#468 by probe: `'6'`, `== 6` False, `validate()` False).
+
+- **#488** — `_MultilineCore` overrode `bind` to forward to its inner `Text`, so its own `<Destroy>` handler received the Text and the `event.widget is self` guard never passed: the redirector command and the per-instance wheel bindtag (`_mcore_<id>`) leaked per editor created. Fix: drop the `bind`/`unbind` forwards. `test_textarea_teardown.py` asserts both released, with preconditions that they existed.
+- **#468** — `SelectBox._decode_custom_text`: when every option value is `int` (or every one `float`, by `type()`, so `bool` is excluded), numeric typed text parses to that type; `'6.5'` against `int` options stays `6.5`. Skipped for a `value_format` entry (TimeField) and the placeholder. Shipped with an upgrade note (string comparisons break).
+- **#207** — a row handler returning `'break'` stopped the click before the owning window's outside-dismiss handler. Fix: a module-level open-menu registry, `hide_open_menus()` (internal), called from the `DataTable` checkbox row and `Tree` row/checkbox paths. Not a grab (the agreed design).
+
+**PR titles #531/#532 were retitled before tagging** so the generated "What's Changed" came out clean — no chore lines to strip this time.
