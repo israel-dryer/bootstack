@@ -18,6 +18,7 @@ from bootstack._core.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,
+    bind_locale_refresh,
     create_formatted_signal,
 )
 from bootstack.i18n.specs import (
@@ -67,8 +68,7 @@ class LocalizationMixin(Misc):
         self._localize_mode = localize
         self._default_value_format = value_format
 
-        root = self.winfo_toplevel()  # event is generated on root
-        root.bind("<<LocaleChanged>>", self._on_locale_changed, add="+")
+        bind_locale_refresh(self._on_locale_changed)
 
         # Check if widget has a textsignal or textvariable with value_format
         if value_format and self._has_signal_or_variable():

@@ -10,7 +10,10 @@ a thin glue layer.
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+import itertools
+import weakref
+from tkinter import TclError
+from typing import Any, Callable, TYPE_CHECKING
 
 from bootstack.i18n.msgcat import MessageCatalog
 from bootstack.i18n.specs import (
@@ -178,6 +181,91 @@ def get_current_locale() -> str:
 
 
 # =============================================================================
+# Locale Change Propagation
+# =============================================================================
+
+_LOCALE_EVENT = "<<LocaleChanged>>"
+
+
+# Don't bind a widget's refresh directly on the window: nothing removes it
+# when the widget is destroyed.
+class _LocaleRefreshers:
+    """The refresh methods one toplevel calls on a locale change."""
+
+    def __init__(self, toplevel: Any) -> None:
+        self._toplevel = toplevel
+        self._refreshers: dict[int, weakref.WeakMethod] = {}
+        self._keys = itertools.count()
+        self._funcid: str | None = None
+
+    def add(self, refresh: Callable[[], Any]) -> None:
+        """Register `refresh`, a bound method of a widget on this toplevel."""
+        self._ensure_bound()
+        key = next(self._keys)
+        refreshers = self._refreshers
+        # Drop the entry when the widget is collected, so a window whose
+        # locale never changes does not accumulate dead references either.
+        refreshers[key] = weakref.WeakMethod(
+            refresh, lambda _ref: refreshers.pop(key, None)
+        )
+
+    def _ensure_bound(self) -> None:
+        """Bind the dispatcher, or bind it again if something replaced it.
+
+        A `bind` of the event without `add` on this toplevel replaces every
+        binding for it, the dispatcher included, which would silently stop
+        every widget on the window from refreshing.
+        """
+        toplevel = self._toplevel
+        if self._funcid is not None:
+            script = str(toplevel.tk.call("bind", toplevel._w, _LOCALE_EVENT))
+            # The line prefix `_patched_bind` emits, as `_patched_unbind` matches it.
+            if ('if {"[%s ' % self._funcid) in script:
+                return
+        self._funcid = toplevel.bind(_LOCALE_EVENT, self._dispatch, add="+")
+
+    def _dispatch(self, _event: Any = None) -> None:
+        """Call each live widget's refresh, in the order they registered."""
+        for key, ref in list(self._refreshers.items()):
+            refresh = ref()
+            if refresh is None:
+                continue
+            widget = refresh.__self__
+            try:
+                alive = widget.winfo_exists()
+            except TclError:
+                alive = False
+            if not alive:
+                # Destroyed, but still referenced from somewhere else.
+                self._refreshers.pop(key, None)
+                continue
+            try:
+                refresh()
+            except Exception:
+                # Report and carry on, as a handler bound on its own would:
+                # one failing widget must not stop the rest from refreshing.
+                widget._report_exception()
+
+
+def bind_locale_refresh(refresh: Callable[[], Any]) -> None:
+    """Call `refresh` on every locale change for as long as its widget exists.
+
+    The locale-change event is generated on the root; `refresh` is called,
+    with no arguments, when the event reaches the toplevel of the widget it is
+    bound to, after the widgets registered before it. A destroyed widget is
+    never called, and registering holds no strong reference to it.
+
+    Args:
+        refresh: A bound method of the widget to refresh.
+    """
+    toplevel = refresh.__self__.winfo_toplevel()
+    refreshers = toplevel.__dict__.get("_bs_locale_refreshers")
+    if refreshers is None:
+        refreshers = toplevel._bs_locale_refreshers = _LocaleRefreshers(toplevel)
+    refreshers.add(refresh)
+
+
+# =============================================================================
 # Signal Formatting
 # =============================================================================
 
@@ -227,5 +315,6 @@ __all__ = [
     "resolve_variable_text",
     "apply_spec",
     "get_current_locale",
+    "bind_locale_refresh",
     "create_formatted_signal",
 ]

@@ -5,6 +5,7 @@ from typing import Any, Callable, TypedDict, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
+from bootstack._core.localization import bind_locale_refresh
 from bootstack.events import ChangeEvent
 from bootstack.widgets._core.options import normalize_options, option_display, record_to_dict
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem
@@ -125,9 +126,8 @@ class OptionMenu(MenuButton):
         # Bind signal to change event (also keeps the face display in sync)
         self._bind_change_event()
         self._sync_display()
-        # The locale-change event is generated on the root; bind there (not on
-        # self) so the face re-translates live, matching the mixin's pattern.
-        self.winfo_toplevel().bind('<<LocaleChanged>>', lambda _e: self._sync_display(), add="+")
+        # Re-translate the face live on a locale change, as the mixin does.
+        bind_locale_refresh(self._sync_display)
 
         # Create menu items that update the shared variable
         self._context_menu = self._build_context_menu()
