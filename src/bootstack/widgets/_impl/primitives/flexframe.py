@@ -107,7 +107,8 @@ class FlexFrame(Frame):
         self._gap = gap
         # Ordered (widget, opts) entries. opts may carry: grow, horizontal,
         # vertical, padx, pady (resolved margins), and spacer metadata
-        # (_spacer, _spacer_size, _spacer_weight).
+        # (_spacer, _spacer_size, _spacer_weight). add_child adds the id of the
+        # child's <Destroy> binding (_destroy_bind).
         self._managed: list[tuple[tk.Widget, dict[str, Any]]] = []
         # Highest main-axis track index configured on the previous relayout,
         # so we can zero stale tracks when the plan shrinks.
@@ -116,6 +117,12 @@ class FlexFrame(Frame):
         # append fast-path decide in O(1) whether the stack is "pure" (see
         # `_can_append_in_place`) without rescanning every add.
         self._flex_child_count = 0
+        # Set when a managed child is destroyed out-of-band (Tk destroy()
+        # bypasses remove_child). Until it is dropped, the dead child keeps its
+        # track, so the next fast-path append would land after it with a
+        # leading gap. `_prune_destroyed` re-plans once, before the next add or
+        # index lookup, or at idle if neither comes.
+        self._needs_prune = False
         if propagate is not None:
             self.grid_propagate(propagate)
 
@@ -197,6 +204,7 @@ class FlexFrame(Frame):
 
     def index_of(self, widget: tk.Widget) -> int:
         """Return the managed index of `widget`, or -1 if not managed."""
+        self._prune_destroyed()
         for i, (w, _) in enumerate(self._managed):
             if w is widget:
                 return i
@@ -215,7 +223,18 @@ class FlexFrame(Frame):
         sibling's track — a mid-list insert, a distribution mode, or a
         grow/spacer child — takes the full `_relayout`.
         """
-        entry = (widget, dict(opts))
+        # Close up behind any child destroyed since the last change, so `index`
+        # counts live siblings and the fast path's next track follows them.
+        self._prune_destroyed()
+        opts = dict(opts)
+        # Kept in opts so remove_child can drop it and a detach/attach cycle
+        # does not stack up handlers.
+        opts["_destroy_bind"] = widget.bind(
+            "<Destroy>",
+            lambda e, w=widget: self._on_child_destroy(e, w),
+            add="+",
+        )
+        entry = (widget, opts)
         appending = index is None or index >= len(self._managed)
         new_is_flex = bool(opts.get("grow")) or bool(opts.get("_spacer"))
         # Decide the fast path BEFORE the count reflects this child (the check
@@ -240,12 +259,34 @@ class FlexFrame(Frame):
         _, removed_opts = self._managed[idx]
         if removed_opts.get("grow") or removed_opts.get("_spacer"):
             self._flex_child_count -= 1
+        widget.unbind("<Destroy>", removed_opts["_destroy_bind"])
         try:
             tk.Grid.forget(widget)
         except tk.TclError:
             pass
         self._managed.pop(idx)
         self._relayout()
+
+    def _on_child_destroy(self, event: tk.Event, widget: tk.Widget) -> None:
+        """Flag a prune when a managed child is destroyed, and schedule one."""
+        if event.widget is not widget or self._needs_prune:
+            return
+        self._needs_prune = True
+        # On the root: an idle job owned by this frame would be orphaned when
+        # the frame itself is destroyed along with its children.
+        try:
+            self._root().after_idle(self._prune_destroyed)
+        except (tk.TclError, AttributeError):
+            pass
+
+    def _prune_destroyed(self) -> None:
+        """Drop children destroyed out-of-band and close up the survivors.
+
+        `_relayout` does the dropping and re-grids survivors in place, so they
+        see no `<Unmap>`/`<Map>`. A no-op unless a destroy was flagged.
+        """
+        if self._needs_prune and _alive(self):
+            self._relayout()
 
     def _can_append_in_place(self) -> bool:
         """True when appending a plain child cannot move any existing sibling.
@@ -385,6 +426,7 @@ class FlexFrame(Frame):
         # Drop children destroyed out from under us: Tk's destroy() does not route
         # through remove_child, so a dead child lingers in _managed and re-gridding
         # it below would raise "bad window path name". (GridFrame guards the same.)
+        self._needs_prune = False
         if any(not _alive(w) for w, _ in self._managed):
             self._managed = [e for e in self._managed if _alive(e[0])]
             self._flex_child_count = sum(
@@ -492,9 +534,9 @@ class FlexFrame(Frame):
                 trail = margin_main[1]
             elif margin_main is not None:
                 lead += margin_main
-            pad: dict[str, Any] = {}
-            if lead or trail:
-                pad[main_axis] = (lead, trail)
+            # Always written: re-gridding in place keeps any option not passed,
+            # so a survivor that becomes the first child would keep its gap.
+            pad: dict[str, Any] = {main_axis: (lead, trail)}
             margin_cross = o.get(cross_axis)
             if margin_cross is not None:
                 pad[cross_axis] = margin_cross

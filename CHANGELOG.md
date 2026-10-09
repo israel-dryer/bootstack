@@ -13,6 +13,7 @@ and from 0.1.0 onward the project adheres to
 ### Fixed
 
 - **Fields and buttons stretched across a wide window no longer slow down its painting.** Their borders and fills are drawn by repeating a small image across the widget, one draw per repeat, so a stretched widget took longer to paint the wider it was. On Windows, 60 full-width `TextField`s took 0.96 s to paint in a window 1280 pixels wide, against 0.38 s at 400. The images are now repeated in advance, and the same window paints in 0.23 s. Widgets look and size exactly as before. ([#535](https://github.com/israel-dryer/bootstack/issues/535))
+- **A widget destroyed inside a `Row` or `Column` now gives up its place.** Previously the layout kept a slot for every destroyed child. A list refreshed by destroying its children and building new ones placed the new children after all the old slots, the first with a gap above it, and held on to every destroyed widget, so each refresh added to the total. Destroying the first child left its gap above the child that took its place, and an `index=` or `attach()` given right after a destroy counted the destroyed child. Every container that stacks its children, including `Card`, `ScrollView`, `App` and `Window`, is fixed the same way; `Grid` was not affected. ([#537](https://github.com/israel-dryer/bootstack/issues/537))
 
 ## [0.4.7] — Editor teardown, typed custom values and menu dismiss
 
