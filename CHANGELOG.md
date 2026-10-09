@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **Fields and buttons stretched across a wide window no longer slow down its painting.** Their borders and fills are drawn by repeating a small image across the widget, one draw per repeat, so a stretched widget took longer to paint the wider it was. On Windows, 60 full-width `TextField`s took 0.94 s to paint in a window 1280 pixels wide, against 0.37 s at 400. The images are now repeated in advance, and the same window paints in 0.23 s. Widgets look and size exactly as before. ([#535](https://github.com/israel-dryer/bootstack/issues/535))
+
 ## [0.4.7] — Editor teardown, typed custom values and menu dismiss
 
 ### Fixed
