@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import io
 import itertools
+import tkinter
 from tkinter import ttk
 
 import pytest
@@ -96,6 +97,7 @@ def test_a_pretiled_element_keeps_the_size_its_image_asks_for(app, created):
     builder, calls = created
     result = recolor_element_image("input_default", "#ffffff", "#000000")
     sizes = []
+    labels = []
     for stock in (True, False):
         name = _name()
         if stock:
@@ -110,7 +112,10 @@ def test_a_pretiled_element_keeps_the_size_its_image_asks_for(app, created):
         get_style().layout(style, [(name, {"sticky": "nsew", "children": [
             ("Label.label", {"sticky": "nsew"})]})])
         label = ttk.Label(app.tk, style=style)
+        labels.append(label)
         sizes.append((label.winfo_reqwidth(), label.winfo_reqheight()))
+    for label in labels:
+        label.destroy()
     assert sizes[1] == sizes[0]
 
 
@@ -128,7 +133,22 @@ def test_an_element_that_does_not_stretch_keeps_its_image(app, created, sticky):
     assert "width" not in options
 
 
-def test_elements_sharing_an_image_share_one_copy(app, created):
+def test_an_image_that_cannot_be_copied_is_registered_as_it_is(app, created):
+    builder, calls = created
+    # A bitmap image has a size but is not a photo, so it cannot be copied from.
+    source = tkinter.BitmapImage(master=app.tk, data=(
+        "#define b_width 8\n#define b_height 8\n"
+        "static unsigned char b_bits[] = {\n"
+        "   0xff, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xff };\n"))
+    name = _name()
+    builder.create_style_element_image(ElementImage(name, source, border=2, sticky="ew"))
+    (image, *_), options = calls[-1]
+    assert image == str(source)
+    assert "width" not in options
+    assert name in get_style().element_names()
+
+
+def test_elements_sharing_an_image_share_one_copy(app, created, monkeypatch):
     builder, calls = created
     source = _striped()
     before = set(map(str, app.tk.call("image", "names")))
@@ -143,6 +163,16 @@ def test_elements_sharing_an_image_share_one_copy(app, created):
     assert first != str(source)  # precondition: given a copy
     assert first == second == state
 
-    # A theme rebuild builds every style again; the element already exists.
-    builder.create_style_element_image(ElementImage(name, source, border=2))
     assert set(map(str, app.tk.call("image", "names"))) - before == {first}
+
+    # A theme rebuild builds every style again; the element already exists, so
+    # its images are not looked up at all.
+    lookups = []
+    monkeypatch.setattr(
+        "bootstack.style.style_builder_ttk.pretile_element_image",
+        lambda image, *args: lookups.append(image) or image)
+    builder.create_style_element_image(ElementImage(_name(), source, border=2))
+    assert lookups  # precondition: a new element does look its images up
+    del lookups[:]
+    builder.create_style_element_image(ElementImage(name, source, border=2))
+    assert not lookups
