@@ -1,3 +1,4 @@
+import tkinter
 from colorsys import hls_to_rgb, rgb_to_hls
 from dataclasses import dataclass
 from pathlib import Path
@@ -551,6 +552,73 @@ def recolor_element_image(
     ImageService.set_cached(cache_key, (photo_image, meta))
 
     return ElementImageResult(image=photo_image, meta=meta)
+
+
+PRETILE_SPAN = 256
+"""The width, in pixels, an element image's middle column is repeated to."""
+
+
+def pretile_element_image(
+    image: str,
+    border: int | tuple[int, ...] | list[int],
+    master: tkinter.Misc,
+) -> str:
+    """Return a copy of an element image with its middle column repeated.
+
+    A stretched image element is drawn by repeating its middle column across the
+    parcel, one draw per repeat, so an element image only a few pixels wide makes
+    a wide widget slow to paint. The copy repeats the column to at least
+    `PRETILE_SPAN` pixels, in whole repeats starting at the column's left edge as
+    the element's own drawing does, so it draws the same pixels in fewer repeats.
+    The left and right columns are copied unchanged.
+
+    Copies are cached by source image and border, so elements that share an image
+    share its copy.
+
+    Args:
+        image: Name of the source photo image.
+        border: The element's border: one value, or up to four in the order left,
+            top, right, bottom, where right defaults to left.
+        master: Widget whose interpreter owns `image`.
+
+    Returns:
+        The name of the copy, or `image` itself when its middle column is already
+        at least `PRETILE_SPAN` pixels wide or has no width.
+    """
+    values = [border] if isinstance(border, int) else list(border)
+    left = int(values[0]) if values else 0
+    right = int(values[2]) if len(values) > 2 else left
+
+    cache_key = ("element-pretile", str(image), left, right)
+    cached = ImageService.get_cached(cache_key)
+    if cached is not None:
+        return str(cached)
+
+    tk = master.tk
+    width = int(tk.call("image", "width", image))
+    height = int(tk.call("image", "height", image))
+    middle = width - left - right
+    if middle <= 0 or middle >= PRETILE_SPAN:
+        return str(image)
+
+    span = middle * -(-PRETILE_SPAN // middle)
+    tiled = tkinter.PhotoImage(master=master, width=left + span + right, height=height)
+
+    def copy(x0: int, x1: int, *to: int) -> None:
+        tk.call(
+            tiled, "copy", image, "-from", x0, 0, x1, height,
+            "-to", *to, "-compositingrule", "set",
+        )
+
+    if left:
+        copy(0, left, 0, 0)
+    # A -to rectangle larger than the -from region repeats the region across it.
+    copy(left, left + middle, left, 0, left + span, height)
+    if right:
+        copy(width - right, width, left + span, 0)
+
+    ImageService.set_cached(cache_key, tiled)
+    return str(tiled)
 
 
 def should_darken(bg_hex: str) -> bool:

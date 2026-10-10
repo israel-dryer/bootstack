@@ -9,6 +9,7 @@ from bootstack._core.exceptions import StyleBuilderError
 from bootstack.style.style_builder_base import StyleBuilderBase
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.theme_provider import ThemeProvider
+from bootstack.style.utility import pretile_element_image
 
 
 class BuilderCallable(Protocol):
@@ -344,7 +345,31 @@ class StyleBuilderTtk(StyleBuilderBase):
         if name in existing:
             # Element already exists; avoid duplicate creation error on theme rebuilds
             return
+        args, kwargs = self._pretile_element_images(args, kwargs)
         self.style.element_create(name, "image", *args, **kwargs)
+
+    def _pretile_element_images(self, args: list, kwargs: dict) -> tuple[list, dict]:
+        """Swap an element's images for copies that paint a wide parcel in few repeats.
+
+        Only an element that stretches horizontally is pre-tiled; one that does
+        not is drawn at its image's own width, so a wider image would draw wider.
+        No `sticky` means `nsew`.
+        """
+        sticky = kwargs.get("sticky")
+        if sticky is not None and not ("e" in sticky and "w" in sticky):
+            return args, kwargs
+
+        master = self.style.master
+        border = kwargs.get("border", 0)
+        default, *specs = args
+        tiled = [pretile_element_image(default, border, master)]
+        tiled += [(state, pretile_element_image(image, border, master)) for state, image in specs]
+
+        if tiled[0] != default and "width" not in kwargs:
+            # The element's minimum width defaults to its image's width, so pin
+            # it to the original image's.
+            kwargs = {**kwargs, "width": int(self.style.tk.call("image", "width", default))}
+        return tiled, kwargs
 
     def create_style_layout(self, ttk_style: str, element: Element | list[Element]):
         if isinstance(element, list):
