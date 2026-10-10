@@ -345,7 +345,12 @@ class StyleBuilderTtk(StyleBuilderBase):
         if name in existing:
             # Element already exists; avoid duplicate creation error on theme rebuilds
             return
-        args, kwargs = self._pretile_element_images(args, kwargs)
+        try:
+            args, kwargs = self._pretile_element_images(args, kwargs)
+        except Exception:
+            # Pre-tiling only speeds painting up; the element draws from its own images.
+            from bootstack._runtime.utility import debug_log_exception
+            debug_log_exception(f"could not pre-tile the images of element {name!r}")
         self.style.element_create(name, "image", *args, **kwargs)
 
     def _pretile_element_images(self, args: list, kwargs: dict) -> tuple[list, dict]:

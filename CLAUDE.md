@@ -39,7 +39,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Environment — three machines; check which one you are on
 
-**Windows** (`D:\Development\bootstack`, primary). The checked-in `.venv` is **stale** ("Access is denied"). **Use `py -3.12` for tests and docs** — pytest is installed only there. ⚠ `py -3.13 tests/run_gui.py` fails every leg with "No module named pytest" while printing a plausible harness summary; 3.13 is for demo scripts only. `bootstack.__version__` reports a stale `0.1.0a9` — ignore it.
+**Windows** (`D:\Development\bootstack`, primary). The checked-in `.venv` is **stale** ("Access is denied"). **Use `py -3.12` for tests and docs** — pytest is installed only there. ⚠ `py -3.13 tests/run_gui.py` fails every leg with "No module named pytest" while printing a plausible harness summary; 3.13 is for demo scripts only. `bootstack.__version__` reports a stale `0.1.0a11` — ignore it.
 - ⚠ **A second Tk is reachable here, and it is not the one `py -3.12` runs.** `uv run --no-project --python 3.13 --python-preference only-managed --with-editable . --with pytest tests/run_gui.py -q` runs on python-build-standalone: **Tk 8.6.12**, against python.org's **8.6.15**. That is the build #520 crashed on. Green there 2026-09-16 at the #520 fix — `1758 / 24`, 34 legs — below the `py -3.12` count only because pandas and matplotlib are absent. `uv` is not installed; `pip install uv` into a throwaway venv.
 
 **WSL** (`/home/iddryer/bootstack`, Ubuntu 22.04) — **the only box that runs the Linux leg.**
@@ -75,7 +75,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 **Released: `0.4.7` (2026-09-24)** — *Editor teardown, typed custom values and menu dismiss* (#488, #468, #207), verified 11/11 by `development/verify_release.py 0.4.7`. History of every release is in the archive.
 
-**`## [Unreleased]` is empty.** Archive each fix the day it ships.
+**`## [Unreleased]` holds one entry — #535**, stretched image elements painting from a pre-tiled copy (PR #536, merged 2026-10-10; paint time measured on Windows at 96 DPI only). When it ships, archive it and delete `development/probe_535_wide_field_paint.py`. Archive each fix the day it ships.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -83,10 +83,10 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `9a063652` (`Release 0.4.7`, tag `v0.4.7`). Verify with `git rev-parse origin/main` |
-| branches | `main`; merged and safe to delete: `origin/fix/select-custom-value-typing-468` (+ local) and local `fix/contextmenu-dismiss-on-break-207` at `4b14090d` |
-| next release | None scheduled; `[Unreleased]` is empty and `0.4.x — Patch line` has no open issues |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `9ea479b4` (2026-09-24, the #207 merge), the code `0.4.7` was cut from |
+| `main` | `f1d2cf3f` (the #536 merge), three commits past tag `v0.4.7` (`9a063652`). Verify with `git rev-parse origin/main` |
+| branches | `main`, and `fix/pretile-element-image-fallback` — the #536 follow-ups: an image that cannot be copied is registered as it is, plus test and CHANGELOG corrections (2026-10-10) |
+| next release | None scheduled; `[Unreleased]` holds #535 and `0.4.x — Patch line` has no open issues |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `0db5c00a` (2026-10-10, the #536 head) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
@@ -143,6 +143,7 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - **#452 — the GUI suite hangs on GitHub macOS runners** (90 min for a 90 s suite), so aqua has no automated coverage. Setup and the Tk report succeed; "Run the suite" never returns. **Step 1 decides everything: does a bare `tkinter.Tk()` → `update()` → `destroy()` complete on the runner?** A hang means the runner lacks a window-server session; a pass means the hang is ours — bisect the legs. Debug-by-push: make each push answer one question and name the step after it. ⚠ The local macOS box is not a substitute (it has a window server and a session). Every job has `timeout-minutes`; a cancelled leg whose log stops inside `apt-get` is a runner outage — re-run it.
 - **#431** — open on purpose, waiting on a scope decision: its fix skips on aqua (no NumLock modifier for `Mod1`) and is **unverified on a real Aqua build** — fold into the #452 trip.
 - **#436** — adopt `versionadded` across the public API (the docs serve one version). Undecided: retroactive to `0.2.x`, or forward-only.
+- **#529** — `MenuButton`: a second click on the button should close its open menu (a toggle). Reported as a bug by a user, labeled `enhancement`; the maintainer's comment (2026-09-17) calls it an enhancement — not broken, and a toggle state needs cross-platform thought. Flagged for future consideration; no milestone.
 - **#474** — trim comments and docstrings that narrate the code back to what is hard to recover. **Next up** — see ★ START HERE. Fold in `bs.DataTable`'s docstring, which still lists `fill`/`expand`/`anchor`/`sticky` under `**kwargs` (`datatable.py:105-106`); they raise now.
 
 ⚠ **"Do not assign a milestone unasked" guards SCOPE calls, not blockers.** Would shipping the milestone without this issue be a decision, or a defect? A defect means it belongs on the milestone; a decision means ask.
