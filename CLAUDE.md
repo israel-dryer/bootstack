@@ -75,7 +75,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 **Released: `0.4.7` (2026-09-24)** — *Editor teardown, typed custom values and menu dismiss* (#488, #468, #207), verified 11/11 by `development/verify_release.py 0.4.7`. History of every release is in the archive.
 
-**`## [Unreleased]` holds one entry — #535**, stretched image elements painting from a pre-tiled copy (PR #536, merged 2026-10-10; paint time measured on Windows at 96 DPI only). When it ships, archive it and delete `development/probe_535_wide_field_paint.py`. Archive each fix the day it ships.
+**`## [Unreleased]` holds one entry — #535**, stretched image elements painting from a pre-tiled copy (PR #536 and its follow-up #541, both merged 2026-10-10; paint time measured on Windows at 96 DPI only). When it ships, archive it and delete `development/probe_535_wide_field_paint.py`. Archive each fix the day it ships.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -83,10 +83,10 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `f1d2cf3f` (the #536 merge), three commits past tag `v0.4.7` (`9a063652`). Verify with `git rev-parse origin/main` |
-| branches | `main`, and `fix/pretile-element-image-fallback` — the #536 follow-ups: an image that cannot be copied is registered as it is, plus test and CHANGELOG corrections (2026-10-10) |
+| `main` | `27b294a0` (the #541 merge), past tag `v0.4.7` (`9a063652`). Verify with `git rev-parse origin/main` |
+| branches | `main` only, local and remote (2026-10-10) |
 | next release | None scheduled; `[Unreleased]` holds #535 and `0.4.x — Patch line` has no open issues |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `0db5c00a` (2026-10-10, the #536 head) |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `cf54a246` (2026-10-10, the #541 head) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
