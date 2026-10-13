@@ -66,6 +66,8 @@ def test_destroying_a_middle_child_closes_the_gap_without_remapping(shown_app):
         w.on_detach(lambda e: events.append("detach"))
     _pump(shown_app)
     events.clear()
+    # Precondition: on screen, or a remap would have no event to fire.
+    assert a._internal.winfo_ismapped() and c._internal.winfo_ismapped()
 
     b.destroy()
     with col:
@@ -108,3 +110,22 @@ def test_an_index_after_a_sibling_is_destroyed_counts_live_siblings(app):
     b.destroy()
     x = bs.Label("x", parent=col, index=1)
     assert order() == [c._internal, x._internal, d._internal]
+
+
+def test_a_child_built_unattached_after_a_destroy_attaches_among_live_siblings(app):
+    col = bs.Column()
+    with col:
+        a, b, c, d = (bs.Label(t) for t in "abcd")
+    _pump(app)
+
+    # No pump in between: the idle close-up would hide a stale slot.
+    a.destroy()
+    b.destroy()
+    with col:
+        late = bs.Label("late", attached=False)
+        e, f = bs.Label("e"), bs.Label("f")
+    late.attach()
+
+    assert [w for w, _ in col._internal._managed] == [
+        w._internal for w in (c, d, late, e, f)
+    ]
