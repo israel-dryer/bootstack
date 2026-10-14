@@ -442,7 +442,9 @@ def place_flex_child(
         child._placement = Placement("flex", frame, opts)
     else:
         # Record the slot a later attach() restores: an explicit index, else the
-        # natural append position (current child count).
+        # natural append position (current child count). Prune first, so the
+        # count does not include a sibling destroyed since the last change.
         if index is None:
+            frame._prune_destroyed()
             index = len(frame._managed)
         child._placement = Placement("flex", frame, opts, index=index)
