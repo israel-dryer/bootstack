@@ -129,3 +129,37 @@ def test_a_child_built_unattached_after_a_destroy_attaches_among_live_siblings(a
     assert [w for w, _ in col._internal._managed] == [
         w._internal for w in (c, d, late, e, f)
     ]
+
+
+def test_a_sibling_destroyed_while_a_child_is_detached_does_not_shift_its_slot(app):
+    # #543: the slot recorded at detach went stale once an earlier sibling died.
+    col = bs.Column()
+    with col:
+        a, b, c, d = (bs.Label(t) for t in "abcd")
+    _pump(app)
+
+    c.detach()
+    a.destroy()
+    _pump(app)
+    c.attach()
+
+    assert [w for w, _ in col._internal._managed] == [
+        w._internal for w in (b, c, d)
+    ]
+
+
+def test_a_sibling_destroyed_before_an_unattached_child_attaches_does_not_shift_it(app):
+    col = bs.Column()
+    with col:
+        a, b = bs.Label("a"), bs.Label("b")
+        late = bs.Label("late", attached=False)
+        c = bs.Label("c")
+    _pump(app)
+
+    a.destroy()
+    _pump(app)
+    late.attach()
+
+    assert [w for w, _ in col._internal._managed] == [
+        w._internal for w in (b, late, c)
+    ]

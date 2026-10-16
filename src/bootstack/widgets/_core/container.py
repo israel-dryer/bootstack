@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
+import weakref
 from typing import Any, Literal
 
 PACK_KEYS = frozenset({
@@ -101,11 +102,12 @@ class Placement:
     Recorded on the child at layout time by `guide_layout`; consumed by
     `PublicWidgetBase.detach`/`attach` to remove and re-insert the widget
     without re-running its constructor. `options` holds the resolved Tk
-    geometry-manager options (no ordering refs); `index` is the pack position
-    among siblings, snapshotted afresh on each `detach`.
+    geometry-manager options (no ordering refs); `index` is the position among
+    siblings, snapshotted afresh on each `detach`. For a flex child, set it
+    with `snapshot_flex_slot`, which keeps `preceding` in step with it.
     """
 
-    __slots__ = ("method", "master", "options", "index")
+    __slots__ = ("method", "master", "options", "index", "preceding")
 
     def __init__(
         self,
@@ -114,10 +116,31 @@ class Placement:
         options: dict,
         index: int | None = None,
     ) -> None:
-        self.method = method      # "pack" | "grid" | "place"
+        self.method = method      # "pack" | "grid" | "place" | "flex"
         self.master = master      # the Tk master the child is placed in
         self.options = options    # resolved Tk options (no before/after/index)
         self.index = index        # pack order among siblings (snapshot at detach)
+        self.preceding: tuple = ()  # weakrefs to the flex siblings before `index`
+
+
+def snapshot_flex_slot(placement: Placement, frame: Any, index: int) -> None:
+    """Record `index` in `frame` as the slot a plain `attach()` restores.
+
+    The siblings before the slot are kept by weak reference so that one
+    destroyed before the attach no longer counts toward the index.
+    """
+    placement.index = index
+    placement.preceding = tuple(weakref.ref(w) for w, _ in frame._managed[:index])
+
+
+def restored_flex_index(placement: Placement) -> int | None:
+    """The snapshotted slot, less the preceding siblings destroyed since."""
+    from bootstack.widgets._impl.primitives.flexframe import _alive
+
+    if placement.index is None:
+        return None
+    gone = sum(1 for ref in placement.preceding if not ((w := ref()) and _alive(w)))
+    return max(placement.index - gone, 0)
 
 
 def resolve_pack_order(order: dict, master: tkinter.Misc) -> dict:
@@ -441,10 +464,11 @@ def place_flex_child(
         frame.add_child(child._internal, opts, index=index)
         child._placement = Placement("flex", frame, opts)
     else:
-        # Record the slot a later attach() restores: an explicit index, else the
-        # natural append position (current child count). Prune first, so the
-        # count does not include a sibling destroyed since the last change.
-        if index is None:
-            frame._prune_destroyed()
-            index = len(frame._managed)
+        # Record the slot a later attach() restores: an explicit index as given,
+        # else the natural append position (current child count).
         child._placement = Placement("flex", frame, opts, index=index)
+        if index is None:
+            # Prune first: a dead sibling left in `_managed` would be counted
+            # twice, once in the count and again when attach() discounts it.
+            frame._prune_destroyed()
+            snapshot_flex_slot(child._placement, frame, len(frame._managed))

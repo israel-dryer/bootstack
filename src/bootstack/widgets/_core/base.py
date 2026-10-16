@@ -446,8 +446,14 @@ class PublicWidgetBase:
         if placement.method == "flex":
             # The FlexFrame's managed list IS the attached-sibling order, so the
             # current managed index is the slot a plain attach() should restore.
+            from bootstack.widgets._core.container import snapshot_flex_slot
+
             idx = placement.master.index_of(self._internal)
-            placement.index = idx if idx >= 0 else None
+            if idx >= 0:
+                snapshot_flex_slot(placement, placement.master, idx)
+            else:
+                placement.index = None
+                placement.preceding = ()
             placement.master.remove_child(self._internal)
         elif placement.method == "pack":
             slaves = list(placement.master.pack_slaves())
@@ -485,7 +491,7 @@ class PublicWidgetBase:
         """
         from bootstack.widgets._core.container import (
             PACK_KEYS, GRID_KEYS, PLACE_KEYS, normalize_fill, _expand_margin, _flex_child_opts,
-            _reject_legacy_child_kwargs, resolve_pack_order
+            _reject_legacy_child_kwargs, resolve_pack_order, restored_flex_index
         )
 
         placement = getattr(self, "_placement", None)
@@ -503,7 +509,10 @@ class PublicWidgetBase:
         options = dict(placement.options)
 
         if placement.method == "flex":
-            index = kwargs.pop("index", placement.index)
+            if "index" in kwargs:
+                index = kwargs.pop("index")
+            else:
+                index = restored_flex_index(placement)
             if kwargs:
                 _reject_legacy_child_kwargs(kwargs, type(self).__name__, "flex child")
                 _expand_margin(kwargs)
