@@ -73,11 +73,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
 4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
 
-**Released: `0.4.7` (2026-09-24)** — *Editor teardown, typed custom values and menu dismiss* (#488, #468, #207), verified 11/11 by `development/verify_release.py 0.4.7`. History of every release is in the archive.
+**Released: `0.4.8` (2026-10-15)** — *Destroyed-widget cleanup, Label icons and wide-field painting* (#535, #537, #538, #533, plus #543), verified 11/11 by `development/verify_release.py 0.4.8`. History of every release is in the archive. `## [Unreleased]` is empty.
 
-**`## [Unreleased]` holds four fixes** — #535 (pre-tiled image elements; PR #536 + #541, paint time measured on Windows at 96 DPI only), #537 and #538 (contributor PRs #539/#540), and #533 (Label text hidden by a later icon; branch `fix/533-label-icon-compound`). When they ship, archive them and delete `development/probe_535_wide_field_paint.py` and `development/demo_533_label_icon.py`. Archive each fix the day it ships.
-
-**Next: release `0.4.8` (patch) once #533 merges** (maintainer, 2026-10-15). ⚠ **Gate: review the `[Unreleased]` notes with the maintainer BEFORE promoting** — `RELEASE.md` Step 1, entry by entry, with every prior-behavior claim checked against `git show v0.4.7:<file>`. #537/#538 were written by a contributor; check theirs as closely as ours. Do not promote until the maintainer signs off.
+⚠ **Review the `[Unreleased]` notes with the maintainer before promoting any release** (maintainer, 2026-10-15) — `RELEASE.md` Step 1, with every prior-behavior claim probed against the previous tag. The 0.4.8 review found an unreleased regression (#543) that the suite and a code review had both passed.
 
 ⚠ **`release.yml` appends GitHub's generated "What's Changed" list (`generate_release_notes: true`), which lists EVERY merged PR, chores included.** Kept by decision (maintainer, 2026-09-15); remove the chore lines after publishing — `RELEASE.md` step 8.
 
@@ -85,10 +83,10 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `21cdcbd3` (the #540 merge), past tag `v0.4.7` (`9a063652`). Verify with `git rev-parse origin/main` |
-| branches | `main` only, local and remote (2026-10-10) |
-| next release | `0.4.8` after #533 merges — notes review gates it (above) |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `cf54a246` (2026-10-10, the #541 head) |
+| `main` | `b58ae7c7` = tag `v0.4.8`. Verify with `git rev-parse origin/main` |
+| branches | `main` only on the remote (2026-10-15) |
+| next release | None scheduled; `[Unreleased]` is empty and `0.4.x — Patch line` has no open issues |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
@@ -103,7 +101,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-**None open** (2026-09-24). #207 shipped in `0.4.7`. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**None open** (2026-10-15). #533 and #543 shipped in `0.4.8`. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
