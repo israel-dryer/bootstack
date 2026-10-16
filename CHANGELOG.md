@@ -8,14 +8,14 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.8] — Destroyed-widget cleanup, Label icons and wide-field painting
 
 ### Fixed
 
 - **Fields and buttons stretched across a wide window no longer slow down its painting.** Their borders and fills are drawn by repeating a small image across the widget, one draw per repeat, so a stretched widget took longer to paint the wider it was. On Windows, 60 full-width `TextField`s took 0.96 s to paint in a window 1280 pixels wide, against 0.38 s at 400. The images are now repeated in advance, and the same window paints in 0.23 s. Widgets look and size exactly as before. ([#535](https://github.com/israel-dryer/bootstack/issues/535))
 - **A widget destroyed inside a `Row` or `Column` now gives up its place.** Previously the layout kept a slot for every destroyed child. A list refreshed by destroying its children and building new ones placed the new children after all the old slots, the first with a gap above it, and held on to every destroyed widget, so each refresh added to the total. Destroying the first child left its gap above the child that took its place, and an `index=` or `attach()` given right after a destroy counted the destroyed child. Every container that stacks its children, including `Card`, `ScrollView`, `App` and `Window`, is fixed the same way; `Grid` was not affected. ([#537](https://github.com/israel-dryer/bootstack/issues/537))
 - **Destroying a widget now removes its locale-change handler.** Previously every widget that shows localized text left one on its window, holding the destroyed widget in memory. An app that rebuilds its pages grew with every rebuild and built each page more slowly, and the next locale change ran the handlers of every widget it had destroyed: a destroyed `Select` raised an error, and a destroyed field bound to a shared `textsignal=` wrote its old value back into the signal. ([#538](https://github.com/israel-dryer/bootstack/issues/538))
-- **Giving a `Label` an icon or image after it is created no longer hides its text.** Previously a `Label` created without `icon=` or `image=` showed only the icon once `label.icon` or `label.image` was assigned, and its text, including text from a `textsignal=`, stayed hidden from then on. The icon now sits beside the text at `icon_position=`, as it does when given at construction. ([#533](https://github.com/israel-dryer/bootstack/issues/533))
+- **Giving a `Label` an icon or image after it is created no longer hides its text.** Previously a `Label` created without `icon=` or `image=` showed only the icon or image once `label.icon` or `label.image` was assigned, and its text, including text from a `textsignal=`, stayed hidden from then on. The icon now sits beside the text at `icon_position=`, as it does when given at construction. ([#533](https://github.com/israel-dryer/bootstack/issues/533))
 
 ## [0.4.7] — Editor teardown, typed custom values and menu dismiss
 
@@ -493,6 +493,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.8]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.8
 [0.4.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.7
 [0.4.6]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.6
 [0.4.5]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.5
