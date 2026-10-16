@@ -60,3 +60,15 @@ def test_icon_spec_with_size_and_token_color(app):
     # and assignable as a spec
     btn.icon = {"name": "gear", "size": 18, "color": "#ff8800"}
     assert btn.icon["name"] == "gear"
+
+
+def test_icon_assigned_later_keeps_label_text(app):
+    sig = bs.Signal("Hello World")
+    built = bs.Label(textsignal=sig, icon="gear")
+    later = bs.Label(textsignal=sig)
+    plain = bs.Label(textsignal=sig)
+    later.icon = "gear"
+    app._tk_root.update_idletasks()
+    # The icon took effect, and the text still sits beside it.
+    assert later.tk.winfo_reqwidth() > plain.tk.winfo_reqwidth()
+    assert later.tk.winfo_reqwidth() == built.tk.winfo_reqwidth()
