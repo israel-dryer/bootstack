@@ -1,6 +1,7 @@
 ﻿from tkinter import Event, TclError
 from typing import Any, Callable
 
+from bootstack._core.localization import bind_locale_refresh
 from bootstack.events import ChangeEvent, InputEvent
 from bootstack.i18n import MessageCatalog, IntlFormatter
 from bootstack.widgets._impl.primitives.entry import Entry
@@ -102,7 +103,7 @@ class TextEntryPart(ValidationMixin, Entry):
         self.bind('<FocusIn>', self._store_prev_value, add=True)
         self.bind('<FocusOut>', self._handle_focus_out, add=True)
         self.bind('<Return>', self._handle_return, add=True)
-        self.winfo_toplevel().bind('<<LocaleChanged>>', self._on_locale_changed, add='+')
+        bind_locale_refresh(self._on_locale_changed)
 
         # set initial focus
         if initial_focus:

@@ -4,6 +4,7 @@ from typing_extensions import Unpack
 
 from typing import Any
 
+from bootstack._core.localization import bind_locale_refresh
 from bootstack.events import ChangeEvent
 from bootstack.widgets._core.options import (
     cluster_records,
@@ -139,7 +140,7 @@ class SelectBox(Field):
         self._entry._get_validation_value = self._validation_value
 
         # Re-translate the displayed text + option maps on a live locale switch.
-        self.winfo_toplevel().bind('<<LocaleChanged>>', self._on_locale_changed_refresh, add='+')
+        bind_locale_refresh(self._on_locale_changed_refresh)
 
         self._group_by = group_by
         self._max_visible_items = max_visible_items

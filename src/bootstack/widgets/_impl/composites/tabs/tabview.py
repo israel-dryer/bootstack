@@ -17,6 +17,7 @@ from bootstack.events import (
 from bootstack.widgets._impl.composites.pagestack import PageStack
 from bootstack.widgets.types import Master
 from bootstack._core import NavigationError
+from bootstack._core.localization import bind_locale_refresh
 
 
 class TabView(Frame):
@@ -121,9 +122,7 @@ class TabView(Frame):
         self._trace_id = self._tab_variable.trace_add('write', self._on_tab_selected)
 
         # Locale retranslation
-        self.winfo_toplevel().bind(
-            "<<LocaleChanged>>", self._on_locale_changed, add='+'
-        )
+        bind_locale_refresh(self._on_locale_changed)
 
         # Clean up trace on destroy
         self.bind('<Destroy>', self._on_destroy, add='+')
