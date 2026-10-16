@@ -108,24 +108,20 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
 
             if isinstance(image, _ImageHandle):
                 deferred_image = image
-                has_text = bool(text) or textsignal is not None
-                if not has_text or icon_only:
-                    internal_kwargs["icon_only"] = True
-                    internal_kwargs["compound"] = "image"
-                else:
-                    internal_kwargs["compound"] = icon_position
             else:
                 internal_kwargs["image"] = image
         if icon is not None:
             internal_kwargs["icon"] = icon
-            has_text = bool(text) or textsignal is not None
-            if not has_text or icon_only:
-                internal_kwargs["icon_only"] = True
-                internal_kwargs["compound"] = "image"
-            else:
-                internal_kwargs["compound"] = icon_position
-        elif icon_only:
+        has_text = bool(text) or textsignal is not None
+        has_graphic = icon is not None or image is not None
+        if icon_only or (has_graphic and not has_text):
             internal_kwargs["icon_only"] = True
+            if has_graphic:
+                internal_kwargs["compound"] = "image"
+        elif has_text:
+            # Set even without a graphic, so an icon or image assigned later
+            # sits beside the text instead of replacing it.
+            internal_kwargs["compound"] = icon_position
         if anchor is not None:
             internal_kwargs["anchor"] = anchor
         if justify is not None:
