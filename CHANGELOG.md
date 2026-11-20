@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **A narrow `Select` no longer loses its arrow button.** Previously, when a `Select` was narrower than its content, the text box kept all the width and the arrow button shrank to nothing, so there was nothing to click to open the list. The text box now shrinks and the button stays full size. The same applies to the calendar button of a `DateField`, the steppers of a `NumberField`, the buttons of a `PasswordField` and a `PathField`, and anything added after the text with `insert_addon()`. A field that has room for its content looks exactly as before. ([#547](https://github.com/israel-dryer/bootstack/issues/547))
+
 ## [0.4.8] — Destroyed-widget cleanup, Label icons and wide-field painting
 
 ### Fixed
