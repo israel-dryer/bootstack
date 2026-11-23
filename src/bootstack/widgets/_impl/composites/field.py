@@ -604,7 +604,10 @@ class Field(EntryMixin, Frame):
         # configure layout
         options = pack_options or {}
         if position == "after":
-            options.update(side="right", after=self._entry)
+            # Pack ahead of the entry, or the entry takes all the width in a
+            # narrow field and this addon disappears. Pack at the very front,
+            # or two addons show in reverse order.
+            options.update(side="right", before=self._field.pack_slaves()[0])
         else:
             options.update(side="left", before=self._entry)
         instance.pack(**options)
