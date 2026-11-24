@@ -216,10 +216,11 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
    * - :class:`~bootstack.Tabs`
      - ``tab_close``
      - :class:`~bootstack.events.TabCloseEvent`
-   * - :class:`~bootstack.PageStack`, :class:`~bootstack.AppShell`
+   * - :class:`~bootstack.PageStack`, :class:`~bootstack.AppShell`,
+       :class:`~bootstack.Workbench`
      - ``page_change``
      - :class:`~bootstack.events.PageChangeEvent`
-   * - :class:`~bootstack.AppShell`
+   * - :class:`~bootstack.Workbench`
      - ``workspace_change``
      - :class:`~bootstack.events.WorkspaceChangeEvent`
    * - :class:`~bootstack.AppShell`

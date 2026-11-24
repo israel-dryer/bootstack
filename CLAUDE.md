@@ -68,7 +68,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0.4.9` per `RELEASE.md`. #474 waits until after. Whether the maintainer or Claude implements is decided per issue — ask.
 
-1. **#555 — `AppShell.on_page_change` hears every `PageStack` inside the shell.** Each `navigate()` fires twice (the second payload has `nav=None, length=0`); startup fires `page='__shell__'` twice; a user `bs.PageStack` inside a page fires it with that stack's key. Two emitters of `<<PageChange>>` — `_impl/composites/shell/shell.py:455` and `_impl/composites/pagestack.py:239` — and the shell's binding catches descendants'. Goal: one event per shell navigation, only keys the shell owns. ⚠ **Before fixing, find what leans on the second event** — it has shipped this way. The repro is on the issue.
+1. **#555 — DONE on `fix/555-page-change-scope` (`35b80eda` + review nits), PR pending.** The shell is the root, so its binding heard every descendant `<<PageChange>>` (incl. `Tabs`, Workbench workspace switches); it now emits `<<ShellPageChange>>`, payload `page`/`prev_page`/`data` only (maintainer, 2026-11-23). Original report: **`AppShell.on_page_change` hears every `PageStack` inside the shell.** Each `navigate()` fires twice (the second payload has `nav=None, length=0`); startup fires `page='__shell__'` twice; a user `bs.PageStack` inside a page fires it with that stack's key. Two emitters of `<<PageChange>>` — `_impl/composites/shell/shell.py:455` and `_impl/composites/pagestack.py:239` — and the shell's binding catches descendants'. Goal: one event per shell navigation, only keys the shell owns. ⚠ **Before fixing, find what leans on the second event** — it has shipped this way. The repro is on the issue.
 2. **#556 — a disabled menu item's shortcut still runs.** `MenuModel.bind_shortcuts` (`_impl/composites/menu/model.py`) registers `item.on_click` with no `disabled` check. Check `disabled` at FIRE time, not registration, so it stays right when #557 makes `disabled` live. Confirmed with a real key event.
 3. **#553 — a `Form` button's `command` receives the internal form**, not `bs.Form` (`_make_button_command`: `spec.command(self)`). Pass the public wrapper; look for an existing internal→public back-reference before adding one. ⚠ Same PR: update `docs/widgets/forms.rst` "Footer buttons", which currently tells readers to ignore the argument and use `form`.
 
@@ -85,7 +85,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 | | |
 |---|---|
 | `main` | `190700ad` (2026-11-23, the #554 merge), two merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
-| branches | `main` only on the remote (2026-11-23). Local `fix/555-page-change-scope` carries this handoff, uncommitted |
+| branches | `main` only on the remote (2026-11-23). Local `fix/555-page-change-scope` — the #555 fix, unpushed |
 | next release | `0.4.9` — #547 (merged) plus #555, #556, #553 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
@@ -102,7 +102,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-23): #555, #556, #553** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-23): #555 (fixed on its branch), #556, #553** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
