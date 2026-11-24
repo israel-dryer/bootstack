@@ -292,16 +292,19 @@ and ``via`` tags. Use them to ignore programmatic changes, for example:
    tabs.on_change(on_tab)
 
 A **page change** carries navigation context — a
-:class:`~bootstack.events.PageChangeEvent` exposes the ``page`` now active, the
-``prev_page``, and ``can_back`` / ``can_forward`` flags you can bind a toolbar
-to:
+:class:`~bootstack.events.PageChangeEvent` exposes the ``page`` now active and
+the ``prev_page``. A page stack's event adds its history, with ``can_back`` /
+``can_forward`` flags you can bind a toolbar to:
 
 .. code-block:: python
 
    def on_page(e):
        back_button.disabled = not e.can_back
 
-   shell.on_page_change(on_page)
+   pages.on_page_change(on_page)
+
+An app shell keeps no history, so its ``page_change`` carries the ``page``, the
+``prev_page`` and any ``navigate()`` data only.
 
 The curated Event
 -----------------
