@@ -41,6 +41,19 @@ MenuItemType = Literal["action", "check", "radio", "separator"]
 _shortcut_seq = itertools.count()
 
 
+def _fire_unless_disabled(item: "MenuItem") -> Callable[[], Any]:
+    """A shortcut command that runs `item.on_click` only while the item is enabled.
+
+    `disabled` is read at keypress time, not at registration, so the shortcut
+    follows the item's current state.
+    """
+    def fire() -> Any:
+        if not item.disabled and item.on_click is not None:
+            return item.on_click()
+        return None
+    return fire
+
+
 @dataclass
 class MenuItem:
     """A single entry in a menu group.
@@ -336,7 +349,7 @@ class MenuModel:
             if classify_shortcut(item.shortcut) != "pattern":
                 continue  # registered key or literal — bind handled elsewhere
             reg_key = f"__menu_{next(_shortcut_seq)}"
-            shortcuts.register(reg_key, item.shortcut, item.on_click)
+            shortcuts.register(reg_key, item.shortcut, _fire_unless_disabled(item))
             self._registered_keys.append(reg_key)
 
         if self._bound_window is not None:
