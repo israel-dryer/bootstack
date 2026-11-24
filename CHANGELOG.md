@@ -8,7 +8,7 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
-## [Unreleased]
+## [0.4.9] — Page-change scope, disabled menu items and form button owners
 
 ### Fixed
 
@@ -502,6 +502,7 @@ time, you can ignore this section.)
 - `Toolbar.add_widget` / `StatusBar.add_widget` are now class-based
   (`add_widget(WidgetClass, **kwargs)`).
 
+[0.4.9]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.9
 [0.4.8]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.8
 [0.4.7]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.7
 [0.4.6]: https://github.com/israel-dryer/bootstack/releases/tag/v0.4.6
