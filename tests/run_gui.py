@@ -30,6 +30,7 @@ ISOLATED = [
     "tests/widgets/public/test_undecorated_titlebar.py",
     "tests/widgets/public/test_appshell_reshape.py",
     "tests/widgets/public/test_appshell_shortcuts.py",
+    "tests/widgets/public/test_appshell_page_change.py",
     "tests/widgets/public/test_workbench.py",
     "tests/widgets/public/test_sidebar_toggle.py",
     "tests/widgets/public/test_shell_slot_theme_refresh.py",

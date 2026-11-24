@@ -2,7 +2,7 @@
 
 Verifies the NavModel <-> region wiring: add_page registers a page + nav item,
 the first page auto-selects, selecting drives the content swap, and navigate()
-plus the <<PageChange>> re-emit work. One App per process.
+plus the shell's page-change event work. One App per process.
 """
 
 from __future__ import annotations
@@ -30,13 +30,14 @@ def test_single_tier_navigation_cascade():
 
         # navigate() swaps the active page + nav selection + content.
         changes: list = []
-        shell.bind("<<PageChange>>", lambda e: changes.append(e), add="+")
+        shell.update()                         # flush the startup page's event
+        shell.bind("<<ShellPageChange>>", lambda e: changes.append(e), add="+")
         shell.navigate("inbox")
         assert shell.current_page == "inbox"
         assert shell.nav.selected == "inbox"
         assert shell.pages.current()[0] == "inbox"
         shell.update()                         # flush queued (when="tail") events
-        assert len(changes) >= 1               # <<PageChange>> re-emitted on the shell
+        assert len(changes) == 1               # the shell's own page-change event
 
         # Selecting via the nav panel routes through the model.
         shell._workspace_select(shell.current_workspace, "home")

@@ -1171,7 +1171,7 @@ class Workbench(_ShellBase):
 
 
 _SHELL_EVENTS = {
-    "page_change":         "<<PageChange>>",
+    "page_change":         "<<ShellPageChange>>",
     "sidebar_toggle":      "<<SidebarToggle>>",
     "sidebar_mode_change": "<<SidebarModeChange>>",
 }

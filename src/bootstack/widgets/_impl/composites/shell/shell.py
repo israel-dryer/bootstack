@@ -452,7 +452,9 @@ class Shell(ShellLayout):
         ws.show(page_key, data=data)
         payload = PageChangeEvent(page=page_key, prev_page=self._prev_page, data=dict(data))
         self._prev_page = page_key
-        self.event_generate("<<PageChange>>", data=payload, when="tail")
+        # Not <<PageChange>>: the shell is the root, so a root binding also hears
+        # every descendant PageStack's <<PageChange>> (#555).
+        self.event_generate("<<ShellPageChange>>", data=payload, when="tail")
 
     def _switch_workspace(self, ws_key: str) -> None:
         self._panel_stack.navigate(ws_key)

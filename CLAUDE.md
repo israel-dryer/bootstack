@@ -64,16 +64,17 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Current state
 
-### ★ START HERE — next: the #474 comment and docstring scrub
+### ★ START HERE — next: the `0.4.9` patch (#555, #556, #553), then release
 
-Trim comments AND docstrings in `src/` that narrate history instead of describing behavior. **Read #474 first** — it carries the keep/cut rule, the measurement and the order. In short:
+Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0.4.9` per `RELEASE.md`. #474 waits until after. Whether the maintainer or Claude implements is decided per issue — ask.
 
-1. **Measure:** `py -3.12 development/probe_474_docstring_census.py` (public view + internal by area); `--list <area>` prints each flagged docstring. Record the before/after flagged count in each PR.
-2. **Order, one area per PR, comments and docstrings together:** (a) the public docstrings — ~5 real Tk leaks (`Signal.name`, `Signal.clear`, `App.on`, `ContextMenu`, `Shortcuts.bind_to`) and `guide_layout` naming `_internal`; leave the `.tk`/`.var` escape hatches; (b) `_runtime` + `_core` + `widgets/_core`; (c) `widgets/_impl` in two or three PRs by package.
-3. **Keep** a behavior contract or a trap a later edit would undo (the `keysym != "KP_Enter"` block, `_reject_legacy_child_kwargs`'s positional `kind`, the `NOTE(#383)` markers). **Cut** issue narration, "measured" asides, before/after history, review rationale and shouting. A flag means look, not cut — every cut is a judgment call, so no mechanical strip.
-4. **Verify per PR:** clean docs build (`-W`), `import bootstack`, the full suite — docstring edits cannot change behavior, so the count must not move.
+1. **#555 — DONE on `fix/555-page-change-scope` (`35b80eda` + review nits), PR pending.** The shell is the root, so its binding heard every descendant `<<PageChange>>` (incl. `Tabs`, Workbench workspace switches); it now emits `<<ShellPageChange>>`, payload `page`/`prev_page`/`data` only (maintainer, 2026-11-23). Original report: **`AppShell.on_page_change` hears every `PageStack` inside the shell.** Each `navigate()` fires twice (the second payload has `nav=None, length=0`); startup fires `page='__shell__'` twice; a user `bs.PageStack` inside a page fires it with that stack's key. Two emitters of `<<PageChange>>` — `_impl/composites/shell/shell.py:455` and `_impl/composites/pagestack.py:239` — and the shell's binding catches descendants'. Goal: one event per shell navigation, only keys the shell owns. ⚠ **Before fixing, find what leans on the second event** — it has shipped this way. The repro is on the issue.
+2. **#556 — a disabled menu item's shortcut still runs.** `MenuModel.bind_shortcuts` (`_impl/composites/menu/model.py`) registers `item.on_click` with no `disabled` check. Check `disabled` at FIRE time, not registration, so it stays right when #557 makes `disabled` live. Confirmed with a real key event.
+3. **#553 — a `Form` button's `command` receives the internal form**, not `bs.Form` (`_make_button_command`: `spec.command(self)`). Pass the public wrapper; look for an existing internal→public back-reference before adding one. ⚠ Same PR: update `docs/widgets/forms.rst` "Footer buttons", which currently tells readers to ignore the argument and use `form`.
 
-**Released: `0.4.8` (2026-10-15)** — *Destroyed-widget cleanup, Label icons and wide-field painting* (#535, #537, #538, #533, plus #543), verified 11/11 by `development/verify_release.py 0.4.8`. History of every release is in the archive. `## [Unreleased]` is empty.
+**`[Unreleased]` holds #547** (PR #548, external contributor: a narrow field keeps its addon buttons). Review the notes with the maintainer before promoting — see below.
+
+**Released: `0.4.8` (2026-10-15)** — *Destroyed-widget cleanup, Label icons and wide-field painting* (#535, #537, #538, #533, plus #543), verified 11/11 by `development/verify_release.py 0.4.8`. History of every release is in the archive.
 
 ⚠ **Review the `[Unreleased]` notes with the maintainer before promoting any release** (maintainer, 2026-10-15) — `RELEASE.md` Step 1, with every prior-behavior claim probed against the previous tag. The 0.4.8 review found an unreleased regression (#543) that the suite and a code review had both passed.
 
@@ -83,9 +84,9 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 | | |
 |---|---|
-| `main` | `b58ae7c7` = tag `v0.4.8`. Verify with `git rev-parse origin/main` |
-| branches | `main` only on the remote (2026-10-15) |
-| next release | None scheduled; `[Unreleased]` is empty and `0.4.x — Patch line` has no open issues |
+| `main` | `190700ad` (2026-11-23, the #554 merge), two merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
+| branches | `main` only on the remote (2026-11-23). Local `fix/555-page-change-scope` — the #555 fix, unpushed |
+| next release | `0.4.9` — #547 (merged) plus #555, #556, #553 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
@@ -101,7 +102,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 
 ### `0.4.x — Patch line` (fixes only)
 
-**None open** (2026-10-15). #533 and #543 shipped in `0.4.8`. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-23): #555 (fixed on its branch), #556, #553** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
@@ -112,6 +113,7 @@ Trim comments AND docstrings in `src/` that narrate history instead of describin
 - **#408** — `emit()` drops the payload for the 13 public names that map to real sequences.
 - **#416** — `PathField.value` → `Path`. ⚠ **Decided in a COMMENT on the issue, not its body:** `open_multiple` → `tuple[Path, ...]`, empty `()`; every other mode → `Path | None`, empty `None`. `()` is a deliberate exception to the `None`-when-empty convention.
 - **#445** — `attach()`'s grid branch silently filters legacy layout kwargs that a flex child rejects. It raises where the framework accepts, hence here.
+- **#558** — `bootstack.events.NavEvent` is public and documented but nothing emits it; it misled a user (discussion 545). Remove it or wire it.
 - **#479** — `OptionMenu` never cancels its signal subscription: a destroyed widget keeps emitting (the `TclError` is raised inside the Tk trace, invisible to the caller) and stays pinned in memory. `ValueSignalMixin._bind_value_signal` (`widgets/_core/field_mixin.py`) is the pattern — hold the id, release it in `on_destroy`. Its placement here is the maintainer's call; do not "correct" it.
 
 A raise-where-accepted fix can still ship as a patch when **no working code can reach the break** — #481 did (every call it rejects had built a signal that could never hold a value). That is an exception, not a reason to move #445.
@@ -144,7 +146,8 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - **#431** — open on purpose, waiting on a scope decision: its fix skips on aqua (no NumLock modifier for `Mod1`) and is **unverified on a real Aqua build** — fold into the #452 trip.
 - **#436** — adopt `versionadded` across the public API (the docs serve one version). Undecided: retroactive to `0.2.x`, or forward-only.
 - **#529** — `MenuButton`: a second click on the button should close its open menu (a toggle). Reported as a bug by a user, labeled `enhancement`; the maintainer's comment (2026-09-17) calls it an enhancement — not broken, and a toggle state needs cross-platform thought. Flagged for future consideration; no milestone.
-- **#474** — trim comments and docstrings that narrate the code back to what is hard to recover. **Next up** — see ★ START HERE. Fold in `bs.DataTable`'s docstring, which still lists `fill`/`expand`/`anchor`/`sticky` under `**kwargs` (`datatable.py:105-106`); they raise now.
+- **#557** — toolbar menu items cannot be enabled/disabled after build: `add_action()` returns an internal `MenuItem` and mutating `.disabled` is ignored (rows are built once). The real ask behind discussion 545. Adds public surface → a minor; must cover the native macOS menu and the shortcut (#556).
+- **#474** — trim comments and docstrings that narrate history instead of behavior. **Next after `0.4.9`.** Read #474 first (keep/cut rule, order). Measure with `py -3.12 development/probe_474_docstring_census.py` (`--list <area>`), record before/after per PR. Order: public docstrings (~5 Tk leaks: `Signal.name`, `Signal.clear`, `App.on`, `ContextMenu`, `Shortcuts.bind_to`; `guide_layout` naming `_internal`) → `_runtime` + `_core` + `widgets/_core` → `widgets/_impl` by package. Keep contracts and traps (`keysym != "KP_Enter"`, `_reject_legacy_child_kwargs`'s `kind`, `NOTE(#383)`); cut narration — a flag means look, not cut. Verify: `-W` docs build, `import bootstack`, unchanged suite count. Fold in `bs.DataTable`'s docstring still listing `fill`/`expand`/`anchor`/`sticky` under `**kwargs` (`datatable.py:105-106`).
 
 ⚠ **"Do not assign a milestone unasked" guards SCOPE calls, not blockers.** Would shipping the milestone without this issue be a decision, or a defect? A defect means it belongs on the milestone; a decision means ask.
 
