@@ -64,17 +64,11 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Current state
 
-### ★ START HERE — next: the `0.4.9` patch (#555, #556, #553), then release
+### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
 
-Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0.4.9` per `RELEASE.md`. #474 waits until after. Whether the maintainer or Claude implements is decided per issue — ask.
+Read #474 and its entry under Unmilestoned below before starting. Nothing is in `[Unreleased]`. #560 (a check item's shortcut never flips its checkmark) is open and unmilestoned — ask whether it joins the patch line.
 
-1. **#555 — MERGED** (PR #559, `a7e6b0d9`): the shell emits `<<ShellPageChange>>`.
-2. **#556 — MERGED** (PR #561, `b6f6a21f`): shortcut gated at fire time; disabled check items fixed on both menu backends. Spun off #560.
-3. **#553 — DONE on `fix/553-form-button-owner`, PR pending.** `bs.Form` sets `_internal._public_owner = self`; `_make_button_command` passes it. Folded in (maintainer): `FormDialog` commands get the public `FormDialog` (same back-ref) and `FormDialog.form` returns `bs.Form` via `Form._wrap()`; upgrade note in the CHANGELOG. `DialogButton.command` widened to `Callable[[Any], Any]`; `forms.rst` "Footer buttons" uses the argument.
-
-**`[Unreleased]` holds #547** (PR #548, external contributor: a narrow field keeps its addon buttons). Review the notes with the maintainer before promoting — see below.
-
-**Released: `0.4.8` (2026-10-15)** — *Destroyed-widget cleanup, Label icons and wide-field painting* (#535, #537, #538, #533, plus #543), verified 11/11 by `development/verify_release.py 0.4.8`. History of every release is in the archive.
+**Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
 ⚠ **Review the `[Unreleased]` notes with the maintainer before promoting any release** (maintainer, 2026-10-15) — `RELEASE.md` Step 1, with every prior-behavior claim probed against the previous tag. The 0.4.8 review found an unreleased regression (#543) that the suite and a code review had both passed.
 
@@ -84,12 +78,12 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 | | |
 |---|---|
-| `main` | `b6f6a21f` (2026-11-23, the #561 merge), four merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
-| branches | `main` only on the remote (2026-11-23). Local `fix/553-form-button-owner` — the #553 fix |
-| next release | `0.4.9` — #547 (merged) plus #555, #556, #553 |
-| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |
+| `main` | `799e6820` (2026-11-23, `Release 0.4.9`), tagged `v0.4.9`. Verify with `git rev-parse origin/main` |
+| branches | `main` only on the remote (2026-11-23) |
+| next release | none queued; `[Unreleased]` is empty |
+| CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `799e6820` (2026-11-23, `Release 0.4.9`) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
-| suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1787 / 22`, 34 legs — 2026-09-11 at `e88d38eb`. ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
+| suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1848 / 22`, 36 legs — 2026-11-23 at `a8114f6d` (`v0.4.9` minus the release commits). ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
 | suite, macOS | `1699 / 33`, 33 legs — 2026-08-29 at the #467 merge; **stale**, pandas absent. Not comparable with Windows |
 
 **Counting a suite.** Prefer a number you just measured; record the date and commit beside it. `passed + skipped` cannot exceed the selected count except by module-level skips (read the collection line). A self-consistent total can still have selected the wrong population — bound the movement with `git diff --stat <baseline>..HEAD -- tests/`. On macOS, pandas absent flips two data tests (`125 / 4` vs `123 / 6`); `test_chart.py` is 44 tests behind a matplotlib `importorskip`.
@@ -102,7 +96,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-23): #553 (fixed on its branch); #560 filed, unmilestoned** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-23): none on the milestone.** #560 is filed and unmilestoned (see ★ START HERE). Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 

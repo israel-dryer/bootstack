@@ -84,6 +84,7 @@ WHEEL_FIX_MARKERS = {
     "0.4.6": ("bootstack/_runtime/wheel.py", "def has_focus", True, "#525"),
     "0.4.7": ("bootstack/widgets/_impl/composites/contextmenu.py", "def hide_open_menus", True, "#207"),
     "0.4.8": ("bootstack/_core/localization.py", "def bind_locale_refresh", True, "#538"),
+    "0.4.9": ("bootstack/widgets/_impl/composites/shell/shell.py", "<<ShellPageChange>>", True, "#555"),
 }
 
 
