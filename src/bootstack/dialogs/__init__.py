@@ -525,7 +525,11 @@ class FormDialog:
 
     @property
     def form(self) -> "Form | None":
-        """The embedded `Form`, or `None` until the dialog is shown."""
+        """The embedded `Form`, or `None` until the dialog is shown.
+
+        Usable while the dialog is open, for example from a button `command`.
+        After the dialog closes, read the entered values from `result`.
+        """
         from bootstack.widgets.form import Form
 
         internal = self._internal.form

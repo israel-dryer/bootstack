@@ -224,7 +224,7 @@ def test_a_cancel_button_with_its_own_command_still_returns_none(app):
 
     result = _drive(dialog, app, fill_then_cancel)
 
-    # The command is handed the impl dialog, not the public wrapper.
+    # The command is handed the public FormDialog (#553).
     assert ran == [dialog], "precondition: the custom cancel command ran"
     assert result is None, f"cancelling returned the entered data: {result!r}"
 
