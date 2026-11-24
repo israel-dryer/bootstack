@@ -68,7 +68,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0.4.9` per `RELEASE.md`. #474 waits until after. Whether the maintainer or Claude implements is decided per issue — ask.
 
-1. **#555 — MERGED (PR #559, `a7e6b0d9`).** The shell is the root, so its binding heard every descendant `<<PageChange>>` (incl. `Tabs`, Workbench workspace switches); it now emits `<<ShellPageChange>>`, payload `page`/`prev_page`/`data` only (maintainer, 2026-11-23). Original report: **`AppShell.on_page_change` hears every `PageStack` inside the shell.** Each `navigate()` fires twice (the second payload has `nav=None, length=0`); startup fires `page='__shell__'` twice; a user `bs.PageStack` inside a page fires it with that stack's key. Two emitters of `<<PageChange>>` — `_impl/composites/shell/shell.py:455` and `_impl/composites/pagestack.py:239` — and the shell's binding catches descendants'. Goal: one event per shell navigation, only keys the shell owns. ⚠ **Before fixing, find what leans on the second event** — it has shipped this way. The repro is on the issue.
+1. **#555 — MERGED** (PR #559, `a7e6b0d9`): the shell emits `<<ShellPageChange>>`.
 2. **#556 — DONE on `fix/556-disabled-shortcut`, PR pending.** Shortcut gated at fire time; folded in (maintainer): a disabled check item rendered enabled on win/x11 (the menu backends' `add_checkbutton` had no `disabled`). Review spun off #560 (a check item's shortcut never flips its checkmark; unmilestoned). Original report: **a disabled menu item's shortcut still runs.** `MenuModel.bind_shortcuts` (`_impl/composites/menu/model.py`) registers `item.on_click` with no `disabled` check. Check `disabled` at FIRE time, not registration, so it stays right when #557 makes `disabled` live. Confirmed with a real key event.
 3. **#553 — a `Form` button's `command` receives the internal form**, not `bs.Form` (`_make_button_command`: `spec.command(self)`). Pass the public wrapper; look for an existing internal→public back-reference before adding one. ⚠ Same PR: update `docs/widgets/forms.rst` "Footer buttons", which currently tells readers to ignore the argument and use `form`.
 
@@ -84,7 +84,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 | | |
 |---|---|
-| `main` | `190700ad` (2026-11-23, the #554 merge), two merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
+| `main` | `a7e6b0d9` (2026-11-23, the #559 merge), three merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
 | branches | `main` only on the remote (2026-11-23). Local `fix/556-disabled-shortcut` — the #556 fix |
 | next release | `0.4.9` — #547 (merged) plus #555, #556, #553 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |

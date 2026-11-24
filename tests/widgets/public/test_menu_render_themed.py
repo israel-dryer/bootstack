@@ -77,6 +77,8 @@ def test_rebuild_after_model_change(app):
 
 
 def test_disabled_check_item_cannot_be_toggled(app):
+    if app._tk_root.tk.call("tk", "windowingsystem") == "aqua":
+        pytest.skip("menu rows are native entries on aqua, not invokable widgets")
     ran = []
     model = MenuModel()
     with model.add_menu("View") as view:

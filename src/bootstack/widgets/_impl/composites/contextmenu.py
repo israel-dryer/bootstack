@@ -1535,6 +1535,7 @@ class _NativeContextMenu(CustomConfigMixin):
 
                 self._menu.add_checkbutton(
                     label=label, variable=var, command=on_toggle,
+                    state='disabled' if spec.get('disabled') else 'normal',
                 )
             elif type_ == 'radiobutton':
                 var = spec.get('variable') or self._var_refs.get(key)
@@ -1556,6 +1557,7 @@ class _NativeContextMenu(CustomConfigMixin):
                     variable=var,
                     value=value,
                     command=on_select,
+                    state='disabled' if spec.get('disabled') else 'normal',
                 )
 
     def _compute_position(self, position: tuple[int, int] | None) -> tuple[int, int]:
