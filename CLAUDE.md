@@ -70,7 +70,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 1. **#555 — MERGED** (PR #559, `a7e6b0d9`): the shell emits `<<ShellPageChange>>`.
 2. **#556 — MERGED** (PR #561, `b6f6a21f`): shortcut gated at fire time; disabled check items fixed on both menu backends. Spun off #560.
-3. **#553 — DONE on `fix/553-form-button-owner`, PR pending.** `bs.Form` sets `_internal._public_owner = self`; `_make_button_command` passes it. `DialogButton.command` widened to `Callable[[Any], Any]`; `forms.rst` "Footer buttons" uses the argument.
+3. **#553 — DONE on `fix/553-form-button-owner`, PR pending.** `bs.Form` sets `_internal._public_owner = self`; `_make_button_command` passes it. Folded in (maintainer): `FormDialog` commands get the public `FormDialog` (same back-ref) and `FormDialog.form` returns `bs.Form` via `Form._wrap()`; upgrade note in the CHANGELOG. `DialogButton.command` widened to `Callable[[Any], Any]`; `forms.rst` "Footer buttons" uses the argument.
 
 **`[Unreleased]` holds #547** (PR #548, external contributor: a narrow field keeps its addon buttons). Review the notes with the maintainer before promoting — see below.
 

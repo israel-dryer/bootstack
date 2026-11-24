@@ -82,6 +82,21 @@ class Form(PublicWidgetBase):
         self._internal._public_owner = self  # what a button `command` receives
         self._attach_to_parent(layout_kw)
 
+    @classmethod
+    def _wrap(cls, internal: _InternalForm) -> "Form":
+        """The public `Form` for an internal form built elsewhere (e.g. by a dialog).
+
+        Reuses the wrapper already recorded on `internal`, so repeated calls
+        return the same object.
+        """
+        owner = getattr(internal, "_public_owner", None)
+        if owner is None:
+            owner = cls.__new__(cls)
+            owner._parent = None
+            owner._internal = internal
+            internal._public_owner = owner
+        return owner
+
     # ----- Value API -----
 
     @property

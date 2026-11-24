@@ -89,8 +89,8 @@ class DialogButton:
     """Whether this is the default button (focused, triggered by Enter)."""
 
     command: Callable[[Any], Any] | None = None
-    """Callback invoked when clicked, with the `Dialog` or `Form` the button
-    belongs to as its argument. Returning `False` refuses the press — no
+    """Callback invoked when clicked, with the `Dialog`, `FormDialog` or `Form`
+    the button belongs to as its argument. Returning `False` refuses the press — no
     result is recorded, and a dialog stays open — which is how a button rejects
     the input it was given. Any other return value, including `None`, accepts
     it. The same applies wherever these specifications are used, including the

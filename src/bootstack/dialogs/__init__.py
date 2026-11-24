@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import textwrap
 from datetime import date
-from typing import Any, Callable, Iterable, Literal, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, Mapping, Sequence
 
 from bootstack.dialogs._impl.dialog import Dialog, DialogButton, ButtonSpec, ButtonRole
 from bootstack.dialogs._impl.query import QueryBox as _QueryBox
@@ -15,6 +15,9 @@ from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack._core.images import _ImageService
 from bootstack.style.style import get_theme_color as _get_theme_color
+
+if TYPE_CHECKING:
+    from bootstack.widgets.form import Form
 
 __all__ = [
     # one-shot verbs
@@ -493,6 +496,7 @@ class FormDialog:
             internal_kwargs["maxsize"] = max_size
 
         self._internal = _InternalFormDialog(parent, **internal_kwargs)
+        self._internal._public_owner = self  # what a button `command` receives
 
     def show(
         self,
@@ -520,9 +524,12 @@ class FormDialog:
         return self._internal.result
 
     @property
-    def form(self) -> Any:
-        """The embedded `Form` widget — for advanced programmatic access."""
-        return self._internal.form
+    def form(self) -> "Form | None":
+        """The embedded `Form`, or `None` until the dialog is shown."""
+        from bootstack.widgets.form import Form
+
+        internal = self._internal.form
+        return None if internal is None else Form._wrap(internal)
 
 
 # ---------------------------------------------------------------------------
