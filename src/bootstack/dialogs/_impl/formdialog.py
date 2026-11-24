@@ -504,7 +504,10 @@ class FormDialog:
                 def wrapped_command(dlg, cmd=original_command, btn=button):
                     if not self._accept_press(btn):
                         return False
-                    outcome = cmd(self)  # Pass FormDialog, not Dialog
+                    # The public FormDialog sets `_public_owner`; a dialog built
+                    # without that wrapper passes itself.
+                    owner = getattr(self, '_public_owner', None)
+                    outcome = cmd(self if owner is None else owner)
                     if outcome is False:
                         # The caller's command refused. Nothing may be recorded:
                         # a result written before this point would outlive the

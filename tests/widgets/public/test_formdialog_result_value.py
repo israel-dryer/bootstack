@@ -224,8 +224,8 @@ def test_a_cancel_button_with_its_own_command_still_returns_none(app):
 
     result = _drive(dialog, app, fill_then_cancel)
 
-    # The command is handed the impl dialog, not the public wrapper.
-    assert ran == [dialog._internal], "precondition: the custom cancel command ran"
+    # The command is handed the public FormDialog (#553).
+    assert ran == [dialog], "precondition: the custom cancel command ran"
     assert result is None, f"cancelling returned the entered data: {result!r}"
 
 
@@ -446,7 +446,7 @@ def test_a_submit_button_with_its_own_command_captures_the_value(app):
 
     result = _drive(dialog, app, fill_then_ok)
 
-    assert ran == [dialog._internal], "precondition: the custom command ran"
+    assert ran == [dialog], "precondition: the custom command ran"
     assert result["k"] == 2, f"the command path lost the value: {result!r}"
     assert type(result["k"]) is int
 
@@ -461,7 +461,7 @@ def test_a_command_that_closes_the_dialog_itself_still_gets_the_values(app):
     text, so a regression here reports `'Two'`, not `2`.
     """
     def close_it(dlg):
-        dlg._dialog.toplevel.destroy()
+        dlg._internal._dialog.toplevel.destroy()
 
     dialog = FormDialog(
         items=[_select_item()],
@@ -591,3 +591,19 @@ def test_a_cancel_closes_even_when_the_form_cannot_be_satisfied(app):
     _drive(dialog, app, press_close)
 
     assert closed == [True], "the cancel button could not close an invalid form"
+
+
+def test_form_property_is_the_public_form(app):
+    seen = []
+
+    def read_form(impl):
+        seen.append((dialog.form, dialog.form, impl.form))
+        _press(impl, cancel=True)
+
+    dialog = FormDialog(items=[_select_item()])
+    _drive(dialog, app, read_form)
+
+    first, second, internal = seen[0]
+    assert isinstance(first, bs.Form)
+    assert first is second
+    assert first.tk is internal

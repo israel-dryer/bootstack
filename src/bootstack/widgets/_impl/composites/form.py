@@ -1000,7 +1000,13 @@ class Form(Frame):
             # contract on the field itself, and `Form` is its second consumer.
             # Recording a result for a press the command declined is the shape
             # #437 removed from `Dialog`; it must not survive here.
-            if spec.command and spec.command(self) is False:  # type: ignore[arg-type]
+            # The command receives the public `bs.Form`, which sets
+            # `_public_owner` after constructing this widget. Only a form built
+            # without that wrapper falls back to itself.
+            owner = getattr(self, '_public_owner', None)
+            if owner is None:
+                owner = self
+            if spec.command and spec.command(owner) is False:
                 # Clearing matters more here than it does on a dialog. A dialog
                 # closes on the press that succeeds, so a refusal can only be
                 # read before anything was ever recorded; a form keeps its

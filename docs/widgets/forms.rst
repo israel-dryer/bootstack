@@ -280,12 +280,12 @@ plain string, a ``DialogButton`` instance, or a dict of ``DialogButton``
 fields such as ``text``, ``role``, ``result``, and ``command``.
 
 To act on a click, give the button a ``command``. It runs each time the
-button is pressed; read the form's values inside it. Return ``False`` to
-refuse the press — for example, when validation fails:
+button is pressed and receives the form, so it can read the values directly.
+Return ``False`` to refuse the press — for example, when validation fails:
 
 .. code-block:: python
 
-   def save(_):
+   def save(form):
        if not form.validate():
            return False
        submit(form.value)
@@ -294,12 +294,9 @@ refuse the press — for example, when validation fails:
        data={"name": "", "email": ""},
        buttons=[
            {"text": "Save",  "role": "primary", "command": save},
-           {"text": "Clear", "command": lambda _: form.set({"name": "", "email": ""})},
+           {"text": "Clear", "command": lambda form: form.set({"name": "", "email": ""})},
        ],
    )
-
-The command receives one argument, which these examples ignore — use
-``form`` itself.
 
 After an accepted press, ``form.result`` holds that button's ``result``
 value, or the form's data dict when the button has no ``result``. A refused
