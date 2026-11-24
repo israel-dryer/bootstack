@@ -76,6 +76,23 @@ def test_rebuild_after_model_change(app):
         bar.destroy()
 
 
+def test_disabled_check_item_cannot_be_toggled(app):
+    ran = []
+    model = MenuModel()
+    with model.add_menu("View") as view:
+        view.add_check("Wrap", disabled=True, on_click=lambda: ran.append("wrap"))
+        view.add_check("Ruler", on_click=lambda: ran.append("ruler"))
+    bar = ThemedMenuBar(app._tk_root, model)
+    try:
+        menu = bar._triggers[0]._context_menu
+        menu.item(1).invoke()
+        assert ran == ["ruler"]  # invoking an enabled row runs it
+        menu.item(0).invoke()
+        assert ran == ["ruler"]
+    finally:
+        bar.destroy()
+
+
 def test_empty_model_builds_no_triggers(app):
     bar = ThemedMenuBar(app._tk_root, MenuModel())
     try:

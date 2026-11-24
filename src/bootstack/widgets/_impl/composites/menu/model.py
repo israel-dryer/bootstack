@@ -330,7 +330,9 @@ class MenuModel:
         first, then re-registered from the current model. Items whose
         `shortcut` is a *registered key* or a *literal* are left alone (their
         keypress is bound elsewhere, or the text is display-only). Items
-        without an `on_click` are skipped — there would be nothing to fire.
+        without an `on_click` are skipped — there would be nothing to fire. A
+        disabled item's shortcut does nothing; `disabled` is read at keypress
+        time.
 
         Args:
             window: Window (App/Toplevel) to bind the shortcuts to. If omitted,
