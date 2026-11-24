@@ -35,6 +35,7 @@ class Form(PublicWidgetBase):
         height: Fixed form height in pixels.
         accent: Accent token for the form container.
         buttons: Footer buttons — strings, `DialogButton` instances, or dicts.
+            Give a button a `command` to act when it is pressed.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -97,11 +98,12 @@ class Form(PublicWidgetBase):
 
     @property
     def result(self) -> Any:
-        """Value set by button commands.
+        """Result of the most recent footer button press.
 
-        None until a button is pressed, and None again after a press its
-        command refused — so this always reflects the most recent press that
-        completed, never one that was declined.
+        The pressed button's `result`, or the form's data dict when the button
+        has no `result`. None until a button is pressed, and None again after a
+        press its command refused. Reading it does not wait for a press; to act
+        on one, give the button a `command`.
         """
         return self._internal.result
 
