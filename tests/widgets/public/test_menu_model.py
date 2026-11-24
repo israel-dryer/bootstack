@@ -156,6 +156,22 @@ def test_bind_registers_pattern_shortcuts():
     assert patterns == {"Mod+O", "Mod+S"}
 
 
+def test_disabled_item_shortcut_does_not_fire():
+    # Calls the registered command: the routine a keypress runs.
+    ran = []
+    model = MenuModel()
+    f = model.add_menu("File")
+    f.add_action("Load", shortcut="Mod+L", disabled=True, on_click=lambda: ran.append("load"))
+    f.add_action("Keep", shortcut="Mod+K", on_click=lambda: ran.append("keep"))
+    model.bind_shortcuts()
+    fire = {s.pattern: s.command for s in get_shortcuts().all().values()}
+
+    fire["Mod+K"]()
+    assert ran == ["keep"]
+    fire["Mod+L"]()
+    assert ran == ["keep"]
+
+
 def test_bind_skips_items_without_on_click():
     svc = get_shortcuts()
     model = MenuModel()

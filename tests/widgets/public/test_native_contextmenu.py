@@ -56,3 +56,12 @@ def test_rebuild_after_insert(app):
     cm.insert_item(0, "command", text="Z", command=lambda: None)  # triggers rebuild
     assert cm._menu.entrycget(0, "label") == "Z"
     cm.destroy()
+
+def test_disabled_items_stay_disabled_after_rebuild(app):
+    cm = _NativeContextMenu(master=app._tk_root)
+    cm.add_checkbutton(text="Wrap", command=lambda: None, disabled=True)
+    cm.add_radiobutton(text="Dark", value="dark", command=lambda: None, disabled=True)
+    assert [cm._menu.entrycget(i, "state") for i in range(2)] == ["disabled", "disabled"]
+    cm.move_item(1, 0)  # triggers rebuild
+    assert [cm._menu.entrycget(i, "state") for i in range(2)] == ["disabled", "disabled"]
+    cm.destroy()

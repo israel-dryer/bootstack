@@ -38,6 +38,7 @@ def menu_item_to_context_item(
             text=item.text,
             value=item.checked,
             command=item.on_click,
+            disabled=item.disabled,
             key=item.key,
         )
 
