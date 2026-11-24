@@ -69,8 +69,8 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0.4.9` per `RELEASE.md`. #474 waits until after. Whether the maintainer or Claude implements is decided per issue — ask.
 
 1. **#555 — MERGED** (PR #559, `a7e6b0d9`): the shell emits `<<ShellPageChange>>`.
-2. **#556 — DONE on `fix/556-disabled-shortcut`, PR pending.** Shortcut gated at fire time; folded in (maintainer): a disabled check item rendered enabled on win/x11 (the menu backends' `add_checkbutton` had no `disabled`). Review spun off #560 (a check item's shortcut never flips its checkmark; unmilestoned). Original report: **a disabled menu item's shortcut still runs.** `MenuModel.bind_shortcuts` (`_impl/composites/menu/model.py`) registers `item.on_click` with no `disabled` check. Check `disabled` at FIRE time, not registration, so it stays right when #557 makes `disabled` live. Confirmed with a real key event.
-3. **#553 — a `Form` button's `command` receives the internal form**, not `bs.Form` (`_make_button_command`: `spec.command(self)`). Pass the public wrapper; look for an existing internal→public back-reference before adding one. ⚠ Same PR: update `docs/widgets/forms.rst` "Footer buttons", which currently tells readers to ignore the argument and use `form`.
+2. **#556 — MERGED** (PR #561, `b6f6a21f`): shortcut gated at fire time; disabled check items fixed on both menu backends. Spun off #560.
+3. **#553 — DONE on `fix/553-form-button-owner`, PR pending.** `bs.Form` sets `_internal._public_owner = self`; `_make_button_command` passes it. `DialogButton.command` widened to `Callable[[Any], Any]`; `forms.rst` "Footer buttons" uses the argument.
 
 **`[Unreleased]` holds #547** (PR #548, external contributor: a narrow field keeps its addon buttons). Review the notes with the maintainer before promoting — see below.
 
@@ -84,8 +84,8 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 | | |
 |---|---|
-| `main` | `a7e6b0d9` (2026-11-23, the #559 merge), three merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
-| branches | `main` only on the remote (2026-11-23). Local `fix/556-disabled-shortcut` — the #556 fix |
+| `main` | `b6f6a21f` (2026-11-23, the #561 merge), four merges past tag `v0.4.8`. Verify with `git rev-parse origin/main` |
+| branches | `main` only on the remote (2026-11-23). Local `fix/553-form-button-owner` — the #553 fix |
 | next release | `0.4.9` — #547 (merged) plus #555, #556, #553 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `08381329` (2026-10-15, the #544 merge, which `v0.4.8` was cut from) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
@@ -102,7 +102,7 @@ Three patch-line bugs, one `fix/` branch and PR each, in this order. Then cut `0
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-23): #556 (fixed on its branch), #553; #560 filed, unmilestoned** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-23): #553 (fixed on its branch); #560 filed, unmilestoned** — see ★ START HERE. #547 is fixed on `main`, unreleased. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 

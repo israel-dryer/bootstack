@@ -544,3 +544,14 @@ def test_a_refused_form_press_clears_the_previous_result(app):
     assert form.data == {"k": "edited"}, (
         f"precondition: the edit landed, data is {form.data!r}")
     assert form.result is None, f"a refused press left {form.result!r} readable"
+
+
+def test_a_form_button_command_receives_the_public_form(app):
+    got = []
+    form = bs.Form(items=[_text_item()],
+                   buttons=[DialogButton(text="Save", command=got.append)])
+    app._tk_root.update_idletasks()
+
+    _press_form_button(form)
+
+    assert got == [form]

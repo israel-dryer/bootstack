@@ -35,7 +35,8 @@ class Form(PublicWidgetBase):
         height: Fixed form height in pixels.
         accent: Accent token for the form container.
         buttons: Footer buttons — strings, `DialogButton` instances, or dicts.
-            Give a button a `command` to act when it is pressed.
+            Give a button a `command` to act when it is pressed; it is
+            called with this form.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -78,6 +79,7 @@ class Form(PublicWidgetBase):
             kw["buttons"] = buttons
 
         self._internal = _InternalForm(tk_master, **kw)
+        self._internal._public_owner = self  # what a button `command` receives
         self._attach_to_parent(layout_kw)
 
     # ----- Value API -----
