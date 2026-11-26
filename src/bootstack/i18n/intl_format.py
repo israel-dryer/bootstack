@@ -37,6 +37,7 @@ def detect_locale(default: str = "en_US") -> str:
     Return a Babel-friendly locale like 'de_DE' or 'en_US'.
     - Tries current process locale, then system default (if available).
     - Strips encoding suffixes (e.g. '.UTF-8').
+    - Treats the `C`/`POSIX` locale as unset.
     - Validates with Babel; falls back to `default` on failure.
     """
     lang: Optional[str]
@@ -61,6 +62,12 @@ def detect_locale(default: str = "en_US") -> str:
 
     # Normalize 'de_DE.UTF-8' -> 'de_DE'
     lang = lang.split(".", 1)[0]
+
+    # `C`/`POSIX` means no locale was chosen. Babel 2.19+ parses it as
+    # `en_US_POSIX` (no digit grouping, a no-break space after a currency
+    # symbol), so it must not count as a detected locale.
+    if lang.split("@", 1)[0].upper() in ("C", "POSIX"):
+        return default
 
     # 3) Validate for Babel
     try:
