@@ -44,7 +44,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 **WSL** (`/home/iddryer/bootstack`, Ubuntu 22.04) — **the only box that runs the Linux leg.**
 - Use **`/home/iddryer/.virtualenvs/bootstack/bin/python`** (3.13, Tk 8.6.12, editable). `python3` is 3.10, below the floor. Confirm it prints `/home/iddryer/bootstack/src/bootstack`.
-- No passwordless sudo; `openbox` is not installed — `xfwm4`, `xvfb-run` and `xprop` are. CI uses `openbox`.
+- No passwordless sudo; `openbox` is not installed — `xfwm4`, `xvfb-run` and `xprop` are. CI uses `openbox`. Start it as `xfwm4 --compositor=off --replace &` inside `xvfb-run`, and poll for `window id`.
 - ⚠ **Run the Linux suite WITH a window manager**, or you reproduce #447 and think it is a product bug. Poll `_NET_SUPPORTING_WM_CHECK`; never `sleep`.
 - `gh` is the **Windows** binary, `"/mnt/c/Program Files/GitHub CLI/gh.exe"`; it cannot read WSL paths, so pass bodies via `--body-file -` on stdin.
 - Screen capture is not measurable under WSLg — run `test_capture` under Xvfb.
@@ -66,7 +66,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
 
-Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale) and #565 (undecorated shell title bar). All four, plus #560 (a check item's shortcut never flips its checkmark, unfixed), are on `0.4.x — Patch line` (maintainer, 2026-11-26).
+Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale), #565 (undecorated shell title bar) and #564 (splash nearly transparent during the build). All of them, plus #560 (a check item's shortcut never flips its checkmark, unfixed), are on `0.4.x — Patch line` (maintainer, 2026-11-26).
 
 **Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
@@ -80,7 +80,7 @@ Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]`
 |---|---|
 | `main` | `799e6820` (2026-11-23, `Release 0.4.9`), tagged `v0.4.9`. Verify with `git rev-parse origin/main` |
 | branches | `main` only on the remote (2026-11-23) |
-| next release | none queued; `[Unreleased]`: #563, #565, #567 |
+| next release | none queued; `[Unreleased]`: #563, #564, #565, #567 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `799e6820` (2026-11-23, `Release 0.4.9`) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1848 / 22`, 36 legs — 2026-11-23 at `a8114f6d` (`v0.4.9` minus the release commits). ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
@@ -96,7 +96,7 @@ Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]`
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-26): #560** (unfixed) and #565 (fixed by PR #569; close after merge). #563 and #567 are merged to `main` (unreleased) and closed. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-26): #560** (unfixed), #570 (a `size=` window is not centered: an unmapped window reports 200x200 on Windows and 1x1 on X11; unfixed) and #564 (splash fade-in removed on `fix/564-splash-fade-in`; close after merge). #563, #565 and #567 are merged to `main` (unreleased) and closed. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
