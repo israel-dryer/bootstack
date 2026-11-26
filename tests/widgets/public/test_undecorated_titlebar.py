@@ -184,3 +184,23 @@ def test_corner_grip_takes_the_surface_beneath_it(app):
             top.destroy()
         except Exception:
             pass
+
+
+@_skip_mac
+def test_destroying_a_resized_window_leaves_no_orphaned_grip_job(app):
+    import bootstack as bs
+
+    root = app._tk_root
+    errors = []
+    root.tk.createcommand("bgerror", lambda *args: errors.append(args))
+    try:
+        win = bs.Window(title="d", size=(300, 200), undecorated=True, parent=app)
+        win.show()
+        top = win._tk_toplevel
+        top.update()
+        top.event_generate("<Configure>")  # the grip schedules a sync at idle
+        top.destroy()
+        root.update()
+        assert errors == []
+    finally:
+        root.tk.deletecommand("bgerror")

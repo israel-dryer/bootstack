@@ -69,15 +69,17 @@ def install_resize_grip(host: Any) -> Any:
             if surface and surface != getattr(grip, "_surface", None):
                 grip.configure_style_options(surface=surface)
                 grip.rebuild_style()
-        except (KeyError, TclError):
-            pass
+        except (AttributeError, KeyError, TclError):
+            pass  # the window was destroyed before this ran
 
     def schedule(_event: Any = None) -> None:
         if pending:
             return
+        # On the root, never the window: a window destroyed before idle would
+        # orphan the job and Tk would report an invalid command.
         try:
-            pending.append(top.after_idle(sync))
-        except TclError:
+            pending.append(host._root().after_idle(sync))
+        except (AttributeError, TclError):
             pass
 
     # Any layout change in the window (a resize, a status bar or dock shown or
