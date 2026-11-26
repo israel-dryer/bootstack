@@ -210,3 +210,20 @@ def test_decimal_seeded_field_displays_formatted(app):
     app._tk_root.update_idletasks()
     assert field.text == "$3.50"
     assert field.value == Decimal("3.50")
+
+
+def test_c_locale_is_not_a_detected_locale(monkeypatch):
+    # #567: Babel 2.19 parses `C`/`POSIX` as `en_US_POSIX`, so a C-locale
+    # process (Linux CI, Docker) formatted currency as `$ 1234.50` instead of
+    # falling back to the default locale.
+    from babel import Locale, UnknownLocaleError
+
+    from bootstack.i18n import IntlFormatter
+
+    try:
+        Locale.parse("C")
+    except (UnknownLocaleError, ValueError):
+        pytest.skip("this Babel rejects the C locale, so the fallback already runs")
+    monkeypatch.setattr("locale.getlocale", lambda *a: ("C", "UTF-8"))
+    monkeypatch.setattr("locale.getdefaultlocale", lambda *a: ("C", "UTF-8"), raising=False)
+    assert IntlFormatter().format(1234.5, "currency") == "$1,234.50"
