@@ -16,8 +16,7 @@ if TYPE_CHECKING:
     from bootstack.streams import Stream
 
 
-# Fade ramp: ~250ms over 12 steps. Tuned for a soft, quick in/out that never
-# feels like a stall; degrades to an instant snap where alpha isn't honored.
+# Fade-out ramp: ~250ms over 12 steps; an instant snap where alpha isn't honored.
 _FADE_STEPS = 12
 _FADE_INTERVAL_MS = 20
 
@@ -52,8 +51,8 @@ class Splash(FlexContainer):
         min_duration: A floor in seconds — the splash never closes before this
             has elapsed, even if its trigger fires sooner (prevents a blink on a
             fast startup).
-        fade: Fade the window in and out where the platform supports window
-            alpha; snap instantly where it does not.
+        fade: Fade the window out on dismissal where the platform supports
+            window alpha; close instantly where it does not.
         size: Fixed size as `(width, height)`. Defaults to auto-fitting the
             content. Either way the splash is centered on screen.
         surface: Surface token for the panel background.
@@ -260,12 +259,8 @@ class Splash(FlexContainer):
         x, y = WindowPositioning.ensure_on_screen(top, x, y)
         top.geometry(f"+{x}+{y}")
 
-        if self._fade:
-            try:
-                top.attributes("-alpha", 0.0)
-            except tkinter.TclError:
-                self._fade = False
-
+        # No fade-in: its steps cannot run during the synchronous build the
+        # splash covers, so it would sit nearly transparent (#564).
         top.deiconify()
         top.lift()
         try:
@@ -276,9 +271,6 @@ class Splash(FlexContainer):
         # body build that follows the `with` block.
         top.update()
         self._is_showing = True
-
-        if self._fade:
-            self._fade_in(1)
         self._start_timers()
 
     def _start_timers(self) -> None:
@@ -290,17 +282,6 @@ class Splash(FlexContainer):
                       lambda: self._request_dismiss("timer"))
 
     # ----- Fade ramps ----------------------------------------------------------
-
-    def _fade_in(self, step: int) -> None:
-        if not self._is_showing or self._dismissing:
-            return
-        alpha = min(1.0, step / _FADE_STEPS)
-        try:
-            self._tk_toplevel.attributes("-alpha", alpha)
-        except tkinter.TclError:
-            return
-        if step < _FADE_STEPS:
-            self._tk_toplevel.after(_FADE_INTERVAL_MS, lambda: self._fade_in(step + 1))
 
     def _fade_out(self, step: int) -> None:
         alpha = max(0.0, 1.0 - step / _FADE_STEPS)

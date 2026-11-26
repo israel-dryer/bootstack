@@ -53,6 +53,16 @@ def test_construction_registers_and_shows(splash_app):
     assert _internal(splash_app)._splash is sp
 
 
+def test_splash_is_opaque_before_the_event_loop_runs(splash_app):
+    # #564: the build after the `with` block blocks the loop, so a fade-in
+    # left the splash nearly transparent until the app was ready.
+    sp = bs.Splash(until="manual")
+    with sp:
+        bs.Label("Loading")
+    assert sp.is_showing is True
+    assert float(sp._tk_toplevel.attributes("-alpha")) == 1.0
+
+
 def test_second_splash_raises(splash_app):
     sp = bs.Splash(until="manual")
     with sp:
