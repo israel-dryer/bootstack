@@ -66,7 +66,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
 
-Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale) and #565 (undecorated shell title bar). #560 (a check item's shortcut never flips its checkmark), #563, #565 and #567 are unmilestoned — ask whether they join the patch line.
+Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale) and #565 (undecorated shell title bar). All four, plus #560 (a check item's shortcut never flips its checkmark, unfixed), are on `0.4.x — Patch line` (maintainer, 2026-11-26).
 
 **Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
@@ -96,7 +96,7 @@ Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]`
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-26): none on the milestone.** #560 and #565 are filed and unmilestoned (see ★ START HERE). #565: an undecorated `AppShell`/`Workbench` gets no built-in title bar — the shell wrapper never sets `_undecorated` (dropped in the #200 split), so `_ensure_default_titlebar()` returns early. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-26): #560** (unfixed) and #565 (fixed by PR #569; close after merge). #563 and #567 are merged to `main` (unreleased) and closed. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
