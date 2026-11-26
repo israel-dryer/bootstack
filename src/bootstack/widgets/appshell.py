@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence, overload
 
 if TYPE_CHECKING:
@@ -457,6 +458,8 @@ class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWid
             init_kwargs.setdefault("minsize", DEV_MIN_SIZE)
 
         self._internal = _InternalShell(**init_kwargs)
+        # Read by `_ensure_default_titlebar()`; macOS ignores overrideredirect.
+        self._undecorated = bool(init_kwargs.get("undecorated")) and sys.platform != "darwin"
 
         # Resolve the window icon AFTER the root exists (an AppIcon may resolve
         # theme tokens; a deferred Image renders against the root).
