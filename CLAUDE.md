@@ -66,7 +66,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
 
-Read #474 and its entry under Unmilestoned below before starting. Nothing is in `[Unreleased]`. #560 (a check item's shortcut never flips its checkmark) is open and unmilestoned — ask whether it joins the patch line.
+Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows). #560 (a check item's shortcut never flips its checkmark), #563 and #565 are unmilestoned — ask whether they join the patch line.
 
 **Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
@@ -80,7 +80,7 @@ Read #474 and its entry under Unmilestoned below before starting. Nothing is in 
 |---|---|
 | `main` | `799e6820` (2026-11-23, `Release 0.4.9`), tagged `v0.4.9`. Verify with `git rev-parse origin/main` |
 | branches | `main` only on the remote (2026-11-23) |
-| next release | none queued; `[Unreleased]` is empty |
+| next release | none queued; `[Unreleased]`: #563 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `799e6820` (2026-11-23, `Release 0.4.9`) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1848 / 22`, 36 legs — 2026-11-23 at `a8114f6d` (`v0.4.9` minus the release commits). ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |
@@ -96,7 +96,7 @@ Read #474 and its entry under Unmilestoned below before starting. Nothing is in 
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-23): none on the milestone.** #560 is filed and unmilestoned (see ★ START HERE). Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-26): none on the milestone.** #560 and #565 are filed and unmilestoned (see ★ START HERE). #565: an undecorated `AppShell`/`Workbench` gets no built-in title bar — the shell wrapper never sets `_undecorated` (dropped in the #200 split), so `_ensure_default_titlebar()` returns early. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
@@ -247,6 +247,8 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - ⚠ **Which keysyms exist is a property of the Tk BUILD, not the platform** — `<ISO_Left_Tab>` is rejected by Tk 8.6.12 and accepted by 8.6.15, both on win32, so an unguarded bind raises at construction for some users and not others (#520). Bind an X11-only keysym behind `winsys == "x11"`; Tk wraps its own `<<PrevWindow>>` add in `catch` for the same reason.
 - `event_generate("<Double-1>")` is rejected — send two presses with explicit `time=` (synthesized events default to `time=0`).
 - `winfo_ismapped()` on a destroyed widget RAISES `TclError`.
+- ⚠ **`winfo_containing()` is a SCREEN lookup** — another window overlapping the point returns that window's widget. Walk the window's own tree instead (`widgets/_core/resize_grip.py`).
+- ⚠ **Right after a toplevel maps, its children still report `winfo_ismapped() == 0`** until their Map events are serviced. Test "laid out" with `winfo_manager()` and a real size.
 - ⚠ **`update_idletasks()` does not service queued window events — only `update()` does.** It can silence a flake while fixing nothing.
 - ⚠ **Some failures are invisible to Python** — install a `bgerror` collector (`root.tk.createcommand('bgerror', fn)`, delete it in `finally`). When a bug has no public observable, that channel is the observable.
 - ⚠ **Defer widget cleanup on the ROOT, never the widget** — `widget.after_idle(cb)` is owned by the widget and orphans on destroy. Guard `TclError` and `AttributeError`.

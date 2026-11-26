@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import FlexContainer
+from bootstack.widgets._core.resize_grip import install_resize_grip
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import (
@@ -215,6 +216,9 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         self._dev_frame_kwargs = dict(frame_kwargs)
         self._content_frame = FlexFrame(self._region_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
+        self._resize_grip = (
+            install_resize_grip(self._region_root) if self._undecorated else None
+        )
 
         self._internal = self._tk_root
 
@@ -336,6 +340,8 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
                 pass
         self._content_frame = FlexFrame(self._region_root, **self._dev_frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
+        if self._resize_grip is not None:
+            self._resize_grip.lift()
         try:
             from bootstack.dev import _registry
 

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._core.container import FlexContainer
+from bootstack.widgets._core.resize_grip import install_resize_grip
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import (
@@ -212,6 +213,8 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
 
         self._content_frame = FlexFrame(self._region_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
+        if self._region_root is not self._tk_toplevel:
+            install_resize_grip(self._region_root)
 
         self._internal = self._tk_toplevel
 

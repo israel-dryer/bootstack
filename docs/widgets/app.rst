@@ -166,7 +166,8 @@ Undecorated window
 ``undecorated=True`` removes the OS title bar and border (ignored on macOS). The
 window is not left stranded: it gets a built-in title bar with minimize /
 maximize / close at the right edge and window dragging (double-click maximizes),
-labeled with the window title. The same applies to
+labeled with the window title, and a resize grip in the bottom-right corner
+(hidden while maximized or when ``resizable=(False, False)``). The same applies to
 :class:`Window <bootstack.Window>` and :class:`AppShell <bootstack.AppShell>`
 (:class:`Window <bootstack.Window>` can opt out with ``window_controls=False``
 for a chromeless splash or popover).
