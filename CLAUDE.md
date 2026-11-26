@@ -66,7 +66,7 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
 
-Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows). #560 (a check item's shortcut never flips its checkmark), #563 and #565 are unmilestoned — ask whether they join the patch line.
+Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale) and #565 (undecorated shell title bar). #560 (a check item's shortcut never flips its checkmark), #563, #565 and #567 are unmilestoned — ask whether they join the patch line.
 
 **Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
@@ -80,7 +80,7 @@ Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]`
 |---|---|
 | `main` | `799e6820` (2026-11-23, `Release 0.4.9`), tagged `v0.4.9`. Verify with `git rev-parse origin/main` |
 | branches | `main` only on the remote (2026-11-23) |
-| next release | none queued; `[Unreleased]`: #563 |
+| next release | none queued; `[Unreleased]`: #563, #565, #567 |
 | CI | `ci.yml`: `headless`, `tests` (ubuntu + windows matrix), `tests-uv`, `docs`. **No macOS leg** (#452). All six jobs green at `799e6820` (2026-11-23, `Release 0.4.9`) |
 | `tests-uv` | Windows, uv-managed Python — **a different Tk from every other leg**, which is the whole point. First real run 2026-09-16, green. ⚠ `--python-preference only-managed` is load-bearing: without it uv may resolve the `setup-python` interpreter and the leg goes green having re-tested Tk 8.6.15 |
 | suite, Windows | CI, windows-latest py3.13: **`1762 / 22`, 35 legs** — 2026-09-16 at `65523dbb`. Local `py -3.12`: `1848 / 22`, 36 legs — 2026-11-23 at `a8114f6d` (`v0.4.9` minus the release commits). ⚠ **The two populations differ by 25 and nobody has explained why** — do not read one as a regression against the other |

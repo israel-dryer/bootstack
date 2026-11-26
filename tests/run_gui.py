@@ -28,6 +28,7 @@ REPO = Path(__file__).resolve().parent.parent
 # process (one root for the module).
 ISOLATED = [
     "tests/widgets/public/test_undecorated_titlebar.py",
+    "tests/widgets/public/test_appshell_undecorated_titlebar.py",
     "tests/widgets/public/test_appshell_reshape.py",
     "tests/widgets/public/test_appshell_shortcuts.py",
     "tests/widgets/public/test_appshell_page_change.py",
