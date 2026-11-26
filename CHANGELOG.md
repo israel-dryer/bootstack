@@ -8,6 +8,12 @@ and from 0.1.0 onward the project adheres to
 
 <!-- release-notes-start -->
 
+## [Unreleased]
+
+### Fixed
+
+- **An undecorated window can now be resized by hand.** Previously an `App`, `Window` or `AppShell` created with `undecorated=True` on Windows or Linux had no border to drag, so it could not be resized by hand. It now has a resize grip in its bottom-right corner, painted to match what sits beneath it. The grip follows `resizable=`, `min_size=` and `max_size=`, and is hidden while the window is maximized or when `resizable=(False, False)`. macOS is unaffected: `undecorated=True` has no effect there, and the window keeps its native border. ([#563](https://github.com/israel-dryer/bootstack/issues/563))
+
 ## [0.4.9] — Page-change scope, disabled menu items and form button owners
 
 ### Fixed

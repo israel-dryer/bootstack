@@ -34,6 +34,7 @@ from tkinter import TclError
 from typing import Any
 
 from bootstack._runtime.app import App
+from bootstack.widgets._core.resize_grip import install_resize_grip
 from bootstack.widgets._impl.composites.toolbar import Toolbar
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.packframe import PackFrame
@@ -133,6 +134,8 @@ class ShellLayout(App):
         self._build_regions()
         self._relayout_window()
         self._relayout_body()
+        if self._undecorated:
+            install_resize_grip(self._region_root)
 
     # ----- Construction -----
 

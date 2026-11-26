@@ -1,4 +1,4 @@
-"""Auto-injected title bar for undecorated windows (#162).
+"""Auto-injected title bar and corner resize grip for undecorated windows (#162, #563).
 
 An undecorated App/Window with no author-supplied chrome gets a built-in,
 draggable title bar (min/max/close) so a borderless window is never stranded.
@@ -126,5 +126,61 @@ def test_window_controls_false_is_chromeless(app):
     finally:
         try:
             win._tk_toplevel.destroy()
+        except Exception:
+            pass
+
+def _grip(win):
+    from tkinter import ttk
+
+    grips = [c for c in win._region_root.winfo_children() if isinstance(c, ttk.Sizegrip)]
+    assert len(grips) == 1
+    return grips[0]
+
+
+@_skip_mac
+def test_undecorated_window_resizes_from_corner_grip(app):
+    # #563: an undecorated window has no OS border to drag.
+    import bootstack as bs
+
+    win = bs.Window(title="r", size=(300, 200), undecorated=True, parent=app)
+    top = win._tk_toplevel
+    try:
+        win.show()
+        top.update()
+        assert bool(top.overrideredirect())
+        grip = _grip(win)
+        assert grip.winfo_manager() == "place"
+        x, y = grip.winfo_rootx() + 3, grip.winfo_rooty() + 3
+        w0, h0 = top.winfo_width(), top.winfo_height()
+        for step, d in (("Press", 0), ("Drag", 40), ("Release", 40)):
+            top.tk.call(f"ttk::sizegrip::{step}", grip, x + d, y + d)
+        top.update()
+        assert (top.winfo_width(), top.winfo_height()) == (w0 + 40, h0 + 40)
+    finally:
+        try:
+            top.destroy()
+        except Exception:
+            pass
+
+
+@_skip_mac
+def test_corner_grip_takes_the_surface_beneath_it(app):
+    from tkinter import ttk
+
+    import bootstack as bs
+
+    win = bs.Window(title="s", size=(300, 200), undecorated=True, surface="card", parent=app)
+    top = win._tk_toplevel
+    try:
+        win.show()
+        for _ in range(3):
+            top.update()
+        style = ttk.Style()
+        under = style.lookup(win._content_frame.cget("style"), "background")
+        assert under != style.lookup(win._region_root.cget("style"), "background")
+        assert style.lookup(_grip(win).cget("style"), "background") == under
+    finally:
+        try:
+            top.destroy()
         except Exception:
             pass
