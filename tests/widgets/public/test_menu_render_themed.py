@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+from bootstack._runtime.shortcuts import get_shortcuts
 from bootstack.widgets._impl.composites.menu import MenuModel
 from bootstack.widgets._impl.composites.menu.render_themed import ThemedMenuBar
 
@@ -92,6 +93,27 @@ def test_disabled_check_item_cannot_be_toggled(app):
         menu.item(0).invoke()
         assert ran == ["ruler"]
     finally:
+        bar.destroy()
+
+
+def test_check_item_shortcut_flips_its_row(app):
+    # Calls the registered command: the routine a keypress runs.
+    if app._tk_root.tk.call("tk", "windowingsystem") == "aqua":
+        pytest.skip("menu rows are native entries on aqua, not themed widgets")
+    ran = []
+    model = MenuModel()
+    with model.add_menu("View") as view:
+        view.add_check("Wrap", shortcut="Mod+W", on_click=lambda: ran.append("wrap"))
+    bar = ThemedMenuBar(app._tk_root, model)
+    model.bind_shortcuts()
+    try:
+        row_var = bar._triggers[0]._context_menu.item(0)._variable
+        assert row_var.get() is False
+        get_shortcuts().get(model._registered_keys[0]).command()
+        assert ran == ["wrap"]
+        assert row_var.get() is True
+    finally:
+        model.unbind_shortcuts()
         bar.destroy()
 
 

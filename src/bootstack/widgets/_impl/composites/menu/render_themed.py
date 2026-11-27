@@ -36,7 +36,7 @@ def menu_item_to_context_item(
         return ContextMenuItem(
             "checkbutton",
             text=item.text,
-            value=item.checked,
+            variable=item._check_var(),
             command=item.on_click,
             disabled=item.disabled,
             key=item.key,
