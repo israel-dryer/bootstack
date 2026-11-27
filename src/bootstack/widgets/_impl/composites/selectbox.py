@@ -165,8 +165,7 @@ class SelectBox(Field):
         # Bind click-to-open unconditionally and gate it inside the handler.
         # Binding on the transition instead would mean unbinding on the way
         # back, and a released tkinter binding name is reused immediately, so a
-        # deferred unbind can delete a different, live binding (cost a critical
-        # defect in #392).
+        # deferred unbind can delete a different, live binding.
         self.entry_widget.bind('<Button-1>', self._on_entry_click, add='+')
 
         self._apply_interaction_state()
@@ -211,10 +210,9 @@ class SelectBox(Field):
     def _apply_interaction_state(self) -> None:
         """Recompute everything derived from readonly / custom values / search.
 
-        The ttk `readonly` state is an OUTPUT of this method, never storage.
-        It doubles as the widget's own "no free typing" flag, and writing it
-        from more than one place is exactly what let a caller's `read_only`
-        be silently overwritten (#453).
+        The ttk `readonly` state is an output of this method, never storage.
+        It doubles as the widget's own "no free typing" flag, so writing it
+        from anywhere else silently overwrites a caller's `read_only`.
         """
         typeable = self._entry_is_typeable()
         self.entry_widget.state(['!readonly'] if typeable else ['readonly'])

@@ -225,10 +225,8 @@ class Field(EntryMixin, Frame):
 
         # No vertical expand: when a field is given more height than it needs —
         # a form grid stretches every cell to the tallest field in the row — the
-        # slack must collect BELOW the stack, not inside the entry row. With
-        # expand=True the entry row absorbed it and centered itself, so a field
-        # without a reserved message row sat ~half a message lower than its
-        # validated neighbors (#394).
+        # slack must collect below the stack, not inside the entry row, or a
+        # field without a message row sits lower than its validated neighbors.
         self._field.pack(side='top', fill='x')
         self._entry.pack(side='left', fill='x', expand=True, padx=(0, 6) if kind == "spinbox" else 0, pady=0)
 
