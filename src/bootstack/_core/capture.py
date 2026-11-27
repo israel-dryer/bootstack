@@ -70,8 +70,7 @@ _SUBPROCESS_BACKENDS = (
 #
 # This says which code owns the crop, not that the crop is checked — neither of
 # those is. Windows pads a region reaching past the grabbed desktop with black,
-# and macOS stretches a region the system clamped. Extending the bounds check to
-# them is a separate change, and one no box available here can verify.
+# and macOS stretches a region the system clamped.
 #
 # Everywhere else — Linux — `ImageGrab` grabs the whole desktop and crops it
 # with no check that it covers the region, padding the difference with black
@@ -208,26 +207,16 @@ def settle(tk_widget, seconds: float) -> None:
     capture taken without it photographs the dialog that was just dismissed
     rather than the widget underneath.
 
-    Dispatching brings its own problem, which is why the window is held busy
-    for the duration. Turning the loop runs everything queued, including a
-    second click on the button that started the capture: that click would
-    re-enter the caller's handler, opening a second save dialog on top of the
-    first and starting an overlapping capture, none of which the person
-    clicking asked for. `tk busy` routes that click to a blocking window
+    Turning the loop also runs a second click on the button that started the
+    capture, which would re-enter the caller's handler and start an
+    overlapping capture. `tk busy` routes that click to a blocking window
     instead.
 
-    ⚠ THE HOLD IS BEST-EFFORT, AND ON macOS IT DOES NOTHING. Aqua reports the
-    hold as successful and never maps the window it created: `tk busy status`
-    returns 1 while the busy window sits at `winfo_ismapped() == 0`, and Tk's
-    own hit test at the button's position still resolves to the button. So a
-    real click re-enters the handler there — confirmed by hand, since a
-    synthesized click cannot test this. Measured on Tk 8.6.17 in plain
-    tkinter, so it is the toolkit rather than anything above it. X11 and Win32
-    map the window and are expected to honor it.
-
-    The wait dispatches either way. A correct picture is worth more than a
-    stray click: without dispatching, the capture reads pixels that are simply
-    wrong, and that is the failure this function exists to prevent.
+    The hold is best-effort, and on macOS it does nothing: Aqua reports it as
+    successful but never maps the busy window, so a real click still reaches
+    the button (confirmed by hand on Tk 8.6.17; a synthesized click cannot test
+    this). X11 and Win32 map the window. The wait dispatches either way, since
+    without it the pixels read are wrong.
 
     Args:
         tk_widget: Any widget; its root window is the one flushed.
@@ -254,15 +243,13 @@ def _input_blocked(tk_widget):
     Yields either way: a window that cannot be held busy is still captured,
     just without the protection from a stray click.
 
-    ⚠ Yielding `True` means the hold was ACCEPTED, not that input is actually
-    blocked — macOS accepts it and does not map the busy window. See `settle`.
+    Yielding `True` means the hold was accepted, not that input is blocked —
+    macOS accepts it and does not map the busy window. See `settle`.
 
-    ⚠ The target may already be DEAD by the time this runs — settling flushes
-    pending drawing first, and idle work queued before the capture can destroy
-    it. Asking a destroyed widget for its toplevel raises a raw `TclError`,
-    which would escape a method documented to raise `BootstackError` and
-    pre-empt the guard that reports the closure properly. So the lookup is
-    guarded too, not just the `tk busy` calls.
+    The target may already be destroyed by the time this runs (idle work
+    flushed by `settle` can destroy it), so the toplevel lookup is guarded as
+    well as the `tk busy` calls: a raw `TclError` here would pre-empt the
+    caller's `BootstackError` for a closed target.
     """
     top = None
     held = False

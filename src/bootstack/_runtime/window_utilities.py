@@ -227,8 +227,8 @@ class WindowPositioning:
             to the parent.
 
         Examples:
-import bootstack._runtime.toplevel            >>> parent = tkinter.Tk()
-            >>> dialog = bootstack._runtime.toplevel.Toplevel(parent)
+            >>> parent = tkinter.Tk()
+            >>> dialog = Toplevel(parent)
             >>> dialog.update_idletasks()
             >>> parent.update_idletasks()
             >>> x, y = WindowPositioning.center_on_parent(dialog, parent)
@@ -625,7 +625,7 @@ import bootstack._runtime.toplevel            >>> parent = tkinter.Tk()
     ) -> None:
         """Position window using unified anchor-based positioning with auto-flip.
 
-        This is the new consolidated positioning method that handles:
+        Handles:
         - Widget anchoring
         - Screen anchoring (with anchor points)
         - Cursor anchoring

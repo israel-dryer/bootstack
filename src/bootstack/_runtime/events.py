@@ -367,17 +367,12 @@ def _patched_unbind(
     if len(keep) == len(lines):
         # This funcid is not bound to this widget and sequence, so it is
         # not ours to delete — the live binding may be somewhere else, and
-        # deleting its command would orphan it. Leave everything alone.
+        # deleting its command would orphan it. Leave everything alone, and
+        # report the leaked command in development.
         #
-        # Correct, but it means the command and its closure survive for the
-        # life of the interpreter, invisibly. Surface it in development so the
-        # drift that produced it can be found (#399).
-        #
-        # Reported, not warned. This runs inside event dispatch and on the
-        # teardown path behind `Subscription.cancel()` and its `__exit__`, both
-        # documented as safe to call on a dead or already-removed handler. A
-        # `warnings.warn` here becomes an exception out of both under
-        # `-W error`, which is a worse outcome than the leak it describes.
+        # debug_log, never warnings.warn: this runs inside event dispatch and
+        # behind `Subscription.cancel()`, documented as safe on a dead handler,
+        # and a warning becomes an exception there under `-W error`.
         from bootstack._runtime.utility import debug_log
         debug_log(
             f"unbind({sequence!r}, {funcid!r}) on {self._w!r} matched no "
@@ -416,14 +411,10 @@ def _patched_unbind(
             pass
 
     try:
-        # Deliberately scheduled on the root, not on `self`. Deferred work owned
-        # by a widget is torn down with it, and destroying a widget between the
-        # cancellation and the next idle point would leave the pending callback
-        # referring to a command that destroy() had already deleted — a silent
-        # error of exactly the kind this function exists to avoid. The root
-        # outlives every widget, and when the root itself goes the pending
-        # callback goes with it, which is equally fine: there is nothing left to
-        # clean up.
+        # On the root, not on `self`: deferred work owned by a widget is torn
+        # down with it, so destroying the widget before idle would leave the
+        # callback pointing at a command destroy() already deleted. The root
+        # outlives every widget.
         self._root().after_idle(_delete_command)
     except (tk.TclError, AttributeError):
         # No event loop left to defer onto; nothing can be mid-dispatch either.

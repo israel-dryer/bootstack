@@ -13,8 +13,7 @@ from bootstack.style.style_resolver import StyleResolver
 
 # Native Tk widget classes whose constructors get the autostyle wrapper.
 # Limited to the raw Tk widgets the framework actually instantiates or
-# subclasses (everything else is built on ttk). Implementation detail of this
-# patch — intentionally not exported anywhere.
+# subclasses (everything else is built on ttk).
 _TK_WIDGETS = (
     tk.Tk,        # application root window
     tk.Toplevel,  # secondary windows, dialogs, popups

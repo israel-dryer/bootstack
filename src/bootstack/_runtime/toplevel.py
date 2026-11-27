@@ -225,17 +225,11 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         super().show()
         if self._modal:
             # Remember who held the grab, and how, so it can be handed back when
-            # this window goes away. Tk drops a grab on destroy but never
-            # restores the one it displaced, so a modal opened from inside
-            # another modal used to leave its opener on screen, still blocking
-            # its caller, holding nothing at all (#444 — #440 fixed the same
-            # defect on the dialog path). Captured BEFORE the grab: once another
-            # window grabs, the previous holder's grab_status() reads None.
-            #
-            # Captured ONCE. show() is re-callable — show(anchor_to=) re-anchors
-            # an open window and block_until_closed() shows it itself — and a
-            # later capture finds this window already holding the grab, so it
-            # would record the window as its own previous holder.
+            # this window goes away (see `capture_grab`). Captured before the
+            # grab, and only once: show() is re-callable (show(anchor_to=)
+            # re-anchors an open window; block_until_closed() shows it itself),
+            # and a later capture finds this window already holding the grab,
+            # so it would record the window as its own previous holder.
             if not self._grab_restore_bound:
                 self._previous_grab = capture_grab(self)
             try:

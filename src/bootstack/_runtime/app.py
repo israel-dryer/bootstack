@@ -216,12 +216,10 @@ LocalizeMode = Union[bool, Literal['auto']]
 class AppSettings:
     """Internal resolved-configuration holder for an `App`.
 
-    This is an INTERNAL detail — it is not part of the public API. Users
-    configure an app through flat `App(...)` constructor kwargs and read or
-    write configuration through `app.*` properties; `App.__init__` assembles
-    those kwargs into one of these instances. It holds configuration for
-    theming, localization, and application metadata, and is automatically
-    populated with sensible locale-based defaults in `__post_init__`.
+    Not public: `App.__init__` assembles its flat constructor kwargs into one
+    of these, and `app.*` properties read and write it. Holds theming,
+    localization and application metadata; `__post_init__` fills in
+    locale-based defaults.
 
     Attributes:
         app_name: The application name displayed in the title bar.
@@ -233,8 +231,7 @@ class AppSettings:
             track changes at runtime. Currently effective on macOS, where
             Tk fires `<<TkSystemAppearanceChanged>>` and exposes the
             current mode via `tk::unsupported::MacWindowStyle isDark`.
-            Defaults to False so existing apps that pin a theme keep
-            doing so.
+            Defaults to False.
         available_themes: Sequence of available theme names.
         locale: The locale identifier (e.g., 'en_US', 'de_DE'). Auto-detected
             from system if not specified.
@@ -261,8 +258,7 @@ class AppSettings:
             where the close button destroys the window. No-op on Win/Linux.
         remember_window_state: If True, the App's geometry (size + position)
             is saved on close and restored on next launch, with off-screen
-            positions clamped back into a visible monitor. Off by default
-            so existing apps that pin a size/position keep doing so.
+            positions clamped back into a visible monitor. Off by default.
         state_path: Optional override for where window state is stored.
             When None, defaults to a per-app file under the OS config
             directory (Library/Application Support on macOS, %APPDATA% on
@@ -483,9 +479,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
                 underlying `tkinter.Tk` constructor.
         """
         # --- Settings ---------------------------------------------------
-        # Flat constructor kwargs are the single configuration path; they are
-        # assembled into an internal AppSettings holder (which derives locale
-        # formats in __post_init__). There is no public AppSettings / settings=.
         self.settings = AppSettings(
             app_name=title,
             theme=theme if theme is not None else "light",
@@ -692,9 +685,7 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         # call lands on a foreign/dead interpreter — a native crash in ttk
         # element_create on the *next* root (the C layer, so Python can't catch
         # it). Releasing + gc.collect() while this root is still alive lets the
-        # finalizers run cleanly. Only when no other App is live (single-App is
-        # the norm; this also lets the GUI test suite run module-after-module in
-        # one process, and fixes reopen-an-app-after-close in production).
+        # finalizers run cleanly. Only when no other App is live.
         if not has_current_app():
             try:
                 import gc
