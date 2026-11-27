@@ -358,7 +358,8 @@ class Accordion(PublicWidgetBase):
             Defaults to `None`.
         parent: Explicit parent container. Omit to use the current context.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
 

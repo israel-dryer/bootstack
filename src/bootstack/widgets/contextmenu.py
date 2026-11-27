@@ -91,7 +91,7 @@ class ContextMenu:
         items: Initial items — `ContextMenuItem` objects or item dicts (each with
             a `type` key plus item kwargs such as `text`, `icon`, `on_click`).
         density: Item density. Default `'default'`.
-        parent: Parent widget for the Tk hierarchy. Defaults to `target`.
+        parent: The widget that owns the menu. Defaults to `target`.
     """
 
     def __init__(

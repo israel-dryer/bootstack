@@ -94,7 +94,8 @@ class MenuButton(IconProperty, PublicWidgetBase):
             `True`, `False`, or `'auto'`. Defaults to the app's `localize_mode`.
         parent: Override the context-stack parent widget.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
 

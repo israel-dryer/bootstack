@@ -55,7 +55,8 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
 
