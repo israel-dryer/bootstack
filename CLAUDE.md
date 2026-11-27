@@ -64,9 +64,9 @@ The `PLAN.md`/`REVIEW.md` session-boundary sequence is **retired**. A plan is wr
 
 ## Current state
 
-### ★ START HERE — next: #474 (trim history-narrating comments and docstrings)
+### ★ START HERE — next: the `0.4.x` patch-line fixes (#560, #572, #570)
 
-Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale), #565 (undecorated shell title bar) and #564 (splash nearly transparent during the build). All of them, plus #560 (a check item's shortcut never flips its checkmark, unfixed), are on `0.4.x — Patch line` (maintainer, 2026-11-26).
+All three are unfixed; see the patch-line entry under Open work. #474 (comment/docstring trim) is done — PRs #573–#576, archived. `[Unreleased]` holds #563 (resize grip for undecorated windows), #567 (C/POSIX locale), #565 (undecorated shell title bar) and #564 (splash nearly transparent during the build). All of them, plus #560 (a check item's shortcut never flips its checkmark, unfixed), are on `0.4.x — Patch line` (maintainer, 2026-11-26).
 
 **Released: `0.4.9` (2026-11-23)** — *Page-change scope, disabled menu items and form button owners* (#547, #555, #556, #553), verified 11/11 by `development/verify_release.py 0.4.9`. History of every release is in the archive.
 
@@ -96,7 +96,7 @@ Read #474 and its entry under Unmilestoned below before starting. `[Unreleased]`
 
 ### `0.4.x — Patch line` (fixes only)
 
-**Open (2026-11-26): #560** (unfixed), #572 (`Shortcuts.bind_to(app)` — the documented recipe — binds nothing on a public `App`/`Window`: `.bind` is missing and a bare `except` swallows it; unfixed), #570 (a `size=` window is not centered: an unmapped window reports 200x200 on Windows and 1x1 on X11; unfixed) and #564 (splash fade-in removed on `fix/564-splash-fade-in`; close after merge). #563, #565 and #567 are merged to `main` (unreleased) and closed. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
+**Open (2026-11-26): #560** (unfixed), #572 (`Shortcuts.bind_to(app)` — the documented recipe — binds nothing on a public `App`/`Window`: `.bind` is missing and a bare `except` swallows it; unfixed — the fix also corrects the `Shortcuts.bind_to` docstring, held out of #474 for it) and #570 (a `size=` window is not centered: an unmapped window reports 200x200 on Windows and 1x1 on X11; unfixed). #563, #564, #565 and #567 are merged to `main` (unreleased) and closed. Left out of #533: a `Label()` built with no text, then given text, then an icon still shows only the icon — unfiled. #422, #447 and #469 were closed as not planned; #469 is to be revisited only if the misdelivery becomes visible in a real app.
 
 - **Not filed, found while fixing #207:** `bs.ContextMenu(tree)` never *opens* on a `Tree` row right-click (`TreeItem._on_right_click` breaks first; `Tree.set_context_menu()` is the supported path and works), and every `ContextMenu.add_item` raises a background `TclError: unknown color name ""` that Python never sees — a test asserting an empty `bgerror` around a menu build fails on it.
 
@@ -141,7 +141,6 @@ A raise-where-accepted fix can still ship as a patch when **no working code can 
 - **#436** — adopt `versionadded` across the public API (the docs serve one version). Undecided: retroactive to `0.2.x`, or forward-only.
 - **#529** — `MenuButton`: a second click on the button should close its open menu (a toggle). Reported as a bug by a user, labeled `enhancement`; the maintainer's comment (2026-09-17) calls it an enhancement — not broken, and a toggle state needs cross-platform thought. Flagged for future consideration; no milestone.
 - **#557** — toolbar menu items cannot be enabled/disabled after build: `add_action()` returns an internal `MenuItem` and mutating `.disabled` is ignored (rows are built once). The real ask behind discussion 545. Adds public surface → a minor; must cover the native macOS menu and the shortcut (#556).
-- **#474** — trim comments and docstrings that narrate history instead of behavior. **Next after `0.4.9`.** Read #474 first (keep/cut rule, order). Measure with `py -3.12 development/probe_474_docstring_census.py` (`--list <area>`), record before/after per PR. Order: public docstrings (`fix/474-public-docstrings`: Tk leaks + `guide_layout`, plus the `**kwargs` line in 45 wrapper docstrings that advertised `fill`/`expand`/`anchor`/`sticky`, all of which raise; public `tk_terms` 10→5, `internal_names` 3→0; `Shortcuts.bind_to` held for #572) → `_runtime` + `_core` + `widgets/_core` (`fix/474-runtime-core-docstrings`: internal flagged 139→131; scope was the census flags plus 4+-line `#` blocks in those three dirs) → `widgets/_impl` by package. Keep contracts and traps (`keysym != "KP_Enter"`, `_reject_legacy_child_kwargs`'s `kind`, `NOTE(#383)`); cut narration — a flag means look, not cut. Verify: `-W` docs build, `import bootstack`, unchanged suite count.
 
 ⚠ **"Do not assign a milestone unasked" guards SCOPE calls, not blockers.** Would shipping the milestone without this issue be a decision, or a defect? A defect means it belongs on the milestone; a decision means ask.
 
