@@ -86,60 +86,21 @@ class _ScalingState:
 
 
 def enable_high_dpi_awareness(root=None, scaling=None):
-    """Enable high dpi awareness.
+    """Enable high-DPI awareness, and optionally apply a Tk scaling factor.
 
-    **Windows OS**
-    Call the method BEFORE creating the `Tk` object. No parameters
-    required. After the root is created, call again with the root
-    parameter to apply detected scaling.
+    Always marks the process DPI-aware on Windows (a no-op elsewhere), which
+    has to happen before the root is created. Called again with `root`, it
+    applies `scaling` to that root and records it as the global scale factor.
 
-    **Linux OS**
-    Must provided the `root` and `scaling` parameters. Call the method
-    AFTER creating the `Tk` object. A number between 1.6 and 2.0 is
-    usually suffient to scale for high-dpi screen.
-
-    !!! warning
-        If the `root` argument is provided, then `scaling` must also
-        be provided. Otherwise, there is no effect.
-
-    Parameters:
-
-        root (tk.Tk):
-            The root widget
-
-        scaling (float or 'auto'):
-            Sets and queries the current scaling factor used by Tk to
-            convert between physical units (for example, points,
-            inches, or millimeters) and pixels. The number argument is
-            a floating point number that specifies the number of pixels
-            per point on window's display. If the window argument is
-            omitted, it defaults to the main window. If the number
-            argument is omitted, the current value of the scaling
-            factor is returned.
-
-            If set to 'auto', the scale factor will be detected
-            automatically from the system DPI settings.
-
-            A "point" is a unit of measurement equal to 1/72 inch. A
-            scaling factor of 1.0 corresponds to 1 pixel per point,
-            which is equivalent to a standard 72 dpi monitor. A scaling
-            factor of 1.25 would mean 1.25 pixels per point, which is
-            the setting for a 90 dpi monitor; setting the scaling factor
-            to 1.25 on a 72 dpi monitor would cause everything in the
-            application to be displayed 1.25 times as large as normal.
-            The initial value for the scaling factor is set when the
-            application starts, based on properties of the installed
-            monitor, but it can be changed at any time. Measurements
-            made after the scaling factor is changed will use the new
-            scaling factor, but it is undefined whether existing
-            widgets will resize themselves dynamically to accommodate
-            the new scaling factor.
+    Args:
+        root: The root window to scale. Without it, only the Windows
+            DPI-awareness call is made.
+        scaling: Pixels per point (1.0 is a 72-DPI display), or `'auto'` to
+            detect it from the system DPI. Ignored without `root`; without
+            `scaling`, `root` is left unscaled.
 
     Returns:
-
-        float:
-            The scaling factor that was applied, or None if no scaling
-            was applied.
+        The scaling factor applied, or None if none was.
     """
 
     # Enable DPI awareness on Windows
@@ -281,35 +242,20 @@ def scale_icon_size(base: int) -> int:
 
 
 def scale_size(widget=None, size=None):
-    """Scale the size based on the scaling factor of tkinter.
-    This is used most frequently to adjust the assets for
-    image-based widget layouts and padding values.
+    """Scale a logical size by the current UI scaling factor.
 
-    Can be called in two ways:
-    1. scale_size(widget, size) - Legacy mode, calculates from widget
-    2. scale_size(size) - Uses global scaling state
+    Used mostly to scale the assets of image-based widget layouts and padding
+    values. Called as `scale_size(widget, size)` the factor is read from that
+    widget's interpreter; called as `scale_size(size)` it comes from the global
+    scaling state.
 
-    Parameters:
-
-        widget (Widget, optional):
-            The widget object. If provided, scaling is calculated from
-            the widget's tk instance. If None, uses global scaling state.
-
-        size (Union[int, List, Tuple]):
-            A single integer or an iterable of integers
+    Args:
+        widget: The widget to read scaling from, or the size itself when
+            called with one argument.
+        size: A single integer or an iterable of integers.
 
     Returns:
-
-        Union[int, List]:
-            An integer or list of integers representing the new size.
-
-    Examples:
-
-        >>> # Using widget (legacy mode)
-        >>> scaled = scale_size(my_widget, 10)
-
-        >>> # Using global state (new mode)
-        >>> scaled = scale_size(10)
+        An integer, or a list of integers, scaled to the display.
     """
     # Handle both calling conventions
     if widget is not None and size is None:
@@ -317,7 +263,7 @@ def scale_size(widget=None, size=None):
         size = widget
         factor = _ScalingState.get_ui_scale()
     elif widget is not None and size is not None:
-        # Called as scale_size(widget, size) - legacy mode
+        # Called as scale_size(widget, size)
         BASELINE = _ScalingState._baseline
         scaling = widget.tk.call('tk', 'scaling')
         factor = scaling / BASELINE

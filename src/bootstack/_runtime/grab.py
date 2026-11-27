@@ -1,9 +1,9 @@
 """Modal grab capture and restore, shared by the dialog and window paths.
 
-Tk releases a grab when the window holding it is destroyed, but it does NOT
+Tk releases a grab when the window holding it is destroyed, but does not
 restore the grab that window displaced. Anything that takes a modal grab has to
-hand back what it found, or the window underneath is left on screen, still
-blocking its caller, holding nothing (#440 for dialogs, #444 for windows).
+hand back what it found, or the window underneath stays on screen, blocking its
+caller and holding nothing.
 
 These live here rather than beside the dialogs because the import direction runs
 dialogs -> _runtime: `dialogs/_impl/dialog.py` imports `Toplevel` from this
@@ -15,28 +15,22 @@ import tkinter
 from typing import Any
 
 def capture_grab(widget: Any) -> tuple[Any, str | None] | None:
-    """Record who holds the modal grab and HOW, for `restore_grab` to hand back.
+    """Record who holds the modal grab and how, for `restore_grab` to hand back.
 
     Returns `None` when nothing holds the grab — the outermost case, which needs
-    no restore. Otherwise returns the holder paired with its grab KIND.
+    no restore. Otherwise returns the holder paired with its grab kind.
 
-    ⚠ Call this BEFORE taking the grab. Once another window grabs, the previous
-    holder's `grab_status()` reads `None`, so a kind read afterwards is always
-    wrong — measured, and the reason this pairing exists as one function rather
-    than two steps a caller has to sequence correctly.
+    Call this before taking the grab: once another window grabs, the previous
+    holder's `grab_status()` reads `None`, so a kind read afterwards is wrong.
 
-    The kind matters because Tk has two: `bs.Window(modal="app")` takes a GLOBAL
-    grab, and restoring that as a local one silently narrows the window's
-    modality (it would block only this application). Reading the kind back from
-    Tk rather than assuming it keeps this correct on every window system without
-    a platform branch — whatever Tk reported, we hand back.
+    The kind matters because Tk has two: `bs.Window(modal="app")` takes a global
+    grab, and restoring it as a local one narrows the window's modality. The
+    kind is read back from Tk rather than assumed, so no platform branch is
+    needed.
 
-    A holder this cannot ADDRESS reads the same as no holder at all. Resolving
-    who holds the grab goes through a name lookup that raises for a window the
-    toolkit created on its own — a posted combobox popdown is one — and there is
-    nothing to hand back to a window we cannot name. This runs on the SETUP path,
-    where a raise would escape into the application, so it degrades to `None` and
-    logs rather than propagating.
+    A holder this cannot address reads as no holder at all. The lookup raises
+    for a window the toolkit created on its own (a posted combobox popdown), and
+    this runs on the setup path, so it degrades to `None` and logs.
     """
     try:
         holder = widget.grab_current()
@@ -56,33 +50,19 @@ def capture_grab(widget: Any) -> tuple[Any, str | None] | None:
 def restore_grab(previous: tuple[Any, str | None] | None) -> None:
     """Hand the modal grab back to whatever held it before the caller took it.
 
-    Tk releases a grab when the window holding it is destroyed, but it does NOT
-    restore the grab that window displaced. So a modal opened from inside
-    another modal — `bs.alert()` from a dialog button command, or a
-    `bs.Window(modal=True)` opened from a dialog's "Advanced..." button — took
-    the grab over and then dropped it on the floor when it closed. The OUTER
-    window was left on screen and still blocking its caller, yet holding no
-    grab at all: the user could click straight back into the main window and
-    drive the app underneath it, against something that was modal in appearance
-    only (issue #440 for dialogs, #444 for windows).
+    A modal opened from inside another modal — `bs.alert()` from a dialog
+    button, or a modal `bs.Window` opened from a dialog — would otherwise leave
+    the outer window on screen, blocking its caller but holding no grab.
 
     Pass the token `capture_grab()` returned. `None` means nothing held the
     grab, which is the outermost case and needs no restore.
 
-    A failure here is deliberately swallowed. This runs on a teardown path,
-    where the previous holder may itself have been destroyed while the inner
-    window was up, or the whole interpreter may be going down — and something
-    that has already closed must not raise on its way out. It is LOGGED rather
-    than passed over in silence, because a failed restore is the very defect
-    this function exists to prevent: the outer window stays on screen holding
-    nothing.
+    Failures are swallowed but logged: this runs on a teardown path, where the
+    previous holder may already be destroyed or the interpreter going down.
 
-    ⚠ A global restore can fail where a local one cannot — `grab set -global`
-    is the call Tk's viewability rule guards, and on X11 it can also lose to
-    another client. That is the one way this is riskier than always restoring
-    a local grab, so a failed global restore DEGRADES TO LOCAL rather than to
-    nothing: modal within the application is imperfect, but it is not the #440
-    symptom.
+    A global restore can fail where a local one cannot (Tk's viewability rule,
+    or losing to another X11 client), so a failed global restore degrades to
+    local rather than to nothing.
     """
     if previous is None:
         return

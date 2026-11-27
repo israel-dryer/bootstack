@@ -253,11 +253,9 @@ _ALIGN_ADVICE = (
     "top/center/bottom/stretch (for example horizontal=\"stretch\")"
 )
 
-# The remedy depends on HOW the container places its children, and naming the
-# wrong one is the defect this message exists to fix (issue #426). A flex
-# container honors `grow=` on the child; a grid cell drops it, so recommending
-# it there would send the user to a kwarg that does nothing — the same silent
-# no-op #426 was filed about, just one step further along.
+# The remedy depends on how the container places its children. A flex container
+# honors `grow=` on the child; a grid cell silently drops it, so the grid advice
+# must never recommend it.
 FLEX_CHILD_ADVICE = (
     "Use grow= to claim leftover space along the stacking axis, or "
     "horizontal=/vertical= to align or stretch across it — " + _ALIGN_ADVICE
@@ -293,10 +291,8 @@ def _reject_legacy_child_kwargs(layout_kw: dict, where: str, kind: ChildKind) ->
         where: the call site named in the message.
         kind: how this container places the child — `'flex child'` or
             `'grid cell'`. It selects the remedy, and the two differ: a grid
-            cell drops `grow=`, so recommending it there is the silent no-op
-            issue #426 exists to remove. Required rather than defaulted,
-            because a default hands the wrong advice to any caller who forgets
-            — which is how four call sites kept the defect through its own fix.
+            cell drops `grow=`. Required rather than defaulted, so a caller
+            that forgets it fails instead of getting the other engine's advice.
     """
     bad = _LEGACY_CHILD_KEYS & layout_kw.keys()
     if bad:
@@ -351,12 +347,11 @@ def resolve_layout_items(
 
     A **grid** gets concrete values, because the grid engine has no notion of an
     unset axis — cells stretch unless told otherwise. A **column** or **row**
-    keeps `None` and lets `FlexFrame` resolve it: the engine's own defaults are
-    exactly what these containers used to hard-code (the stacking axis starts at
-    its leading edge, the cross axis centers), and leaving the cross axis unset is
-    what allows a child to contribute its own default — which is how a row of
-    input fields stays aligned whether or not each field carries a validation
-    message (#394). Pre-resolving to `'center'` here silently suppressed that.
+    keeps `None` and lets `FlexFrame` resolve it (the stacking axis starts at its
+    leading edge, the cross axis centers). Do not pre-resolve the cross axis to
+    `'center'` here: leaving it unset is what lets a child contribute its own
+    default, which keeps a row of fields aligned whether or not each shows a
+    validation message.
 
     Args:
         layout: The container's layout mode — `'column'`, `'row'` or `'grid'`.

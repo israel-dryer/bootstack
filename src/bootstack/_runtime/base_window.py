@@ -31,16 +31,10 @@ def on_visibility_alpha(event: tkinter.Event) -> None:
     X11 requires alpha to be set after the window is visible, so we bind
     to the <Visibility> event and set alpha then, unbinding after first use.
 
-    Being woken by this event at all is what proves the precondition: X11
-    reports visibility only for a window that is already on screen, so the very
-    first delivery is a valid moment to apply alpha. Whether that first report
-    says obscured or unobscured makes no difference — opacity is a property of
-    the window, not of how much of it happens to be uncovered.
-
-    Alpha is therefore applied before the binding is released, so first use is
-    genuinely the last one needed. Applying first also means that if the request
-    itself fails, the binding is still in place and the next visibility change
-    tries again — the one failure where a retry could help (#398).
+    The first delivery is always a valid moment, whether it reports the window
+    obscured or not: X11 reports visibility only for a window already on
+    screen. Alpha is applied before the binding is released, so a failed
+    request leaves the binding in place and the next visibility change retries.
 
     Args:
         event: The visibility event containing the widget.
