@@ -77,7 +77,7 @@ class PasswordEntry(Field):
             # Revealing only flips the mask char — it never mutates the value —
             # so the toggle stays usable on a read-only field (e.g. a generated
             # secret shown for the user to peek at). A fully disabled field still
-            # dims it. (active_when_readonly postdates this widget, hence the gap.)
+            # dims it.
             active_when_readonly=True,
         )
         addon = self.addons['visibility']

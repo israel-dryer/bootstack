@@ -637,8 +637,7 @@ class Form(Frame):
         options = dict(item.editor_options or {})
         # Gate on what does NOT validate, not on what does: an unrecognized
         # editor name falls back to a text field, so testing membership of the
-        # validating set silently dropped `required` on a typo and let the form
-        # submit empty.
+        # validating set would silently drop `required` on a typo.
         if item.required and editor not in self._NON_VALIDATING_EDITORS:
             options["required"] = True
         initial_value = self._data.get(item.key)
@@ -698,10 +697,9 @@ class Form(Frame):
         from bootstack.widgets.slider import Slider
 
         opts = dict(options)
-        # Internal-only options the public wrappers don't accept. Dropping them
-        # keeps the strict boolean controls from raising and matches the old
-        # per-editor filtering (a required/message field auto-reserves its
-        # message row, so `show_message` is no longer needed here).
+        # Internal-only options the public wrappers don't accept; dropping them
+        # keeps the strict boolean controls from raising. A required/message
+        # field reserves its own message row, so `show_message` is not needed.
         for internal_only in ("show_message", "validator"):
             opts.pop(internal_only, None)
 
@@ -998,8 +996,7 @@ class Form(Frame):
             # A command returning `False` refuses the press, exactly as it does
             # on a dialog footer button — `DialogButton.command` documents that
             # contract on the field itself, and `Form` is its second consumer.
-            # Recording a result for a press the command declined is the shape
-            # #437 removed from `Dialog`; it must not survive here.
+            # No result is recorded for a refused press.
             # The command receives the public `bs.Form`, which sets
             # `_public_owner` after constructing this widget. Only a form built
             # without that wrapper falls back to itself.

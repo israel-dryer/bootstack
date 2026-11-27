@@ -54,8 +54,8 @@ DEFAULT_DOCK_WIDTH = 280
 #
 # Elevation tiers: the rail is the chrome tier; the sidebar (and dock) sit on a
 # SUBTLE `raised` elevation (half the `card` step) — gentle, not a big ramp, and
-# reinforced by the dividers. Selection is neutral, so a subtle elevation no
-# longer washes it out. content < raised < chrome.
+# reinforced by the dividers. Selection is neutral, so a subtle elevation does
+# not wash it out. content < raised < chrome.
 RAIL_SURFACE = "chrome"
 SIDEBAR_SURFACE = "raised"
 DOCK_SURFACE = "raised"
@@ -322,12 +322,9 @@ class ShellLayout(App):
 
     # ----- Visibility state -----
     #
-    # Read/write, rather than a getter here and a `set_*_visible(bool)` method
-    # elsewhere in the class. The region accessors above are already properties,
-    # and every caller assigns either a literal or a bool it computed — which
-    # verb pairs (`show_*`/`hide_*`, the idiom the public layer uses) would turn
-    # back into an if/else at each site. Assigning the value it already holds is
-    # a no-op, so a caller may write the flag unconditionally.
+    # Read/write properties: every caller assigns a computed bool, which verb
+    # pairs would turn into an if/else at each site. Assigning the current value
+    # is a no-op, so a caller may write the flag unconditionally.
 
     @property
     def statusbar_visible(self) -> bool:

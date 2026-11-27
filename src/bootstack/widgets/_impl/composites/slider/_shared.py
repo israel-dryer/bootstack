@@ -4,10 +4,9 @@ from __future__ import annotations
 from PIL import Image, ImageDraw
 from PIL.ImageTk import PhotoImage
 
-# Focus-ring border thickness. Retired (0): the ring was never wired to an
-# actual keyboard-focus style and its frozen color did not track theme changes,
-# so it only ever showed as a stale 1-2px border. Kept as a named constant so
-# the geometry math (`cross_size + HL * 2`) and the highlight kwargs stay valid.
+# Highlight border thickness, always 0 (the focus ring is drawn on the handle).
+# Kept as a named constant so the geometry math (`cross_size + HL * 2`) and the
+# highlight kwargs stay valid.
 HL = 0
 
 HANDLE_SIZE = 22   # handle diameter (px) — matches slider-handle.png at standard DPI

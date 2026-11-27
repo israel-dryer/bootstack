@@ -2910,9 +2910,8 @@ class TableView(Frame):
             return None
 
         # A row with children is expandable — clicking anywhere on it toggles
-        # open/closed (the native indicator that used to own this click was
-        # removed from the item layout). Leaf rows have no children, so they
-        # fall through to normal selection below.
+        # open/closed (the item layout has no native indicator). Leaf rows fall
+        # through to normal selection below.
         iid = self._tree.identify_row(event.y)
         if iid and self._tree.get_children(iid):
             self._take_click_focus(iid)

@@ -1793,9 +1793,9 @@ class ContextMenu:
         )
 
         # Auto-bind the activation gesture to the target widget. Skip when
-        # there's no target (no widget to bind on) or the caller explicitly
-        # opted out so existing widgets that manage their own triggers
-        # (OptionMenu, DropdownButton, Tableview, SideNav) keep working.
+        # there's no target (no widget to bind on) or the caller opted out —
+        # widgets that manage their own triggers (OptionMenu, DropdownButton,
+        # Tableview, SideNav) opt out with `trigger=None`.
         if target is not None and trigger not in (None, 'manual', 'none'):
             self._bind_trigger(target, trigger)
 

@@ -77,9 +77,8 @@ class TimeEntry(SelectBox):
         self._max_time = self._parse_time(max_time) if max_time else datetime.time(23, 59)
 
         # An empty field stays empty — consistent with the other field widgets,
-        # so `required=` meaningfully demands input (was: defaulted to the current
-        # time, which silently pre-filled and defeated `required`). Pass an
-        # explicit `value=` to seed a starting time.
+        # so `required=` meaningfully demands input. Pass an explicit `value=`
+        # to seed a starting time.
         if value is None or value == "":
             formatted_value = ""
         else:

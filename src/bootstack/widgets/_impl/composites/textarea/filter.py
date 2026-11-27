@@ -21,17 +21,11 @@ if TYPE_CHECKING:
     from bootstack.widgets._impl.composites.textarea.core import _MultilineCore
 
 
-# NOTE(editfilter-public-api): EditFilter was demoted from the top-level public
-# namespace during the API Reference restructure (Stage 4). It is a Tk-coupled
+# NOTE(editfilter-public-api): EditFilter is not public. It is a Tk-coupled
 # extension hook — subclasses work in raw Tk text indices, tags, and the Tk Text
-# API — which contradicts the framework's "Tkinter is invisible" premise, and it
-# ships no narrative docs. CodeEditor still accepts user filters via
-# `extensions=`/`install()`, so it stays importable for power users, but it is no
-# longer presented as compose surface. TODO: decide whether CodeEditor should have
-# a real, documented, de-Tkinter-ed extension/plugin API (one that hides Tk text
-# indices behind framework-level edit events) and, if so, design that as the public
-# face — re-promoting only once it no longer leaks Tk. See memory
-# project_editfilter_public_api.
+# API. CodeEditor still accepts user filters via `extensions=`/`install()`, so it
+# stays importable. Do not re-promote it until a CodeEditor extension API hides Tk
+# text indices behind framework-level edit events.
 class EditFilter:
     """Sits in the mutation chain between user code and the Tk Text widget.
 
