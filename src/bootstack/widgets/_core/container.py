@@ -186,12 +186,12 @@ class PublicContainer(PublicWidgetBase):
         raise NotImplementedError
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
-        """Place `child._internal` under this container.
+        """Place `child` in this container.
 
-        Records a `Placement` snapshot on the child so it can later be
-        `detach`-ed and `attach`-ed. When `attached=False` is passed, the
-        snapshot is recorded but the widget is NOT mapped — it starts hidden,
-        ready to be shown with `attach`.
+        Records the child's placement so it can later be `detach`-ed and
+        `attach`-ed. When `attached=False` is passed, the placement is
+        recorded but the widget starts hidden, ready to be shown with
+        `attach`.
         """
         attached = layout_kw.pop("attached", True)
         if "fill" in layout_kw:

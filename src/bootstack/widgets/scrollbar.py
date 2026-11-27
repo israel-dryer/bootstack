@@ -23,7 +23,8 @@ class Scrollbar(PublicWidgetBase):
             `'thin'` (slim square bar).
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
 

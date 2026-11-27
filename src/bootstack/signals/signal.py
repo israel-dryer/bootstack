@@ -88,9 +88,9 @@ class Signal(Generic[T]):
     strings and so empties to `''`. A signal that allows empty may start empty,
     in which case there is no value to read a type from and `dtype=` names it.
 
-    Signals may be constructed at module level (before `bs.App()` exists). The
-    backing Tk variable is created lazily on the first widget binding and torn
-    down when the App is destroyed, so the same signal can be reused across
+    Signals may be constructed at module level (before `bs.App()` exists). A
+    signal connects to the app on its first widget binding and disconnects
+    when the App is destroyed, so the same signal can be reused across
     successive App lifecycles.
     """
 
@@ -418,7 +418,7 @@ class Signal(Generic[T]):
         Set the signal to its empty value and notify subscribers.
 
         The signal must have been declared `allow_empty=True`. It clears to
-        `None`, except where its value lives in a widget's Tk variable — a
+        `None`, except where its value lives in a widget's own variable — that
         variable holds only strings, so there it clears to `''` — and to the
         empty set on a `set`-typed signal.
 
@@ -474,7 +474,7 @@ class Signal(Generic[T]):
 
     @property
     def name(self) -> str:
-        """The internal Tcl variable name. Accessing this realizes the signal."""
+        """The name of the variable behind `var`. Accessing this realizes the signal."""
         self._realize()
         return self._name
 

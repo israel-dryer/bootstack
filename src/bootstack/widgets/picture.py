@@ -55,7 +55,7 @@ class Picture(PublicWidgetBase):
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
         **kwargs: Layout placement options applied by the parent container
-            (e.g. `fill`, `expand`, `row`, `column`). See :doc:`/tasks/layout`.
+            (e.g. `grow`, `horizontal`, `row`, `column`). See :doc:`/tasks/layout`.
     """
 
     _internal_class = _InternalPicture

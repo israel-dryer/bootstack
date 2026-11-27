@@ -329,7 +329,7 @@ class PublicWidgetBase:
             sub.cancel()
 
         Without a handler — returns a `Stream` for operator chaining.
-        The Tk binding is created lazily when `.listen()` is called::
+        The binding is made when `.listen()` is called::
 
             sub = widget.on("change").debounce(300).listen(handler)
             sub.cancel()
@@ -475,7 +475,7 @@ class PublicWidgetBase:
 
         With no arguments, restores the widget to exactly where `detach` took
         it from. Any layout kwargs accepted by the original placement (e.g.
-        `fill`, `expand`, `anchor`, `sticky`, `margin`) override the stored
+        `grow`, `horizontal`, `vertical`, `margin`) override the stored
         options. For stacked widgets, `index=` sets the position among the
         currently attached siblings (or pass an explicit `before=`/`after=`
         sibling); without one, the snapshotted position is used.

@@ -282,7 +282,8 @@ class Checkbox(_BooleanControlBase):
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalCheckButton
@@ -354,7 +355,8 @@ class Switch(_BooleanControlBase):
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalSwitch
@@ -423,7 +425,8 @@ class ToggleButton(_BooleanControlBase):
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, and in a `Grid`
+            `row`, `column`, `rowspan`, `columnspan`.
             See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalCheckToggle
