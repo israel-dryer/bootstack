@@ -413,9 +413,8 @@ class StyleResolver:
                 parent_surface_token = 'content'
 
             # An explicit `surface=` always wins; otherwise inherit from the
-            # parent (the default) or fall back to 'content'. (This mirrors the
-            # ttk autostyle path — the Tk path previously let inheritance clobber
-            # an explicit surface, freezing e.g. a meter canvas to a resolved hex.)
+            # parent (the default) or fall back to 'content', as the ttk
+            # autostyle path does.
             if surface_token is None:
                 surface_token = parent_surface_token if inherit_surface else 'content'
 

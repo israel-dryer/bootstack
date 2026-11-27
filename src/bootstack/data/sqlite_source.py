@@ -157,9 +157,8 @@ class SqliteDataSource(BaseDataSource):
     def _resolve_column_type(cls, values: Iterable[Any]) -> str:
         """Infer a column's SQL type from a sample of its values.
 
-        Unlike inferring from a single value, this scans the sample and ignores
-        `None`, so a leading NULL no longer forces TEXT affinity on an otherwise-
-        numeric column. Mixed integer and real values resolve to REAL (numeric
+        Scans the sample and ignores `None`, so a leading NULL does not force
+        TEXT affinity on an otherwise-numeric column. Mixed integer and real values resolve to REAL (numeric
         promotion); any other mix of kinds falls back to TEXT.
 
         Args:

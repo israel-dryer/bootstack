@@ -48,9 +48,8 @@ def build_list_frame_style(b: StyleBuilderTtk, ttk_style: str, accent: str = Non
     b.configure_style(ttk_style, background=background, relief='flat')
 
     # No hover wash and no 'focus' wash: rows show selection only (keyboard focus
-    # rides the row image's bar). Row hover was removed — it competed with the
-    # stripe and selection washes (several subtle colors at once) and is gone in
-    # DataTable too, so this keeps the data widgets consistent.
+    # rides the row image's bar). No row hover: it competes with the stripe and
+    # selection washes, and DataTable has none either.
     background_state_map = [
         ('selected', selected),
         ('', background)
@@ -170,8 +169,8 @@ def build_list_item_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str
 
     # Selection + momentary press only — NO hover and NO plain-'focus' highlight.
     # 'selected' keeps the button fill matching a selected row; 'pressed' gives a
-    # brief click feedback on the chevron. Row hover was removed (it competed with
-    # the stripe/selection washes and never cleared cleanly across recycling).
+    # brief click feedback on the chevron. No row hover: it competes with the
+    # stripe/selection washes and does not clear cleanly across recycling.
     background_state_spec = [
         ('selected', selected),
         ('pressed', pressed),

@@ -32,8 +32,8 @@ class Subscription:
         except tkinter.TclError:
             # The removal failed partway, which leaves the handler bound and
             # still firing. Swallowed so teardown never fails, but deliberately
-            # NOT marked cancelled: claiming otherwise made `cancelled` read
-            # True for a live handler (#400). A later cancel() may still succeed.
+            # not marked cancelled, which would make `cancelled` read True for a
+            # live handler. A later cancel() may still succeed.
             #
             # A widget that is merely gone does not reach here — unbind absorbs
             # that case itself, and rightly reports success, since a destroyed

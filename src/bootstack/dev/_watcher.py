@@ -5,8 +5,7 @@ PROVISIONAL — part of the carved-out ``bootstack.dev`` surface.
 Runs on its own thread and ONLY enqueues — it never touches Tcl/Tk (the hard
 tkinter rule). It compares ``.py`` modification times under the project root on
 a short interval and calls back with the set of changed paths. A poll keeps the
-dev tooling free of a hard ``watchdog`` dependency, which matters while #149
-freezes the runtime surface.
+dev tooling free of a hard ``watchdog`` dependency.
 """
 from __future__ import annotations
 
