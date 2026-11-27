@@ -169,8 +169,7 @@ class NumberEntryPart(TextEntryPart):
     # These two are bound to virtual events, where 'break' means "skip the
     # remaining handlers for this dispatch". Not stepping a non-interactive
     # field is the whole intent; silencing everyone else's handler is not, so
-    # they return None (#401). Suppression, if ever wanted, needs a designed
-    # API rather than the toolkit idiom leaking through.
+    # they return None.
     def _handle_increment_event(self, event):
         """Handle <<Increment>> event by stepping up."""
         if not self._is_interactive():

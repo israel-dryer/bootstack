@@ -352,9 +352,9 @@ class StyleBuilderBase:
             #
             # Use the large-text / UI threshold (3.0), not the normal-text 4.5:
             # accent text is button/pill/badge labels (bold, >=14pt), so 3.0 is the
-            # correct WCAG bar. 4.5 was too strict and sent saturated mid-tone
-            # accents (e.g. dracula-light's purple primary, white ~3.7) to black,
-            # making them inconsistent with the same accent in dark mode (white).
+            # correct WCAG bar. 4.5 would send saturated mid-tone accents (e.g.
+            # dracula-light's purple primary, white ~3.7) to black, inconsistent
+            # with the same accent in dark mode (white).
             contrast_white = 1.05 / (lum + 0.05)  # ratio of #ffffff vs the color
             white_ok = contrast_white >= 3.0
 

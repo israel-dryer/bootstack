@@ -304,8 +304,8 @@ class Select(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         thing. A read-only one also keeps the option list shut, from both the
         dropdown button and the field itself.
         """
-        # Report the setting, never the state derived from it — reporting the
-        # derivation is what made every select claim to be read-only (#453).
+        # Report the setting, never the state derived from it — the derived
+        # state would make every select claim to be read-only.
         # Read it with `cget`, never `configure(name)`: the delegating form of
         # `configure` answers a query with a 5-tuple, which is unconditionally
         # truthy and would silently restore that behavior.

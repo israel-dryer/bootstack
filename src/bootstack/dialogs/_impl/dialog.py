@@ -139,12 +139,9 @@ def result_target(dialog: "Dialog", master: Optional[tkinter.Misc]) -> Optional[
     """The widget `<<DialogResult>>` is bound on and fired from.
 
     Binding and firing both route through here so the two cannot resolve
-    differently. That mattered: `Dialog.toplevel` is `None` before `show()`
-    and a *destroyed* widget after it, because nothing resets `_toplevel`
-    when the modal wait ends. A target derived from it is therefore never
-    live at both ends — subscribers bound to the master while the result
-    fired at a dead toplevel, where `event_generate` raised and the error
-    was swallowed (#397).
+    differently. `Dialog.toplevel` is `None` before `show()` and a destroyed
+    widget after it (nothing resets `_toplevel` when the modal wait ends), so
+    a target derived from it is never live at both ends.
 
     `master` comes first for that reason: it outlives the dialog.
 
@@ -205,23 +202,22 @@ def _key_was_consumed(widget: Any, keysym: str) -> bool:
     inferring it:
 
     * a **button** invokes. bootstack installs `TButton <Key-Return>` ->
-      `button_default_binding` at app construction (`_runtime/app.py:151`).
-    * a **multi-line text widget** inserts a newline. That is issue #441: the
-      newline went in and the dialog then closed on top of it, because the
-      guard recognized only buttons.
+      `button_default_binding` at app construction (`_runtime/app.py`).
+    * a **multi-line text widget** inserts a newline; firing the default
+      button as well would close the dialog on top of it.
 
-    In both cases a DISABLED widget is the exception: its class binding runs
+    In both cases a disabled widget is the exception: its class binding runs
     but does nothing — `invoke` is a no-op on a disabled button, and
     `tk::TextInsert` returns early on a disabled text (both measured). Nothing
-    answered the key, so the default button should still get it. Standing down there would leave
-    the keyboard dead for the whole dialog.
+    answered the key, so the default button should still get it. Standing down
+    there would leave the keyboard dead for the whole dialog.
 
-    ⚠ THE KEY MATTERS, NOT ONLY THE WIDGET — which is why `keysym` is required
+    The key matters, not only the widget — which is why `keysym` is required
     rather than defaulted. The two Enter keys are equivalent to a button and are
-    NOT equivalent to a text widget. Measured against the live binding table:
+    not equivalent to a text widget. Measured against the live binding table:
 
         TButton  <Key-Return> -> button_default_binding
-        TButton  <Key-KP_Enter> -> button_default_binding   (both, app.py:150)
+        TButton  <Key-KP_Enter> -> button_default_binding
         Text     <Key-Return> -> tk::TextInsert
         Text     <Key-KP_Enter> -> '# nothing'
 
@@ -229,21 +225,21 @@ def _key_was_consumed(widget: Any, keysym: str) -> bool:
     (`tk8.6/text.tcl:308`, unconditional — it is in the block that stops the
     generic `<Key>` binding inserting `%A`, which for that key is `\r` rather
     than `\n`). So wherever the keypad key arrives as its own keysym a text
-    widget inserts NOTHING, and reporting it consumed would leave that key dead
-    for the whole dialog. Windows never reaches this: it FOLDS the keypad key
+    widget inserts nothing, and reporting it consumed would leave that key dead
+    for the whole dialog. Windows never reaches this: it folds the keypad key
     into `Return` (see the binding site below), so `keysym` is `Return` there
     and the text branch behaves as it always has. X11 reports `KP_Enter`
     separately and is the case this scoping exists for. Aqua is unmeasured and
     needs no measurement — both of its possible answers are handled.
 
-    ⚠ The text branch tests `keysym != "KP_Enter"` rather than
+    The text branch tests `keysym != "KP_Enter"` rather than
     `keysym == "Return"`, deliberately. An unrecognized keysym then reads as
-    CONSUMED, which is the conservative answer for a text widget: standing down
-    wrongly costs a dead key, while firing wrongly costs #441 itself — the
-    dialog closing on top of a newline the user just typed. The button branch
+    consumed, which is the conservative answer for a text widget: standing down
+    wrongly costs a dead key, while firing wrongly closes the dialog on top of
+    a newline the user just typed. The button branch
     has no such asymmetry, both keys invoking there.
 
-    ⚠ INTERROGATING THE BINDINGS INSTEAD WAS TRIED AND IS WRONG — do not
+    Interrogating the bindings instead was tried and is wrong — do not
     re-propose it as the "general" rule. Asking whether any bindtag carries a
     real binding for the key looks principled and misclassifies the control:
     bootstack's own `TextField` binds `<Return>` as an instance binding to emit
@@ -443,7 +439,7 @@ class Dialog:
         # widget that claimed `_focus_target` wins; otherwise the default
         # button takes it, which is what `DialogButton.default` promises.
         # Deferred to <Map> because the window is still withdrawn here and
-        # `focus_set()` is a silent no-op until it is not (issue #439).
+        # `focus_set()` is a silent no-op until it is not.
         focus_target = self._focus_target or self._default_button
         if focus_target is not None:
             self._focus_when_mapped(focus_target)
@@ -471,7 +467,7 @@ class Dialog:
             previous_grab = None
             if self._mode in ("modal", "sheet"):
                 # Remember who held the grab, and how, so it can be handed back
-                # — a nested modal must not leave its opener non-modal (#440),
+                # — a nested modal must not leave its opener non-modal,
                 # nor narrow an app-modal window to a local grab. Captured
                 # before grab_set(), which is the only order that works.
                 previous_grab = capture_grab(self._toplevel)
@@ -742,14 +738,10 @@ class Dialog:
     def _focus_when_mapped(widget: Widget) -> None:
         """Focus `widget` once it is actually mapped.
 
-        `focus_set()` is a SILENT no-op while the widget's toplevel is
+        `focus_set()` is a silent no-op while the widget's toplevel is
         withdrawn: `TkSetFocusWin` walks the ancestry and returns without
-        setting anything, reporting nothing. Footer buttons are built from
-        `_build_footer`, which runs while `_create_toplevel` still has the
-        window withdrawn, so focusing the default button there never took —
-        `focus_lastfor()` kept naming the toplevel, leaving keyboard users
-        with no focus ring and a Tab order starting from nowhere, in a dialog
-        documented as focusing its default button (issue #439).
+        setting anything. Footer buttons are built while `_create_toplevel`
+        still has the window withdrawn, so focusing there never takes.
 
         Waiting for the widget's own `<Map>` states that precondition instead
         of guessing a delay. Measured on Windows: the button is still

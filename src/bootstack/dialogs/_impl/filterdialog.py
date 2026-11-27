@@ -125,8 +125,7 @@ class FilterDialogContent(ttk.Frame):
 
         # Managed flex content frame — the same one the public ScrollView uses
         # (direction='vertical', horizontal_items='stretch'), so rows fill the
-        # viewport width and the canvas sizing is handled for us. Replaces the old
-        # raw frame, which hand-rolled the width-stretch and clipped at the edge.
+        # viewport width and the canvas sizing is handled for us.
         self._scroll_container = FlexFrame(
             scroll_view.canvas, direction='vertical', horizontal_items='stretch'
         )

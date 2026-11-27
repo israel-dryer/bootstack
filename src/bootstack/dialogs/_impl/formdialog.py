@@ -234,7 +234,7 @@ class FormDialog:
             # in it are already destroyed; reading one now falls back to its Tk
             # variable, which holds display text rather than the value — a
             # select would report 'One' where 1 was entered, and any value type
-            # would come back as `str` (#428).
+            # would come back as `str`.
             return self._submitted_data
         # A non-cancel button with no explicit result already carries the form
         # data (set in `_wrap_button_commands`); anything else is an action token.
@@ -534,9 +534,9 @@ class FormDialog:
         close the dialog and cannot leave a result token behind it.
 
         The capture happens here, BEFORE the caller's command runs, because a
-        command is free to destroy the dialog itself. Reading the form after
-        that would fall back to the editors' Tk variables and reintroduce #428
-        on the one path that passes `command=`.
+        command is free to destroy the dialog itself, and reading the form
+        after that falls back to the editors' Tk variables (display text, not
+        values).
 
         Args:
             btn: The button specification being pressed.
@@ -557,7 +557,7 @@ class FormDialog:
         # Read the form while its editors are still alive. After `show()`
         # returns, the dialog and every editor in it are destroyed, and a read
         # then falls back to the editor's Tk variable — which holds display text
-        # rather than the value, and flattens every type to `str` (#428).
+        # rather than the value, and flattens every type to `str`.
         self._submitted_data = self.form.data if self.form else None
         return True
 

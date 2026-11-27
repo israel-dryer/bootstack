@@ -163,15 +163,8 @@ class QueryDialog:
 
         # Claim initial focus for the entry, so the user can type straight
         # away. `Dialog` applies this once the window is mapped, in preference
-        # to the default button.
-        #
-        # This used to be a bare `focus_set()` plus an `after_idle` repeat to
-        # "ensure focus after dialog buttons set their own focus". Both ran
-        # while the toplevel was still withdrawn, where `focus_set()` is a
-        # silent no-op, so neither ever took and the entry was never actually
-        # focused — measured against pre-fix code, where focus sat on the
-        # toplevel. Handing the
-        # target to `Dialog` replaces the race with an ordering (issue #439).
+        # to the default button. A `focus_set()` here would be a silent no-op:
+        # the toplevel is still withdrawn.
         self._dialog._focus_target = getattr(entry, "entry_widget", entry)
 
         frame.pack(fill=X, expand=True)

@@ -212,8 +212,7 @@ class Signal(Generic[T]):
         # calls for rather than defaulting to a StringVar for the rest of its
         # life. Never hand a bare None to Tk either: it stringifies to the four
         # characters 'None' and the widget displays them.
-        # issubclass, not identity: this replaced an isinstance chain, and an
-        # IntEnum has to keep landing on an IntVar the way it did there. bool
+        # issubclass, not identity: an IntEnum has to land on an IntVar. bool
         # is tested first because it is a subclass of int.
         if issubclass(self._type, bool):
             return tk.BooleanVar(master=self._master, name=self._name, value=value)
