@@ -20,6 +20,11 @@ that no longer exists is in git history: `git show 83ff1f95:<path>`.
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **#474 → PRs #573, #574, #575, #576 (MERGED 2026-11-26, unreleased) — trim comments and docstrings that narrate history.** Comments and docstrings only; **no CHANGELOG entry, deliberate** (nothing reachable changed). One PR per area: public docstrings (#573: Tk leaks, `guide_layout`, and the `**kwargs` line in 45 wrapper docstrings that advertised `fill`/`expand`/`anchor`/`sticky`, all of which raise) → `_runtime` + `_core` + `widgets/_core` (#574) → `widgets/_impl/composites` (#575) → everything else (#576). Census (the deleted `probe_474_docstring_census.py`, `git show 6f78b127:development/probe_474_docstring_census.py`): public `tk_terms` 10→5 (the `.tk`/`.var` escape hatches + `Shortcuts.bind_to`, held for #572), `internal_names` 3→0; internal flagged 139→126. The 126 remaining flags were read and kept — long parameter lists, or traps that cite a measurement or an issue.
+  - **The rule, for the next time this drifts:** keep a comment that records a measurement or a trap a later edit would undo; cut what restates the line below, retells an issue's back-story, or argues the change was right. A flag means look, not cut. Kept on purpose: `_key_was_consumed`'s whole argument including `keysym != "KP_Enter"` and "do not re-propose binding inspection", `_reject_legacy_child_kwargs`'s required `kind`, `NOTE(#383)`, `NOTE(editfilter-public-api)` (now states the re-promotion rule only).
+  - **Scope boundary:** the census flags plus every 4+-line `#` block in `src/`. Shorter comments and unflagged docstrings were not swept. `tests/` and `docs/` comments were out of scope.
+  - Fixed along the way: a mangled example line in `WindowPositioning.center_on_parent`; `enable_high_dpi_awareness` (a pasted Tk manual) and `scale_size` rewritten to describe the code; `dev/_watcher.py` cited the closed #149.
+
 - **#409 → PR #414 (MERGED 2026-08-05, unreleased) — `events.rst` documented a
   custom-event spelling that raises.** Docs-only plus one docstring; **no CHANGELOG
   entry, deliberate** (nothing in the package changed, so a reader scanning "was I
