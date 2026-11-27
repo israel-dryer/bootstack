@@ -385,18 +385,21 @@ class _ToplevelContextMenu(CustomConfigMixin):
             value: bool = False,
             command: Callable = None,
             disabled: bool = False,
-            key: str = None
+            key: str = None,
+            variable: BooleanVar = None,
     ) -> CheckToggle:
         """Add a checkbutton to the menu.
 
         Args:
             text: Checkbutton text label.
-            value: Initial checked state.
+            value: Initial checked state. Ignored when `variable` is given.
             command: Function to call when toggled.
             disabled: If True, the item is dimmed and cannot be toggled.
             key: Optional unique identifier. Auto-generated if not provided.
+            variable: A caller-owned variable holding the checked state, so it
+                can be changed without a click.
         """
-        var = BooleanVar(value=value)
+        var = variable if variable is not None else BooleanVar(value=value)
 
         def on_toggle():
             self._handle_item_click('checkbutton', text, command, var.get())
@@ -1275,12 +1278,13 @@ class _NativeContextMenu(CustomConfigMixin):
             command: Callable = None,
             disabled: bool = False,
             key: str = None,
+            variable: BooleanVar = None,
     ) -> str:
         key = key or self._generate_key()
         if key in self._item_specs:
             raise ValueError(f"Item with key '{key}' already exists")
 
-        var = BooleanVar(value=value)
+        var = variable if variable is not None else BooleanVar(value=value)
         self._var_refs[key] = var
 
         def on_toggle():

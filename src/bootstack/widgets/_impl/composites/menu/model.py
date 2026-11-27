@@ -45,12 +45,15 @@ def _fire_unless_disabled(item: "MenuItem") -> Callable[[], Any]:
     """A shortcut command that runs `item.on_click` only while the item is enabled.
 
     `disabled` is read at keypress time, not at registration, so the shortcut
-    follows the item's current state.
+    follows the item's current state. A check item is toggled first, as a click
+    on its row would.
     """
     def fire() -> Any:
-        if not item.disabled and item.on_click is not None:
-            return item.on_click()
-        return None
+        if item.disabled or item.on_click is None:
+            return None
+        if item.type == "check":
+            item._toggle()
+        return item.on_click()
     return fire
 
 
@@ -76,7 +79,7 @@ class MenuItem:
     disabled: bool = False
     """If `True`, the item is shown dimmed and cannot be chosen."""
     checked: bool = False
-    """Initial on/off state for a `'check'` item."""
+    """Current on/off state of a `'check'` item."""
     value: Any = None
     """The value a `'radio'` item selects within its group."""
     group: str | None = None
@@ -87,8 +90,38 @@ class MenuItem:
     shortcut_display: str | None = field(default=None, init=False)
     """Resolved accelerator text for display (set in `__post_init__`)."""
 
+    _var: Any = field(default=None, init=False, repr=False, compare=False)
+
     def __post_init__(self) -> None:
         self.shortcut_display = format_shortcut(self.shortcut) or None
+
+    def _check_var(self) -> Any:
+        """The one variable every renderer binds a `'check'` item's row to.
+
+        Created on first use and kept for the item's life, so the state survives
+        a re-render and a shortcut can flip what every renderer shows.
+        """
+        if self._var is None:
+            from tkinter import BooleanVar
+
+            var = BooleanVar(value=self.checked)
+
+            def sync(*_: Any) -> None:
+                try:
+                    self.checked = bool(var.get())
+                except Exception:
+                    pass
+
+            var.trace_add("write", sync)
+            self._var = var
+        return self._var
+
+    def _toggle(self) -> None:
+        """Flip a `'check'` item's state, updating every row bound to it."""
+        if self._var is not None:
+            self._var.set(not self._var.get())
+        else:
+            self.checked = not self.checked
 
 
 class MenuGroup:

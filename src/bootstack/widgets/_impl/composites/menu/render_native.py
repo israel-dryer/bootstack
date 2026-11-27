@@ -42,8 +42,8 @@ class NativeMenuBar:
         self._root = root
         self._model = model
         self._menubar: tk.Menu | None = None
-        # Strong refs so Tk variables backing check/radio items aren't GC'd
-        # while the menu holds them.
+        # Strong refs so Tk variables backing radio items aren't GC'd while the
+        # menu holds them (a check item's variable is held by its MenuItem).
         self._var_refs: list[Any] = []
         self.rebuild()
 
@@ -83,8 +83,7 @@ class NativeMenuBar:
             return
 
         if item.type == "check":
-            var = tk.BooleanVar(value=item.checked)
-            self._var_refs.append(var)
+            var = item._check_var()
             submenu.add_checkbutton(
                 label=_translate(item.text),
                 variable=var,

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+from bootstack._runtime.shortcuts import get_shortcuts
 from bootstack.widgets._impl.composites.menu import MenuModel
 from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
 
@@ -86,6 +87,48 @@ def test_rebuild_reflects_model_changes(app):
         model.add_menu("Edit")
         bar.rebuild()
         assert _menubar_widget(root).index("end") == 1  # two cascades
+    finally:
+        bar.destroy()
+
+
+def _check_entry_state(root):
+    menubar = _menubar_widget(root)
+    submenu = root.nametowidget(menubar.entrycget(0, "menu"))
+    return submenu, root.getboolean(root.getvar(submenu.entrycget(0, "variable")))
+
+
+def test_check_item_shortcut_flips_its_entry(app):
+    # Calls the registered command: the routine a keypress runs.
+    root = app._tk_root
+    ran = []
+    model = MenuModel()
+    with model.add_menu("View") as view:
+        view.add_check("Wrap", shortcut="Mod+W", on_click=lambda: ran.append("wrap"))
+    bar = NativeMenuBar(root, model)
+    model.bind_shortcuts()
+    try:
+        assert _check_entry_state(root)[1] is False
+        get_shortcuts().get(model._registered_keys[0]).command()
+        assert ran == ["wrap"]
+        assert _check_entry_state(root)[1] is True
+    finally:
+        model.unbind_shortcuts()
+        bar.destroy()
+
+
+def test_rebuild_keeps_a_check_item_state(app):
+    root = app._tk_root
+    model = MenuModel()
+    with model.add_menu("View") as view:
+        view.add_check("Wrap")
+    bar = NativeMenuBar(root, model)
+    try:
+        submenu, state = _check_entry_state(root)
+        assert state is False
+        submenu.invoke(0)
+        assert _check_entry_state(root)[1] is True
+        bar.rebuild()
+        assert _check_entry_state(root)[1] is True
     finally:
         bar.destroy()
 
